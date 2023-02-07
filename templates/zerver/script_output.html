@@ -1,0 +1,42 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "integrations" %}
+
+<!-- {% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %} -->
+
+{% block hello_page_container %} hello-main{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/zulip_logo.html' %}
+{% include 'zerver/gradients.html' %}
+
+<div class="portico-landing integrations">
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content">
+
+                <div class="integration-main-text">
+                    <header>
+                        <h1 class="portico-page-heading">
+                            {% trans %}{{title}}{% endtrans %}
+                        </h1>
+                    </header>
+
+                </div>
+
+                <div class="catalog">
+                    <h1>Script Output</h1>
+
+                    <pre>{{ output|safe }}</pre>
+                </div>
+
+            </div> <!-- .inner-content -->
+        </div> <!-- .padded-content -->
+    </div> <!-- .main -->
+</div> <!-- .portico-landing -->
+
+
+
+{% endblock %}
