@@ -618,6 +618,8 @@ i18n_urls = [
     path("integrations/doc-html/<integration_name>", integration_doc),
     path("integrations/", integrations_view),
     path("integrations/<path:path>", integrations_view),
+    path("drc_maintenance/", drc_maintenance,  name="drc_maintenance"),
+    path("drc_reports/", drc_reports,  name="drc_reports")
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
