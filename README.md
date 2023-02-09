@@ -74,7 +74,6 @@ Come find us on the [development community chat](https://zulip.com/development-c
   stores, or [help others find
   Zulip](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#help-others-find-zulip).
 
-# Notes
 ## Setup Dev Environment
 
 - [Recomended Environtment Setup](https://zulip.readthedocs.io/en/latest/development/setup-recommended.html)
@@ -106,7 +105,7 @@ Run the dev environtment.
 ./tools/run-dev.py
 ```
 
-
+##
 
 You may also be interested in reading our [blog](https://blog.zulip.org/), and
 following us on [Twitter](https://twitter.com/zulip) and
