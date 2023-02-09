@@ -74,6 +74,40 @@ Come find us on the [development community chat](https://zulip.com/development-c
   stores, or [help others find
   Zulip](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#help-others-find-zulip).
 
+# Notes
+## Setup Dev Environment
+
+- [Recomended Environtment Setup](https://zulip.readthedocs.io/en/latest/development/setup-recommended.html)
+- [Testing the Installer](https://zulip.readthedocs.io/en/latest/development/test-install.html#configuring)
+
+
+## Run Dev Environtment
+
+Clone project locally.
+```
+git clone --config pull.rebase git@github.com:DataRecognitionCorporation/drc_zulip.git
+cd zulip
+git remote add -f upstream https://github.com/zulip/zulip.git
+git clone --config pull.rebase git@github.com:DataRecognitionCorporation/drc_zulip.git
+```
+
+Run vagrant.
+```
+vagrant up --provider=docker
+```
+
+Ssh into Vagrant box.
+```
+vagrant ssh
+```
+
+Run the dev environtment.
+```
+./tools/run-dev.py
+```
+
+
+
 You may also be interested in reading our [blog](https://blog.zulip.org/), and
 following us on [Twitter](https://twitter.com/zulip) and
 [LinkedIn](https://www.linkedin.com/company/zulip-project/).
