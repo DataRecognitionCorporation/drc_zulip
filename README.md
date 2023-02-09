@@ -105,6 +105,22 @@ Run the dev environtment.
 ./tools/run-dev.py
 ```
 
+## Create Deploy Tarball
+All the following commands must be ran while inside the development vagrant box.
+
+On firs time use, install lxs & lxc-utils
+```
+sudo apt-get install lxc lxc-utils
+```
+
+Build the release. Note, the version number must match the release version number in github.
+```
+version_number="6.1"
+./tools/build-release-tarball $version_number
+```
+
+The tarball will be saved in /tmp/tmp.xxx/
+
 ##
 
 You may also be interested in reading our [blog](https://blog.zulip.org/), and
