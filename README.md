@@ -84,10 +84,10 @@ Come find us on the [development community chat](https://zulip.com/development-c
 
 Clone project locally.
 ```
-git clone --config pull.rebase git@github.com:DataRecognitionCorporation/drc_zulip.git
-cd zulip
+git clone --config pull.rebase https://github.com/DataRecognitionCorporation/drc_zulip.git
+cd drc_zulip
 git remote add -f upstream https://github.com/zulip/zulip.git
-git clone --config pull.rebase git@github.com:DataRecognitionCorporation/drc_zulip.git
+git clone --config pull.rebase https://github.com/DataRecognitionCorporation/drc_zulip.git
 ```
 
 Run vagrant.
