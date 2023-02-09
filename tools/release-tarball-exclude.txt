@@ -3,6 +3,7 @@
 static/assets
 corporate/
 static/
+tools/
 zilencer/
 templates/corporate
 templates/zilencer
