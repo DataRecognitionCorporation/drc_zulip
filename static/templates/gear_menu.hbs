@@ -71,6 +71,20 @@
                 </a>
             </li>
             {{/unless}}
+            {{#if is_plan_limited}}
+            <li class="admin-menu-item hidden-for-spectators" role="presentation">
+                <a href="/drc_maintenance" target="_blank" rel="noopener noreferrer" role="menuitem">
+                    <i class="fa fa-wrench" aria-hidden="true"></i>
+                    <span>{{t 'Maintenance' }}</span>
+                </a>
+            </li>
+            <li class="admin-menu-item hidden-for-spectators" role="presentation">
+                <a href="/drc_reports" target="_blank" rel="noopener noreferrer" role="menuitem">
+                    <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                    <span>{{t 'Reports' }}</span>
+                </a>
+            </li>
+            {{/if}}
             <li role="presentation" class="only-visible-for-spectators">
                 <a class="change-language-spectator" role="menuitem">
                     <i class="zulip-icon zulip-icon-language" aria-hidden="true"></i> {{t 'Select language' }}
