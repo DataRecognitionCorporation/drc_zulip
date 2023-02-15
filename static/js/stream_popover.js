@@ -251,6 +251,7 @@ function build_stream_popover(opts) {
 
     const content = render_stream_sidebar_actions({
         stream: sub_store.get(stream_id),
+        is_realm_admin: page_params.is_admin
     });
 
     $(elt).popover({

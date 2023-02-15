@@ -53,12 +53,14 @@
             {{t "New topic" }}
         </a>
     </li>
+    {{#if is_realm_admin}}
     <li class="hidden-for-spectators">
         <a tabindex="0" class="popover_sub_unsub_button" data-name="{{stream.name}}">
             <i class='fa fa-envelope' aria-hidden="true"></i>
             {{t "Unsubscribe" }}
         </a>
     </li>
+    {{/if}}
     <li class="hidden-for-spectators">
         <span class="colorpicker-container"><input stream_id="{{stream.stream_id}}" class="colorpicker" type="text" value="{{stream.color}}" /></span>
         <a tabindex="0" class="choose_stream_color">

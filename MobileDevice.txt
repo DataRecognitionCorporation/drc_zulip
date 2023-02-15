@@ -1,0 +1,4 @@
+ sender | sender_email | sending_device 
+--------+--------------+----------------
+(0 rows)
+

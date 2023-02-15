@@ -33,18 +33,68 @@ from zerver.decorator import zulip_login_required, require_server_admin
 
 import subprocess
 
+allowed_scripts = {
+    'get_conversation': {
+        'pretty_name': 'Get Conversation',
+        'script_name': 'conversation_between_two_users_date_range_get.sh'
+    },
+    'messages_user_get': {
+        'pretty_name': 'Get User Messages',
+        'script_name': 'messages_user_get.sh'
+    },
+    'users_role_get': {
+        'pretty_name': 'Get User Roles',
+        'script_name': 'users_role_get.sh'
+    },
+    'subscriptions_for_user_get': {
+        'pretty_name': 'Get User Subscriptions',
+        'script_name': 'subscriptions_for_user_get.sh'
+    },
+    'muted_topics_get': {
+        'pretty_name': 'Get Muted Topics',
+        'script_name': 'mutedtopics_get.sh'
+    },
+    'conversation_for_a_stream_get': {
+        'pretty_name': 'Get Stream Conversation',
+        'script_name': 'conversation_for_a_stream_get.sh'
+    },
+    'get_mobile_devices': {
+        'pretty_name': 'Get Mobile Services',
+        'script_name': 'mobiledevices_get.sh'
+    },
+    'enable_login_emails': {
+        'pretty_name': 'Enable Login Emails',
+        'script_name': 'users_enable_login_emails_get.sh'
+    }
+}
+
+def get_script_name(request):
+    for item in request.POST:
+        if(item in allowed_scripts):
+            return allowed_scripts[item]
+
+    return None
+
+
 @require_server_admin
-def run_script(request):
+def run_script(request, script_info):
     context = {
         'output': '',
         'PAGE_TITLE': 'Reports',
-        'title': 'Script Name Here'
+        'title':  script_info['pretty_name']
     }
-    if request.method == "POST":
-        script = "/home/vagrant/zulip/test.sh"
-        result = subprocess.run(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        output = result.stdout.decode("utf-8")
-        context['output'] = output
+    # if request.method == "POST":
+    script_name = script_info['script_name']
+    script = f"/home/vagrant/zulip/tools/drc_scripts/reports/{script_name}"
+
+    result = subprocess.run(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    output = result.stdout.decode("utf-8")
+    # if not(result.stderr == None):
+    #     context['output'] = result.stderr.decode('utf-8')
+
+    # else:
+    context['output'] = output
+
     return render(request, "/zerver/script_output.html", context)
 
 
@@ -52,10 +102,12 @@ def run_script(request):
 def drc_reports(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         print('****************post****************')
-        print(type(request))
-        print(request.method)
-        print(request.content_params)
-        return run_script(request)
+        # print(type(request))
+        # print(request.method)
+        # print(request.POST)
+        script = get_script_name(request)
+        print(script)
+        return run_script(request, script)
 
     context = {
         'PAGE_TITLE': 'Reports',
@@ -85,34 +137,3 @@ def drc_maintenance(request: HttpRequest) -> HttpResponse:
         '/zerver/drc_maintenance.html',
         context,
     )
-
-
-
-
-
-
-
-
-
-
-# @method_decorator(csrf_exempt, name='dispatch')
-# @zulip_login_required
-# @require_server_admin
-# class DRC_Rerpot_View(TemplateView):
-#     template_name = '/zerver/drc_reports.html'
-#
-#     def add_test_context(self, context) -> Dict[str, Any]:
-#         context['test'] = 'this_is_a_test!!!!!'
-#         return context
-#
-#
-#     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-#         context: Dict[str, Any] = super().get_context_data(**kwargs)
-#         context['PAGE_TITLE'] = 'Reports'
-#         context = self.add_test_context(context)
-#         return context
-#
-#     def post(self, request):
-#         return run_script(request)
-#
-#     # def __init__(self, request: HttpRequest):
