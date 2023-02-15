@@ -1336,6 +1336,13 @@ def check_private_message_policy(
             return
 
         raise JsonableError(_("Private messages are disabled in this organization."))
+    elif not sender.is_guest:
+        # Allow everyone except guest(s) to send pm
+        return
+    elif sender.is_guest and not user_profiles[0].is_guest:
+        # Allow guest to send pm to non-guests
+        return
+    raise JsonableError(_("Private messages are not allowed to be sent to this user."))
 
 
 # check_message:

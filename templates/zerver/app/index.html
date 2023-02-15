@@ -59,6 +59,13 @@
     background-color: hsl(212, 28%, 18%);
     color: hsl(236, 33%, 90%);
     }
+    /* DRC CUSTOM - hide upload file button from guests */
+    {% if is_guest %}
+    a.compose_control_button.compose_upload_file.fa.fa-paperclip, a.compose_upload_file {
+        display: none !important;
+    }
+    {% endif %}
+    /* END DRC CUSTOM */
 </style>
 {% endblock %}
 
