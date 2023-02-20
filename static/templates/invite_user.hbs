@@ -56,8 +56,10 @@
                     </label>
                     <div>
                         <select id="invite_as">
-                            <option name="invite_as" value="{{ invite_as_options.guest.code }}">{{t "Guests" }}</option>
-                            <option name="invite_as" selected="selected" value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
+                            <!-- DRC MODIFICATION -->
+                            <option name="invite_as" selected="selected" value="{{ invite_as_options.guest.code }}">{{t "Guests" }}</option>
+                            <option name="invite_as" value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
+                            <!-- DRC MODIFICATION -->
                             {{#if is_admin}}
                             <option name="invite_as" value="{{ invite_as_options.moderator.code }}">{{t "Moderators" }}</option>
                             <option name="invite_as" value="{{ invite_as_options.admin.code }}">{{t "Organization administrators" }}</option>
@@ -68,6 +70,16 @@
                         </select>
                     </div>
                 </div>
+
+                <!-- DRC MODIFICATION -->
+                <!-- <label for="stream_search">{{t "Stream filter" }}</label>
+                <div>
+                    <input type="search" rows="2" id="stream_search" name="stream_search" placeholder="{{t 'Stream name...' }}">
+                    <button id="stream_search_btn">Filter</button>
+                </div>
+                <br> -->
+                <!-- DRC MODIFICATION -->
+
                 <div>
                     <label>{{t "Streams they should join" }}</label>
                     <div id="streams_to_add"></div>

@@ -181,6 +181,23 @@ export function get_invite_streams() {
     return streams;
 }
 
+// DRC MODIFICATION - get filtered invite streams base off of string input
+export function get_filtered_invite_streams(str_filter){
+    const streams = stream_data.get_invite_stream_data();
+    const filtered_streams = [];
+
+    for (const stream of streams) {
+        if (stream.name.includes(str_filter)) {
+            // alert(stream.name)
+            filtered_streams.push(stream);
+        }
+    }
+
+    filtered_streams.sort((a, b) => util.strcmp(a.name, b.name));
+    return filtered_streams;
+}
+
+
 function update_subscription_checkboxes() {
     const data = {
         streams: get_invite_streams(),
@@ -188,6 +205,17 @@ function update_subscription_checkboxes() {
     };
     const html = render_invite_subscription(data);
     $("#streams_to_add").html(html);
+}
+
+// DRC MODIFICATION - update filtered checkboxes
+function update_filtered_subscription_checkboxes(str_filter) {
+    const data = {
+        streams: get_filtered_invite_streams(str_filter),
+        notifications_stream: stream_data.get_notifications_stream(),
+    };
+    const html = render_invite_subscription(data);
+    $("#streams_to_add").html(html);
+    reset_error_messages();
 }
 
 function prepare_form_to_be_shown() {
@@ -291,6 +319,12 @@ export function initialize() {
 
     $(document).on("click", "#invite_uncheck_all_button", () => {
         $("#streams_to_add :checkbox").prop("checked", false);
+    });
+
+    // $(document).on("click", "#stream_search_btn", () => {
+    $("#stream_search_btn").on("click", () => {
+        const filter_str = $("#stream_search").val();
+        update_filtered_subscription_checkboxes(filter_str);
     });
 
     $("#submit-invitation").on("click", () => {

@@ -429,8 +429,9 @@ export function get_invite_stream_data() {
     }
 
     // ...plus all your subscribed streams (avoiding repeats).
-    for (const sub of subscribed_subs()) {
-        if (!default_stream_ids.has(sub.stream_id)) {
+    // DRC MODIFICATION - get all subs
+    for (const sub of get_unsorted_subs()) {
+        if (!default_stream_ids.has(sub.stream_id) && !sub.invite_only) {
             streams.push(get_data(sub));
         }
     }
