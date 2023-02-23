@@ -35,6 +35,7 @@ import * as util from "./util";
 
 let custom_expiration_time_input = 10;
 let custom_expiration_time_unit = "days";
+let stream_list = null;
 
 function reset_error_messages() {
     $("#invite_status").hide().text("").removeClass(common.status_classes);
@@ -61,12 +62,18 @@ function build_stream_li(sub, checked) {
 }
 
 class StreamRow {
-    constructor(sub, checked) {
+    constructor(sub) {
         this.sub = sub;
         this.name = sub.name;
-        this.checked = checked
-        this.stream_id = sub.stream_id
-        this.$list_item = build_stream_li(sub, checked);
+        this.default_stream = sub.default_stream;
+        this.stream_id = sub.stream_id;
+        this.checked = false;
+        if(this.default_stream){
+          this.checked = true;
+        } else {
+          this.checked = false;
+        }
+        this.$list_item = build_stream_li(sub, this.checked);
     }
 
     get_li() {
@@ -77,28 +84,90 @@ class StreamRow {
         this.$list_item.remove();
     }
 
+    get_name(){
+      return this.name;
+    }
+
+    get_checked(){
+      return this.checked;
+    }
+
+    set_checked(checked) {
+      this.checked = checked;
+      this.$list_item = build_stream_li(this.sub, checked);
+    }
+
 }
 
 class StreamList {
   constructor() {
+    // this.all_streams = all_streams;
     this.row_list = [];
-  }
+    this.stream_ids = new Set();
+    const streams = get_invite_streams();
 
-  input(row_item) {
-    this.row_list.append(row_item);
-    this.row_list.sort((a, b) => util.strcmp(a.name, b.name));
-  }
-
-  remove(sub){
-    var index = this.row_list.indexOf(sub.name);
-    if (index !== -1) {
-      this.row_list.splice(index, 1);
+    for (const stream of streams) {
+      const row_item = new StreamRow(stream);
+      this.row_list.push(row_item);
+      this.stream_ids.add(row_item.stream_id);
     }
   }
-}
 
-const stream_list = new StreamList();
-const stream_ids = new Set();
+  get_set() {
+    return this.stream_ids;
+  }
+
+  input(stream_id) {
+    remove(stream_id);
+    this.stream_ids.add(stream_id);
+
+  }
+
+  remove(stream_id){
+    var index = 0;
+    for(stream of this.row_list){
+      if(stream.stream_id == stream_id){
+        // this.row_list.splice(index, 1);
+        this.stream_ids.delete(stream_id);
+      }
+      index += 1;
+    }
+  }
+
+  switch_checked(stream_id){
+    var index = 0;
+    for(const stream of this.row_list){
+      if(stream.stream_id == stream_id){
+        var temp_obj = this.row_list[index];
+        var checked = temp_obj.get_checked();
+        if(checked == true){
+          this.row_list[index].desc = temp_obj.set_checked(false);
+        } else {
+          this.row_list[index].desc = temp_obj.set_checked(true);
+        }
+        return
+      }
+      index += 1;
+    }
+  }
+
+  get_streams(filter){
+    var temp_streams = [];
+
+    for (const stream of this.row_list) {
+      if(this.stream_ids.has(stream.stream_id) ){
+        const stream_name_lower = stream.name.toLowerCase();
+        const filter_text_lower = filter.toLowerCase();
+        if (stream_name_lower.includes(filter_text_lower)) {
+          temp_streams.push(stream.get_li());
+        }
+      }
+    }
+    return temp_streams;
+  }
+}
+//
+// const stream_ids = new Set();
 
 function difference(setA, setB) {
   const _difference = new Set(setA);
@@ -108,7 +177,24 @@ function difference(setA, setB) {
   return _difference;
 }
 
-export function build_stream_list(filter_text) {
+
+export function build_stream_list() {
+  var filter_text = $("#stream_search").val()
+  var $parent = $("#invite_rows");
+  // alert(stream_list.get_set().size)
+
+  $("#invite-stream-checkboxes").on("click", () => {
+      const stream_id = Number.parseInt($(this).val(), 10);
+      // alert(stream_id)
+      stream_list.switch_checked(stream_id);
+  });
+
+  $parent.empty();
+
+  $parent.append(stream_list.get_streams(filter_text));
+}
+
+export function build_stream_list_old(filter_text) {
     var filter_text = $("#stream_search").val()
     var streams = get_invite_streams();
     var $parent = $("#invite_rows");
@@ -366,7 +452,7 @@ function prepare_form_to_be_shown() {
 export function launch() {
     $("#submit-invitation").button();
     prepare_form_to_be_shown();
-
+    stream_list = new StreamList();
     build_stream_list();
 
     overlays.open_overlay({
@@ -472,14 +558,16 @@ export function initialize() {
 
     $(document).on("click", ".checkbox_alert", () => {
         const temp_val = $(".checkbox_alert").val();
-        stream_ids.delete(temp_val);
+        // stream_ids.delete(temp_val);
         // alert(temp_val);
     });
 
     // $(document).on("click", "#stream_search_btn", () => {
-    $("#stream_search_btn").on("click", () => {
-        const filter_str = $("#stream_search").val();
-        update_filtered_subscription_checkboxes(filter_str);
+    $(".clear_search_button").on("click", () => {
+        const $filter = $(".stream_search");
+        // alert('hello')
+        $filter.val("");
+        build_stream_list()
     });
 
     $("#submit-invitation").on("click", () => {
