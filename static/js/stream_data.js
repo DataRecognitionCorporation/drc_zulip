@@ -410,6 +410,7 @@ export function get_subscribed_streams_for_user(user_id) {
     return subscribed_subs;
 }
 
+// DRC MODIFICATION - get all subs
 export function get_all_invite_stream_data() {
   function get_data(sub) {
       return {
@@ -429,7 +430,6 @@ export function get_all_invite_stream_data() {
   }
 
   // ...plus all your subscribed streams (avoiding repeats).
-  // DRC MODIFICATION - get all subs
   for (const sub of get_unsorted_subs()) {
       if (!default_stream_ids.has(sub.stream_id) && !sub.invite_only) {
           streams.push(get_data(sub));
@@ -437,7 +437,7 @@ export function get_all_invite_stream_data() {
   }
 
   return streams;
-  }
+}
 
 
 export function get_invite_stream_data() {
@@ -459,9 +459,8 @@ export function get_invite_stream_data() {
     }
 
     // ...plus all your subscribed streams (avoiding repeats).
-    // DRC MODIFICATION - get all subs
-    for (const sub of get_unsorted_subs()) {
-        if (!default_stream_ids.has(sub.stream_id) && !sub.invite_only) {
+    for (const sub of subscribed_subs()) {
+        if (!default_stream_ids.has(sub.stream_id)) {
             streams.push(get_data(sub));
         }
     }

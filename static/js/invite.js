@@ -100,11 +100,16 @@ class StreamRow {
 }
 
 class StreamList {
-  constructor() {
+  constructor(display_all) {
     // this.all_streams = all_streams;
     this.row_list = [];
     this.stream_ids = new Set();
-    const streams = get_invite_streams();
+    var streams = null;
+    if (display_all == true) {
+      streams = get_all_invite_streams();
+    } else {
+      streams = get_invite_streams();
+    }
 
     for (const stream of streams) {
       const row_item = new StreamRow(stream);
@@ -166,26 +171,13 @@ class StreamList {
     return temp_streams;
   }
 }
-//
-// const stream_ids = new Set();
-
-function difference(setA, setB) {
-  const _difference = new Set(setA);
-  for (const elem of setB) {
-    _difference.delete(elem);
-  }
-  return _difference;
-}
-
 
 export function build_stream_list() {
   var filter_text = $("#stream_search").val()
   var $parent = $("#invite_rows");
-  // alert(stream_list.get_set().size)
 
   $("#invite-stream-checkboxes").on("click", () => {
       const stream_id = Number.parseInt($(this).val(), 10);
-      // alert(stream_id)
       stream_list.switch_checked(stream_id);
   });
 
@@ -194,61 +186,61 @@ export function build_stream_list() {
   $parent.append(stream_list.get_streams(filter_text));
 }
 
-export function build_stream_list_old(filter_text) {
-    var filter_text = $("#stream_search").val()
-    var streams = get_invite_streams();
-    var $parent = $("#invite_rows");
-    var elements = [];
-
-    if (streams.length === 0) {
-        $parent.empty();
-        return;
-    }
-    // var $streams_to_add = $("input[name='invite-stream-checkboxes']:checked");
-
-    const temp_stream_id_set = new Set();
-    $("#invite-stream-checkboxes input:checked").each(function() {
-        const stream_id = Number.parseInt($(this).val(), 10);
-        stream_ids.add(stream_id);
-        temp_stream_id_set.add(stream_id);
-    });
-
-    const set_diff = new Set(difference(stream_ids, temp_stream_id_set));
-    set_diff.forEach((value) => {
-      console.log(value);
-      stream_ids.delete(value);
-    });
-
-    if (filter_text) {
-        for (const stream of streams) {
-            const stream_name_lower = stream.name.toLowerCase();
-            const filter_text_lower = filter_text.toLowerCase();
-            if (stream_name_lower.includes(filter_text_lower)) {
-
-                if(stream_ids.has(stream.stream_id)){
-                  var row_item = new StreamRow(stream, true);
-                } else {
-                  var row_item = new StreamRow(stream, false);
-                }
-
-                elements.push(row_item.get_li());
-            }
-        }
-    } else {
-        for (const stream of streams) {
-          if(stream_ids.has(stream.stream_id)){
-            var row_item = new StreamRow(stream, true);
-          } else {
-            var row_item = new StreamRow(stream, false);
-          }
-            elements.push(row_item.get_li());
-        }
-    }
-
-    $parent.empty();
-
-    $parent.append(elements);
-}
+// export function build_stream_list_old(filter_text) {
+//     var filter_text = $("#stream_search").val()
+//     var streams = get_invite_streams();
+//     var $parent = $("#invite_rows");
+//     var elements = [];
+//
+//     if (streams.length === 0) {
+//         $parent.empty();
+//         return;
+//     }
+//     // var $streams_to_add = $("input[name='invite-stream-checkboxes']:checked");
+//
+//     const temp_stream_id_set = new Set();
+//     $("#invite-stream-checkboxes input:checked").each(function() {
+//         const stream_id = Number.parseInt($(this).val(), 10);
+//         stream_ids.add(stream_id);
+//         temp_stream_id_set.add(stream_id);
+//     });
+//
+//     const set_diff = new Set(difference(stream_ids, temp_stream_id_set));
+//     set_diff.forEach((value) => {
+//       console.log(value);
+//       stream_ids.delete(value);
+//     });
+//
+//     if (filter_text) {
+//         for (const stream of streams) {
+//             const stream_name_lower = stream.name.toLowerCase();
+//             const filter_text_lower = filter_text.toLowerCase();
+//             if (stream_name_lower.includes(filter_text_lower)) {
+//
+//                 if(stream_ids.has(stream.stream_id)){
+//                   var row_item = new StreamRow(stream, true);
+//                 } else {
+//                   var row_item = new StreamRow(stream, false);
+//                 }
+//
+//                 elements.push(row_item.get_li());
+//             }
+//         }
+//     } else {
+//         for (const stream of streams) {
+//           if(stream_ids.has(stream.stream_id)){
+//             var row_item = new StreamRow(stream, true);
+//           } else {
+//             var row_item = new StreamRow(stream, false);
+//           }
+//             elements.push(row_item.get_li());
+//         }
+//     }
+//
+//     $parent.empty();
+//
+//     $parent.append(elements);
+// }
 
 
 function get_common_invitation_data() {
@@ -403,6 +395,12 @@ export function get_invite_streams() {
     return streams;
 }
 
+export function get_all_invite_streams() {
+    const streams = stream_data.get_all_invite_stream_data();
+    streams.sort((a, b) => util.strcmp(a.name, b.name));
+    return streams;
+}
+
 // DRC MODIFICATION - get filtered invite streams base off of string input
 export function get_filtered_invite_streams(str_filter) {
     const streams = stream_data.get_invite_stream_data();
@@ -452,7 +450,7 @@ function prepare_form_to_be_shown() {
 export function launch() {
     $("#submit-invitation").button();
     prepare_form_to_be_shown();
-    stream_list = new StreamList();
+    stream_list = new StreamList(false);
     build_stream_list();
 
     overlays.open_overlay({
@@ -567,7 +565,18 @@ export function initialize() {
         const $filter = $(".stream_search");
         // alert('hello')
         $filter.val("");
-        build_stream_list()
+        build_stream_list();
+    });
+
+    $(".display_all_streams").on("click", () => {
+        // var checkbox_val = $(".display_all_streams").val();
+        // alert(checkbox_val)
+        if($(".display_all_streams").is(":checked")){
+          stream_list = new StreamList(true);
+        } else {
+          stream_list = new StreamList(false);
+        }
+        build_stream_list();
     });
 
     $("#submit-invitation").on("click", () => {
