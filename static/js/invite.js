@@ -450,6 +450,8 @@ function prepare_form_to_be_shown() {
 export function launch() {
     $("#submit-invitation").button();
     prepare_form_to_be_shown();
+    $(".display_all_streams").prop("checked", false);
+
     stream_list = new StreamList(false);
     build_stream_list();
 
