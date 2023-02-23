@@ -246,6 +246,11 @@ export function show_settings_for(node) {
 
     const other_settings = [];
     const notification_settings = all_settings.filter((setting) => {
+        //DRC MODIFICATION - if user is not admin... always return false so mute checkbox
+        // is not displayed
+        // if(setting.name == "is_muted" && !page_params.is_admin){
+        //   return false;
+        // }
         if (setting.is_notification_setting) {
             return true;
         }

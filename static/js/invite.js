@@ -1,6 +1,8 @@
 import autosize from "autosize";
 import ClipboardJS from "clipboard";
-import {add} from "date-fns";
+import {
+    add
+} from "date-fns";
 import $ from "jquery";
 
 import copy_invite_link from "../templates/copy_invite_link.hbs";
@@ -8,19 +10,27 @@ import render_invitation_failed_error from "../templates/invitation_failed_error
 import render_invite_subscription from "../templates/invite_subscription.hbs";
 import render_invite_user from "../templates/invite_user.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
+import render_invite_subscription_row from "../templates/invite_subscription_row.hbs";
 
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as common from "./common";
-import {$t, $t_html} from "./i18n";
+import {
+    $t,
+    $t_html
+} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as overlays from "./overlays";
-import {page_params} from "./page_params";
+import {
+    page_params
+} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
-import {user_settings} from "./user_settings";
+import {
+    user_settings
+} from "./user_settings";
 import * as util from "./util";
 
 let custom_expiration_time_input = 10;
@@ -35,6 +45,126 @@ function reset_error_messages() {
     }
 }
 
+function build_stream_li(sub, checked) {
+    const name = sub.name;
+    // alert(name)
+    const args = {
+        name,
+        checked: checked,
+        stream_id: sub.stream_id,
+        invite_only: sub.invite_only,
+        default_stream: sub.default_stream,
+    };
+    // args.dark_background = color_class.get_css_class(args.color);
+    const $list_item = $(render_invite_subscription_row(args));
+    return $list_item;
+}
+
+class StreamRow {
+    constructor(sub, checked) {
+        this.sub = sub;
+        this.name = sub.name;
+        this.checked = checked
+        this.stream_id = sub.stream_id
+        this.$list_item = build_stream_li(sub, checked);
+    }
+
+    get_li() {
+        return this.$list_item;
+    }
+
+    remove() {
+        this.$list_item.remove();
+    }
+
+}
+
+class StreamList {
+  constructor() {
+    this.row_list = [];
+  }
+
+  input(row_item) {
+    this.row_list.append(row_item);
+    this.row_list.sort((a, b) => util.strcmp(a.name, b.name));
+  }
+
+  remove(sub){
+    var index = this.row_list.indexOf(sub.name);
+    if (index !== -1) {
+      this.row_list.splice(index, 1);
+    }
+  }
+}
+
+const stream_list = new StreamList();
+const stream_ids = new Set();
+
+function difference(setA, setB) {
+  const _difference = new Set(setA);
+  for (const elem of setB) {
+    _difference.delete(elem);
+  }
+  return _difference;
+}
+
+export function build_stream_list(filter_text) {
+    var filter_text = $("#stream_search").val()
+    var streams = get_invite_streams();
+    var $parent = $("#invite_rows");
+    var elements = [];
+
+    if (streams.length === 0) {
+        $parent.empty();
+        return;
+    }
+    // var $streams_to_add = $("input[name='invite-stream-checkboxes']:checked");
+
+    const temp_stream_id_set = new Set();
+    $("#invite-stream-checkboxes input:checked").each(function() {
+        const stream_id = Number.parseInt($(this).val(), 10);
+        stream_ids.add(stream_id);
+        temp_stream_id_set.add(stream_id);
+    });
+
+    const set_diff = new Set(difference(stream_ids, temp_stream_id_set));
+    set_diff.forEach((value) => {
+      console.log(value);
+      stream_ids.delete(value);
+    });
+
+    if (filter_text) {
+        for (const stream of streams) {
+            const stream_name_lower = stream.name.toLowerCase();
+            const filter_text_lower = filter_text.toLowerCase();
+            if (stream_name_lower.includes(filter_text_lower)) {
+
+                if(stream_ids.has(stream.stream_id)){
+                  var row_item = new StreamRow(stream, true);
+                } else {
+                  var row_item = new StreamRow(stream, false);
+                }
+
+                elements.push(row_item.get_li());
+            }
+        }
+    } else {
+        for (const stream of streams) {
+          if(stream_ids.has(stream.stream_id)){
+            var row_item = new StreamRow(stream, true);
+          } else {
+            var row_item = new StreamRow(stream, false);
+          }
+            elements.push(row_item.get_li());
+        }
+    }
+
+    $parent.empty();
+
+    $parent.append(elements);
+}
+
+
 function get_common_invitation_data() {
     const invite_as = Number.parseInt($("#invite_as").val(), 10);
     let expires_in = $("#expires_in").val();
@@ -48,7 +178,7 @@ function get_common_invitation_data() {
     }
 
     const stream_ids = [];
-    $("#invite-stream-checkboxes input:checked").each(function () {
+    $("#invite-stream-checkboxes input:checked").each(function() {
         const stream_id = Number.parseInt($(this).val(), 10);
         stream_ids.push(stream_id);
     });
@@ -86,7 +216,9 @@ function submit_invitation_form() {
         beforeSend,
         success() {
             ui_report.success(
-                $t_html({defaultMessage: "User(s) invited successfully."}),
+                $t_html({
+                    defaultMessage: "User(s) invited successfully."
+                }),
                 $invite_status,
             );
             $invitee_emails.val("");
@@ -145,7 +277,9 @@ function submit_invitation_form() {
             }
         },
         complete() {
-            $("#submit-invitation").text($t({defaultMessage: "Invite"}));
+            $("#submit-invitation").text($t({
+                defaultMessage: "Invite"
+            }));
             $("#submit-invitation").prop("disabled", false);
             $("#invitee_emails").trigger("focus");
             ui.get_scroll_element($("#invite_user_form .modal-body"))[0].scrollTop = 0;
@@ -169,7 +303,9 @@ function generate_multiuse_invite() {
             ui_report.error("", xhr, $invite_status);
         },
         complete() {
-            $("#submit-invitation").text($t({defaultMessage: "Generate invite link"}));
+            $("#submit-invitation").text($t({
+                defaultMessage: "Generate invite link"
+            }));
             $("#submit-invitation").prop("disabled", false);
         },
     });
@@ -182,9 +318,10 @@ export function get_invite_streams() {
 }
 
 // DRC MODIFICATION - get filtered invite streams base off of string input
-export function get_filtered_invite_streams(str_filter){
+export function get_filtered_invite_streams(str_filter) {
     const streams = stream_data.get_invite_stream_data();
     const filtered_streams = [];
+
 
     for (const stream of streams) {
         if (stream.name.includes(str_filter)) {
@@ -214,9 +351,12 @@ function update_filtered_subscription_checkboxes(str_filter) {
         notifications_stream: stream_data.get_notifications_stream(),
     };
     const html = render_invite_subscription(data);
+
+
     $("#streams_to_add").html(html);
     reset_error_messages();
 }
+
 
 function prepare_form_to_be_shown() {
     update_subscription_checkboxes();
@@ -226,6 +366,8 @@ function prepare_form_to_be_shown() {
 export function launch() {
     $("#submit-invitation").button();
     prepare_form_to_be_shown();
+
+    build_stream_list();
 
     overlays.open_overlay({
         name: "invite",
@@ -248,9 +390,13 @@ export function launch() {
 function valid_to(expires_in) {
     const time_valid = Number.parseFloat(expires_in);
     if (!time_valid) {
-        return $t({defaultMessage: "Never expires"});
+        return $t({
+            defaultMessage: "Never expires"
+        });
     }
-    const valid_to = add(new Date(), {minutes: time_valid});
+    const valid_to = add(new Date(), {
+        minutes: time_valid
+    });
     const options = {
         year: "numeric",
         month: "numeric",
@@ -259,10 +405,11 @@ function valid_to(expires_in) {
         minute: "2-digit",
         hour12: !user_settings.twenty_four_hour_time,
     };
-    return $t(
-        {defaultMessage: "Expires on {date}"},
-        {date: valid_to.toLocaleTimeString([], options)},
-    );
+    return $t({
+        defaultMessage: "Expires on {date}"
+    }, {
+        date: valid_to.toLocaleTimeString([], options)
+    }, );
 }
 
 function get_expiration_time_in_minutes() {
@@ -313,12 +460,20 @@ export function initialize() {
     set_custom_time_inputs_visibility();
     set_expires_on_text();
 
+
+
     $(document).on("click", "#invite_check_all_button", () => {
         $("#streams_to_add :checkbox").prop("checked", true);
     });
 
     $(document).on("click", "#invite_uncheck_all_button", () => {
         $("#streams_to_add :checkbox").prop("checked", false);
+    });
+
+    $(document).on("click", ".checkbox_alert", () => {
+        const temp_val = $(".checkbox_alert").val();
+        stream_ids.delete(temp_val);
+        // alert(temp_val);
     });
 
     // $(document).on("click", "#stream_search_btn", () => {
@@ -341,15 +496,23 @@ export function initialize() {
         $("#multiuse_radio_section").show();
         $("#invite-method-choice").hide();
         $("#invitee_emails").prop("disabled", true);
-        $("#submit-invitation").text($t({defaultMessage: "Generate invite link"}));
-        $("#submit-invitation").data("loading-text", $t({defaultMessage: "Generating link..."}));
+        $("#submit-invitation").text($t({
+            defaultMessage: "Generate invite link"
+        }));
+        $("#submit-invitation").data("loading-text", $t({
+            defaultMessage: "Generating link..."
+        }));
         reset_error_messages();
     });
 
     $("#invite-user").on("change", "#generate_multiuse_invite_radio", () => {
         $("#invitee_emails").prop("disabled", false);
-        $("#submit-invitation").text($t({defaultMessage: "Invite"}));
-        $("#submit-invitation").data("loading-text", $t({defaultMessage: "Inviting..."}));
+        $("#submit-invitation").text($t({
+            defaultMessage: "Invite"
+        }));
+        $("#submit-invitation").data("loading-text", $t({
+            defaultMessage: "Inviting..."
+        }));
         $("#multiuse_radio_section").hide();
         $("#invite-method-choice").show();
         reset_error_messages();
@@ -373,4 +536,8 @@ export function initialize() {
             return;
         }
     });
+
+    const $search_input = $("#stream_search");
+
+    $search_input.on("input", () => build_stream_list());
 }

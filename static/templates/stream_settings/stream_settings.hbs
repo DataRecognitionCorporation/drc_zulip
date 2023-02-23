@@ -90,6 +90,7 @@
             <div class="subscription-config">
                 <div class="subsection-parent">
                     {{#each other_settings}}
+
                         <div class="input-group">
                             {{> stream_settings_checkbox
                               setting_name=name
@@ -101,6 +102,7 @@
                               is_disabled=is_disabled
                               label=label}}
                         </div>
+                      
                     {{/each}}
 
                     <div class="input-group">
