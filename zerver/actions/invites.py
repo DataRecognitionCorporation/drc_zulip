@@ -29,8 +29,10 @@ from zerver.models import (
     Stream,
     UserProfile,
     filter_to_valid_prereg_users,
+    get_user_by_delivery_email
 )
 from zerver.tornado.django_api import send_event
+from zerver.actions.streams import bulk_add_subscriptions
 
 
 def notify_invites_changed(realm: Realm) -> None:
@@ -188,9 +190,43 @@ def do_invite_users(
 
     skipped: List[Tuple[str, str, bool]] = []
     for email in error_dict:
+        # DRC MODIFICATION
+        # If account has been deactivated but an invite has been requested, we
+        # will go ahead and reactivate the account.
+        if(error_dict[email][0] == 'Account has been deactivated.' and error_dict[email][1] == True):
+            # reactivate user here
+            from zerver.actions.create_user import (
+                do_reactivate_user
+            )
+            new_user_profile = get_user_by_delivery_email(email, user_profile.realm)
+            # reactivate user
+            do_reactivate_user(new_user_profile, acting_user=user_profile)
+
+            # add user to new streams
+            bulk_add_subscriptions(user_profile.realm, streams, [new_user_profile], acting_user=user_profile)
+
+
+            print(user_profile.full_name)
+            good_emails.remove(email)
+            continue
+
+        if(error_dict[email][0] == 'Already has an account.' and error_dict[email][1] == False):
+            new_user_profile = get_user_by_delivery_email(email, user_profile.realm)
+            bulk_add_subscriptions(
+                user_profile.realm,
+                streams,
+                [new_user_profile],
+                acting_user=user_profile
+            )
+            good_emails.remove(email)
+            continue
+
         msg, deactivated = error_dict[email]
         skipped.append((email, msg, deactivated))
         good_emails.remove(email)
+        print(error_dict[email])
+
+
 
     validated_emails = list(good_emails)
 

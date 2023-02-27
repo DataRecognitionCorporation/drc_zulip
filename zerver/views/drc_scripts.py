@@ -29,7 +29,7 @@ from django.template import loader
 from django.views.generic import TemplateView
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
-from zerver.decorator import zulip_login_required, require_server_admin
+from zerver.decorator import zulip_login_required, require_server_admin, require_realm_owner
 
 import subprocess
 
@@ -77,7 +77,7 @@ def get_script_name(request):
 
 
 @require_server_admin
-def run_script(request, script_info):
+def run_script(request: HttpRequest, script_info):
     context = {
         'output': '',
         'PAGE_TITLE': 'Reports',
