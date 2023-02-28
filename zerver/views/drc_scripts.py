@@ -29,9 +29,13 @@ from django.template import loader
 from django.views.generic import TemplateView
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
-from zerver.decorator import zulip_login_required, require_server_admin, require_realm_owner
+from zerver.decorator import zulip_login_required, require_server_admin, require_realm_owner, require_realm_admin
+from zerver.models import get_user_by_delivery_email, UserProfile
+
 
 import subprocess
+
+SCRIPTS_DIR = f"/home/vagrant/zulip/tools/drc_scripts"
 
 allowed_scripts = {
     'get_conversation': {
@@ -76,38 +80,47 @@ def get_script_name(request):
     return None
 
 
-@require_server_admin
-def run_script(request: HttpRequest, script_info):
+# def get_post_method(request):
+
+
+# @require_server_admin
+# @require_realm_owner
+def run_script(request: HttpRequest, user_profile: UserProfile , script_info: str):
     context = {
         'output': '',
         'PAGE_TITLE': 'Reports',
         'title':  script_info['pretty_name']
     }
-    # if request.method == "POST":
     script_name = script_info['script_name']
-    script = f"/home/vagrant/zulip/tools/drc_scripts/reports/{script_name}"
 
-    result = subprocess.run(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    output = result.stdout.decode("utf-8")
-    # if not(result.stderr == None):
-    #     context['output'] = result.stderr.decode('utf-8')
+    if(script_name == 'users_role_get.sh'):
+        output = get_user_role(request, script_name)
+    elif(script_name == 'messages_user_get.sh'):
+        output = get_user_messages(request, script_name)
+    else:
+        output = ''
 
-    # else:
     context['output'] = output
 
     return render(request, "/zerver/script_output.html", context)
 
 
-@require_server_admin
+
 def drc_reports(request: HttpRequest) -> HttpResponse:
+    user_profile = request.user
+    _drc_reports(request, user_profile)
+
+
+@require_realm_admin
+def _drc_reports(request: HttpRequest, user_profile: UserProfile):
     if request.method == 'POST':
         print('****************post****************')
-        # print(type(request))
-        # print(request.method)
-        # print(request.POST)
+
+        print(request.method)
+        print(request.POST)
         script = get_script_name(request)
         print(script)
-        return run_script(request, script)
+        return run_script(request, user_profile, script)
 
     context = {
         'PAGE_TITLE': 'Reports',
@@ -121,8 +134,12 @@ def drc_reports(request: HttpRequest) -> HttpResponse:
     )
 
 
+
 @require_server_admin
+@require_realm_owner
 def drc_maintenance(request: HttpRequest) -> HttpResponse:
+    user_profile = request.user
+
     if request.method == 'POST':
         print(request)
         return run_script(request)
@@ -137,3 +154,22 @@ def drc_maintenance(request: HttpRequest) -> HttpResponse:
         '/zerver/drc_maintenance.html',
         context,
     )
+
+
+def get_user_role(request: HttpRequest, script_name: str):
+    email = request.user.delivery_email
+    script = f"{SCRIPTS_DIR}/reports/{script_name} {email}"
+
+    result = subprocess.run(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    output = result.stdout.decode("utf-8")
+
+    return output
+
+def get_user_messages(request: HttpRequest, script_name: str):
+    email = request.user.delivery_email
+    script = f"{SCRIPTS_DIR}/reports/{script_name} {email}"
+
+    result = subprocess.run(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    output = result.stdout.decode("utf-8")
+
+    return output

@@ -2,7 +2,7 @@
 #SET OUR VARS
 
 ran_at=$(date '+%Y-%m-%d')
-email_to="atormanen@datarecognitioncorp.com"
+email_to="$1"
 #email_to="KSilbaugh@DataRecognitionCorp.com"
 email_subject="Zulip (chat) User Roles Report $ran_at"
 email_body="Please see attatched Zulip user roles report"
@@ -27,6 +27,8 @@ echo $sql > $file_sql_tmp
 
 #EXECUTE THE SQL STATEMENT AND STORE THE RESULTS
 psql -d zulip $sql_options -f $file_sql_tmp >> "$file_results_dst"
+
+cat "$file_results_dst"
 
 word_count=$(cat $file_results_dst | wc -l)
 echo "Number of users: ${word_count}"
