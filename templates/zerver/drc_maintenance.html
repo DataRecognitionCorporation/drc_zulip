@@ -33,15 +33,15 @@
 
                     <div class="integration-lozenges">
 
-                        <!-- Get Conversation -->
-                        <div class="card"  >
-                            <h5 class="card-header">Disable login emails</h5>
+                        <!-- Enable Login Emails -->
+                        <div class="card">
+                            <h5 class="card-header">Update Enable Login Emails</h5>
                             <div class="card-body">
-                                <p class="card-text">Disable all login emails.</p>
-                                <br>
-                                <form method="post" >
+                                <p class="card-text">Get a conversation between two individuals.</p>
+
+                                <form method="post">
                                     {{ csrf_input }}
-                                    <input type="submit" id="test" class="btn btn-primary" value="Run Script">
+                                    <button type="submit" name="update_enable_login_emails" class="btn btn-primary">Run Script</button>
                                 </form>
                             </div>
                         </div>

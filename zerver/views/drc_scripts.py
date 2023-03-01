@@ -69,6 +69,10 @@ allowed_scripts = {
     'enable_login_emails': {
         'pretty_name': 'Enable Login Emails',
         'script_name': 'users_enable_login_emails_get.sh'
+    },
+    'update_enable_login_emails': {
+        'pretty_name': 'Disable Login Emails',
+        'script_name': 'users_enable_login_emails_update.sh'
     }
 }
 
@@ -111,6 +115,8 @@ def run_script(request: HttpRequest, user_profile: UserProfile , script_info: st
         output = get_mobile_devices(request, script_name)
     elif(script_name == 'users_enable_login_emails_get.sh'):
         output = enable_login_emails(request, script_name)
+    elif(script_name == 'users_enable_login_emails_update.sh'):
+        output = update_login_emails(request, script_name)
     else:
         output = ''
 
@@ -125,8 +131,8 @@ def drc_maintenance(request: HttpRequest) -> HttpResponse:
     user_profile = request.user
 
     if request.method == 'POST':
-        print(request)
-        return run_script(request)
+        script = get_script_name(request)
+        return run_script(request, user_profile, script)
 
     context = {
         'PAGE_TITLE': 'Maintenance',
@@ -242,6 +248,14 @@ def get_mobile_devices(request: HttpRequest, script_name: str):
 
 def enable_login_emails(request: HttpRequest, script_name: str):
     script = f"{SCRIPTS_DIR}/reports/{script_name}"
+
+    result = subprocess.run(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    output = result.stdout.decode("utf-8")
+
+    return output
+
+def update_login_emails(request: HttpRequest, script_name: str):
+    script = f"{SCRIPTS_DIR}/maint/{script_name}"
 
     result = subprocess.run(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     output = result.stdout.decode("utf-8")
