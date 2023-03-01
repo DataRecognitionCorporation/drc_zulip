@@ -32,7 +32,6 @@ from django.utils.decorators import method_decorator
 from zerver.decorator import zulip_login_required, require_server_admin, require_realm_owner, require_realm_admin
 from zerver.models import get_user_by_delivery_email, UserProfile
 
-
 import subprocess
 
 SCRIPTS_DIR = f"/home/vagrant/zulip/zerver/drc_scripts"
@@ -76,15 +75,13 @@ allowed_scripts = {
     }
 }
 
+
 def get_script_name(request):
     for item in request.POST:
         if(item in allowed_scripts):
             return allowed_scripts[item]
 
     return None
-
-
-# def get_post_method(request):
 
 
 # @require_server_admin
@@ -253,6 +250,7 @@ def enable_login_emails(request: HttpRequest, script_name: str):
     output = result.stdout.decode("utf-8")
 
     return output
+
 
 def update_login_emails(request: HttpRequest, script_name: str):
     script = f"{SCRIPTS_DIR}/maint/{script_name}"
