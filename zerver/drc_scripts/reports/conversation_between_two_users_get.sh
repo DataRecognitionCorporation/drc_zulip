@@ -3,6 +3,11 @@ party_1_email=$1
 party_2_email=$2
 results_email=$3
 csv=$4
+
+echo "Email 1: $party_1_email"
+echo "Email 2: $party_2_email"
+echo "Results Emails: $results_email"
+
 delimiter="|"
 pw=$(pwgen 24 1)
 ran_at=$(date '+%Y%m%d%H%M%S')
@@ -15,7 +20,6 @@ if [ "$#" -lt 3 ]; then
   echo "example multiple recipients: ./get_conversaion.sh jwdunn@datarecognitioncorp.com atormanen@datarecognitioncorp.com \"jwdunn@datarecognitioncorp.com,james@errorcode67.com\" csv"
   echo
 else
-  echo
   echo
   results_dst="conversation_"$party_1_email"-"$party_2_email"_"$ran_at
   if [ "$csv" = "csv" ]; then
@@ -48,4 +52,5 @@ else
   mail -s "$results_dst Results"  $results_email -A "$results_zip" < ~/mail_body.txt
 #  #echo "Please see attached" | mail -s "Conversation Request Results" -a "$results_zip" $results_email
   rm -f "$results_zip"
+  echo "Collocted conversation and sent via email."
 fi

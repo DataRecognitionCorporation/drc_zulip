@@ -5,6 +5,9 @@ queryname="mutedtopics"
 #email_to="PASSiteTechnicalStaff@datarecognitioncorp.com"
 email_to="KSilbaugh@DataRecognitionCorp.com"
 #email_to="jwdunn@datarecognitioncorp.com"
+
+echo "Emailing to: $email_to"
+
 email_subject="Zulip (chat) $queryname report $ran_at"
 email_body="Please see attatched Zulip $queryname report"
 csv_header="user_name,user_email,topic_name,rept_name,rcpt_email,stream_name,date_muted"
@@ -34,6 +37,7 @@ echo $sql > $file_sql_tmp
 #EXECUTE THE SQL STATEMENT AND STORE THE RESULTS
 psql -d zulip $sql_options -f $file_sql_tmp >> "$file_results_dst"
 
+cat $file_results_dst
 
 #MAIL THE REPORT
 echo "$email_body" | mutt -a $file_results_dst -s "$email_subject" -- $email_to

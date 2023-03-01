@@ -2,6 +2,9 @@
 party_1_email=$1
 csv=$2
 delimiter=$3
+
+echo "Email 1: $party_1_email"
+
 if [ "$#" -eq 0 ]; then
   echo
   echo "Usage: ./messages_user_get.sh <user email> <csv>(optional) <delimiter>(optional)"

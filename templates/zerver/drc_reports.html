@@ -52,54 +52,53 @@
                         </div>
                         <br><br>
 
-                        <!-- Get Archived Conversation -->
+                        <!-- Get Users Messages -->
                         <div class="card">
                             <h5 class="card-header">Get Users Messages</h5>
                             <div class="card-body">
                                 <p class="card-text">Get a conversation between two individuals.</p>
 
-                                <div>
-                                    <input class="form-control form-control-lg" type="text" placeholder="email A">
-                                </div>
-                                <br>
                                 <form method="post">
                                     {{ csrf_input }}
+                                    <div>
+                                        <input class="form-control form-control-lg" type="text" name="email_1" placeholder="email A">
+                                    </div>
+                                    <br>
                                     <button type="submit" name="messages_user_get" class="btn btn-primary">Run Script</button>
                                 </form>
                             </div>
                         </div>
                         <br><br>
 
-                        <!-- Get Archived Conversation -->
+                        <!-- Get Stream Conversation -->
                         <div class="card">
                             <h5 class="card-header">Get Stream Conversation</h5>
                             <div class="card-body">
                                 <p class="card-text">Get a conversation between two individuals.</p>
 
-                                <div>
-                                    <input class="form-control form-control-lg" type="text" placeholder="Stream Name">
-                                </div>
-                                <br>
                                 <form method="post">
                                     {{ csrf_input }}
+                                    <div>
+                                        <input class="form-control form-control-lg" type="text" name="stream_name" placeholder="Stream Name">
+                                        <input class="form-control form-control-lg" type="text" name="email_1" placeholder="email">
+                                    </div>
+                                    <br>
                                     <button type="submit" name="conversation_for_a_stream_get" class="btn btn-primary">Run Script</button>
                                 </form>
                             </div>
                         </div>
                         <br><br>
 
-                        <!-- Get Archived Conversation -->
+                        <!-- Get User Roles -->
                         <div class="card">
                             <h5 class="card-header">Get Users Roles</h5>
                             <div class="card-body">
                                 <p class="card-text">Get a conversation between two individuals.</p>
 
-                                <div>
-                                    <input class="form-control form-control-lg" type="text" placeholder="email A">
-                                </div>
-                                <br>
                                 <form method="post">
                                     {{ csrf_input }}
+                                    <!-- <input class="form-control form-control-lg" name="input_1" type="text" placeholder="email A"> -->
+                                    <br>
                                     <button type="submit" name="users_role_get" class="btn btn-primary">Run Script</button>
                                 </form>
                             </div>
@@ -114,12 +113,12 @@
                             <div class="card-body">
                                 <p class="card-text">Get a conversation between two individuals.</p>
 
-                                <div>
-                                    <input class="form-control form-control-lg" type="text" placeholder="email A">
-                                </div>
-                                <br>
                                 <form method="post">
                                     {{ csrf_input }}
+                                    <div>
+                                        <input class="form-control form-control-lg" type="text" name="email_1" placeholder="email A">
+                                    </div>
+                                    <br>
                                     <button type="submit" name="subscriptions_for_user_get" class="btn btn-primary">Run Script</button>
                                 </form>
                             </div>
@@ -133,27 +132,24 @@
                             <div class="card-body">
                                 <p class="card-text">Get a conversation between two individuals.</p>
 
-                                <div>
-                                    <input class="form-control form-control-lg" type="text" placeholder="email A">
-                                </div>
-                                <br>
                                 <form method="post">
                                     {{ csrf_input }}
+                                    <div>
+                                        <input class="form-control form-control-lg" type="text" name="email_1" placeholder="email A">
+                                    </div>
+                                    <br>
                                     <button type="submit" name="muted_topics_get" class="btn btn-primary">Run Script</button>
                                 </form>
                             </div>
                         </div>
                         <br><br>
 
-                        <!-- Get Subscriptions for Users -->
+                        <!-- Get Mobile Devices -->
                         <div class="card">
                             <h5 class="card-header">Get Mobile Devices</h5>
                             <div class="card-body">
                                 <p class="card-text">Get a conversation between two individuals.</p>
 
-                                <div>
-                                    <input class="form-control form-control-lg" type="text" placeholder="email A">
-                                </div>
                                 <br>
                                 <form method="post">
                                     {{ csrf_input }}
@@ -164,28 +160,20 @@
                         <br><br>
 
 
-                        <!-- Get Subscriptions for Users -->
+                        <!-- Enable Login Emails -->
                         <div class="card">
                             <h5 class="card-header">Enable Login Emails</h5>
                             <div class="card-body">
                                 <p class="card-text">Get a conversation between two individuals.</p>
 
-                                <div>
-                                    <input class="form-control form-control-lg" type="text" placeholder="email A">
-                                </div>
-                                <br>
                                 <form method="post">
                                     {{ csrf_input }}
+                                    <br>
                                     <button type="submit" name="enable_login_emails" class="btn btn-primary">Run Script</button>
                                 </form>
                             </div>
                         </div>
                         <br><br>
-
-
-
-
-
                     </div>
                 </div>
 

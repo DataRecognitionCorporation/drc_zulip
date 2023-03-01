@@ -35,12 +35,12 @@ from zerver.models import get_user_by_delivery_email, UserProfile
 
 import subprocess
 
-SCRIPTS_DIR = f"/home/vagrant/zulip/tools/drc_scripts"
+SCRIPTS_DIR = f"/home/vagrant/zulip/zerver/drc_scripts"
 
 allowed_scripts = {
     'get_conversation': {
         'pretty_name': 'Get Conversation',
-        'script_name': 'conversation_between_two_users_date_range_get.sh'
+        'script_name': 'conversation_between_two_users_get.sh'
     },
     'messages_user_get': {
         'pretty_name': 'Get User Messages',
@@ -97,6 +97,20 @@ def run_script(request: HttpRequest, user_profile: UserProfile , script_info: st
         output = get_user_role(request, script_name)
     elif(script_name == 'messages_user_get.sh'):
         output = get_user_messages(request, script_name)
+    elif(script_name == 'conversation_between_two_users_get.sh'):
+        output = get_conversation(request, script_name)
+    elif(script_name == 'messages_user_get.sh'):
+        output = get_user_messages(request, script_name)
+    elif(script_name == 'conversation_for_a_stream_get.sh'):
+        output = get_stream_messages(request, script_name)
+    elif(script_name == 'subscriptions_for_user_get.sh'):
+        output = get_user_subscriptions(request, script_name)
+    elif(script_name == 'mutedtopics_get.sh'):
+        output = get_muted_topics(request, script_name)
+    elif(script_name == 'mobiledevices_get.sh'):
+        output = get_mobile_devices(request, script_name)
+    elif(script_name == 'users_enable_login_emails_get.sh'):
+        output = enable_login_emails(request, script_name)
     else:
         output = ''
 
@@ -105,38 +119,8 @@ def run_script(request: HttpRequest, user_profile: UserProfile , script_info: st
     return render(request, "/zerver/script_output.html", context)
 
 
-
-def drc_reports(request: HttpRequest) -> HttpResponse:
-    user_profile = request.user
-    _drc_reports(request, user_profile)
-
-
-@require_realm_admin
-def _drc_reports(request: HttpRequest, user_profile: UserProfile):
-    if request.method == 'POST':
-        print('****************post****************')
-
-        print(request.method)
-        print(request.POST)
-        script = get_script_name(request)
-        print(script)
-        return run_script(request, user_profile, script)
-
-    context = {
-        'PAGE_TITLE': 'Reports',
-        'title': 'Zulip Reports'
-    }
-
-    return render(
-        request,
-        '/zerver/drc_reports.html',
-        context,
-    )
-
-
-
-@require_server_admin
-@require_realm_owner
+# @require_server_admin
+# @require_realm_owner
 def drc_maintenance(request: HttpRequest) -> HttpResponse:
     user_profile = request.user
 
@@ -156,6 +140,25 @@ def drc_maintenance(request: HttpRequest) -> HttpResponse:
     )
 
 
+def drc_reports(request: HttpRequest) -> HttpResponse:
+    user_profile = request.user
+
+    if request.method == 'POST':
+        script = get_script_name(request)
+        return run_script(request, user_profile, script)
+
+    context = {
+        'PAGE_TITLE': 'Reports',
+        'title': 'Zulip Reports'
+    }
+
+    return render(
+        request,
+        '/zerver/drc_reports.html',
+        context,
+    )
+
+
 def get_user_role(request: HttpRequest, script_name: str):
     email = request.user.delivery_email
     script = f"{SCRIPTS_DIR}/reports/{script_name} {email}"
@@ -165,9 +168,80 @@ def get_user_role(request: HttpRequest, script_name: str):
 
     return output
 
+
+def get_conversation(request: HttpRequest, script_name: str):
+    email = request.user.delivery_email
+    email_1 = request.POST.get('email_1')
+    email_2 = request.POST.get('email_2')
+
+    script = f"{SCRIPTS_DIR}/reports/{script_name} {email_1} {email_2} {email} csv"
+
+    result = subprocess.run(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    output = result.stdout.decode("utf-8")
+
+    return output
+
+
 def get_user_messages(request: HttpRequest, script_name: str):
     email = request.user.delivery_email
-    script = f"{SCRIPTS_DIR}/reports/{script_name} {email}"
+    email_1 = request.POST.get('email_1')
+
+    script = f"{SCRIPTS_DIR}/reports/{script_name} {email_1} csv"
+
+    result = subprocess.run(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    output = result.stdout.decode("utf-8")
+
+    return output
+
+
+def get_stream_messages(request: HttpRequest, script_name: str):
+    email = request.user.delivery_email
+    email_1 = request.POST.get('email_1')
+    stream_name = request.POST.get('stream_name')
+
+    script = f"{SCRIPTS_DIR}/reports/{script_name} {stream_name} {email_1} csv"
+
+    result = subprocess.run(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    output = result.stdout.decode("utf-8")
+
+    return output
+
+
+def get_user_subscriptions(request: HttpRequest, script_name: str):
+    email = request.user.delivery_email
+    email_1 = request.POST.get('email_1')
+
+    script = f"{SCRIPTS_DIR}/reports/{script_name} {email_1} csv"
+
+    result = subprocess.run(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    output = result.stdout.decode("utf-8")
+
+    return output
+
+
+def get_muted_topics(request: HttpRequest, script_name: str):
+    email = request.user.delivery_email
+    email_1 = request.POST.get('email_1')
+
+    script = f"{SCRIPTS_DIR}/reports/{script_name} {email_1} csv"
+
+    result = subprocess.run(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    output = result.stdout.decode("utf-8")
+
+    return output
+
+
+def get_mobile_devices(request: HttpRequest, script_name: str):
+    script = f"{SCRIPTS_DIR}/reports/{script_name}"
+
+    result = subprocess.run(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    output = result.stdout.decode("utf-8")
+
+    return output
+
+
+def enable_login_emails(request: HttpRequest, script_name: str):
+    script = f"{SCRIPTS_DIR}/reports/{script_name}"
 
     result = subprocess.run(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     output = result.stdout.decode("utf-8")

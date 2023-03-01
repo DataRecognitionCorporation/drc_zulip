@@ -3,6 +3,10 @@ stream_name=$1
 results_email=$2
 csv=$3
 delimiter="|"
+
+echo "Stream name: $stream_name"
+echo "Results email: $results_email"
+
 pw=$(pwgen 24 1)
 ran_at=$(date '+%Y%m%d%H%M%S')
 if [ "$#" -lt 2 ]; then
@@ -14,7 +18,6 @@ if [ "$#" -lt 2 ]; then
   echo "example multiple recipients: ./get_stream_conversation.sh \"WB - EFL171 - Syverson, Todd - All Users\"  KSilbaugh@datarecognitioncorp.com \"jwdunn@datarecognitioncorp.com,james@errorcode67.com\" csv"
   echo
 else
-  echo
   echo
   results_dst="stream_conversation_"$stream_name"_"$ran_at
   if [ "$csv" = "csv" ]; then
@@ -45,4 +48,5 @@ else
   echo $results_dst > ~/mail_body.txt
   mail -s "$results_dst Results"  $results_email -A "$results_zip" < ~/mail_body.txt
   rm -f "$results_zip"
+  echo "Collected conversation and emailed. "
 fi
