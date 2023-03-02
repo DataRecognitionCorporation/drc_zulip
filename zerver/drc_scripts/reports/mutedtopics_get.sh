@@ -2,10 +2,8 @@
 #SET OUR VARS
 ran_at=$(date '+%Y-%m-%d')
 queryname="mutedtopics"
-#email_to="PASSiteTechnicalStaff@datarecognitioncorp.com"
-email_to="KSilbaugh@DataRecognitionCorp.com"
-#email_to="jwdunn@datarecognitioncorp.com"
 
+email_to=$1
 echo "Emailing to: $email_to"
 
 email_subject="Zulip (chat) $queryname report $ran_at"

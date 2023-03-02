@@ -41,6 +41,7 @@
                                 <form method="post">
                                     {{ csrf_input }}
                                     <div>
+                                        <input class="form-control form-control-lg" type="text" name="send_to" value="{% trans %}{{whoami}}{% endtrans %}">
                                         <input class="form-control form-control-lg" type="text" name="email_1" placeholder="email A">
                                         <input class="form-control form-control-lg" type="text" name="email_2" placeholder="email B">
                                     </div>
@@ -55,11 +56,12 @@
                         <div class="card">
                             <h5 class="card-header">Get Users Messages</h5>
                             <div class="card-body">
-                                <p class="card-text">Get a conversation between two individuals.</p>
+                                <p class="card-text">Get messages that a user has sent. First field is where the results will be sent too.</p>
 
                                 <form method="post">
                                     {{ csrf_input }}
                                     <div>
+                                        <input class="form-control form-control-lg" type="text" name="send_to" value="{% trans %}{{whoami}}{% endtrans %}">
                                         <input class="form-control form-control-lg" type="text" name="email_1" placeholder="email A">
                                     </div>
                                     <br>
@@ -73,13 +75,13 @@
                         <div class="card">
                             <h5 class="card-header">Get Stream Conversation</h5>
                             <div class="card-body">
-                                <p class="card-text">Get a conversation between two individuals.</p>
+                                <p class="card-text">Get a stream conversion. First field is the email to send the conversion too.</p>
 
                                 <form method="post">
                                     {{ csrf_input }}
                                     <div>
+                                        <input class="form-control form-control-lg" type="text" name="send_to" value="{% trans %}{{whoami}}{% endtrans %}">
                                         <input class="form-control form-control-lg" type="text" name="stream_name" placeholder="Stream Name">
-                                        <input class="form-control form-control-lg" type="text" name="email_1" placeholder="email">
                                     </div>
                                     <br>
                                     <button type="submit" name="conversation_for_a_stream_get" class="btn btn-primary">Run Script</button>
@@ -92,11 +94,13 @@
                         <div class="card">
                             <h5 class="card-header">Get Users Roles</h5>
                             <div class="card-body">
-                                <p class="card-text">Get a conversation between two individuals.</p>
+                                <p class="card-text">Get a list of all the user roles within Zulip. First field is the email to send the information too.</p>
 
                                 <form method="post">
                                     {{ csrf_input }}
-                                    <!-- <input class="form-control form-control-lg" name="input_1" type="text" placeholder="email A"> -->
+                                    <div>
+                                        <input class="form-control form-control-lg" type="text" name="send_to" value="{% trans %}{{whoami}}{% endtrans %}">
+                                    </div>
                                     <br>
                                     <button type="submit" name="users_role_get" class="btn btn-primary">Run Script</button>
                                 </form>
@@ -108,7 +112,7 @@
                         <div class="card">
                             <h5 class="card-header">Get Subscriptions for Users</h5>
                             <div class="card-body">
-                                <p class="card-text">Get a conversation between two individuals.</p>
+                                <p class="card-text">Get a list of all the streams that a user is subscribed too.</p>
 
                                 <form method="post">
                                     {{ csrf_input }}
@@ -122,16 +126,16 @@
                         </div>
                         <br><br>
 
-                        <!-- Get Subscriptions for Users -->
+                        <!-- Get Muted Topics -->
                         <div class="card">
                             <h5 class="card-header">Get Muted Topics</h5>
                             <div class="card-body">
-                                <p class="card-text">Get a conversation between two individuals.</p>
+                                <p class="card-text">Get muted topics. The output will be emailed to the email below.</p>
 
                                 <form method="post">
                                     {{ csrf_input }}
                                     <div>
-                                        <input class="form-control form-control-lg" type="text" name="email_1" placeholder="email A">
+                                        <input class="form-control form-control-lg" type="text" name="email_to" placeholder="email A" value="{% trans %}{{whoami}}{% endtrans %}">
                                     </div>
                                     <br>
                                     <button type="submit" name="muted_topics_get" class="btn btn-primary">Run Script</button>
@@ -146,9 +150,9 @@
                             <div class="card-body">
                                 <p class="card-text">Get a conversation between two individuals.</p>
 
-                                <br>
                                 <form method="post">
                                     {{ csrf_input }}
+                                    <br>
                                     <button type="submit" name="get_mobile_devices" class="btn btn-primary">Run Script</button>
                                 </form>
                             </div>

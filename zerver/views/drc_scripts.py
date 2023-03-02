@@ -1,6 +1,7 @@
 import logging
 import secrets
 import urllib
+import os
 from email.headerregistry import Address
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional, cast
@@ -34,7 +35,8 @@ from zerver.models import get_user_by_delivery_email, UserProfile
 
 import subprocess
 
-SCRIPTS_DIR = f"/home/vagrant/zulip/zerver/drc_scripts"
+# SCRIPTS_DIR = f"/home/vagrant/zulip/zerver/drc_scripts"
+SCRIPTS_DIR = os.path.join(os.getcwd(), 'zerver/drc_scripts')
 
 allowed_scripts = {
     'get_conversation': {
@@ -133,7 +135,8 @@ def drc_maintenance(request: HttpRequest) -> HttpResponse:
 
     context = {
         'PAGE_TITLE': 'Maintenance',
-        'title': 'Zulip Maintenance'
+        'title': 'Zulip Maintenance',
+        'whoami': request.user.delivery_email
     }
 
     return render(
@@ -152,7 +155,8 @@ def drc_reports(request: HttpRequest) -> HttpResponse:
 
     context = {
         'PAGE_TITLE': 'Reports',
-        'title': 'Zulip Reports'
+        'title': 'Zulip Reports',
+        'whoami': request.user.delivery_email
     }
 
     return render(
@@ -163,7 +167,7 @@ def drc_reports(request: HttpRequest) -> HttpResponse:
 
 
 def get_user_role(request: HttpRequest, script_name: str):
-    email = request.user.delivery_email
+    email = request.POST.get('send_to')
     script = f"{SCRIPTS_DIR}/reports/{script_name} {email}"
 
     result = subprocess.run(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
@@ -173,7 +177,7 @@ def get_user_role(request: HttpRequest, script_name: str):
 
 
 def get_conversation(request: HttpRequest, script_name: str):
-    email = request.user.delivery_email
+    email = request.POST.get('send_to')
     email_1 = request.POST.get('email_1')
     email_2 = request.POST.get('email_2')
 
@@ -186,10 +190,10 @@ def get_conversation(request: HttpRequest, script_name: str):
 
 
 def get_user_messages(request: HttpRequest, script_name: str):
-    email = request.user.delivery_email
+    email = request.POST.get('send_to')
     email_1 = request.POST.get('email_1')
 
-    script = f"{SCRIPTS_DIR}/reports/{script_name} {email_1} csv"
+    script = f"{SCRIPTS_DIR}/reports/{script_name} {email} {email_1} csv"
 
     result = subprocess.run(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     output = result.stdout.decode("utf-8")
@@ -198,11 +202,10 @@ def get_user_messages(request: HttpRequest, script_name: str):
 
 
 def get_stream_messages(request: HttpRequest, script_name: str):
-    email = request.user.delivery_email
-    email_1 = request.POST.get('email_1')
+    email = request.POST.get('send_to')
     stream_name = request.POST.get('stream_name')
 
-    script = f"{SCRIPTS_DIR}/reports/{script_name} {stream_name} {email_1} csv"
+    script = f"{SCRIPTS_DIR}/reports/{script_name} {stream_name} {email} csv"
 
     result = subprocess.run(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     output = result.stdout.decode("utf-8")
@@ -224,7 +227,7 @@ def get_user_subscriptions(request: HttpRequest, script_name: str):
 
 def get_muted_topics(request: HttpRequest, script_name: str):
     email = request.user.delivery_email
-    email_1 = request.POST.get('email_1')
+    email_1 = request.POST.get('email_to')
 
     script = f"{SCRIPTS_DIR}/reports/{script_name} {email_1} csv"
 
