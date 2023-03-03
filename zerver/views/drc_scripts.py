@@ -34,6 +34,7 @@ from zerver.decorator import zulip_login_required, require_server_admin, require
 from zerver.models import get_user_by_delivery_email, UserProfile
 
 import subprocess
+from datetime import datetime, timedelta
 
 # SCRIPTS_DIR = f"/home/vagrant/zulip/zerver/drc_scripts"
 SCRIPTS_DIR = os.path.join(os.getcwd(), 'zerver/drc_scripts')
@@ -41,7 +42,7 @@ SCRIPTS_DIR = os.path.join(os.getcwd(), 'zerver/drc_scripts')
 allowed_scripts = {
     'get_conversation': {
         'pretty_name': 'Get Conversation',
-        'script_name': 'conversation_between_two_users_get.sh'
+        'script_name': 'conversation_between_two_users_date_range_get.sh'
     },
     'messages_user_get': {
         'pretty_name': 'Get User Messages',
@@ -100,7 +101,7 @@ def run_script(request: HttpRequest, user_profile: UserProfile , script_info: st
         output = get_user_role(request, script_name)
     elif(script_name == 'messages_user_get.sh'):
         output = get_user_messages(request, script_name)
-    elif(script_name == 'conversation_between_two_users_get.sh'):
+    elif(script_name == 'conversation_between_two_users_date_range_get.sh'):
         output = get_conversation(request, script_name)
     elif(script_name == 'messages_user_get.sh'):
         output = get_user_messages(request, script_name)
@@ -153,10 +154,16 @@ def drc_reports(request: HttpRequest) -> HttpResponse:
         script = get_script_name(request)
         return run_script(request, user_profile, script)
 
+    now = datetime.now().strftime("%Y-%m-%d")
+    last_month = datetime.now() - timedelta(days=30)
+    last_month = last_month.strftime("%Y-%m-%d")
+
     context = {
         'PAGE_TITLE': 'Reports',
         'title': 'Zulip Reports',
-        'whoami': request.user.delivery_email
+        'whoami': request.user.delivery_email,
+        'today': now,
+        'last_month': last_month
     }
 
     return render(
@@ -180,8 +187,12 @@ def get_conversation(request: HttpRequest, script_name: str):
     email = request.POST.get('send_to')
     email_1 = request.POST.get('email_1')
     email_2 = request.POST.get('email_2')
+    start_date = request.POST.get('start-date')
+    end_date = request.POST.get('end-date')
+    print(start_date)
+    print(end_date)
 
-    script = f"{SCRIPTS_DIR}/reports/{script_name} {email_1} {email_2} {email} csv"
+    script = f"{SCRIPTS_DIR}/reports/{script_name} {email_1} {email_2} {email} {start_date} {end_date} csv"
 
     result = subprocess.run(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     output = result.stdout.decode("utf-8")

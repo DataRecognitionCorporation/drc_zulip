@@ -45,6 +45,15 @@
                                         <input class="form-control form-control-lg" type="text" name="email_1" placeholder="email A">
                                         <input class="form-control form-control-lg" type="text" name="email_2" placeholder="email B">
                                     </div>
+
+                                    <br>
+                                    <p>Start date and end date</p>
+                                    <div>
+
+                                      <input type="date" name="start-date" value="{% trans %}{{last_month}}{% endtrans %}">
+
+                                      <input type="date" name="end-date" value="{% trans %}{{today}}{% endtrans %}">
+                                    </div>
                                     <br>
                                     <input type="submit" name="get_conversation" class="btn btn-primary" value="Run Script">
                                 </form>
@@ -148,7 +157,7 @@
                         <div class="card">
                             <h5 class="card-header">Get Mobile Devices</h5>
                             <div class="card-body">
-                                <p class="card-text">Get a conversation between two individuals.</p>
+                                <p class="card-text">Get a list of users that are using a mobile device.</p>
 
                                 <form method="post">
                                     {{ csrf_input }}
@@ -161,9 +170,9 @@
 
                         <!-- Enable Login Emails -->
                         <div class="card">
-                            <h5 class="card-header">Get Enable Login Emails</h5>
+                            <h5 class="card-header">List Enable Login Emails</h5>
                             <div class="card-body">
-                                <p class="card-text">Get a conversation between two individuals.</p>
+                                <p class="card-text">Get a list of users with enable_login_emails set to true.</p>
 
                                 <form method="post">
                                     {{ csrf_input }}

@@ -8,6 +8,14 @@ csv=$6
 delimiter="|"
 pw=$(pwgen 24 1)
 ran_at=$(date '+%Y%m%d%H%M%S')
+
+echo "Email 1: $party_1_email"
+echo "Email 2: $party_2_email"
+echo "Send results to: $results_email"
+echo "Start Date: $date_start"
+echo "End Date: $date_end"
+echo
+
 if [ "$#" -lt 5 ]; then
   echo
   echo "Usage: ./get_conversion.sh <party 1 email> <party 2 email> <send results to> <start date> <end date> <csv>(optional)"
@@ -46,19 +54,19 @@ else
   sql=${sql}" INNER JOIN zerver_client AS client ON message.sending_client_id = client.id"
   sql=${sql}" WHERE ((profile_sending.delivery_email = '"$party_1_email"' AND profile_recieving.delivery_email = '"$party_2_email"')"
   sql=${sql}" OR (profile_sending.delivery_email = '"$party_2_email"' AND profile_recieving.delivery_email = '"$party_1_email"')) "
-  # sql=${sql}" AND date_sent BETWEEN '"$date_start"' AND '"$date_end"' "
+  sql=${sql}" AND date_sent BETWEEN '"$date_start"' AND '"$date_end"' "
   sql=${sql}" ORDER BY date_sent;"
   echo $sql > ~/sql_tmp.sql
 #  echo "sql:$sql"
   psql -d zulip $options -f ~/sql_tmp.sql >> "$results_tmp"
-  cat $results_tmp
-  cat sql_tmp.sql
+  
   rm -f ~/sql_tmp.sql
   zip -q --password "$pw" "$results_zip" "$results_tmp"
   rm -f "$results_tmp"
   echo "$pw" | mail -s "$results_dst" "$results_email"
   echo $results_dst > ~/mail_body.txt
-  cat mail_body.txt
   mail -s "$results_dst Results"  $results_email -A "$results_zip" < ~/mail_body.txt
   rm -f "$results_zip"
+
+  echo "Collocted conversation and sent via email."
 fi
