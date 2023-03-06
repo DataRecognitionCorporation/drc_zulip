@@ -365,6 +365,11 @@ def check_basic_stream_access(
     if user_profile.is_realm_admin and allow_realm_admin:
         return True
 
+    # DRC MODIFICATION
+    # Owner can invite to private stream
+    if user_profile.role == 100:
+        return True
+
     return False
 
 

@@ -257,6 +257,7 @@ def do_invite_users(
     # Now that we are past all the possible errors, we actually create
     # the PreregistrationUser objects and trigger the email invitations.
     for email in validated_emails:
+
         # The logged in user is the referrer.
         prereg_user = PreregistrationUser(
             email=email, referred_by=user_profile, invited_as=invite_as, realm=user_profile.realm
