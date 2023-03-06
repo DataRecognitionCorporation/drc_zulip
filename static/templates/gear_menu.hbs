@@ -69,7 +69,8 @@
                 </a>
             </li>
             {{/unless}}
-            {{#if is_admin}}
+            <!-- DRC MODIFICATION -->
+            {{#if is_owner}}
             <li class="admin-menu-item hidden-for-spectators" role="presentation">
                 <a href="/drc_maintenance" target="_blank" rel="noopener noreferrer" role="menuitem">
                     <i class="fa fa-wrench" aria-hidden="true"></i>

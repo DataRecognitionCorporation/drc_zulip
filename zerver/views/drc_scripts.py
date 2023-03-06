@@ -1,3 +1,4 @@
+# DRC MODIFICATION
 import logging
 import secrets
 import urllib
@@ -30,7 +31,7 @@ from django.template import loader
 from django.views.generic import TemplateView
 from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
-from zerver.decorator import zulip_login_required, require_server_admin, require_realm_owner, require_realm_admin
+from zerver.decorator import zulip_login_required, require_owner
 from zerver.models import get_user_by_delivery_email, UserProfile
 
 import subprocess
@@ -125,8 +126,7 @@ def run_script(request: HttpRequest, user_profile: UserProfile , script_info: st
     return render(request, "/zerver/script_output.html", context)
 
 
-# @require_server_admin
-# @require_realm_owner
+@require_owner
 def drc_maintenance(request: HttpRequest) -> HttpResponse:
     user_profile = request.user
 
@@ -147,6 +147,7 @@ def drc_maintenance(request: HttpRequest) -> HttpResponse:
     )
 
 
+@require_owner
 def drc_reports(request: HttpRequest) -> HttpResponse:
     user_profile = request.user
 
