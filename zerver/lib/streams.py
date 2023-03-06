@@ -645,6 +645,11 @@ def filter_stream_authorization(
         if not stream.invite_only and not user_profile.is_guest:
             continue
 
+        # DRC MODIFICATION
+        # Zulip admins and owners can do anything with streams
+        if user_profile.role <= 200:
+            continue
+
         unauthorized_streams.append(stream)
 
     authorized_streams = [

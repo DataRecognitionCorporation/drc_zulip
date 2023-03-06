@@ -431,9 +431,9 @@ export function get_all_invite_stream_data() {
 
 
   for (const sub of get_unsorted_subs()) {
-      // if (!default_stream_ids.has(sub.stream_id) && !sub.invite_only) {
+      if (!default_stream_ids.has(sub.stream_id)) {
           streams.push(get_data(sub));
-      // }
+      }
   }
 
   return streams;
