@@ -101,6 +101,7 @@ def sanitize_name(value: str) -> str:
     Sanitizes a value to be safe to store in a Linux filesystem, in
     S3, and in a URL.  So Unicode is allowed, but not special
     characters other than ".", "-", and "_".
+
     This implementation is based on django.utils.text.slugify; it is
     modified by:
     * adding '.' to the list of allowed characters.
