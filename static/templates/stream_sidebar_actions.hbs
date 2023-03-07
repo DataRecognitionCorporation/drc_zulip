@@ -36,7 +36,8 @@
             {{t "Mark all messages as read"}}
         </a>
     </li>
-    
+
+    {{#if is_realm_admin}}
     <li class="hidden-for-spectators">
         <a tabindex="0" class="toggle_stream_muted">
             {{#if stream.is_muted}}
@@ -48,8 +49,8 @@
             {{/if}}
         </a>
     </li>
+    {{/if}}
 
-    <!-- DRC MODIFICATION -->
     <li>
         <a tabindex="0" class="popover_new_topic_button">
             <i class="fa fa-plus" aria-hidden="true"></i>

@@ -159,8 +159,10 @@ function initialize_bottom_whitespace() {
     $("#bottom_whitespace").html(render_message_feed_bottom_whitespace());
 }
 
+// DRC MODIFICATION - add is_admin
 function initialize_left_sidebar() {
     const rendered_sidebar = render_left_sidebar({
+        is_admin: page_params.is_admin,
         is_guest: page_params.is_guest,
     });
 

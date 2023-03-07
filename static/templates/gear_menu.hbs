@@ -128,12 +128,15 @@
                 </a>
             </li>
             {{#if corporate_enabled}}
+            {{#unless is_guest}}
             <li role="presentation">
                 <a href="/help/contact-support" target="_blank" rel="noopener noreferrer" role="menuitem">
                     <i class="fa fa-envelope" aria-hidden="true"></i> {{t 'Contact support' }}
                 </a>
             </li>
+            {{/unless}}
             {{/if}}
+            {{#unless is_guest}}
             <li class="divider" role="presentation"></li>
             <li role="presentation" class="hidden-for-spectators">
                 <a href="{{ apps_page_url }}" target="_blank" rel="noopener noreferrer" role="menuitem">
@@ -150,6 +153,7 @@
                     <i class="fa fa-sitemap" aria-hidden="true"></i> {{t 'API documentation' }}
                 </a>
             </li>
+            {{/unless}}
             {{#if show_billing}}
             <li role="presentation" class="hidden-for-spectators">
                 <a href="/billing" target="_blank" rel="noopener noreferrer" role="menuitem">
@@ -158,11 +162,13 @@
             </li>
             {{/if}}
             {{#if promote_sponsoring_zulip}}
+            {{#unless is_guest}}
             <li role="presentation" class="hidden-for-spectators">
                 <a href="https://github.com/sponsors/zulip" target="_blank" rel="noopener noreferrer" role="menuitem">
                     <i class="fa fa-heart" aria-hidden="true"></i> {{t 'Support Zulip' }}
                 </a>
             </li>
+            {{/unless}}
             {{/if}}
             {{#if show_plans}}
             <li role="presentation" class="hidden-for-spectators">
