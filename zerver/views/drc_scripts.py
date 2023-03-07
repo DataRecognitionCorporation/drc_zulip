@@ -76,6 +76,10 @@ allowed_scripts = {
     'update_enable_login_emails': {
         'pretty_name': 'Disable Login Emails',
         'script_name': 'users_enable_login_emails_update.sh'
+    },
+    'get_user_activity': {
+        'pretty_name': 'Get User Activity',
+        'script_name': 'get_user_activity.sh'
     }
 }
 
@@ -118,6 +122,8 @@ def run_script(request: HttpRequest, user_profile: UserProfile , script_info: st
         output = enable_login_emails(request, script_name)
     elif(script_name == 'users_enable_login_emails_update.sh'):
         output = update_login_emails(request, script_name)
+    elif(script_name == 'get_user_activity.sh'):
+        output = get_user_activity(request, script_name)
     else:
         output = ''
 
@@ -190,8 +196,6 @@ def get_conversation(request: HttpRequest, script_name: str):
     email_2 = request.POST.get('email_2')
     start_date = request.POST.get('start-date')
     end_date = request.POST.get('end-date')
-    print(start_date)
-    print(end_date)
 
     script = f"{SCRIPTS_DIR}/reports/{script_name} {email_1} {email_2} {email} {start_date} {end_date} csv"
 
@@ -272,5 +276,22 @@ def update_login_emails(request: HttpRequest, script_name: str):
 
     result = subprocess.run(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     output = result.stdout.decode("utf-8")
+
+    return output
+
+
+def get_user_activity(request: HttpRequest, script_name: str):
+    email_1 = request.POST.get('email_1')
+    start_date = request.POST.get('start-date')
+    end_date = request.POST.get('end-date')
+
+    script = f"{SCRIPTS_DIR}/reports/{script_name} {email_1} {start_date} {end_date} ./get_user_activity.txt"
+
+    result = subprocess.run(script, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    output = result.stdout.decode("utf-8")
+    error = result.stderr.decode("utf-8")
+
+    if(error):
+        output = output + '\nERRORS FOUND IN SCRIPT:\n' +  error
 
     return output

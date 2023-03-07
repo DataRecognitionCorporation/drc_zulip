@@ -80,6 +80,33 @@
                         </div>
                         <br><br>
 
+                        <!-- Get User Activity -->
+                        <div class="card">
+                            <h5 class="card-header">Get User Activity</h5>
+                            <div class="card-body">
+                                <p class="card-text">Get the activity of a user.</p>
+
+                                <form method="post">
+                                    {{ csrf_input }}
+                                    <div>
+                                        <input class="form-control form-control-lg" type="text" name="email_1" placeholder="email A">
+                                    </div>
+
+                                    <br>
+                                    <p>Start date and end date</p>
+                                    <div>
+
+                                      <input type="date" name="start-date" value="{% trans %}{{last_month}}{% endtrans %}">
+
+                                      <input type="date" name="end-date" value="{% trans %}{{today}}{% endtrans %}">
+                                    </div>
+                                    <br>
+                                    <input type="submit" name="get_user_activity" class="btn btn-primary" value="Run Script">
+                                </form>
+                            </div>
+                        </div>
+                        <br><br>
+
                         <!-- Get Stream Conversation -->
                         <div class="card">
                             <h5 class="card-header">Get Stream Conversation</h5>
