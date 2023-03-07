@@ -305,6 +305,7 @@ function build_topic_popover(opts) {
         topic_muted,
         can_move_topic,
         is_realm_admin: page_params.is_admin,
+        is_guest: page_params.is_guest,
         topic_is_resolved: resolved_topic.is_resolved(topic_name),
         color: sub.color,
         has_starred_messages,
