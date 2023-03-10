@@ -431,7 +431,7 @@ def format_user_row(
     is_bot = row["is_bot"]
     # DRC MODIFICATION
     #lastname,firstname mod jwdunn - start
-    if(is_guest):
+    if(row["role"] > 200):
         full_name_raw = row["full_name"]
         mynames=full_name_raw.split(" ")
         first_name = mynames[0]
