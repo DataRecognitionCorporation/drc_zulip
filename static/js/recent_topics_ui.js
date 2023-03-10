@@ -484,6 +484,7 @@ function format_conversation(conversation_data) {
         .join("<br />");
     context.participated = conversation_data.participated;
     context.last_msg_url = hash_util.by_conversation_and_time_url(last_msg);
+    context.is_guest = page_params.is_guest;
 
     return context;
 }
