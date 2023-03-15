@@ -10,9 +10,13 @@ import render_subscribe_to_more_streams from "../templates/subscribe_to_more_str
 import * as blueslip from "./blueslip";
 import * as color_class from "./color_class";
 import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
+import {
+    $t
+} from "./i18n";
 import * as keydown_util from "./keydown_util";
-import {ListCursor} from "./list_cursor";
+import {
+    ListCursor
+} from "./list_cursor";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as pm_list from "./pm_list";
@@ -64,6 +68,10 @@ class StreamSidebar {
         return this.rows.get(stream_id);
     }
 
+    get_rows() {
+        return this.rows;
+    }
+
     has_row_for(stream_id) {
         return this.rows.has(stream_id);
     }
@@ -109,6 +117,62 @@ export function create_initial_sidebar_rows() {
     }
 }
 
+export function create_initial_sidebar_folders() {
+    // This code is slightly opaque, but it ends up building
+    // up list items and attaching them to the "sub" data
+    // structures that are kept in stream_data.js.
+    const subs = stream_data.subscribed_subs();
+
+    var folder_names = [];
+    const regex = new RegExp('[A-Z]{3}[0-9]{3}');
+    var dict = {}
+
+    for (const sub of subs) {
+        const myArray = sub.name.split(" - ");
+        if (regex.test(myArray[0])) {
+            if (!(dict[myArray[0]] instanceof Array)) {
+                dict[myArray[0]] = [myArray[1]];
+            } else {
+              var tmp =  dict[myArray[0]];
+              tmp.push(myArray[1]);
+              dict[myArray[0]] = tmp;
+            }
+        }
+    }
+
+    for (const [key, value] of Object.entries(dict)) {
+        // console.log(key, value);
+        stream_sidebar.set_row(key, new StreamSidebarFolder(key, value));
+    }
+}
+
+export function build_stream_folder(force_rerender) {
+    const streams = stream_data.subscribed_stream_ids();
+
+    const $parent = $("#stream_folders");
+    if (streams.length === 0) {
+        $parent.empty();
+        return;
+    }
+    const elems = [];
+
+    const rows = stream_sidebar.get_rows();
+
+    rows.forEach((val)=>{
+        console.log(val.get_folder());
+
+        const $list_item = $(render_stream_sidebar_row(val.get_folder()));
+        elems.push($list_item);
+    })
+
+    // var item = stream_folder.get_folder();
+    // console.log(item)
+
+
+    $parent.empty();
+    $parent.append(elems);
+}
+
 export function build_stream_list(force_rerender) {
     // The stream list in the left sidebar contains 3 sections:
     // pinned, normal, and dormant streams, with headings above them
@@ -150,8 +214,8 @@ export function build_stream_list(force_rerender) {
 
     const need_section_subheaders =
         (any_pinned_streams ? 1 : 0) +
-            (any_normal_streams ? 1 : 0) +
-            (any_dormant_streams ? 1 : 0) >=
+        (any_normal_streams ? 1 : 0) +
+        (any_dormant_streams ? 1 : 0) >=
         2;
 
     if (any_pinned_streams && need_section_subheaders) {
@@ -261,14 +325,14 @@ export function zoom_in_topics(options) {
     $("#streams_list").expectOne().removeClass("zoom-out").addClass("zoom-in");
 
     // Hide stream list titles and pinned stream splitter
-    $(".stream-filters-label").each(function () {
+    $(".stream-filters-label").each(function() {
         $(this).hide();
     });
-    $(".streams_subheader").each(function () {
+    $(".streams_subheader").each(function() {
         $(this).hide();
     });
 
-    $("#stream_filters li.narrow-filter").each(function () {
+    $("#stream_filters li.narrow-filter").each(function() {
         const $elt = $(this);
         const stream_id = options.stream_id;
 
@@ -286,10 +350,10 @@ export function zoom_in_topics(options) {
 
 export function zoom_out_topics() {
     // Show stream list titles and pinned stream splitter
-    $(".stream-filters-label").each(function () {
+    $(".stream-filters-label").each(function() {
         $(this).show();
     });
-    $(".streams_subheader").each(function () {
+    $(".streams_subheader").each(function() {
         $(this).show();
     });
 
@@ -330,6 +394,27 @@ function build_stream_sidebar_li(sub) {
     return $list_item;
 }
 
+class StreamSidebarFolder {
+
+    constructor(folder_name, sub_folders) {
+        this.rows = new Map();
+        this.folder_name = folder_name;
+        this.sub_folders = sub_folders;
+    }
+
+
+
+    get_folder() {
+        var dict = {
+          name: this.folder_name,
+        }
+
+        return dict;
+    }
+
+}
+export const stream_folder = new StreamSidebarFolder();
+
 class StreamSidebarRow {
     constructor(sub) {
         this.sub = sub;
@@ -366,6 +451,7 @@ function build_stream_sidebar_row(sub) {
     stream_sidebar.set_row(sub.stream_id, new StreamSidebarRow(sub));
 }
 
+
 export function create_sidebar_row(sub) {
     if (stream_sidebar.has_row_for(sub.stream_id)) {
         // already exists
@@ -374,6 +460,8 @@ export function create_sidebar_row(sub) {
     }
     build_stream_sidebar_row(sub);
 }
+
+
 
 export function redraw_stream_privacy(sub) {
     const $li = get_stream_li(sub.stream_id);
@@ -409,6 +497,7 @@ function set_stream_unread_count(stream_id, count, stream_has_any_unread_mention
 }
 
 export function update_streams_sidebar(force_rerender) {
+    return;
     build_stream_list(force_rerender);
 
     stream_cursor.redraw();
@@ -566,7 +655,9 @@ function keydown_enter_key() {
     }
 
     clear_and_hide_search();
-    narrow.by("stream", sub.name, {trigger: "sidebar enter key"});
+    narrow.by("stream", sub.name, {
+        trigger: "sidebar enter key"
+    });
 }
 
 function actually_update_streams_for_search() {
@@ -578,16 +669,35 @@ function actually_update_streams_for_search() {
 const update_streams_for_search = _.throttle(actually_update_streams_for_search, 50);
 
 export function initialize() {
-    create_initial_sidebar_rows();
+    create_initial_sidebar_folders();
 
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.
-    build_stream_list();
+
+    // build_stream_list();
+    build_stream_folder();
     update_subscribe_to_more_streams_link();
     set_event_handlers();
 }
 
+export function set_the_stuff() {
+
+
+    // We build the stream_list now.  It may get re-built again very shortly
+    // when new messages come in, but it's fairly quick.
+
+    build_stream_list();
+    // build_stream_folder();
+    // update_subscribe_to_more_streams_link();
+    // set_event_handlers();
+}
+
 export function set_event_handlers() {
+    $("#stream_folders").on("click", (e) => {
+
+        set_the_stuff();
+    });
+
     $("#stream_filters").on("click", "li .subscription_block", (e) => {
         if (e.metaKey || e.ctrlKey) {
             return;
@@ -595,7 +705,9 @@ export function set_event_handlers() {
         const stream_id = stream_id_for_elt($(e.target).parents("li"));
         const sub = sub_store.get(stream_id);
         popovers.hide_all();
-        narrow.by("stream", sub.name, {trigger: "sidebar"});
+        narrow.by("stream", sub.name, {
+            trigger: "sidebar"
+        });
 
         clear_and_hide_search();
 
