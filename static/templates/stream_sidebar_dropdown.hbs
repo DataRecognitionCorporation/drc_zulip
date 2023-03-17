@@ -1,13 +1,13 @@
 {{! Stream sidebar rows }}
 
-<li class="narrow-filter">
-    <div class="bottom_left_row">3
-        <div class="subscription_block selectable_sidebar_block">
+<li class="narrow-filter stream_folders" folder_name={{name}}>
+    <div class="bottom_left_row">
+        <div class="subscription_block selectable_sidebar_blocks">
 
             <div title="{{name}}" class="stream-name">{{name}}</div>
-
-            <ul id="stream_filters" class="filters"></ul>
-            
+            <div>
+                <ul id="stream_subfolder" class="subfolder_{{name}}" folder_name={{name}}></ul>
+            </div>
         </div>
     </div>
 </li>
