@@ -205,9 +205,6 @@ def do_invite_users(
             # add user to new streams
             bulk_add_subscriptions(user_profile.realm, streams, [new_user_profile], acting_user=user_profile)
 
-
-            print(user_profile.full_name)
-            good_emails.remove(email)
             continue
 
         if(error_dict[email][0] == 'Already has an account.' and error_dict[email][1] == False):
@@ -218,14 +215,11 @@ def do_invite_users(
                 [new_user_profile],
                 acting_user=user_profile
             )
-            good_emails.remove(email)
             continue
 
         msg, deactivated = error_dict[email]
         skipped.append((email, msg, deactivated))
         good_emails.remove(email)
-        print(error_dict[email])
-
 
 
     validated_emails = list(good_emails)
