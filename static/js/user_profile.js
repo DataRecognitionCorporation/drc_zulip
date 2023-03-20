@@ -228,14 +228,23 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         default_tab = 1;
     }
 
+    if(user.is_guest){
+      var values = [
+          {label: $t({defaultMessage: "Profile"}), key: "profile-tab"},
+          {label: $t({defaultMessage: "User groups"}), key: "user-profile-groups-tab"},
+      ]
+    } else {
+      var values = [
+          {label: $t({defaultMessage: "Profile"}), key: "profile-tab"},
+          {label: $t({defaultMessage: "Streams"}), key: "user-profile-streams-tab"},
+          {label: $t({defaultMessage: "User groups"}), key: "user-profile-groups-tab"},
+      ]
+    }
+
     const opts = {
         selected: default_tab,
         child_wants_focus: true,
-        values: [
-            {label: $t({defaultMessage: "Profile"}), key: "profile-tab"},
-            {label: $t({defaultMessage: "Streams"}), key: "user-profile-streams-tab"},
-            {label: $t({defaultMessage: "User groups"}), key: "user-profile-groups-tab"},
-        ],
+        values: values,
         callback(name, key) {
             $(".tabcontent").hide();
             $("#" + key).show();
