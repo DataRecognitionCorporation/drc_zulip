@@ -158,7 +158,6 @@ def do_deactivate_user(
 
         clear_scheduled_emails(user_profile.id)
         revoke_invites_generated_by_user(user_profile)
-        user_profile.set_password(None)
 
         event_time = timezone_now()
         RealmAuditLog.objects.create(
