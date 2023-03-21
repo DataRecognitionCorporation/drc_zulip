@@ -228,7 +228,7 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
         default_tab = 1;
     }
 
-    if(user.is_guest){
+    if(page_params.is_guest){
       var values = [
           {label: $t({defaultMessage: "Profile"}), key: "profile-tab"},
           {label: $t({defaultMessage: "User groups"}), key: "user-profile-groups-tab"},
