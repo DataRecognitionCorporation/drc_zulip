@@ -9,6 +9,7 @@ import render_stream_sidebar_dropdown_subfolder from "../templates/stream_sideba
 import render_stream_subheader from "../templates/streams_subheader.hbs";
 import render_subscribe_to_more_streams from "../templates/subscribe_to_more_streams.hbs";
 
+import * as activity from "./activity";
 import * as blueslip from "./blueslip";
 import * as color_class from "./color_class";
 import * as hash_util from "./hash_util";
@@ -21,6 +22,8 @@ import {
 } from "./list_cursor";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
+import {page_params} from "./page_params";
+import * as peer_data from "./peer_data";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
@@ -601,6 +604,21 @@ export function update_stream_sidebar_for_narrow(filter) {
     }
 
     topic_list.rebuild($stream_li, stream_id);
+
+    // DRC MODIFICATION
+    var stream_name = $("ul .active-filter .stream-name").text();
+    var id = stream_data.get_stream_id(stream_name);
+    var is_private = stream_data.is_private(stream_name);
+    if(stream_name == ""){
+      return $stream_li;
+    }
+    // console.log(stream_name)
+    if(page_params.is_guest && is_private){
+      var user_ids = peer_data.get_subscribers(stream_id);
+      activity.drc_build_user_sidebar(user_ids);
+    } else if(page_params.is_guest && !is_private){
+      activity.drc_build_user_sidebar(0);
+    }
 
     return $stream_li;
 }

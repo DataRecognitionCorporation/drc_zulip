@@ -548,6 +548,7 @@
     .expand_composebox_button,
     .collapse_composebox_button,
     #message_edit_tooltip,
+    .invite_clear_search_button,
     .clear_search_button,
     .clear_search_button:focus,
     .clear_search_button:active,
@@ -565,6 +566,10 @@
 
     #message_edit_tooltip:hover,
     .clear_search_button:hover {
+        color: hsl(0, 0%, 100%);
+    }
+
+    .invite_clear_search_button:hover {
         color: hsl(0, 0%, 100%);
     }
 

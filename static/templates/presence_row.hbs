@@ -8,7 +8,11 @@
             {{#if user_list_style.WITH_STATUS}}
                 <div class="user-name-and-status-wrapper">
                     <div class="user-name-and-status-emoji">
+                        {{#if is_admin}}
+                        <span class="user-name"><b>{{name}}</b></span>
+                        {{else}}
                         <span class="user-name">{{name}}</span>
+                        {{/if}}
                         {{> status_emoji status_emoji_info}}
                     </div>
                     <span class="status-text">{{status_text}}</span>

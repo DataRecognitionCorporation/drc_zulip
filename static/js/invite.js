@@ -563,7 +563,7 @@ export function initialize() {
     });
 
     // $(document).on("click", "#stream_search_btn", () => {
-    $(".clear_search_button").on("click", () => {
+    $(".invite_clear_search_button").on("click", () => {
         const $filter = $(".stream_search");
         // alert('hello')
         $filter.val("");

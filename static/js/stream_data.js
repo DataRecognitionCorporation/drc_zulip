@@ -261,6 +261,18 @@ export function get_stream_id(name) {
     return stream_id;
 }
 
+export function is_private(name) {
+    // Note: Only use this function for situations where
+    // you are comfortable with a user dealing with an
+    // old name of a stream (from prior to a rename).
+    const sub = stream_info.get(name);
+
+    if (sub) {
+        return sub.invite_only;
+    }
+    return false;
+}
+
 export function get_sub_by_name(name) {
     // Note: Only use this function for situations where
     // you are comfortable with a user dealing with an
