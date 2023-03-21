@@ -150,6 +150,7 @@ export function info_for(user_id) {
         user_circle_class,
         status_text,
         user_list_style,
+        is_admin: person.is_admin
     };
 }
 

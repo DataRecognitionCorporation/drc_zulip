@@ -177,7 +177,9 @@ function initialize_right_sidebar() {
         is_guest: page_params.is_guest,
     });
 
+
     $("#right-sidebar-container").html(rendered_sidebar);
+
     if (page_params.is_spectator) {
         rendered_markdown.update_elements(
             $(".right-sidebar .realm-description .rendered_markdown"),
