@@ -64,12 +64,21 @@ export function update_count_in_dom($stream_li, count, stream_has_any_unread_men
 
 class StreamSidebar {
     rows = new Map(); // stream id -> row widget
+    folders = new Map();
 
-    set_row(stream_name, widget) {
-        this.rows.set(stream_name, widget);
+    set_row(stream_id, widget) {
+        this.rows.set(stream_id, widget);
     }
 
-    get_row(stream_name) {
+    set_folder(stream_name, widget) {
+      this.folders.set(stream_name, widget);
+    }
+
+    get_row(stream_id) {
+        return this.rows.get(stream_id);
+    }
+
+    get_folder(stream_name) {
         return this.rows.get(stream_name);
     }
 
@@ -91,7 +100,7 @@ class StreamSidebar {
         this.rows.delete(stream_id);
     }
 
-    get_folder(folder_name) {
+    get_folder_by_name(folder_name) {
         this.rows.forEach(function(value, key) {
             // console.log(key + " = " + value);
             if (key == folder_name) {
@@ -129,13 +138,17 @@ function get_search_term() {
 
 export function add_sidebar_row(sub) {
     create_sidebar_row(sub);
-    build_subfolder_rows();
+    build_stream_list();
+    // TODO: CHANGE ME
+    // build_subfolder_rows();
     stream_cursor.redraw();
 }
 
 export function remove_sidebar_row(stream_id) {
     stream_sidebar.remove_row(stream_id);
-    build_subfolder_rows();
+    build_stream_list();
+    // TODO: CHANGE ME
+    // build_subfolder_rows();
     stream_cursor.redraw();
 }
 
@@ -151,9 +164,6 @@ export function create_initial_sidebar_rows() {
 }
 
 export function create_initial_sidebar_folders() {
-    // This code is slightly opaque, but it ends up building
-    // up list items and attaching them to the "sub" data
-    // structures that are kept in stream_data.js.
     const subs = stream_data.subscribed_subs();
 
     const regex = new RegExp('[A-Z]{3}[0-9]{3}');
@@ -260,7 +270,105 @@ export function build_subfolder_rows(folder_name) {
     });
 }
 
-export function build_stream_list(folder_name, subfolder_name) {
+export function build_stream_list(force_rerender) {
+    // The stream list in the left sidebar contains 3 sections:
+    // pinned, normal, and dormant streams, with headings above them
+    // as appropriate.
+    //
+    // Within the first two sections, muted streams are sorted to the
+    // bottom; we skip that for dormant streams to simplify discovery.
+    const streams = stream_data.subscribed_stream_ids();
+    const $parent = $("#stream_filters");
+    if (streams.length === 0) {
+        $parent.empty();
+        return;
+    }
+
+    // The main logic to build the list is in stream_sort.js, and
+    // we get five lists of streams (pinned/normal/muted_pinned/muted_normal/dormant).
+    const stream_groups = stream_sort.sort_groups(streams, get_search_term());
+
+    if (stream_groups.same_as_before && !force_rerender) {
+        return;
+    }
+
+    const elems = [];
+
+    function add_sidebar_li(stream_id) {
+        const sidebar_row = stream_sidebar.get_row(stream_id);
+        sidebar_row.update_whether_active();
+        elems.push(sidebar_row.get_li());
+    }
+
+    topic_list.clear();
+    $parent.empty();
+
+    const any_pinned_streams =
+        stream_groups.pinned_streams.length > 0 || stream_groups.muted_pinned_streams.length > 0;
+    const any_normal_streams =
+        stream_groups.normal_streams.length > 0 || stream_groups.muted_active_streams.length > 0;
+    const any_dormant_streams = stream_groups.dormant_streams.length > 0;
+
+    const need_section_subheaders =
+        (any_pinned_streams ? 1 : 0) +
+            (any_normal_streams ? 1 : 0) +
+            (any_dormant_streams ? 1 : 0) >=
+        2;
+
+    if (any_pinned_streams && need_section_subheaders) {
+        elems.push(
+            render_stream_subheader({
+                subheader_name: $t({
+                    defaultMessage: "Pinned",
+                }),
+            }),
+        );
+    }
+
+    for (const stream_id of stream_groups.pinned_streams) {
+        add_sidebar_li(stream_id);
+    }
+
+    for (const stream_id of stream_groups.muted_pinned_streams) {
+        add_sidebar_li(stream_id);
+    }
+
+    if (any_normal_streams && need_section_subheaders) {
+        elems.push(
+            render_stream_subheader({
+                subheader_name: $t({
+                    defaultMessage: "Active",
+                }),
+            }),
+        );
+    }
+
+    for (const stream_id of stream_groups.normal_streams) {
+        add_sidebar_li(stream_id);
+    }
+
+    for (const stream_id of stream_groups.muted_active_streams) {
+        add_sidebar_li(stream_id);
+    }
+
+    if (any_dormant_streams && need_section_subheaders) {
+        elems.push(
+            render_stream_subheader({
+                subheader_name: $t({
+                    defaultMessage: "Inactive",
+                }),
+            }),
+        );
+    }
+
+    for (const stream_id of stream_groups.dormant_streams) {
+        add_sidebar_li(stream_id);
+    }
+
+    $parent.append(elems);
+}
+
+export function build_stream_list_folders(folder_name, subfolder_name) {
     var folder = stream_sidebar.get_row(folder_name);
     var subfolders = folder['sub_folders'][subfolder_name]
 
@@ -519,8 +627,7 @@ function set_stream_unread_count(stream_id, count, stream_has_any_unread_mention
 }
 
 export function update_streams_sidebar(force_rerender) {
-    return;
-    build_subfolder_rows(force_rerender);
+    // build_subfolder_rows(force_rerender);
 
     stream_cursor.redraw();
 
@@ -708,12 +815,16 @@ function actually_update_streams_for_search() {
 const update_streams_for_search = _.throttle(actually_update_streams_for_search, 50);
 
 export function initialize() {
-    create_initial_sidebar_folders();
+    create_initial_sidebar_rows();
+    //TODO: CHANGE ME
+    // create_initial_sidebar_folders();
 
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.
 
-    build_stream_folder();
+    //TODO: CHANGE ME
+    // build_stream_folder();
+    
     update_subscribe_to_more_streams_link();
     set_event_handlers();
 }
