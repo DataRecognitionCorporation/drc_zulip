@@ -65,6 +65,7 @@ export function update_count_in_dom($stream_li, count, stream_has_any_unread_men
 class StreamSidebar {
     rows = new Map(); // stream id -> row widget
     folders = new Map();
+    use_folders = true;
 
     set_row(stream_id, widget) {
         this.rows.set(stream_id, widget);
@@ -78,16 +79,28 @@ class StreamSidebar {
         return this.rows.get(stream_id);
     }
 
-    get_folder(stream_name) {
-        return this.rows.get(stream_name);
+    get_folder(folder_name) {
+        return this.folders.get(folder_name);
     }
 
     get_rows() {
         return this.rows;
     }
 
+    get_folders() {
+        return this.folders;
+    }
+
     has_row_for(stream_id) {
         return this.rows.has(stream_id);
+    }
+
+    set_use_folders(set_use_folders) {
+        this.use_folders = true;
+    }
+
+    get_use_folders() {
+        return this.use_folders;
     }
 
     remove_row(stream_id) {
@@ -102,7 +115,6 @@ class StreamSidebar {
 
     get_folder_by_name(folder_name) {
         this.rows.forEach(function(value, key) {
-            // console.log(key + " = " + value);
             if (key == folder_name) {
                 return value;
             }
@@ -112,19 +124,34 @@ class StreamSidebar {
 
     get_stream_by_id(stream_id) {
       // this.rows.forEach(function(folder, key) {
-      for(let [key, folder] of this.rows) {
+      for(let [key, folder] of this.folders) {
         // for(var subfolder of folder.sub_folders) {
         for (const [key, value] of Object.entries(folder.sub_folders)) {
           for(var row of value){
             if(row.sub.stream_id == stream_id){
-              console.log("found stream id " + stream_id)
-              console.log(row)
               return row;
             }
           }
         }
 
       }
+
+      return this.get_row(stream_id);
+    }
+
+    get_folder_stream_ids() {
+      const all_ids = [];
+      for(let [key, folder] of this.folders) {
+        // for(var subfolder of folder.sub_folders) {
+        for (const [key, value] of Object.entries(folder.sub_folders)) {
+          for(var row of value){
+            // console.log(row.sub.stream_id)
+            all_ids.push(parseInt(row.sub.stream_id));
+          }
+        }
+
+      }
+      return all_ids;
     }
 
 }
@@ -137,18 +164,24 @@ function get_search_term() {
 }
 
 export function add_sidebar_row(sub) {
+    if(stream_sidebar.get_use_folders()) {
+        build_subfolder_rows();
+    } else {
+        build_stream_list();
+    }
+
     create_sidebar_row(sub);
-    build_stream_list();
-    // TODO: CHANGE ME
-    // build_subfolder_rows();
     stream_cursor.redraw();
 }
 
 export function remove_sidebar_row(stream_id) {
     stream_sidebar.remove_row(stream_id);
-    build_stream_list();
-    // TODO: CHANGE ME
-    // build_subfolder_rows();
+    if(stream_sidebar.get_use_folders()) {
+        build_subfolder_rows();
+    } else {
+        build_stream_list();
+    }
+
     stream_cursor.redraw();
 }
 
@@ -187,11 +220,13 @@ export function create_initial_sidebar_folders() {
             const stream_row = new StreamSidebarRow(sub, leader_name);
             tmp.push(stream_row);
             dict[myArray[0]][myArray[1]] = tmp;
+        } else {
+            create_sidebar_row(sub);
         }
     }
 
     for (const [folder_name, subfolder] of Object.entries(dict)) {
-        stream_sidebar.set_row(folder_name, new StreamSidebarFolder(folder_name, subfolder));
+        stream_sidebar.set_folder(folder_name, new StreamSidebarFolder(folder_name, subfolder));
     }
 }
 
@@ -205,35 +240,31 @@ export function build_stream_folder(force_rerender) {
     }
     const elems = [];
 
-    const rows = stream_sidebar.get_rows();
-    // console.log('a;sldk')
+    var rows = stream_sidebar.get_folders();
     rows.forEach((val) => {
-        // console.log(val.get_folder());
-        // console.log(val.get_folder())
         const $list_item = $(render_stream_sidebar_dropdown(val.get_folder()));
         elems.push($list_item);
     })
 
     // var item = stream_folder.get_folder();
-    // console.log(item)
-
 
     $parent.empty();
     $parent.append(elems);
 }
 
+
+
+
 export function build_subfolder_rows(folder_name) {
     if(folder_name == null) {
-      // console.log('should reutnr here')
       return;
     }
 
-    // console.log('build_subfolder_rows')
-    // console.log('folder_name: ' + folder_name)
-    var folder = stream_sidebar.get_row(folder_name);
-    // console.log(folder['sub_folders'])
+
+
+
+    var folder = stream_sidebar.get_folder(folder_name);
     var subfolders = folder['sub_folders']
-    console.log('subfolders: ' + subfolders)
 
     const parent = ".subfolder_" + folder_name
     const $parent = $(parent);
@@ -245,29 +276,37 @@ export function build_subfolder_rows(folder_name) {
           subfolder_name: key,
         }
 
-        console.log('i ' + folder);
         elems.push($(render_stream_sidebar_dropdown_subfolder(tmp_dict)));
     }
 
     topic_list.clear();
     $parent.empty();
-    // console.log('done')
     $parent.append(elems);
-
-    console.log('setting listener')
 
     var stream_subfolder_id = "#stream_subfolder_" + folder_name;
     $(stream_subfolder_id).on("click", "li .subfolder_name", (e) => {
         // const strefolderam_id = stream_id_for_elt($(e.target).parents("li"));
-        console.log('subfolder event triggered')
         const $elt = $(e.target).parents("li");
         const subfolder_name = $(e.target).attr("subfolder_name");
-        console.log(subfolder_name)
         const folder_name = $elt.attr("folder_name");
 
-        console.log(folder_name)
-        build_stream_list(folder_name, subfolder_name);
+        build_stream_list_folders(folder_name, subfolder_name);
     });
+
+    stream_popover.register_click_handlers();
+}
+
+export function build_stream_list_below_folders(force_rerender) {
+    var unsorted_rows = stream_sidebar.get_rows();
+
+    var elems = [];
+    for(var row of unsorted_rows) {
+        elems.push(row[1].get_li());
+    }
+
+    const $parent = $("#stream_filters");
+    $parent.append(elems);
+
 }
 
 export function build_stream_list(force_rerender) {
@@ -287,6 +326,9 @@ export function build_stream_list(force_rerender) {
     // The main logic to build the list is in stream_sort.js, and
     // we get five lists of streams (pinned/normal/muted_pinned/muted_normal/dormant).
     const stream_groups = stream_sort.sort_groups(streams, get_search_term());
+    console.log(stream_groups)
+
+
 
     if (stream_groups.same_as_before && !force_rerender) {
         return;
@@ -368,30 +410,183 @@ export function build_stream_list(force_rerender) {
     $parent.append(elems);
 }
 
+
+// TODO: Organize stream rows inside subfolders
 export function build_stream_list_folders(folder_name, subfolder_name) {
-    var folder = stream_sidebar.get_row(folder_name);
+    var folder = stream_sidebar.get_folder(folder_name);
     var subfolders = folder['sub_folders'][subfolder_name]
+    console.log('subfolders')
+    console.log(subfolders)
+    const streams = stream_data.subscribed_stream_ids();
+    if (streams.length === 0) {
+        $parent.empty();
+        return;
+    }
+
+    const all_folder_stream_ids = stream_sidebar.get_folder_stream_ids();
+    console.log(all_folder_stream_ids)
+
+    const elems = [];
+    const stream_groups = stream_sort.sort_groups(streams, get_search_term());
+    console.log(stream_groups)
+
+
+    var folder_stream_groups = {
+        dormant_streams: [],
+        muted_active_streams: [],
+        muted_pinned_streams: [],
+        normal_streams: [],
+        normal_streams: [],
+        pinned_streams: []
+    }
+
+    for (const stream_group_name in stream_groups) {
+        console.log(stream_group_name)
+        for (var i in stream_groups[stream_group_name]) {
+
+          var stream_id = stream_groups[stream_group_name][i]
+
+          if(all_folder_stream_ids.includes(parseInt(stream_id))) {
+              var temp_list = folder_stream_groups[stream_group_name]
+              temp_list.push(stream_id);
+              folder_stream_groups[stream_group_name] = temp_list;
+            }
+        }
+    }
+
+    console.log(folder_stream_groups)
+
+
 
     const parent = ".subfolder_" + subfolder_name
     const $parent = $(parent);
 
-    const elems = [];
-    for (var i in subfolders) {
-      var list_item = subfolders[i];
-      console.log(list_item)
-
-      elems.push(list_item.get_li())
-    }
-
     topic_list.clear();
     $parent.empty();
+
+    const any_pinned_streams =
+        folder_stream_groups.pinned_streams.length > 0 || folder_stream_groups.muted_pinned_streams.length > 0;
+    const any_normal_streams =
+        folder_stream_groups.normal_streams.length > 0 || folder_stream_groups.muted_active_streams.length > 0;
+    const any_dormant_streams = folder_stream_groups.dormant_streams.length > 0;
+
+    const need_section_subheaders =
+        (any_pinned_streams ? 1 : 0) +
+            (any_normal_streams ? 1 : 0) +
+            (any_dormant_streams ? 1 : 0) >=
+        2;
+
+    if (any_pinned_streams && need_section_subheaders) {
+        elems.push(
+            render_stream_subheader({
+                subheader_name: $t({
+                    defaultMessage: "Pinned",
+                }),
+            }),
+        );
+    }
+
+    console.log(folder_stream_groups.pinned_streams)
+    // for (const stream_id of stream_groups.pinned_streams) {
+    //     list_item.update_whether_active();
+    //     elems.push(list_item.get_li())
+    // }
+    for (var i in subfolders) {
+      var list_item = subfolders[i];
+      if(folder_stream_groups.pinned_streams.includes(parseInt(list_item.sub.stream_id))) {
+        list_item.update_whether_active();
+        elems.push(list_item.get_li())
+      }
+    }
+
+    // for (const stream_id of folder_stream_groups.muted_pinned_streams) {
+    //     list_item.update_whether_active();
+    //     elems.push(list_item.get_li())
+    // }
+    for (var i in subfolders) {
+      var list_item = subfolders[i];
+      if(folder_stream_groups.muted_pinned_streams.includes(parseInt(list_item.sub.stream_id))) {
+        list_item.update_whether_active();
+        elems.push(list_item.get_li())
+      }
+    }
+
+    if (any_normal_streams && need_section_subheaders) {
+        elems.push(
+            render_stream_subheader({
+                subheader_name: $t({
+                    defaultMessage: "Active",
+                }),
+            }),
+        );
+    }
+
+    // for (const stream_id of folder_stream_groups.normal_streams) {
+    //     list_item.update_whether_active();
+    //     elems.push(list_item.get_li())
+    // }
+    for (var i in subfolders) {
+      var list_item = subfolders[i];
+      if(folder_stream_groups.normal_streams.includes(parseInt(list_item.sub.stream_id))) {
+        list_item.update_whether_active();
+        elems.push(list_item.get_li())
+      }
+    }
+
+
+    // for (const stream_id of folder_stream_groups.muted_active_streams) {
+    //     list_item.update_whether_active();
+    //     elems.push(list_item.get_li())
+    // }
+    for (var i in subfolders) {
+      var list_item = subfolders[i];
+      if(folder_stream_groups.muted_active_streams.includes(parseInt(list_item.sub.stream_id))) {
+        list_item.update_whether_active();
+        elems.push(list_item.get_li())
+      }
+    }
+
+    if (any_dormant_streams && need_section_subheaders) {
+        elems.push(
+            render_stream_subheader({
+                subheader_name: $t({
+                    defaultMessage: "Inactive",
+                }),
+            }),
+        );
+    }
+
+    // for (const stream_id of folder_stream_groups.dormant_streams) {
+    //     list_item.update_whether_active();
+    //     elems.push(list_item.get_li())
+    // }
+    for (var i in subfolders) {
+      var list_item = subfolders[i];
+      if(folder_stream_groups.dormant_streams.includes(parseInt(list_item.sub.stream_id))) {
+        list_item.update_whether_active();
+        elems.push(list_item.get_li())
+      }
+    }
+
+
+    // for (var i in subfolders) {
+    //   var list_item = subfolders[i];
+    //   list_item.update_whether_active();
+    //   elems.push(list_item.get_li())
+    // }
+
+
 
     $parent.append(elems);
 }
 
 export function get_stream_li(stream_id) {
-    const row = stream_sidebar.get_stream_by_id(stream_id);
-    console.log(row)
+    if(stream_sidebar.get_use_folders()){
+        var row = stream_sidebar.get_stream_by_id(stream_id);
+    } else {
+        var row = stream_sidebar.get_row(stream_id);
+    }
+
     if (!row) {
         // Not all streams are in the sidebar, so we don't report
         // an error here, and it's up for the caller to error if
@@ -578,7 +773,7 @@ class StreamSidebarRow {
 }
 
 function build_stream_sidebar_row(sub) {
-    stream_sidebar.set_row(sub.stream_id, new StreamSidebarRow(sub));
+    stream_sidebar.set_row(sub.stream_id, new StreamSidebarRow(sub, ""));
 }
 
 
@@ -727,7 +922,6 @@ export function update_stream_sidebar_for_narrow(filter) {
     }
 
     const $stream_li = get_stream_li(stream_id);
-    console.log($stream_li)
 
     if (!$stream_li) {
         // This is a sanity check.  When we narrow to a subscribed
@@ -757,7 +951,7 @@ export function update_stream_sidebar_for_narrow(filter) {
     if(stream_name == ""){
       return $stream_li;
     }
-    // console.log(stream_name)
+
     if(page_params.is_guest && is_private){
       var user_ids = peer_data.get_subscribers(stream_id);
       activity.drc_build_user_sidebar(user_ids);
@@ -815,30 +1009,20 @@ function actually_update_streams_for_search() {
 const update_streams_for_search = _.throttle(actually_update_streams_for_search, 50);
 
 export function initialize() {
-    create_initial_sidebar_rows();
-    //TODO: CHANGE ME
-    // create_initial_sidebar_folders();
+    if(stream_sidebar.get_use_folders()) {
+        create_initial_sidebar_folders();
+        build_stream_folder();
+        build_stream_list_below_folders();
+    } else {
+        create_initial_sidebar_rows();
+        build_stream_list();
+    }
 
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.
 
-    //TODO: CHANGE ME
-    // build_stream_folder();
-    
     update_subscribe_to_more_streams_link();
     set_event_handlers();
-}
-
-export function set_the_stuff() {
-
-
-    // We build the stream_list now.  It may get re-built again very shortly
-    // when new messages come in, but it's fairly quick.
-
-    build_subfolder_rows();
-    // build_stream_folder();
-    // update_subscribe_to_more_streams_link();
-    // set_event_handlers();
 }
 
 export function set_event_handlers() {
@@ -848,25 +1032,22 @@ export function set_event_handlers() {
         var $elt = $(e.target).parents("li");
         var folder_name =  $(e.target).attr("folder_name");
 
-        console.log(folder_name);
         build_subfolder_rows(folder_name);
     });
 
     $("#stream_filters").on("click", "li .subscription_block", (e) => {
-        // if (e.metaKey || e.ctrlKey) {
-        //     return;
-        // }
-        // const stream_id = stream_id_for_elt($(e.target).parents("li"));
-        // const sub = sub_store.get(stream_id);
-        // popovers.hide_all();
-        // narrow.by("stream", sub.name, {
-        //     trigger: "sidebar"
-        // });
-        //
-        // clear_and_hide_search();
-        //
-        // e.preventDefault();
-        // e.stopPropagation();
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+        const stream_id = stream_id_for_elt($(e.target).parents("li"));
+        const sub = sub_store.get(stream_id);
+        popovers.hide_all();
+        narrow.by("stream", sub.name, {trigger: "sidebar"});
+
+        clear_and_hide_search();
+
+        e.preventDefault();
+        e.stopPropagation();
     });
 
     $("#clear_search_stream_button").on("click", clear_search);
