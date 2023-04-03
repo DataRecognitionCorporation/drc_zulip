@@ -62,10 +62,46 @@ export function update_count_in_dom($stream_li, count, stream_has_any_unread_men
     }
 }
 
+export function update_subfolder_count_in_dom(subfolder_name, count) {
+    // The subscription_block properly excludes the topic list,
+    // and it also has sensitive margins related to whether the
+    // count is there or not.
+    var test = "." + subfolder_name;
+    const $subscription_block = $(test).find(".subfolder_unread_count");
+
+    if (count === 0) {
+        $subscription_block.hide();
+        $subscription_block.text("");
+        return;
+    }
+
+    $subscription_block.show();
+    $subscription_block.text(count);
+}
+
+export function update_folder_count_in_dom(folder_name, count) {
+    // The subscription_block properly excludes the topic list,
+    // and it also has sensitive margins related to whether the
+    // count is there or not.
+    var test = "." + folder_name;
+    const $subscription_block = $(test).find(".folder_unread_count");
+
+    if (count === 0) {
+        $subscription_block.hide();
+        $subscription_block.text("");
+        return;
+    }
+
+
+    $subscription_block.show();
+    $subscription_block.text(count);
+}
+
 class StreamSidebar {
     rows = new Map(); // stream id -> row widget
     folders = new Map();
     use_folders = true;
+    counts = null;
 
     set_row(stream_id, widget) {
         this.rows.set(stream_id, widget);
@@ -145,13 +181,35 @@ class StreamSidebar {
         // for(var subfolder of folder.sub_folders) {
         for (const [key, value] of Object.entries(folder.sub_folders)) {
           for(var row of value){
-            // console.log(row.sub.stream_id)
             all_ids.push(parseInt(row.sub.stream_id));
           }
         }
 
       }
       return all_ids;
+    }
+
+    update_sidebar_unread_count(counts){
+      if(counts == null) {
+        counts = this.counts;
+      } else {
+        this.counts = counts;
+      }
+
+      for(let [key, folder] of this.folders) {
+        var folder_count = 0;
+        for (const [key, value] of Object.entries(folder.sub_folders)) {
+          var subfolder_count = 0;
+          for(var row of value){
+            if(counts.has(row.sub.stream_id)) {
+              subfolder_count = subfolder_count + counts.get(row.sub.stream_id);
+            }
+          }
+          folder_count = folder_count + subfolder_count;
+          update_subfolder_count_in_dom(key, subfolder_count);
+        }
+        update_folder_count_in_dom(folder.folder_name, folder_count);
+      }
     }
 
 }
@@ -252,16 +310,10 @@ export function build_stream_folder(force_rerender) {
     $parent.append(elems);
 }
 
-
-
-
 export function build_subfolder_rows(folder_name) {
     if(folder_name == null) {
       return;
     }
-
-
-
 
     var folder = stream_sidebar.get_folder(folder_name);
     var subfolders = folder['sub_folders']
@@ -326,9 +378,6 @@ export function build_stream_list(force_rerender) {
     // The main logic to build the list is in stream_sort.js, and
     // we get five lists of streams (pinned/normal/muted_pinned/muted_normal/dormant).
     const stream_groups = stream_sort.sort_groups(streams, get_search_term());
-    console.log(stream_groups)
-
-
 
     if (stream_groups.same_as_before && !force_rerender) {
         return;
@@ -410,13 +459,10 @@ export function build_stream_list(force_rerender) {
     $parent.append(elems);
 }
 
-
-// TODO: Organize stream rows inside subfolders
 export function build_stream_list_folders(folder_name, subfolder_name) {
     var folder = stream_sidebar.get_folder(folder_name);
     var subfolders = folder['sub_folders'][subfolder_name]
-    console.log('subfolders')
-    console.log(subfolders)
+
     const streams = stream_data.subscribed_stream_ids();
     if (streams.length === 0) {
         $parent.empty();
@@ -424,12 +470,9 @@ export function build_stream_list_folders(folder_name, subfolder_name) {
     }
 
     const all_folder_stream_ids = stream_sidebar.get_folder_stream_ids();
-    console.log(all_folder_stream_ids)
 
     const elems = [];
     const stream_groups = stream_sort.sort_groups(streams, get_search_term());
-    console.log(stream_groups)
-
 
     var folder_stream_groups = {
         dormant_streams: [],
@@ -441,7 +484,6 @@ export function build_stream_list_folders(folder_name, subfolder_name) {
     }
 
     for (const stream_group_name in stream_groups) {
-        console.log(stream_group_name)
         for (var i in stream_groups[stream_group_name]) {
 
           var stream_id = stream_groups[stream_group_name][i]
@@ -453,10 +495,6 @@ export function build_stream_list_folders(folder_name, subfolder_name) {
             }
         }
     }
-
-    console.log(folder_stream_groups)
-
-
 
     const parent = ".subfolder_" + subfolder_name
     const $parent = $(parent);
@@ -486,7 +524,6 @@ export function build_stream_list_folders(folder_name, subfolder_name) {
         );
     }
 
-    console.log(folder_stream_groups.pinned_streams)
     // for (const stream_id of stream_groups.pinned_streams) {
     //     list_item.update_whether_active();
     //     elems.push(list_item.get_li())
@@ -835,6 +872,7 @@ export function update_streams_sidebar(force_rerender) {
     update_stream_sidebar_for_narrow(filter);
 }
 
+// TODO: here
 export function update_dom_with_unread_counts(counts) {
     // counts.stream_count maps streams to counts
     for (const [stream_id, count] of counts.stream_count) {
@@ -842,6 +880,9 @@ export function update_dom_with_unread_counts(counts) {
             counts.streams_with_mentions.includes(stream_id);
         set_stream_unread_count(stream_id, count, stream_has_any_unread_mention_messages);
     }
+
+    // add upp all folders counts
+    stream_sidebar.update_sidebar_unread_count(counts.stream_count);
 }
 
 export function rename_stream(sub) {
@@ -1032,7 +1073,9 @@ export function set_event_handlers() {
         var $elt = $(e.target).parents("li");
         var folder_name =  $(e.target).attr("folder_name");
 
+
         build_subfolder_rows(folder_name);
+        stream_sidebar.update_sidebar_unread_count(null);
     });
 
     $("#stream_filters").on("click", "li .subscription_block", (e) => {
