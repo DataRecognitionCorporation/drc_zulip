@@ -610,6 +610,7 @@ li.top_left_all_messages:hover .all-messages-sidebar-menu-icon,
 li.top_left_starred_messages:hover .starred-messages-sidebar-menu-icon,
 li.top_left_drafts:hover .drafts-sidebar-menu-icon,
 #stream_filters li:hover .stream-sidebar-menu-icon,
+#stream_folders li:hover .stream-sidebar-menu-icon,
 li.topic-list-item:hover .topic-sidebar-menu-icon {
     display: inline;
     cursor: pointer;

@@ -724,6 +724,8 @@ export function zoom_in_topics(options) {
             $elt.hide();
         }
     });
+
+    stream_popover.register_click_handlers();
 }
 
 export function zoom_out_topics() {
@@ -1096,10 +1098,10 @@ export function initialize() {
 export function set_event_handlers() {
     $("#stream_folders").on("click", "li .folder_name", (e) => {
         var length_of_ul = $(".subfolders").children("li").length;
-        if(length_of_ul > 0){
-          $(".subfolders").off("click");
-          $(".subfolders").empty();
-          return;
+        if(length_of_ul > 0) {
+            $(".subfolders").off("click");
+            $(".subfolders").empty();
+            return;
         }
 
         $(".subfolders").off("click");
