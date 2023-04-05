@@ -127,6 +127,14 @@ class StreamSidebar {
         return this.folders;
     }
 
+    get_subfolder(folder_name, subfolder_name){
+      console.log(subfolder_name)
+      console.log(this.folders)
+      var folder = this.get_folder(folder_name)
+      console.log(folder.get_sub_folders())
+
+    }
+
     has_row_for(stream_id) {
         return this.rows.has(stream_id);
     }
@@ -312,13 +320,14 @@ export function build_stream_folder(force_rerender) {
 
 export function build_subfolder_rows(folder_name) {
     if(folder_name == null) {
+      console.log('returning');
       return;
     }
 
     var folder = stream_sidebar.get_folder(folder_name);
-    var subfolders = folder['sub_folders']
+    var subfolders = folder['sub_folders'];
 
-    const parent = ".subfolder_" + folder_name
+    const parent = ".subfolder_" + folder_name;
     const $parent = $(parent);
 
     const elems = [];
@@ -330,22 +339,47 @@ export function build_subfolder_rows(folder_name) {
 
         elems.push($(render_stream_sidebar_dropdown_subfolder(tmp_dict)));
     }
+    console.log('arg');
 
+    // $parent.removeClass("expand");
     topic_list.clear();
     $parent.empty();
     $parent.append(elems);
 
     var stream_subfolder_id = "#stream_subfolder_" + folder_name;
-    $(stream_subfolder_id).on("click", "li .subfolder_name", (e) => {
-        // const strefolderam_id = stream_id_for_elt($(e.target).parents("li"));
+    $(stream_subfolder_id).on("click", "li", (e) => {
         const $elt = $(e.target).parents("li");
-        const subfolder_name = $(e.target).attr("subfolder_name");
+        const subfolder_name = $elt.attr("subfolder_name");
         const folder_name = $elt.attr("folder_name");
 
+        const class_name = "#subfolder_li_" + subfolder_name;
+
+        if($(class_name).hasClass("expand")){
+          console.log('clsoing');
+          console.log(class_name);
+          $(class_name).removeClass("expand");
+          close_subfolder(folder_name, subfolder_name);
+          return;
+        }
+
+        // close_subfolder(folder_name, subfolder_name);
+        $(class_name).addClass("expand");
         build_stream_list_folders(folder_name, subfolder_name);
     });
 
-    stream_popover.register_click_handlers();
+    // stream_popover.register_click_handlers();
+}
+
+export function close_subfolder(folder_name, subfolder_name) {
+  // var folder = stream_sidebar.get_subfolder(folder_name, subfolder_name);
+  // var subfolders = folder['sub_folders']
+  // console.log(folder_name)
+  // console.log(subfolder_name)
+  const parent = ".subfolder_" + subfolder_name
+  const $parent = $(parent);
+
+  topic_list.clear();
+  $parent.empty();
 }
 
 export function build_stream_list_below_folders(force_rerender) {
@@ -462,6 +496,9 @@ export function build_stream_list(force_rerender) {
 export function build_stream_list_folders(folder_name, subfolder_name) {
     var folder = stream_sidebar.get_folder(folder_name);
     var subfolders = folder['sub_folders'][subfolder_name]
+
+    console.log(folder_name)
+    console.log(subfolder_name)
 
     const streams = stream_data.subscribed_stream_ids();
     if (streams.length === 0) {
@@ -613,7 +650,7 @@ export function build_stream_list_folders(folder_name, subfolder_name) {
     // }
 
 
-
+    console.log(elems)
     $parent.append(elems);
 }
 

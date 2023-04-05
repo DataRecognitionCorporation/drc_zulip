@@ -96,6 +96,7 @@ li.show-more-topics {
         color: inherit;
     }
 
+
     hr {
         margin-top: 10px;
         margin-bottom: 10px;
@@ -124,6 +125,7 @@ li.show-more-topics {
     margin-right: 12px;
     margin-left: 0px;
     font-weight: normal;
+    cursor: pointer;
 
     .subscription_block_folder {
         margin-left: 15px;
@@ -143,6 +145,11 @@ li.show-more-topics {
 
     .subfolder_unread_count {
         margin-right: 10px;
+
+    }
+
+    .stream-name:hover {
+        text-decoration: none;
     }
 
     .row_unread_count {
