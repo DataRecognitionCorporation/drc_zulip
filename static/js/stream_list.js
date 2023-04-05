@@ -128,11 +128,7 @@ class StreamSidebar {
     }
 
     get_subfolder(folder_name, subfolder_name){
-      console.log(subfolder_name)
-      console.log(this.folders)
-      var folder = this.get_folder(folder_name)
-      console.log(folder.get_sub_folders())
-
+      var folder = this.get_folder(folder_name);
     }
 
     has_row_for(stream_id) {
@@ -320,7 +316,6 @@ export function build_stream_folder(force_rerender) {
 
 export function build_subfolder_rows(folder_name) {
     if(folder_name == null) {
-      console.log('returning');
       return;
     }
 
@@ -339,7 +334,6 @@ export function build_subfolder_rows(folder_name) {
 
         elems.push($(render_stream_sidebar_dropdown_subfolder(tmp_dict)));
     }
-    console.log('arg');
 
     // $parent.removeClass("expand");
     topic_list.clear();
@@ -353,34 +347,32 @@ export function build_subfolder_rows(folder_name) {
         const folder_name = $elt.attr("folder_name");
 
         const class_name = "#subfolder_li_" + subfolder_name;
+        const folder_rows_ul = ".subfolder_rows_" + subfolder_name;
+        var length_of_li = $(folder_rows_ul).children("li").length;
 
-        if($(class_name).hasClass("expand")){
-          console.log('clsoing');
-          console.log(class_name);
-          $(class_name).removeClass("expand");
-          close_subfolder(folder_name, subfolder_name);
+        if(length_of_li > 0){
+          const $folder = $(folder_rows_ul);
+          $folder.empty();
+          // $(stream_subfolder_id).off('click', 'li');
           return;
+        } else {
+          build_stream_list_folders(folder_name, subfolder_name);
         }
-
-        // close_subfolder(folder_name, subfolder_name);
-        $(class_name).addClass("expand");
-        build_stream_list_folders(folder_name, subfolder_name);
     });
 
     // stream_popover.register_click_handlers();
 }
 
-export function close_subfolder(folder_name, subfolder_name) {
+export function close_subfolder(subfolder_name) {
   // var folder = stream_sidebar.get_subfolder(folder_name, subfolder_name);
   // var subfolders = folder['sub_folders']
-  // console.log(folder_name)
-  // console.log(subfolder_name)
-  const parent = ".subfolder_" + subfolder_name
-  const $parent = $(parent);
+  const folder = ".subfolder_rows_" + subfolder_name;
+  const $folder = $(folder);
 
   topic_list.clear();
-  $parent.empty();
+  $folder.empty();
 }
+
 
 export function build_stream_list_below_folders(force_rerender) {
     var unsorted_rows = stream_sidebar.get_rows();
@@ -494,11 +486,11 @@ export function build_stream_list(force_rerender) {
 }
 
 export function build_stream_list_folders(folder_name, subfolder_name) {
+    if(folder_name == null || subfolder_name == null){
+      return;
+    }
     var folder = stream_sidebar.get_folder(folder_name);
     var subfolders = folder['sub_folders'][subfolder_name]
-
-    console.log(folder_name)
-    console.log(subfolder_name)
 
     const streams = stream_data.subscribed_stream_ids();
     if (streams.length === 0) {
@@ -533,7 +525,7 @@ export function build_stream_list_folders(folder_name, subfolder_name) {
         }
     }
 
-    const parent = ".subfolder_" + subfolder_name
+    const parent = ".subfolder_rows_" + subfolder_name
     const $parent = $(parent);
 
     topic_list.clear();
@@ -649,8 +641,6 @@ export function build_stream_list_folders(folder_name, subfolder_name) {
     //   elems.push(list_item.get_li())
     // }
 
-
-    console.log(elems)
     $parent.append(elems);
 }
 
@@ -1105,11 +1095,18 @@ export function initialize() {
 
 export function set_event_handlers() {
     $("#stream_folders").on("click", "li .folder_name", (e) => {
+        var length_of_ul = $(".subfolders").children("li").length;
+        if(length_of_ul > 0){
+          $(".subfolders").off("click");
+          $(".subfolders").empty();
+          return;
+        }
+
+        $(".subfolders").off("click");
         $(".subfolders").empty();
 
         var $elt = $(e.target).parents("li");
         var folder_name =  $(e.target).attr("folder_name");
-
 
         build_subfolder_rows(folder_name);
         stream_sidebar.update_sidebar_unread_count(null);
