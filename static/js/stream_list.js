@@ -98,6 +98,7 @@ export function update_folder_count_in_dom(folder_name, count) {
 }
 
 class StreamSidebar {
+    all_rows = new Map();
     rows = new Map(); // stream id -> row widget
     folders = new Map();
     use_folders = true;
@@ -107,12 +108,20 @@ class StreamSidebar {
         this.rows.set(stream_id, widget);
     }
 
+    set_row_all(stream_id, widget){
+        this.all_rows.set(stream_id, widget);
+    }
+
     set_folder(stream_name, widget) {
       this.folders.set(stream_name, widget);
     }
 
     get_row(stream_id) {
         return this.rows.get(stream_id);
+    }
+
+    get_row_from_all(stream_id) {
+        return this.all_rows.get(stream_id);
     }
 
     get_folder(folder_name) {
@@ -519,7 +528,16 @@ export function build_stream_list(force_rerender) {
     const elems = [];
 
     function add_sidebar_li(stream_id) {
-        const sidebar_row = stream_sidebar.get_row(stream_id);
+        var sidebar_row;
+        if(stream_sidebar.get_use_folders()) {
+          sidebar_row = stream_sidebar.get_row_from_all(stream_id);
+        } else {
+          sidebar_row = stream_sidebar.get_row(stream_id);
+        }
+        console.log(sidebar_row)
+        if(sidebar_row == null) {
+          return;
+        }
         sidebar_row.update_whether_active();
         elems.push(sidebar_row.get_li());
     }
@@ -919,6 +937,7 @@ class StreamSidebarRow {
 
 function build_stream_sidebar_row(sub) {
     stream_sidebar.set_row(sub.stream_id, new StreamSidebarRow(sub, ""));
+    stream_sidebar.set_row_all(sub.stream_id, new StreamSidebarRow(sub, ""));
 }
 
 
@@ -967,7 +986,11 @@ function set_stream_unread_count(stream_id, count, stream_has_any_unread_mention
 }
 
 export function update_streams_sidebar(force_rerender) {
-    // build_subfolder_rows(force_rerender);
+    if(stream_sidebar.use_folders){
+      build_stream_list(force_rerender);
+    } else {
+      build_stream_list(force_rerender);
+    }
 
     stream_cursor.redraw();
 
@@ -1324,6 +1347,7 @@ export function initiate_search() {
     show_search_section();
 
     const $filter = $(".stream-list-filter").expectOne();
+    console.log('searching')
 
     if (
         // Check if left column is a popover and is not visible.
