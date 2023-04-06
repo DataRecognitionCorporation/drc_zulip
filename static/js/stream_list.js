@@ -193,6 +193,18 @@ class StreamSidebar {
       return all_ids;
     }
 
+    get_subfolder_stream_ids(folder, subfolder) {
+      var subfolders = this.get_folder(folder).get_sub_folders();
+      var subfolder_items = subfolders[subfolder];
+      const all_ids = [];
+
+      for(const item of subfolder_items) {
+        const stream_id = item.sub.stream_id;
+        all_ids.push(parseInt(stream_id));
+      }
+      return all_ids;
+    }
+
     update_sidebar_unread_count(counts){
       if(counts == null) {
         counts = this.counts;
@@ -376,10 +388,105 @@ export function close_subfolder(subfolder_name) {
 
 export function build_stream_list_below_folders(force_rerender) {
     var unsorted_rows = stream_sidebar.get_rows();
+    var stream_ids = [];
+    for(var stream of unsorted_rows) {
+      stream_ids.push(stream[0]);
+    }
+    const stream_groups = stream_sort.sort_groups(stream_ids, get_search_term());
+
+    var folder_stream_groups = {
+        dormant_streams: [],
+        muted_active_streams: [],
+        muted_pinned_streams: [],
+        normal_streams: [],
+        normal_streams: [],
+        pinned_streams: []
+    }
+
+    for (const stream_group_name in stream_groups) {
+        for (var i in stream_groups[stream_group_name]) {
+
+          var stream_id = stream_groups[stream_group_name][i]
+
+          if(stream_ids.includes(parseInt(stream_id))) {
+              var temp_list = folder_stream_groups[stream_group_name]
+              temp_list.push(stream_id);
+              folder_stream_groups[stream_group_name] = temp_list;
+            }
+        }
+    }
 
     var elems = [];
-    for(var row of unsorted_rows) {
-        elems.push(row[1].get_li());
+    const any_pinned_streams =
+        folder_stream_groups.pinned_streams.length > 0 || folder_stream_groups.muted_pinned_streams.length > 0;
+    const any_normal_streams =
+        folder_stream_groups.normal_streams.length > 0 || folder_stream_groups.muted_active_streams.length > 0;
+    const any_dormant_streams = folder_stream_groups.dormant_streams.length > 0;
+
+    const need_section_subheaders =
+        (any_pinned_streams ? 1 : 0) +
+            (any_normal_streams ? 1 : 0) +
+            (any_dormant_streams ? 1 : 0) >=
+        2;
+
+    if (any_pinned_streams && need_section_subheaders) {
+        elems.push(
+            render_stream_subheader({
+                subheader_name: $t({
+                    defaultMessage: "Pinned",
+                }),
+            }),
+        );
+    }
+
+    for (const stream_id of folder_stream_groups.pinned_streams) {
+        var list_item = unsorted_rows.get(stream_id);
+        list_item.update_whether_active();
+        elems.push(list_item.get_li())
+    }
+
+    for (const stream_id of folder_stream_groups.muted_pinned_streams) {
+        var list_item = unsorted_rows.get(stream_id);
+        list_item.update_whether_active();
+        elems.push(list_item.get_li())
+    }
+
+    if (any_normal_streams && need_section_subheaders) {
+        elems.push(
+            render_stream_subheader({
+                subheader_name: $t({
+                    defaultMessage: "Active",
+                }),
+            }),
+        );
+    }
+
+    for (const stream_id of folder_stream_groups.normal_streams) {
+        var list_item = unsorted_rows.get(stream_id);
+        list_item.update_whether_active();
+        elems.push(list_item.get_li())
+    }
+
+    for (const stream_id of folder_stream_groups.muted_active_streams) {
+        var list_item = unsorted_rows.get(stream_id);
+        list_item.update_whether_active();
+        elems.push(list_item.get_li())
+    }
+
+    if (any_dormant_streams && need_section_subheaders) {
+        elems.push(
+            render_stream_subheader({
+                subheader_name: $t({
+                    defaultMessage: "Inactive",
+                }),
+            }),
+        );
+    }
+
+    for (const stream_id of folder_stream_groups.dormant_streams) {
+        var list_item = unsorted_rows.get(stream_id);
+        list_item.update_whether_active();
+        elems.push(list_item.get_li())
     }
 
     const $parent = $("#stream_filters");
@@ -498,7 +605,7 @@ export function build_stream_list_folders(folder_name, subfolder_name) {
         return;
     }
 
-    const all_folder_stream_ids = stream_sidebar.get_folder_stream_ids();
+    const all_folder_stream_ids = stream_sidebar.get_subfolder_stream_ids(folder_name, subfolder_name);
 
     const elems = [];
     const stream_groups = stream_sort.sort_groups(streams, get_search_term());
@@ -553,10 +660,6 @@ export function build_stream_list_folders(folder_name, subfolder_name) {
         );
     }
 
-    // for (const stream_id of stream_groups.pinned_streams) {
-    //     list_item.update_whether_active();
-    //     elems.push(list_item.get_li())
-    // }
     for (var i in subfolders) {
       var list_item = subfolders[i];
       if(folder_stream_groups.pinned_streams.includes(parseInt(list_item.sub.stream_id))) {
@@ -565,10 +668,6 @@ export function build_stream_list_folders(folder_name, subfolder_name) {
       }
     }
 
-    // for (const stream_id of folder_stream_groups.muted_pinned_streams) {
-    //     list_item.update_whether_active();
-    //     elems.push(list_item.get_li())
-    // }
     for (var i in subfolders) {
       var list_item = subfolders[i];
       if(folder_stream_groups.muted_pinned_streams.includes(parseInt(list_item.sub.stream_id))) {
@@ -587,10 +686,6 @@ export function build_stream_list_folders(folder_name, subfolder_name) {
         );
     }
 
-    // for (const stream_id of folder_stream_groups.normal_streams) {
-    //     list_item.update_whether_active();
-    //     elems.push(list_item.get_li())
-    // }
     for (var i in subfolders) {
       var list_item = subfolders[i];
       if(folder_stream_groups.normal_streams.includes(parseInt(list_item.sub.stream_id))) {
@@ -599,11 +694,6 @@ export function build_stream_list_folders(folder_name, subfolder_name) {
       }
     }
 
-
-    // for (const stream_id of folder_stream_groups.muted_active_streams) {
-    //     list_item.update_whether_active();
-    //     elems.push(list_item.get_li())
-    // }
     for (var i in subfolders) {
       var list_item = subfolders[i];
       if(folder_stream_groups.muted_active_streams.includes(parseInt(list_item.sub.stream_id))) {
@@ -622,10 +712,6 @@ export function build_stream_list_folders(folder_name, subfolder_name) {
         );
     }
 
-    // for (const stream_id of folder_stream_groups.dormant_streams) {
-    //     list_item.update_whether_active();
-    //     elems.push(list_item.get_li())
-    // }
     for (var i in subfolders) {
       var list_item = subfolders[i];
       if(folder_stream_groups.dormant_streams.includes(parseInt(list_item.sub.stream_id))) {
@@ -633,13 +719,6 @@ export function build_stream_list_folders(folder_name, subfolder_name) {
         elems.push(list_item.get_li())
       }
     }
-
-
-    // for (var i in subfolders) {
-    //   var list_item = subfolders[i];
-    //   list_item.update_whether_active();
-    //   elems.push(list_item.get_li())
-    // }
 
     $parent.append(elems);
 }
