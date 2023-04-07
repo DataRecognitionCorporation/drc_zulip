@@ -38,6 +38,7 @@ import * as topic_zoom from "./topic_zoom";
 import * as ui from "./ui";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
+import * as unread_ui from "./unread_ui";
 
 export let stream_cursor;
 
@@ -122,6 +123,10 @@ class StreamSidebar {
 
     get_row_from_all(stream_id) {
         return this.all_rows.get(stream_id);
+    }
+
+    get_rows_from_all(stream_id) {
+        return this.all_rows;
     }
 
     get_folder(folder_name) {
@@ -286,6 +291,8 @@ export function create_initial_sidebar_folders() {
     var dict = {}
 
     for (const sub of subs) {
+        stream_sidebar.set_row_all(sub.stream_id, new StreamSidebarRow(sub, ""));
+
         const myArray = sub.name.split(" - ");
 
         if (regex.test(myArray[0])) {
@@ -301,6 +308,7 @@ export function create_initial_sidebar_folders() {
             var leader_name = myArray[2];
             var tmp = dict[myArray[0]][myArray[1]];
             const stream_row = new StreamSidebarRow(sub, leader_name);
+
             tmp.push(stream_row);
             dict[myArray[0]][myArray[1]] = tmp;
         } else {
@@ -333,6 +341,11 @@ export function build_stream_folder(force_rerender) {
 
     $parent.empty();
     $parent.append(elems);
+}
+
+export function remove_stream_folders() {
+    const $parent = $("#stream_folders");
+    $parent.empty();
 }
 
 export function build_subfolder_rows(folder_name) {
@@ -372,6 +385,7 @@ export function build_subfolder_rows(folder_name) {
         var length_of_li = $(folder_rows_ul).children("li").length;
 
         if(length_of_li > 0){
+          $("ul#stream_folders li").removeClass("active-filter");
           const $folder = $(folder_rows_ul);
           $folder.empty();
           // $(stream_subfolder_id).off('click', 'li');
@@ -387,6 +401,7 @@ export function build_subfolder_rows(folder_name) {
 export function close_subfolder(subfolder_name) {
   // var folder = stream_sidebar.get_subfolder(folder_name, subfolder_name);
   // var subfolders = folder['sub_folders']
+  deselect_stream_items();
   const folder = ".subfolder_rows_" + subfolder_name;
   const $folder = $(folder);
 
@@ -395,8 +410,14 @@ export function close_subfolder(subfolder_name) {
 }
 
 
-export function build_stream_list_below_folders(force_rerender) {
-    var unsorted_rows = stream_sidebar.get_rows();
+export function build_stream_list_below_folders(all_streams) {
+    const $parent = $("#stream_filters");
+    var unsorted_rows;
+    if(all_streams) {
+      unsorted_rows = stream_sidebar.get_rows_from_all();
+    } else {
+      unsorted_rows = stream_sidebar.get_rows();
+    }
     var stream_ids = [];
     for(var stream of unsorted_rows) {
       stream_ids.push(stream[0]);
@@ -424,6 +445,9 @@ export function build_stream_list_below_folders(force_rerender) {
             }
         }
     }
+
+    topic_list.clear();
+    $parent.empty();
 
     var elems = [];
     const any_pinned_streams =
@@ -498,7 +522,7 @@ export function build_stream_list_below_folders(force_rerender) {
         elems.push(list_item.get_li())
     }
 
-    const $parent = $("#stream_filters");
+
     $parent.append(elems);
 
 }
@@ -534,7 +558,6 @@ export function build_stream_list(force_rerender) {
         } else {
           sidebar_row = stream_sidebar.get_row(stream_id);
         }
-        console.log(sidebar_row)
         if(sidebar_row == null) {
           return;
         }
@@ -619,6 +642,7 @@ export function build_stream_list_folders(folder_name, subfolder_name) {
 
     const streams = stream_data.subscribed_stream_ids();
     if (streams.length === 0) {
+        topic_list.clear();
         $parent.empty();
         return;
     }
@@ -937,7 +961,7 @@ class StreamSidebarRow {
 
 function build_stream_sidebar_row(sub) {
     stream_sidebar.set_row(sub.stream_id, new StreamSidebarRow(sub, ""));
-    stream_sidebar.set_row_all(sub.stream_id, new StreamSidebarRow(sub, ""));
+    // stream_sidebar.set_row_all(sub.stream_id, new StreamSidebarRow(sub, ""));
 }
 
 
@@ -987,7 +1011,7 @@ function set_stream_unread_count(stream_id, count, stream_has_any_unread_mention
 
 export function update_streams_sidebar(force_rerender) {
     if(stream_sidebar.use_folders){
-      build_stream_list(force_rerender);
+      build_stream_list_below_folders(false);
     } else {
       build_stream_list(force_rerender);
     }
@@ -1003,7 +1027,6 @@ export function update_streams_sidebar(force_rerender) {
     update_stream_sidebar_for_narrow(filter);
 }
 
-// TODO: here
 export function update_dom_with_unread_counts(counts) {
     // counts.stream_count maps streams to counts
     for (const [stream_id, count] of counts.stream_count) {
@@ -1018,8 +1041,11 @@ export function update_dom_with_unread_counts(counts) {
 
 export function rename_stream(sub) {
     // The sub object is expected to already have the updated name
+    if(stream_sidebar.use_folders){
+      update_streams_sidebar(true); // big hammer
+      return;
+    }
     build_stream_sidebar_row(sub);
-    update_streams_sidebar(true); // big hammer
 }
 
 export function refresh_pinned_or_unpinned_stream(sub) {
@@ -1042,6 +1068,10 @@ export function refresh_pinned_or_unpinned_stream(sub) {
 }
 
 export function refresh_muted_or_unmuted_stream(sub) {
+    if(stream_sidebar.use_folders){
+      update_streams_sidebar();
+      return;
+    }
     build_stream_sidebar_row(sub);
     update_streams_sidebar();
 }
@@ -1078,10 +1108,10 @@ export function get_sidebar_stream_topic_info(filter) {
 
 function deselect_stream_items() {
     $("ul#stream_filters li").removeClass("active-filter");
+    $("ul#stream_folders li").removeClass("active-filter");
 }
 
 export function update_stream_sidebar_for_narrow(filter) {
-
     const info = get_sidebar_stream_topic_info(filter);
 
     deselect_stream_items();
@@ -1173,7 +1203,21 @@ function keydown_enter_key() {
 }
 
 function actually_update_streams_for_search() {
-    update_streams_sidebar();
+    // stream_sidebar.use_folders = false;
+    if(stream_sidebar.use_folders){
+      build_stream_list_below_folders(true);
+    } else {
+      build_stream_list(true);
+    }
+
+    stream_cursor.redraw();
+
+    if (!narrow_state.active()) {
+        return;
+    }
+
+    const filter = narrow_state.filter();
+    update_stream_sidebar_for_narrow(filter);
     resize.resize_page_components();
     stream_cursor.reset();
 }
@@ -1344,10 +1388,11 @@ export function hide_search_section() {
 }
 
 export function initiate_search() {
-    show_search_section();
+    remove_stream_folders();
+    build_stream_list_below_folders(true);
 
+    show_search_section();
     const $filter = $(".stream-list-filter").expectOne();
-    console.log('searching')
 
     if (
         // Check if left column is a popover and is not visible.
@@ -1370,6 +1415,10 @@ export function clear_and_hide_search() {
     }
     stream_cursor.clear();
     $filter.trigger("blur");
+
+    build_stream_folder();
+    build_stream_list_below_folders();
+    unread_ui.update_unread_counts();
 
     hide_search_section();
 }
