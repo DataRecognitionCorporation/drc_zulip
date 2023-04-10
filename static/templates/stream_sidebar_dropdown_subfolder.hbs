@@ -1,13 +1,13 @@
 {{! Stream sidebar rows }}
 
 <li class="narrow-filter" folder_name="{{folder_name}}" subfolder_name="{{subfolder_name}}">
-    <div id="subfolder_li_{{subfolder_name}}">
-        <div class="subscription_block_subfolder {{subfolder_name}}">
+    <div id="subfolder_li_{{subfolder_name_underscore}}">
+        <div class="subscription_block_subfolder {{subfolder_name_underscore}}">
 
             <span title="{{subfolder_name}}">{{subfolder_name}}</span>
             <span class="subfolder_unread_count unread_count"></span>
 
-            <ul id="stream_filterss" class="subfolder_rows_{{subfolder_name}}"></ul>
+            <ul id="stream_filterss" class="subfolder_rows_{{subfolder_name_underscore}}" subfolder_rows="{{subfolder_name}}"></ul>
 
         </div>
     </div>

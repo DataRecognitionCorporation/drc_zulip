@@ -67,7 +67,7 @@ export function update_subfolder_count_in_dom(subfolder_name, count) {
     // The subscription_block properly excludes the topic list,
     // and it also has sensitive margins related to whether the
     // count is there or not.
-    var test = "." + subfolder_name;
+    var test = "." + subfolder_name.replaceAll(' ', '_');
     const $subscription_block = $(test).find(".subfolder_unread_count");
 
     if (count === 0) {
@@ -236,6 +236,7 @@ class StreamSidebar {
             }
           }
           folder_count = folder_count + subfolder_count;
+
           update_subfolder_count_in_dom(key, subfolder_count);
         }
         update_folder_count_in_dom(folder.folder_name, folder_count);
@@ -287,7 +288,8 @@ export function create_initial_sidebar_rows() {
 export function create_initial_sidebar_folders() {
     const subs = stream_data.subscribed_subs();
 
-    const regex = new RegExp('[A-Z]{3}[0-9]{3}');
+    const regex = new RegExp('^[A-Z]{3}[0-9]{3}$');
+    const regex_num_letters = new RegExp('^[a-zA-Z0-9 \'_,.-]*$')
     var dict = {}
 
     for (const sub of subs) {
@@ -295,7 +297,18 @@ export function create_initial_sidebar_folders() {
 
         const myArray = sub.name.split(" - ");
 
-        if (regex.test(myArray[0])) {
+        var val_continue = false;
+        if (regex.test(myArray[0]) && myArray.length == 3) {
+            for(var item of myArray) {
+              if(!regex_num_letters.test(item)){
+                val_continue = true;
+                create_sidebar_row(sub);
+                break;
+              }
+            }
+            if(val_continue){
+              continue;
+            }
             if (!(myArray[0] in dict)) {
                 dict[myArray[0]] = {};
             }
@@ -364,6 +377,7 @@ export function build_subfolder_rows(folder_name) {
         var tmp_dict = {
           folder_name: folder_name,
           subfolder_name: key,
+          subfolder_name_underscore: key.replaceAll(' ', '_')
         }
 
         elems.push($(render_stream_sidebar_dropdown_subfolder(tmp_dict)));
@@ -380,9 +394,15 @@ export function build_subfolder_rows(folder_name) {
         const subfolder_name = $elt.attr("subfolder_name");
         const folder_name = $elt.attr("folder_name");
 
-        const class_name = "#subfolder_li_" + subfolder_name;
-        const folder_rows_ul = ".subfolder_rows_" + subfolder_name;
+        if(subfolder_name == null) {
+          return;
+        }
+
+        const class_name = "#subfolder_li_" + subfolder_name.replaceAll(' ', '_');
+        const folder_rows_ul = ".subfolder_rows_" + subfolder_name.replaceAll(' ', '_');
+
         var length_of_li = $(folder_rows_ul).children("li").length;
+        // var length_of_li = 0;
 
         if(length_of_li > 0){
           $("ul#stream_folders li").removeClass("active-filter");
@@ -674,7 +694,8 @@ export function build_stream_list_folders(folder_name, subfolder_name) {
         }
     }
 
-    const parent = ".subfolder_rows_" + subfolder_name
+    const parent = ".subfolder_rows_" + subfolder_name.replaceAll(' ', '_');
+
     const $parent = $(parent);
 
     topic_list.clear();
@@ -915,7 +936,7 @@ class StreamSidebarFolder {
     get_folder() {
         var dict = {
             name: this.folder_name,
-            sub_folders: this.sub_folders
+            // sub_folders: this.sub_folders,
         }
         return dict;
     }
