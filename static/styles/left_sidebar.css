@@ -88,6 +88,82 @@ li.show-more-topics {
     max-width: 18em;
 }
 
+#stream_folders {
+    list-style-type: none;
+    margin-left: 0;
+
+    a {
+        color: inherit;
+    }
+
+
+    hr {
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    li.muted_topic,
+    li.out_of_home_view {
+        opacity: 0.5;
+    }
+
+    li.out_of_home_view {
+        &:hover {
+            opacity: 0.75;
+        }
+
+        li.muted_topic {
+            /* If stream is muted, this resets opacity of muted topics in muted
+          stream to 1; since opacity is multiplied down through child
+          elements, this avoids an unreadably low opacity. */
+            opacity: 1;
+        }
+    }
+
+    /* overflow: visible; */
+    margin-bottom: 5px;
+    margin-right: 22px;
+    margin-left: 0px;
+    font-weight: normal;
+    cursor: pointer;
+
+    .subscription_block_folder {
+        margin-left: 15px;
+    }
+
+    .subscription_block_subfolder {
+        margin-right: 10px;
+        margin-left: 0px;
+    }
+    .subscription_block_subfolder ul {
+        margin: 0 0 0 $far_left_gutter_size;
+    }
+
+    .folder_unread_count {
+        margin-right: 20px;
+    }
+
+    .subfolder_unread_count {
+        margin-right: 10px;
+
+    }
+
+    .stream-name:hover {
+        text-decoration: none;
+    }
+
+    .row_unread_count {
+        margin-right: 10px;
+    }
+
+    .subscription_block_subfolder .stream-sidebar-menu-icon {
+        padding-right: 0px;
+        margin-right: -10px;
+        width: 13px;
+        vertical-align: middle;
+    }
+}
+
 #stream_filters {
     overflow: visible;
     margin-bottom: 5px;
@@ -277,6 +353,7 @@ li.show-more-topics {
 }
 
 .active_private_messages_section {
+
     #private_messages_section,
     #private_messages_list,
     #hide_more_private_messages {
@@ -297,6 +374,7 @@ li.show-more-topics {
 }
 
 :not(.active-sub-filter) {
+
     &.top_left_row:hover,
     &.bottom_left_row:hover,
     &#stream_filters li.highlighted_stream {
@@ -361,8 +439,9 @@ li.active-sub-filter {
 }
 
 #stream_filters .narrow-filter.active-filter {
+
     .topic-list .filter-topics,
-    > .bottom_left_row {
+    >.bottom_left_row {
         background-color: hsl(202, 56%, 91%);
         border-radius: 4px;
     }
@@ -487,7 +566,6 @@ li.top_left_recent_topics {
         If you hover directly over the ellipsis itself,
         show it in black.
     */
-
     &:hover {
         color: hsl(0, 0%, 0%) !important;
     }
@@ -498,7 +576,6 @@ li.top_left_recent_topics {
         presence on such devices. The following media property displays the
         icon by default for such behaviour.
     */
-
     @media (hover: none) {
         display: block;
     }
@@ -540,6 +617,7 @@ li.top_left_all_messages:hover .all-messages-sidebar-menu-icon,
 li.top_left_starred_messages:hover .starred-messages-sidebar-menu-icon,
 li.top_left_drafts:hover .drafts-sidebar-menu-icon,
 #stream_filters li:hover .stream-sidebar-menu-icon,
+#stream_folders li:hover .stream-sidebar-menu-icon,
 li.topic-list-item:hover .topic-sidebar-menu-icon {
     display: inline;
     cursor: pointer;
@@ -694,7 +772,7 @@ li.topic-list-item {
 }
 
 .zoom-in {
-    .narrow-filter > .bottom_left_row {
+    .narrow-filter>.bottom_left_row {
         position: sticky;
         top: calc($sections_vertical_gutter + 20px);
         z-index: 2;
