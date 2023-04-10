@@ -434,10 +434,13 @@ def format_user_row(
     if(row["role"] > 200):
         full_name_raw = row["full_name"]
         mynames=full_name_raw.split(" ")
-        first_name = mynames[0]
-        last_name = mynames[-1]
-        full_name = last_name + ", " + first_name
-        full_name = full_name.replace("_", " ")
+        if(len(mynames) == 1):
+            full_name = row["full_name"]
+        else:
+            first_name = mynames[0]
+            last_name = mynames[-1]
+            full_name = last_name + ", " + first_name
+            full_name = full_name.replace("_", " ")
     else:
         full_name = row["full_name"]
     #lastname,firstname mod jwdunn - end
