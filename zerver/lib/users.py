@@ -437,6 +437,7 @@ def format_user_row(
         first_name = mynames[0]
         last_name = mynames[-1]
         full_name = last_name + ", " + first_name
+        full_name = full_name.replace("_", " ")
     else:
         full_name = row["full_name"]
     #lastname,firstname mod jwdunn - end
