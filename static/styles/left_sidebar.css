@@ -135,6 +135,9 @@ li.show-more-topics {
         margin-right: 10px;
         margin-left: 0px;
     }
+    .subfolder_underline:hover {
+      text-decoration: underline;
+    }
     .subscription_block_subfolder ul {
         margin: 0 0 0 $far_left_gutter_size;
     }

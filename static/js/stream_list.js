@@ -1335,18 +1335,19 @@ export function initialize() {
 
 export function set_event_handlers() {
     $("#stream_folders").on("click", "li .folder_name", (e) => {
-        var length_of_ul = $(".subfolders").children("li").length;
+        var $elt = $(e.target).parents("li");
+        var folder_name =  $(e.target).attr("folder_name");
+        const subfolder_name = ".subfolder_" + folder_name;
+        var length_of_ul = $(subfolder_name).children("li").length;
+
         if(length_of_ul > 0) {
             $(".subfolders").off("click");
             $(".subfolders").empty();
             return;
         }
-
         $(".subfolders").off("click");
         $(".subfolders").empty();
 
-        var $elt = $(e.target).parents("li");
-        var folder_name =  $(e.target).attr("folder_name");
 
         build_subfolder_rows(folder_name);
         stream_sidebar.update_sidebar_unread_count(null);
