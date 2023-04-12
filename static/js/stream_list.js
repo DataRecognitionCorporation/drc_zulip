@@ -1317,7 +1317,7 @@ function actually_update_streams_for_search() {
 const update_streams_for_search = _.throttle(actually_update_streams_for_search, 50);
 
 export function initialize() {
-    if(stream_sidebar.get_use_folders()) {
+    if(stream_sidebar.get_use_folders() && !page_params.is_guest) {
         create_initial_sidebar_folders();
         build_stream_folder();
         build_stream_list_below_folders(false);

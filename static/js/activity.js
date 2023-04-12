@@ -93,6 +93,10 @@ export function redraw_user(user_id) {
     if (page_params.realm_presence_disabled) {
         return;
     }
+    
+    if(page_params.is_guest && buddy_list.keys != 0 && !buddy_list.keys.includes(user_id)) {
+      return;
+    }
 
     const filter_text = get_filter_text();
 
