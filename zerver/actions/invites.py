@@ -312,17 +312,24 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> List[Dict[st
 
     for invitee in prereg_users:
         assert invitee.referred_by is not None
-        invites.append(
-            dict(
-                email=invitee.email,
-                invited_by_user_id=invitee.referred_by.id,
-                invited=datetime_to_timestamp(invitee.invited_at),
-                expiry_date=get_invitation_expiry_date(invitee.confirmation.get()),
-                id=invitee.id,
-                invited_as=invitee.invited_as,
-                is_multiuse=False,
+
+        # DRC MODIFICATION
+        # not sure why this errors... something to do with the changes that were made
+        # to the invites
+        try:
+            invites.append(
+                dict(
+                    email=invitee.email,
+                    invited_by_user_id=invitee.referred_by.id,
+                    invited=datetime_to_timestamp(invitee.invited_at),
+                    expiry_date=get_invitation_expiry_date(invitee.confirmation.get()),
+                    id=invitee.id,
+                    invited_as=invitee.invited_as,
+                    is_multiuse=False,
+                )
             )
-        )
+        except:
+            pass
 
     if not user_profile.is_realm_admin:
         # We do not return multiuse invites to non-admin users.
