@@ -37,15 +37,22 @@ export function add_settings_fields(sub) {
     // Note that we don't calculate subscriber counts here.
 
     sub.is_realm_admin = page_params.is_admin;
+    if(sub.is_realm_admin) {
+      sub.can_add_subscribers = true;
+      sub.can_change_stream_permissions = true;
+      // sub.should_display_subscription_button = true;
+      // sub.should_display_preview_button = true;
+    } else {
+      sub.can_add_subscribers = stream_data.can_subscribe_others(sub);
+      sub.can_change_stream_permissions = stream_data.can_change_permissions(sub);
+    }
+    sub.should_display_subscription_button = stream_data.can_toggle_subscription(sub);
+    sub.should_display_preview_button = stream_data.can_preview(sub);
     // Admin can change any stream's name & description either stream is public or
     // private, subscribed or unsubscribed.
     sub.can_change_name_description = page_params.is_admin;
 
-    sub.should_display_subscription_button = stream_data.can_toggle_subscription(sub);
-    sub.should_display_preview_button = stream_data.can_preview(sub);
-    sub.can_change_stream_permissions = stream_data.can_change_permissions(sub);
     sub.can_access_subscribers = stream_data.can_view_subscribers(sub);
-    sub.can_add_subscribers = stream_data.can_subscribe_others(sub);
 
     sub.preview_url = hash_util.by_stream_url(sub.stream_id);
     sub.is_old_stream = sub.stream_weekly_traffic !== null;

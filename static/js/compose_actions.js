@@ -287,7 +287,7 @@ export function start(msg_type, opts) {
         return;
     }
     notifications.clear_compose_notifications();
-    expand_compose_box();
+
 
     opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
 
@@ -329,6 +329,15 @@ export function start(msg_type, opts) {
 
     // Set the recipients with a space after each comma, so it looks nice.
     compose_state.private_message_recipient(opts.private_message_recipient.replace(/,\s*/g, ", "));
+
+    // DRC MODIFICATION
+    // const msg_recipient = opts.private_message_recipient
+    // var person = people.get_by_email(msg_recipient);
+    // if(person.is_guest){
+    //   return;
+    // }
+
+    expand_compose_box();
 
     // If the user opens the compose box, types some text, and then clicks on a
     // different stream/topic, we want to keep the text in the compose box

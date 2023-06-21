@@ -61,12 +61,12 @@ export function clear_topics() {
 }
 
 export function initialize() {
-    $("#stream_filters").on("click", ".show-more-topics", (e) => {
-        zoom_in();
-
-        e.preventDefault();
-        e.stopPropagation();
-    });
+    // $("#stream_filters").on("click", ".show-more-topics", (e) => {
+    //     zoom_in();
+    //
+    //     e.preventDefault();
+    //     e.stopPropagation();
+    // });
 
     $(".show-all-streams").on("click", (e) => {
         zoom_out();

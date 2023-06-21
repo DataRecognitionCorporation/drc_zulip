@@ -8,10 +8,14 @@
                 {{> stream_privacy }}
             </span>
 
-            <a href="{{uri}}" title="{{name}}" class="stream-name">{{name}}</a>
+            {{#if (eq leader_name "")}}
+                <a href="{{uri}}" title="{{name}}" class="stream-name">{{name}}</a>
+            {{else}}
+                <a href="{{uri}}" title="{{name}}" class="stream-name">{{leader_name}}</a>
+            {{/if}}
 
             <span class="unread_mention_info"></span>
-            <span class="unread_count"></span>
+            <span class="row_unread_count unread_count"></span>
         </div>
         <span class="stream-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
     </div>

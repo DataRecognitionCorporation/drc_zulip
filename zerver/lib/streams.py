@@ -364,6 +364,11 @@ def check_basic_stream_access(
     if user_profile.is_realm_admin and allow_realm_admin:
         return True
 
+    # DRC MODIFICATION
+    # Owner can invite to private stream
+    if user_profile.role == 100:
+        return True
+
     return False
 
 
@@ -637,6 +642,11 @@ def filter_stream_authorization(
 
         # Members and administrators are authorized for public streams
         if not stream.invite_only and not user_profile.is_guest:
+            continue
+
+        # DRC MODIFICATION
+        # Zulip admins and owners can do anything with streams
+        if user_profile.role <= 200:
             continue
 
         unauthorized_streams.append(stream)
