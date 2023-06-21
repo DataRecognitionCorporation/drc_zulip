@@ -296,7 +296,7 @@ def write_log_line(
 
 
 class RequestContext(MiddlewareMixin):
-    def __call__(self, request: HttpRequest) -> HttpResponse:
+    def __call__(self, request: HttpRequest) -> HttpResponseBase:
         set_request(request)
         try:
             return self.get_response(request)
@@ -440,7 +440,7 @@ class LogRequests(MiddlewareMixin):
 
 
 class JsonErrorHandler(MiddlewareMixin):
-    def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
+    def __init__(self, get_response: Callable[[HttpRequest], HttpResponseBase]) -> None:
         super().__init__(get_response)
         ignore_logger("zerver.middleware.json_error_handler")
 
@@ -532,7 +532,6 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
     def process_response(
         self, request: HttpRequest, response: HttpResponseBase
     ) -> HttpResponseBase:
-
         # This is the same as the default LocaleMiddleware, minus the
         # logic that redirects 404's that lack a prefixed language in
         # the path into having a language.  See
@@ -558,7 +557,7 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
                 path=settings.LANGUAGE_COOKIE_PATH,
                 domain=settings.LANGUAGE_COOKIE_DOMAIN,
                 secure=settings.LANGUAGE_COOKIE_SECURE,
-                httponly=settings.LANGUAGE_COOKIE_HTTPONLY,  # type: ignore[misc] # https://github.com/typeddjango/django-stubs/pull/1228
+                httponly=settings.LANGUAGE_COOKIE_HTTPONLY,
                 samesite=settings.LANGUAGE_COOKIE_SAMESITE,
             )
 
@@ -567,7 +566,7 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
 
 class RateLimitMiddleware(MiddlewareMixin):
     def set_response_headers(
-        self, response: HttpResponse, rate_limit_results: List[RateLimitResult]
+        self, response: HttpResponseBase, rate_limit_results: List[RateLimitResult]
     ) -> None:
         # The limit on the action that was requested is the minimum of the limits that get applied:
         limit = min(result.entity.max_api_calls() for result in rate_limit_results)
@@ -580,7 +579,9 @@ class RateLimitMiddleware(MiddlewareMixin):
         reset_time = time.time() + max(result.secs_to_freedom for result in rate_limit_results)
         response["X-RateLimit-Reset"] = str(int(reset_time))
 
-    def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
+    def process_response(
+        self, request: HttpRequest, response: HttpResponseBase
+    ) -> HttpResponseBase:
         if not settings.RATE_LIMITING:
             return response
 
@@ -593,7 +594,9 @@ class RateLimitMiddleware(MiddlewareMixin):
 
 
 class FlushDisplayRecipientCache(MiddlewareMixin):
-    def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
+    def process_response(
+        self, request: HttpRequest, response: HttpResponseBase
+    ) -> HttpResponseBase:
         # We flush the per-request caches after every request, so they
         # are not shared at all between requests.
         flush_per_request_caches()

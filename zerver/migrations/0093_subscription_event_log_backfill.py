@@ -1,5 +1,5 @@
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Max
 from django.utils.timezone import now as timezone_now
@@ -55,7 +55,6 @@ def reverse_code(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> No
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0092_create_scheduledemail"),
     ]

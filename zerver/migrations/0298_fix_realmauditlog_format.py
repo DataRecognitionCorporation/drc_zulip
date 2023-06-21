@@ -3,7 +3,7 @@
 import json
 
 from django.db import migrations
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
@@ -111,7 +111,6 @@ def update_realmauditlog_values(apps: StateApps, schema_editor: BaseDatabaseSche
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0297_draft"),
     ]

@@ -1,5 +1,5 @@
 from django.db import migrations
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Count, Sum
 
@@ -55,7 +55,6 @@ def clear_duplicate_counts(apps: StateApps, schema_editor: BaseDatabaseSchemaEdi
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("analytics", "0014_remove_fillstate_last_modified"),
     ]

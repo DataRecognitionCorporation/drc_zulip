@@ -1,5 +1,5 @@
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
@@ -17,7 +17,6 @@ def render_all_stream_descriptions(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0205_remove_realmauditlog_requires_billing_update"),
     ]

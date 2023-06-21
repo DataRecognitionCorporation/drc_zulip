@@ -1,5 +1,5 @@
 from django.db import migrations
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
@@ -21,7 +21,6 @@ def delete_messages_sent_to_stream_stat(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("analytics", "0008_add_count_indexes"),
     ]

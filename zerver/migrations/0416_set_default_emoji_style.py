@@ -1,5 +1,5 @@
 from django.db import migrations
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
@@ -20,7 +20,6 @@ def update_deprecated_emoji_style(apps: StateApps, schema_editor: BaseDatabaseSc
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0415_delete_scimclient"),
     ]

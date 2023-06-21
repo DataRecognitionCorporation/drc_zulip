@@ -1,5 +1,5 @@
 from django.db import migrations
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Count
 
@@ -27,7 +27,6 @@ def clear_duplicate_reactions(apps: StateApps, schema_editor: BaseDatabaseSchema
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0286_merge_0260_0285"),
     ]

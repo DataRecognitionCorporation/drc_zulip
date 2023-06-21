@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import orjson
 from django.db import connection
-from django.db.models.query import Q, QuerySet
+from django.db.models import Q, QuerySet
 from sqlalchemy.sql import ColumnElement, column, func, literal
 from sqlalchemy.types import Boolean, Text
 
@@ -207,7 +207,7 @@ def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dic
     # recent row.
     rows = sorted(rows, key=lambda tup: tup[1])
 
-    for (topic_name, max_message_id) in rows:
+    for topic_name, max_message_id in rows:
         canonical_name = topic_name.lower()
         canonical_topic_names[canonical_name] = (max_message_id, topic_name)
 

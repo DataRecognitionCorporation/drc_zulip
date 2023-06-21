@@ -462,7 +462,7 @@ Output:
     def client_post(
         self,
         url: str,
-        info: Union[str, bytes, Dict[str, Any]] = {},
+        info: Union[str, bytes, Mapping[str, Any]] = {},
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
@@ -811,7 +811,7 @@ Output:
             if any(
                 addr == email_address or addr.endswith(f" <{email_address}>") for addr in message.to
             ):
-                match = re.search(url_pattern, message.body)
+                match = re.search(url_pattern, str(message.body))
                 assert match is not None
 
                 if email_subject_contains:
@@ -875,7 +875,7 @@ Output:
         self,
         identifier: str,
         url: str,
-        info: Union[str, bytes, Dict[str, Any]] = {},
+        info: Union[str, bytes, Mapping[str, Any]] = {},
         **extra: str,
     ) -> "TestHttpResponse":
         extra["HTTP_AUTHORIZATION"] = self.encode_uuid(identifier)
@@ -907,7 +907,7 @@ Output:
         self,
         user: UserProfile,
         url: str,
-        info: Union[str, bytes, Dict[str, Any]] = {},
+        info: Union[str, bytes, Mapping[str, Any]] = {},
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -1519,7 +1519,6 @@ Output:
     def check_has_permission_policies(
         self, policy: str, validation_func: Callable[[UserProfile], bool]
     ) -> None:
-
         realm = get_realm("zulip")
         owner_user = self.example_user("desdemona")
         admin_user = self.example_user("iago")

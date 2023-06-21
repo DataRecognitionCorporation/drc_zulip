@@ -1,5 +1,5 @@
 from django.db import migrations
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
@@ -69,7 +69,6 @@ def fix_old_realm_reactivation_confirmations(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0400_realmreactivationstatus"),
     ]

@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.db import migrations
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
@@ -36,7 +36,6 @@ def rename_zulip_realm_to_zulipinternal(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0236_remove_illegal_characters_email_full"),
     ]

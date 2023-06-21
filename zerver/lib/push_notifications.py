@@ -50,6 +50,7 @@ if settings.ZILENCER_ENABLED:
 
 DeviceToken = Union[PushDeviceToken, "RemotePushDeviceToken"]
 
+
 # We store the token as b64, but apns-client wants hex strings
 def b64_to_hex(data: str) -> str:
     return base64.b64decode(data).hex()
@@ -59,7 +60,7 @@ def hex_to_b64(data: str) -> str:
     return base64.b64encode(bytes.fromhex(data)).decode()
 
 
-class UserPushIndentityCompat:
+class UserPushIdentityCompat:
     """Compatibility class for supporting the transition from remote servers
     sending their UserProfile ids to the bouncer to sending UserProfile uuids instead.
 
@@ -100,7 +101,7 @@ class UserPushIndentityCompat:
         return result
 
     def __eq__(self, other: Any) -> bool:
-        if isinstance(other, UserPushIndentityCompat):
+        if isinstance(other, UserPushIdentityCompat):
             return self.user_id == other.user_id and self.user_uuid == other.user_uuid
         return False
 
@@ -181,7 +182,7 @@ APNS_MAX_RETRIES = 3
 
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(
-    user_identity: UserPushIndentityCompat,
+    user_identity: UserPushIdentityCompat,
     devices: Sequence[DeviceToken],
     payload_data: Mapping[str, Any],
     remote: Optional["RemoteZulipServer"] = None,
@@ -307,7 +308,7 @@ def send_android_push_notification_to_user(
 ) -> None:
     devices = list(PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM))
     send_android_push_notification(
-        UserPushIndentityCompat(user_id=user_profile.id), devices, data, options
+        UserPushIdentityCompat(user_id=user_profile.id), devices, data, options
     )
 
 
@@ -358,7 +359,7 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
 
 @statsd_increment("android_push_notification")
 def send_android_push_notification(
-    user_identity: UserPushIndentityCompat,
+    user_identity: UserPushIdentityCompat,
     devices: Sequence[DeviceToken],
     data: Dict[str, Any],
     options: Dict[str, Any],
@@ -546,6 +547,9 @@ def add_push_device_token(
         post_data = {
             "server_uuid": settings.ZULIP_ORG_ID,
             "user_uuid": str(user_profile.uuid),
+            # user_id is sent so that the bouncer can delete any pre-existing registrations
+            # for this user+device to avoid duplication upon adding the uuid registration.
+            "user_id": str(user_profile.id),
             "token": token_str,
             "token_kind": kind,
         }
@@ -1009,7 +1013,7 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     if uses_notification_bouncer():
         send_notifications_to_bouncer(user_profile_id, apns_payload, gcm_payload, gcm_options)
     else:
-        user_identity = UserPushIndentityCompat(user_id=user_profile_id)
+        user_identity = UserPushIdentityCompat(user_id=user_profile_id)
         android_devices = list(
             PushDeviceToken.objects.filter(user=user_profile, kind=PushDeviceToken.GCM)
         )
@@ -1145,6 +1149,6 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         len(android_devices),
         len(apple_devices),
     )
-    user_identity = UserPushIndentityCompat(user_id=user_profile.id)
+    user_identity = UserPushIdentityCompat(user_id=user_profile.id)
     send_apple_push_notification(user_identity, apple_devices, apns_payload)
     send_android_push_notification(user_identity, android_devices, gcm_payload, gcm_options)

@@ -1,5 +1,5 @@
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
@@ -23,7 +23,6 @@ def reverse_change_emojiset(apps: StateApps, schema_editor: BaseDatabaseSchemaEd
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0129_remove_userprofile_autoscroll_forever"),
     ]

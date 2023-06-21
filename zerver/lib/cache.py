@@ -26,8 +26,8 @@ from django.conf import settings
 from django.core.cache import caches
 from django.core.cache.backends.base import BaseCache
 from django.db.models import Q
-from django.db.models.query import QuerySet
 from django.http import HttpRequest
+from django_stubs_ext import QuerySetAny
 from typing_extensions import ParamSpec
 
 from zerver.lib.utils import make_safe_digest, statsd, statsd_key
@@ -169,7 +169,7 @@ def cache_with_key(
                 return val[0]
 
             val = func(*args, **kwargs)
-            if isinstance(val, QuerySet):  # type: ignore[misc] # https://github.com/typeddjango/django-stubs/issues/704
+            if isinstance(val, QuerySetAny):
                 logging.warning(
                     "cache_with_key attempted to store a full QuerySet object -- flattening using list()",
                     stack_info=True,
@@ -348,6 +348,7 @@ CacheItemT = TypeVar("CacheItemT")
 # serializable objects, will be the object; if encoded, bytes.
 CompressedItemT = TypeVar("CompressedItemT")
 
+
 # Required arguments are as follows:
 # * object_ids: The list of object ids to look up
 # * cache_key_function: object_id => cache key
@@ -384,7 +385,7 @@ def generic_bulk_cached_fetch(
     )
 
     cached_objects: Dict[str, CacheItemT] = {}
-    for (key, val) in cached_objects_compressed.items():
+    for key, val in cached_objects_compressed.items():
         cached_objects[key] = extractor(cached_objects_compressed[key][0])
     needed_ids = [
         object_id for object_id in object_ids if cache_keys[object_id] not in cached_objects

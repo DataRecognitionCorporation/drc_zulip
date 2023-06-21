@@ -1,5 +1,5 @@
 from django.db import migrations
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import OuterRef, Subquery
 
@@ -33,7 +33,6 @@ def set_emoji_author(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0375_invalid_characters_in_stream_names"),
     ]

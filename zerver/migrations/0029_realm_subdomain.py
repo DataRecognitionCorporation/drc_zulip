@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
@@ -21,7 +21,6 @@ def set_subdomain_of_default_realm(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0001_initial"),
     ]

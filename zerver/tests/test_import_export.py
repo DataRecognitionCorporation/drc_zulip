@@ -7,8 +7,7 @@ from unittest.mock import patch
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db.models import Q
-from django.db.models.query import QuerySet
+from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
 
 from analytics.models import UserCount
@@ -702,7 +701,6 @@ class RealmImportExportTest(ExportFile):
     """
 
     def test_import_realm(self) -> None:
-
         original_realm = Realm.objects.get(string_id="zulip")
 
         hamlet = self.example_user("hamlet")
@@ -881,7 +879,7 @@ class RealmImportExportTest(ExportFile):
             imported_realm_result = f(imported_realm)
             # orig_realm_result should be truthy and have some values, otherwise
             # the test is kind of meaningless
-            assert orig_realm_result  # type: ignore[truthy-bool] # see above
+            assert orig_realm_result
 
             # It may be helpful to do print(f.__name__) if you are having
             # trouble debugging this.

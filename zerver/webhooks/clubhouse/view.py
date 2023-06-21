@@ -546,7 +546,7 @@ def get_story_update_owner_body(payload: WildValue, action: WildValue) -> str:
 
 def get_story_update_batch_body(payload: WildValue, action: WildValue) -> Optional[str]:
     # When the user selects one or more stories with the checkbox, they can perform
-    # a batch update on multiple stories while changing multiple attribtues at the
+    # a batch update on multiple stories while changing multiple attributes at the
     # same time.
     changes = action["changes"]
     kwargs = {
@@ -773,7 +773,6 @@ def api_clubhouse_webhook(
     user_profile: UserProfile,
     payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
 ) -> HttpResponse:
-
     # Clubhouse has a tendency to send empty POST requests to
     # third-party endpoints. It is unclear as to which event type
     # such requests correspond to. So, it is best to ignore such

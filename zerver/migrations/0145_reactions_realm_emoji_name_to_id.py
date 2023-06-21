@@ -2,7 +2,7 @@ from collections import defaultdict
 from typing import Any, Dict
 
 from django.db import migrations
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
@@ -41,7 +41,6 @@ def reversal(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> None:
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0144_remove_realm_create_generic_bot_by_admins_only"),
     ]

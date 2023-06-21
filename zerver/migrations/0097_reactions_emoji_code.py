@@ -3,7 +3,7 @@ import os
 
 import orjson
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
@@ -31,7 +31,6 @@ def populate_new_fields(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0096_add_password_required"),
     ]

@@ -172,7 +172,7 @@ def resize_animated(im: Image.Image, size: int = DEFAULT_EMOJI_SIZE) -> bytes:
                 im.disposal_method  # type: ignore[attr-defined]  # private member missing from stubs
             )
         elif isinstance(im, PngImagePlugin.PngImageFile):
-            disposals.append(im.info.get("disposal", PngImagePlugin.APNG_DISPOSE_OP_NONE))
+            disposals.append(im.info.get("disposal", PngImagePlugin.Disposal.OP_NONE))
         else:  # nocoverage
             raise BadImageError(_("Unknown animated image format."))
     out = io.BytesIO()
@@ -374,7 +374,6 @@ def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
 
 
 def get_file_info(user_file: UploadedFile) -> Tuple[str, str]:
-
     uploaded_file_name = user_file.name
     assert uploaded_file_name is not None
 

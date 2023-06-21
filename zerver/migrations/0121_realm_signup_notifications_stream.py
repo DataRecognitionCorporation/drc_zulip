@@ -2,7 +2,7 @@
 
 import django.db.models.deletion
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
@@ -17,7 +17,6 @@ def set_initial_value_for_signup_notifications_stream(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0120_botuserconfigdata"),
     ]

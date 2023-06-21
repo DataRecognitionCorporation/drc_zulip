@@ -1,5 +1,5 @@
 from django.db import migrations
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
@@ -16,7 +16,6 @@ def add_domain_to_realm_alias_if_needed(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0032_verify_all_medium_avatar_images"),
     ]

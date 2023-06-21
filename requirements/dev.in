@@ -21,7 +21,7 @@ coverage<6.4.3  # undiagnosed bug
 fakeldap
 
 # For testing mock http requests
-responses<0.22.0  # https://github.com/getsentry/responses/pull/593
+responses
 
 # For doing highly usable Python profiling
 line-profiler
@@ -75,3 +75,6 @@ codespell
 
 # Finds appropriate directories for data, config, cache, etc.
 platformdirs
+
+# For mocking time
+time-machine

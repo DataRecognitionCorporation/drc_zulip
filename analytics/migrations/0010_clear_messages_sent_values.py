@@ -1,5 +1,5 @@
 from django.db import migrations
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
@@ -21,7 +21,6 @@ def clear_message_sent_by_message_type_values(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("analytics", "0009_remove_messages_to_stream_stat")]
 
     operations = [

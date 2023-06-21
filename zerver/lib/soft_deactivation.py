@@ -5,8 +5,7 @@ from typing import Any, DefaultDict, Dict, Iterable, List, Optional, Sequence, S
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Max
-from django.db.models.query import QuerySet
+from django.db.models import Max, QuerySet
 from django.utils.timezone import now as timezone_now
 from sentry_sdk import capture_exception
 
@@ -48,7 +47,7 @@ def filter_by_subscription_history(
             user_messages_to_insert.append(user_message)
             seen_message_ids.add(message["id"])
 
-    for (stream_id, stream_messages_raw) in all_stream_messages.items():
+    for stream_id, stream_messages_raw in all_stream_messages.items():
         stream_subscription_logs = all_stream_subscription_logs[stream_id]
         # Make a copy of the original list of messages, which we will
         # mutate in the loop below.

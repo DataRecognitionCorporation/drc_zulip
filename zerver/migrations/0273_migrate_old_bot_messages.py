@@ -2,7 +2,7 @@ from typing import Any
 
 from django.conf import settings
 from django.db import migrations
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
@@ -79,7 +79,6 @@ def fix_messages(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> No
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0272_realm_default_code_block_language"),
     ]

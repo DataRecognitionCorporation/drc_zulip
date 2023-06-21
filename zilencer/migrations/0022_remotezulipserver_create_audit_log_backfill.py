@@ -1,5 +1,5 @@
 from django.db import migrations
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 
@@ -31,7 +31,6 @@ def reverse_code(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> No
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zilencer", "0021_alter_remotezulipserver_uuid"),
     ]

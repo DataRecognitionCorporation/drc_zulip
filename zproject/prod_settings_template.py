@@ -71,7 +71,9 @@ EXTERNAL_HOST = "zulip.example.com"
 ## advice for troubleshooting, see the Zulip documentation:
 ##   https://zulip.readthedocs.io/en/latest/production/email.html
 
-## EMAIL_HOST and EMAIL_HOST_USER are generally required.
+## EMAIL_HOST and EMAIL_HOST_USER are generally required.  If your
+## SMTP server does not require authentication, leave EMAIL_HOST_USER
+## commented out.
 # EMAIL_HOST = "smtp.example.com"
 # EMAIL_HOST_USER = ""
 
@@ -553,12 +555,18 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ########
 ## RabbitMQ configuration.
 ##
-## By default, Zulip connects to RabbitMQ running locally on the machine,
-## but Zulip also supports connecting to RabbitMQ over the network;
-## to use a remote RabbitMQ instance, set RABBITMQ_HOST to the hostname here.
+## By default, Zulip connects to RabbitMQ running locally on the
+## machine, but Zulip also supports connecting to RabbitMQ over the
+## network; to use a remote RabbitMQ instance, set RABBITMQ_HOST, and
+## optionally RABBITMQ_PORT, to the hostname and port here.
 # RABBITMQ_HOST = "127.0.0.1"
+# RABBITMQ_PORT = 5672
 ## To use another RabbitMQ user than the default "zulip", set RABBITMQ_USERNAME here.
 # RABBITMQ_USERNAME = "zulip"
+## To access the RabbitMQ server over TLS, set this to True; this is
+## generally only necessary if RabbitMQ is running on a separate,
+## cloud-managed, host.
+# RABBITMQ_USE_TLS = False
 
 ########
 ## Redis configuration.

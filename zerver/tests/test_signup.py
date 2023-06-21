@@ -391,7 +391,7 @@ class PasswordResetTest(ZulipTestCase):
         )
         self.assertIn(f"{subdomain}.testserver", message.extra_headers["List-Id"])
 
-        return message.body
+        return str(message.body)
 
     def test_password_reset(self) -> None:
         user = self.example_user("hamlet")
@@ -1557,6 +1557,30 @@ class InviteUserTest(InviteUserBase):
         self.assertTrue(find_key_by_email(email2))
         self.check_sent_emails([email, email2])
 
+    def test_successful_invite_users_with_specified_streams(self) -> None:
+        invitee = self.nonreg_email("alice")
+        realm = get_realm("zulip")
+        self.login("hamlet")
+
+        stream_names = ["Rome", "Scotland", "Venice"]
+        streams = [get_stream(stream_name, realm) for stream_name in stream_names]
+        self.assert_json_success(self.invite(invitee, stream_names))
+        self.assertTrue(find_key_by_email(invitee))
+        self.submit_reg_form_for_user(invitee, "password")
+        self.check_user_subscribed_only_to_streams("alice", streams)
+
+        invitee = self.nonreg_email("bob")
+        self.assert_json_success(self.invite(invitee, []))
+        self.assertTrue(find_key_by_email(invitee))
+
+        default_streams = get_default_streams_for_realm(realm.id)
+        self.assert_length(default_streams, 1)
+
+        self.submit_reg_form_for_user(invitee, "password")
+        # If no streams are provided, user is not subscribed to
+        # default streams as well.
+        self.check_user_subscribed_only_to_streams("bob", [])
+
     def test_can_invite_others_to_realm(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
             user_profile.refresh_from_db()
@@ -1788,11 +1812,6 @@ earl-test@zulip.com""",
         do_set_realm_property(realm, "emails_restricted_to_domains", True, acting_user=None)
 
         self.login("hamlet")
-        invitee_emails = "foo@zulip.com"
-        self.assert_json_error(
-            self.invite(invitee_emails, []),
-            "You must specify at least one stream for invitees to join.",
-        )
 
         for address in ("noatsign.com", "outsideyourdomain@example.net"):
             self.assert_json_error(
@@ -2061,6 +2080,43 @@ earl-test@zulip.com""",
         self.subscribe(self.example_user("hamlet"), stream_name)
 
         self.assert_json_success(self.invite(invitee, [stream_name]))
+
+    def test_invite_without_permission_to_subscribe_others(self) -> None:
+        realm = get_realm("zulip")
+        do_set_realm_property(
+            realm, "invite_to_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+        )
+
+        invitee = self.nonreg_email("alice")
+
+        self.login("hamlet")
+        result = self.invite(invitee, ["Denmark", "Scotland"])
+        self.assert_json_error(
+            result, "You do not have permission to subscribe other users to streams."
+        )
+
+        from django.core import mail
+
+        result = self.invite(invitee, [])
+        self.assert_json_success(result)
+        self.check_sent_emails([invitee])
+        mail.outbox.pop()
+
+        self.login("iago")
+        invitee = self.nonreg_email("bob")
+        result = self.invite(invitee, ["Denmark", "Scotland"])
+        self.assert_json_success(result)
+        self.check_sent_emails([invitee])
+        mail.outbox.pop()
+
+        do_set_realm_property(
+            realm, "invite_to_stream_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+        )
+        self.login("hamlet")
+        invitee = self.nonreg_email("test")
+        result = self.invite(invitee, ["Denmark", "Scotland"])
+        self.assert_json_success(result)
+        self.check_sent_emails([invitee])
 
     def test_invitation_reminder_email(self) -> None:
         from django.core.mail import outbox
@@ -3097,8 +3153,10 @@ class MultiuseInviteTest(ZulipTestCase):
     def test_multiuse_link_with_specified_streams(self) -> None:
         name1 = "newuser"
         name2 = "bob"
+        name3 = "alice"
         email1 = self.nonreg_email(name1)
         email2 = self.nonreg_email(name2)
+        email3 = self.nonreg_email(name3)
 
         stream_names = ["Rome", "Scotland", "Venice"]
         streams = [get_stream(stream_name, self.realm) for stream_name in stream_names]
@@ -3111,6 +3169,13 @@ class MultiuseInviteTest(ZulipTestCase):
         invite_link = self.generate_multiuse_invite_link(streams=streams)
         self.check_user_able_to_register(email2, invite_link)
         self.check_user_subscribed_only_to_streams(name2, streams)
+
+        streams = []
+        invite_link = self.generate_multiuse_invite_link(streams=streams)
+        self.check_user_able_to_register(email3, invite_link)
+        # User is not subscribed to default streams as well.
+        self.assert_length(get_default_streams_for_realm(self.realm.id), 1)
+        self.check_user_subscribed_only_to_streams(name3, [])
 
     def test_multiuse_link_different_realms(self) -> None:
         """
@@ -3165,6 +3230,21 @@ class MultiuseInviteTest(ZulipTestCase):
         invite_link = self.assert_json_success(result)["invite_link"]
         self.check_user_able_to_register(self.nonreg_email("test"), invite_link)
         self.check_user_subscribed_only_to_streams("test", streams)
+
+        self.login("iago")
+        stream_ids = []
+        result = self.client_post(
+            "/json/invites/multiuse",
+            {
+                "stream_ids": orjson.dumps(stream_ids).decode(),
+                "invite_expires_in_minutes": 2 * 24 * 60,
+            },
+        )
+        invite_link = self.assert_json_success(result)["invite_link"]
+        self.check_user_able_to_register(self.nonreg_email("alice"), invite_link)
+        # User is not subscribed to default streams as well.
+        self.assert_length(get_default_streams_for_realm(self.realm.id), 1)
+        self.check_user_subscribed_only_to_streams("alice", [])
 
     def test_only_admin_can_create_multiuse_link_api_call(self) -> None:
         self.login("iago")
@@ -3230,7 +3310,6 @@ class MultiuseInviteTest(ZulipTestCase):
 
 class EmailUnsubscribeTests(ZulipTestCase):
     def test_error_unsubscribe(self) -> None:
-
         # An invalid unsubscribe token "test123" produces an error.
         result = self.client_get("/accounts/unsubscribe/missed_messages/test123")
         self.assert_in_response("Unknown email unsubscribe request", result)
@@ -4820,7 +4899,7 @@ class UserSignUpTest(InviteUserBase):
 
         for message in reversed(outbox):
             if email in message.to:
-                match = re.search(settings.EXTERNAL_HOST + r"(\S+)>", message.body)
+                match = re.search(settings.EXTERNAL_HOST + r"(\S+)>", str(message.body))
                 assert match is not None
                 [confirmation_url] = match.groups()
                 break
@@ -4903,7 +4982,7 @@ class UserSignUpTest(InviteUserBase):
 
         for message in reversed(outbox):
             if email in message.to:
-                match = re.search(settings.EXTERNAL_HOST + r"(\S+)>", message.body)
+                match = re.search(settings.EXTERNAL_HOST + r"(\S+)>", str(message.body))
                 assert match is not None
                 [confirmation_url] = match.groups()
                 break
@@ -4950,6 +5029,84 @@ class UserSignUpTest(InviteUserBase):
             # shouldn't be a password prompt, but since it uses the
             # EmailAuthBackend, there should be password field here.
             self.assert_in_success_response(["id_password"], result)
+
+    @override_settings(
+        AUTHENTICATION_BACKENDS=(
+            "zproject.backends.SAMLAuthBackend",
+            "zproject.backends.ZulipLDAPAuthBackend",
+            "zproject.backends.ZulipDummyBackend",
+        )
+    )
+    def test_ldap_registration_email_backend_disabled_bypass_attempt(self) -> None:
+        """
+        Tests for the case of LDAP + external auth backend being the ones enabled and
+        a user using the registration page to get a confirmation link and then trying
+        to use it to create a new account with their own email that's not authenticated
+        by either of the backends.
+        """
+        email = "no_such_user_in_ldap@example.com"
+        subdomain = "zulip"
+
+        self.init_default_ldap_database()
+        ldap_user_attr_map = {"full_name": "cn"}
+        full_name = "New LDAP fullname"
+
+        result = self.client_post("/register/", {"email": email}, subdomain=subdomain)
+
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email", result)
+
+        with self.settings(
+            POPULATE_PROFILE_VIA_LDAP=True,
+            LDAP_APPEND_DOMAIN="zulip.com",
+            AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+        ), self.assertLogs("zulip.ldap", level="DEBUG") as ldap_logs, self.assertLogs(
+            level="WARNING"
+        ) as root_logs:
+            # Click confirmation link
+            result = self.submit_reg_form_for_user(
+                email,
+                None,
+                full_name="Ignore",
+                from_confirmation="1",
+                # Pass HTTP_HOST for the target subdomain
+                HTTP_HOST=subdomain + ".testserver",
+            )
+
+            self.assert_in_success_response(
+                ["We just need you to do one last thing.", email], result
+            )
+
+            # Submit the final form, attempting to register the user despite
+            # no match in ldap.
+            result = self.submit_reg_form_for_user(
+                email,
+                "newpassword",
+                full_name=full_name,
+                # Pass HTTP_HOST for the target subdomain
+                HTTP_HOST=subdomain + ".testserver",
+            )
+            # Didn't create an account
+            with self.assertRaises(UserProfile.DoesNotExist):
+                UserProfile.objects.get(delivery_email=email)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(
+                result["Location"], "/accounts/login/?email=no_such_user_in_ldap%40example.com"
+            )
+            self.assertEqual(
+                root_logs.output,
+                [
+                    "WARNING:root:New account email no_such_user_in_ldap@example.com could not be found in LDAP"
+                ],
+            )
+            self.assertEqual(
+                ldap_logs.output,
+                [
+                    "DEBUG:zulip.ldap:ZulipLDAPAuthBackend: Email no_such_user_in_ldap@example.com does not match LDAP domain zulip.com.",
+                ],
+            )
 
     @override_settings(
         AUTHENTICATION_BACKENDS=(
@@ -5585,7 +5742,7 @@ class UserSignUpTest(InviteUserBase):
 
         for message in reversed(outbox):
             if email in message.to:
-                match = re.search(settings.EXTERNAL_HOST + r"(\S+)>", message.body)
+                match = re.search(settings.EXTERNAL_HOST + r"(\S+)>", str(message.body))
                 assert match is not None
                 [confirmation_url] = match.groups()
                 break
@@ -5646,7 +5803,7 @@ class UserSignUpTest(InviteUserBase):
 
         for message in reversed(outbox):
             if email in message.to:
-                match = re.search(settings.EXTERNAL_HOST + r"(\S+)>", message.body)
+                match = re.search(settings.EXTERNAL_HOST + r"(\S+)>", str(message.body))
                 assert match is not None
                 [confirmation_url] = match.groups()
                 break
@@ -6089,8 +6246,8 @@ class MobileAuthOTPTest(ZulipTestCase):
         result = otp_encrypt_api_key(api_key, otp)
         self.assertEqual(result, "4ad1e9f7" * 8)
 
-        decryped = otp_decrypt_api_key(result, otp)
-        self.assertEqual(decryped, api_key)
+        decrypted = otp_decrypt_api_key(result, otp)
+        self.assertEqual(decrypted, api_key)
 
 
 class FollowupEmailTest(ZulipTestCase):
@@ -6169,7 +6326,6 @@ class TwoFactorAuthTest(ZulipTestCase):
             TWO_FACTOR_SMS_GATEWAY="two_factor.gateways.fake.Fake",
             TWO_FACTOR_AUTHENTICATION_ENABLED=True,
         ):
-
             first_step_data = {
                 "username": email,
                 "password": password,

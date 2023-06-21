@@ -41,9 +41,8 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator, RegexValidator, URLValidator, validate_email
 from django.db import models, transaction
 from django.db.backends.base.base import BaseDatabaseWrapper
-from django.db.models import CASCADE, Exists, F, OuterRef, Q, Sum
+from django.db.models import CASCADE, Exists, F, OuterRef, Q, QuerySet, Sum
 from django.db.models.functions import Upper
-from django.db.models.query import QuerySet
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.db.models.sql.compiler import SQLCompiler
 from django.utils.timezone import now as timezone_now
@@ -2390,7 +2389,6 @@ class AbstractPushDeviceToken(models.Model):
 
 
 class PushDeviceToken(AbstractPushDeviceToken):
-
     # The user whose device this is
     user = models.ForeignKey(UserProfile, db_index=True, on_delete=CASCADE)
 
@@ -2767,7 +2765,6 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
 
 
 def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
-
     # The caller should ensure that user_profile_ids includes
     # the sender.  Note that get_huddle hits the cache, and then
     # we hit another cache to get the recipient.  We may want to
@@ -4601,6 +4598,7 @@ class CustomProfileFieldValue(models.Model):
 # and parsing the response.
 GENERIC_INTERFACE = "GenericService"
 SLACK_INTERFACE = "SlackOutgoingWebhookService"
+
 
 # A Service corresponds to either an outgoing webhook bot or an embedded bot.
 # The type of Service is determined by the bot_type field of the referenced

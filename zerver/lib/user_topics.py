@@ -1,7 +1,7 @@
 import datetime
 from typing import Callable, List, Optional, Tuple, TypedDict
 
-from django.db.models.query import QuerySet
+from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
 from sqlalchemy.sql import ClauseElement, and_, column, not_, or_
 from sqlalchemy.types import Integer
@@ -61,7 +61,6 @@ def get_user_topics(
 def get_topic_mutes(
     user_profile: UserProfile, include_deactivated: bool = False
 ) -> List[Tuple[str, str, int]]:
-
     user_topics = get_user_topics(
         user_profile=user_profile,
         include_deactivated=include_deactivated,

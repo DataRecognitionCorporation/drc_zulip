@@ -625,12 +625,12 @@ def export_from_config(
         assert parent.table is not None
         assert config.include_rows is not None
         parent_ids = [r["id"] for r in response[parent.table]]
-        filter_parms: Dict[str, Any] = {config.include_rows: parent_ids}
+        filter_params: Dict[str, Any] = {config.include_rows: parent_ids}
         if config.filter_args is not None:
-            filter_parms.update(config.filter_args)
+            filter_params.update(config.filter_args)
         assert model is not None
         try:
-            query = model.objects.filter(**filter_parms)
+            query = model.objects.filter(**filter_params)
         except Exception:
             print(
                 f"""
@@ -640,7 +640,7 @@ def export_from_config(
                 table: {table}
                 parent: {parent.table}
 
-                filter_parms: {filter_parms}
+                filter_params: {filter_params}
                 """
             )
             raise
@@ -659,10 +659,10 @@ def export_from_config(
         if config.source_filter:
             child_rows = [r for r in child_rows if config.source_filter(r)]
         lookup_ids = [r[field] for r in child_rows]
-        filter_parms = dict(id__in=lookup_ids)
+        filter_params = dict(id__in=lookup_ids)
         if config.filter_args:
-            filter_parms.update(config.filter_args)
-        query = model.objects.filter(**filter_parms)
+            filter_params.update(config.filter_args)
+        query = model.objects.filter(**filter_params)
         rows = list(query)
 
     if rows is not None:
@@ -1089,7 +1089,6 @@ def fetch_reaction_data(response: TableData, message_ids: Set[int]) -> None:
 
 
 def custom_fetch_huddle_objects(response: TableData, context: Context) -> None:
-
     realm = context["realm"]
     user_profile_ids = {r["id"] for r in response["zerver_userprofile"]}
 
@@ -1349,7 +1348,6 @@ def write_message_partials(
     output_dir: Path,
     user_profile_ids: Set[int],
 ) -> None:
-
     dump_file_id = 1
 
     for message_id_chunk in message_id_chunks:
@@ -1649,7 +1647,6 @@ def export_files_from_s3(
 def export_uploads_from_local(
     realm: Realm, local_dir: Path, output_dir: Path, attachments: List[Attachment]
 ) -> None:
-
     count = 0
     records = []
     for attachment in attachments:
@@ -1691,7 +1688,6 @@ def export_avatars_from_local(
     users: List[UserProfile],
     handle_system_bots: bool,
 ) -> None:
-
     count = 0
     records = []
 
@@ -1767,7 +1763,6 @@ def get_emoji_path(realm_emoji: RealmEmoji) -> str:
 def export_emoji_from_local(
     realm: Realm, local_dir: Path, output_dir: Path, realm_emojis: List[RealmEmoji]
 ) -> None:
-
     count = 0
     records = []
     for realm_emoji in realm_emojis:
@@ -2002,7 +1997,6 @@ def do_export_user(user_profile: UserProfile, output_dir: Path) -> None:
 
 
 def export_single_user(user_profile: UserProfile, response: TableData) -> None:
-
     config = get_single_user_config()
     export_from_config(
         response=response,

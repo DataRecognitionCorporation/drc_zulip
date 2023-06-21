@@ -2,7 +2,7 @@ import os
 import re
 
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 attachment_url_re = re.compile(r"[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)")
@@ -43,7 +43,6 @@ def check_and_create_attachments(apps: StateApps, schema_editor: BaseDatabaseSch
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0040_realm_authentication_methods"),
     ]

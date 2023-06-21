@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.db import migrations
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 
 from zerver.lib.queue import queue_json_publish
@@ -38,7 +38,6 @@ def reupload_realm_emoji(apps: StateApps, schema_editor: BaseDatabaseSchemaEdito
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0386_fix_attachment_caches"),
     ]

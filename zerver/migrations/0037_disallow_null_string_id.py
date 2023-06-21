@@ -1,5 +1,5 @@
 from django.db import migrations, models
-from django.db.backends.postgresql.schema import BaseDatabaseSchemaEditor
+from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.utils import IntegrityError
 
@@ -26,7 +26,6 @@ def set_string_id_using_domain(apps: StateApps, schema_editor: BaseDatabaseSchem
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("zerver", "0036_rename_subdomain_to_string_id"),
     ]

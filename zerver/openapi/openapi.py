@@ -8,15 +8,13 @@
 import json
 import os
 import re
-from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Union, cast
 
 import orjson
-from jsonschema.exceptions import ValidationError as JsonSchemaValidationError
-from openapi_core import Spec
+from openapi_core import Spec, openapi_request_validator, openapi_response_validator
+from openapi_core.protocols import Response
 from openapi_core.testing import MockRequest, MockResponse
-from openapi_core.unmarshalling.schemas.exceptions import InvalidSchemaValue
-from openapi_core.validation.request import openapi_request_validator
-from openapi_core.validation.response import openapi_response_validator
+from openapi_core.validation.exceptions import ValidationError as OpenAPIValidationError
 
 OPENAPI_SPEC_PATH = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../openapi/zulip.yaml")
@@ -31,6 +29,7 @@ EXCLUDE_UNDOCUMENTED_ENDPOINTS = {
 # Consists of endpoints with some documentation remaining.
 # These are skipped but return true as the validator cannot exclude objects
 EXCLUDE_DOCUMENTED_ENDPOINTS: Set[Tuple[str, str]] = set()
+
 
 # Most of our code expects allOf to be preprocessed away because that is what
 # yamole did.  Its algorithm for doing so is not standards compliant, but we
@@ -437,44 +436,14 @@ def validate_against_openapi_schema(
         orjson.dumps(content).decode(),
         status_code=int(status_code),
     )
-    result = openapi_response_validator.validate(openapi_spec.spec(), mock_request, mock_response)
+    result = openapi_response_validator.validate(
+        openapi_spec.spec(), mock_request, cast(Response, mock_response)
+    )
     try:
         result.raise_for_errors()
-    except InvalidSchemaValue as isv:
-        schema_errors = list(isv.schema_errors)
-        message = f"{len(schema_errors)} response validation error(s) at {method} /api/v1{path} ({status_code}):"
-        for error in schema_errors:
-            if display_brief_error and isinstance(error, JsonSchemaValidationError):
-                # display_brief_error is designed to avoid printing 1000 lines
-                # of output when the schema to validate is extremely large
-                # (E.g. the several dozen format variants for individual
-                # events returned by GET /events) and instead just display the
-                # specific variant we expect to match the response.
-                brief_error_validator_value = [
-                    validator_value
-                    for validator_value in error.validator_value
-                    if not prune_schema_by_type(validator_value, error.instance["type"])
-                ]
-                brief_error_display_schema = error.schema.copy()
-                if "oneOf" in brief_error_display_schema:
-                    brief_error_display_schema["oneOf"] = [
-                        i_schema
-                        for i_schema in error.schema["oneOf"]
-                        if not prune_schema_by_type(i_schema, error.instance["type"])
-                    ]
-
-                # Field list from https://python-jsonschema.readthedocs.io/en/stable/errors/
-                error = JsonSchemaValidationError(
-                    message=error.message,
-                    validator=error.validator,
-                    path=error.path,
-                    instance=error.instance,
-                    schema_path=error.schema_path,
-                    schema=brief_error_display_schema,
-                    validator_value=brief_error_validator_value,
-                    cause=error.cause,
-                )
-            message += f"\n\n{type(error).__name__}: {error}"
+    except OpenAPIValidationError as error:
+        message = f"Response validation error at {method} /api/v1{path} ({status_code}):"
+        message += f"\n\n{type(error).__name__}: {error}"
         raise SchemaError(message) from None
 
     return True
