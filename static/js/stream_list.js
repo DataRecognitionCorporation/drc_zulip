@@ -67,7 +67,7 @@ export function update_subfolder_count_in_dom(subfolder_id, count) {
     // The subscription_block properly excludes the topic list,
     // and it also has sensitive margins related to whether the
     // count is there or not.
-    var subfolder_dom = ".subfolder_" + subfolder_id;
+    let subfolder_dom = ".subfolder_" + subfolder_id;
     const $subfolder_unread = $(subfolder_dom).find(".subfolder_unread_count");
 
     if (count === 0) {
@@ -84,7 +84,7 @@ export function update_folder_count_in_dom(folder_name, count) {
     // The subscription_block properly excludes the topic list,
     // and it also has sensitive margins related to whether the
     // count is there or not.
-    var test = "." + folder_name;
+    let test = "." + folder_name;
     const $subscription_block = $(test).find(".folder_unread_count");
 
     if (count === 0) {
@@ -174,13 +174,13 @@ class StreamSidebar {
     }
 
     get_row_by_id(stream_id) {
-      for(var [folder_name, folder_obj] of this.folders) {
-        var row = folder_obj.get_row_by_id(stream_id);
+      for(let [folder_name, folder_obj] of this.folders) {
+        let row = folder_obj.get_row_by_id(stream_id);
         if(row != null){
           return row;
         }
       }
-      var row = this.rows.get(stream_id);
+      let row = this.rows.get(stream_id);
       if(row != null) {
         return row;
       }
@@ -190,9 +190,9 @@ class StreamSidebar {
     get_folder_stream_ids() {
       const all_ids = [];
       for(let [key, folder] of this.folders) {
-        // for(var subfolder of folder.sub_folders) {
+        // for(let subfolder of folder.sub_folders) {
         for (const [key, value] of Object.entries(folder.sub_folders)) {
-          for(var row of value){
+          for(let row of value){
             all_ids.push(parseInt(row.sub.stream_id));
           }
         }
@@ -202,11 +202,11 @@ class StreamSidebar {
     }
 
     get_subfolder_stream_ids(folder, subfolder_name) {
-      var subfolders = this.get_folder(folder).get_subfolders();
+      let subfolders = this.get_folder(folder).get_subfolders();
       for(const subfolder of subfolders) {
         const name = subfolder.subfolder_name;
         if(name == subfolder_name){
-          var all_ids = subfolder.get_all_ids();
+          let all_ids = subfolder.get_all_ids();
           return all_ids;
         }
       }
@@ -222,12 +222,12 @@ class StreamSidebar {
 
       for(let [folder_name, folder] of this.folders) {
 
-        var folder_count = 0;
+        let folder_count = 0;
         const all_subfolders = folder.get_subfolders();
-        for (var subfolder of all_subfolders) {
-          var subfolder_count = 0;
+        for (let subfolder of all_subfolders) {
+          let subfolder_count = 0;
           const all_rows = subfolder.get_rows();
-          for(var row of all_rows){
+          for(let row of all_rows){
             if(counts.has(row.sub.stream_id)) {
               subfolder_count = subfolder_count + counts.get(row.sub.stream_id);
             }
@@ -287,16 +287,16 @@ export function create_initial_sidebar_folders() {
 
     const regex = new RegExp('^[A-Z]{3}[0-9]{3}$');
     const regex_num_letters = new RegExp('^[a-zA-Z0-9 \'_,.-]*$')
-    var dict = {}
+    let dict = {}
 
     for (const sub of subs) {
         stream_sidebar.set_row_all(sub.stream_id, new StreamSidebarRow(sub, ""));
 
         const myArray = sub.name.split(" - ");
 
-        var val_continue = false;
-        if (regex.test(myArray[0]) && myArray.length == 3) {
-            // for(var item of myArray) {
+        let val_continue = false;
+        if (regex_num_letters.test(myArray[0]) && myArray.length == 3) {
+            // for(let item of myArray) {
             //   if(!regex_num_letters.test(item)){
             //     val_continue = true;
             //     create_sidebar_row(sub);
@@ -306,17 +306,18 @@ export function create_initial_sidebar_folders() {
             if(val_continue){
               continue;
             }
+            
             if (!(myArray[0] in dict)) {
                 dict[myArray[0]] = {};
             }
 
             if (!(myArray[1] in dict[myArray[0]])) {
-                var tmp_dict = dict[myArray[0]];
+                let tmp_dict = dict[myArray[0]];
                 tmp_dict[myArray[1]] = [];
                 dict[myArray[0]] = tmp_dict;
             }
-            var leader_name = myArray[2];
-            var tmp = dict[myArray[0]][myArray[1]];
+            let leader_name = myArray[2];
+            let tmp = dict[myArray[0]][myArray[1]];
             const stream_row = new StreamSidebarRow(sub, leader_name);
 
             tmp.push(stream_row);
@@ -341,13 +342,11 @@ export function build_stream_folder(force_rerender) {
     }
     const elems = [];
 
-    var all_folders = stream_sidebar.get_folders();
+    let all_folders = stream_sidebar.get_folders();
     all_folders.forEach((folder) => {
         const $list_item = $(render_stream_sidebar_dropdown(folder.get_render_data()));
         elems.push($list_item);
     })
-
-    // var item = stream_folder.get_folder();
 
     $parent.empty();
     $parent.append(elems);
@@ -363,14 +362,14 @@ export function build_subfolder_rows(folder_name) {
       return;
     }
 
-    var folder = stream_sidebar.get_folder(folder_name);
-    var subfolders = folder.get_subfolders();
+    let folder = stream_sidebar.get_folder(folder_name);
+    let subfolders = folder.get_subfolders();
     const parent = ".subfolder_" + folder_name;
     const $parent = $(parent);
 
     const elems = [];
     for (const subfolder of subfolders) {
-        var tmp_dict = {
+        let tmp_dict = {
           folder_name: folder_name,
           subfolder_name: subfolder.subfolder_name,
           subfolder_id: subfolder.id,
@@ -385,7 +384,7 @@ export function build_subfolder_rows(folder_name) {
     $parent.empty();
     $parent.append(elems);
 
-    var stream_subfolder_id = "#stream_subfolder_" + folder_name;
+    let stream_subfolder_id = "#stream_subfolder_" + folder_name;
     $(stream_subfolder_id).on("click", "li", (e) => {
         const $elt = $(e.target).parents("li");
         const subfolder_name = $elt.attr("subfolder_name");
@@ -397,7 +396,7 @@ export function build_subfolder_rows(folder_name) {
         }
 
         const folder_rows_ul = ".subfolder_rows_" + subfolder_id;
-        var length_of_li = $(folder_rows_ul).children("li").length;
+        let length_of_li = $(folder_rows_ul).children("li").length;
 
         if(length_of_li > 0){
           $("ul#stream_folders li").removeClass("active-filter");
@@ -420,18 +419,24 @@ export function build_subfolder_rows(folder_name) {
 // }
 
 
-export function build_stream_list_below_folders(all_streams) {
+export function build_stream_list_below_folders(render_all_streams) {
+    if(render_all_streams == true) {
+      let force_render = true;
+      build_stream_list(force_render);
+      return;
+    }
+
     const $parent = $("#stream_filters");
-    var unsorted_rows;
+    let unsorted_rows;
 
     unsorted_rows = stream_sidebar.get_rows();
 
-    var stream_ids = [];
-    for(var stream of unsorted_rows) {
+    let stream_ids = [];
+    for(let stream of unsorted_rows) {
       stream_ids.push(stream[0]);
     }
     const stream_groups = stream_sort.sort_groups(stream_ids, get_search_term());
-    var folder_stream_groups = {
+    let folder_stream_groups = {
         dormant_streams: [],
         muted_active_streams: [],
         muted_pinned_streams: [],
@@ -441,12 +446,12 @@ export function build_stream_list_below_folders(all_streams) {
     }
 
     for (const stream_group_name in stream_groups) {
-        for (var i in stream_groups[stream_group_name]) {
+        for (let i in stream_groups[stream_group_name]) {
 
-          var stream_id = stream_groups[stream_group_name][i]
+          let stream_id = stream_groups[stream_group_name][i]
 
           if(stream_ids.includes(parseInt(stream_id))) {
-              var temp_list = folder_stream_groups[stream_group_name]
+              let temp_list = folder_stream_groups[stream_group_name]
               temp_list.push(stream_id);
               folder_stream_groups[stream_group_name] = temp_list;
             }
@@ -456,7 +461,7 @@ export function build_stream_list_below_folders(all_streams) {
     topic_list.clear();
     $parent.empty();
 
-    var elems = [];
+    let elems = [];
     const any_pinned_streams =
         folder_stream_groups.pinned_streams.length > 0 || folder_stream_groups.muted_pinned_streams.length > 0;
     const any_normal_streams =
@@ -480,13 +485,13 @@ export function build_stream_list_below_folders(all_streams) {
     }
 
     for (const stream_id of folder_stream_groups.pinned_streams) {
-        var list_item = unsorted_rows.get(stream_id);
+        let list_item = unsorted_rows.get(stream_id);
         list_item.update_whether_active();
         elems.push(list_item.get_li())
     }
 
     for (const stream_id of folder_stream_groups.muted_pinned_streams) {
-        var list_item = unsorted_rows.get(stream_id);
+        let list_item = unsorted_rows.get(stream_id);
         list_item.update_whether_active();
         elems.push(list_item.get_li())
     }
@@ -502,13 +507,13 @@ export function build_stream_list_below_folders(all_streams) {
     }
 
     for (const stream_id of folder_stream_groups.normal_streams) {
-        var list_item = unsorted_rows.get(stream_id);
+        let list_item = unsorted_rows.get(stream_id);
         list_item.update_whether_active();
         elems.push(list_item.get_li())
     }
 
     for (const stream_id of folder_stream_groups.muted_active_streams) {
-        var list_item = unsorted_rows.get(stream_id);
+        let list_item = unsorted_rows.get(stream_id);
         list_item.update_whether_active();
         elems.push(list_item.get_li())
     }
@@ -524,7 +529,7 @@ export function build_stream_list_below_folders(all_streams) {
     }
 
     for (const stream_id of folder_stream_groups.dormant_streams) {
-        var list_item = unsorted_rows.get(stream_id);
+        let list_item = unsorted_rows.get(stream_id);
         list_item.update_whether_active();
         elems.push(list_item.get_li())
     }
@@ -535,6 +540,8 @@ export function build_stream_list_below_folders(all_streams) {
 }
 
 export function build_stream_list(force_rerender) {
+
+    
     // The stream list in the left sidebar contains 3 sections:
     // pinned, normal, and dormant streams, with headings above them
     // as appropriate.
@@ -559,7 +566,7 @@ export function build_stream_list(force_rerender) {
     const elems = [];
 
     function add_sidebar_li(stream_id) {
-        var sidebar_row;
+        let sidebar_row;
         if(stream_sidebar.get_use_folders()) {
           sidebar_row = stream_sidebar.get_row_from_all(stream_id);
         } else {
@@ -644,7 +651,7 @@ export function build_stream_list_folders(folder_name, subfolder_name, subfolder
     if(folder_name == null || subfolder_name == null){
       return;
     }
-    var folder = stream_sidebar.get_folder(folder_name);
+    let folder = stream_sidebar.get_folder(folder_name);
     const subfolders = folder.get_subfolders();
 
     const streams = stream_data.subscribed_stream_ids();
@@ -658,7 +665,7 @@ export function build_stream_list_folders(folder_name, subfolder_name, subfolder
     const elems = [];
     const stream_groups = stream_sort.sort_groups(streams, get_search_term());
 
-    var folder_stream_groups = {
+    let folder_stream_groups = {
         dormant_streams: [],
         muted_active_streams: [],
         muted_pinned_streams: [],
@@ -668,12 +675,12 @@ export function build_stream_list_folders(folder_name, subfolder_name, subfolder
     }
 
     for (const stream_group_name in stream_groups) {
-        for (var i in stream_groups[stream_group_name]) {
+        for (let i in stream_groups[stream_group_name]) {
 
-          var stream_id = stream_groups[stream_group_name][i]
+          let stream_id = stream_groups[stream_group_name][i]
 
           if(all_folder_stream_ids.includes(parseInt(stream_id))) {
-              var temp_list = folder_stream_groups[stream_group_name]
+              let temp_list = folder_stream_groups[stream_group_name]
               temp_list.push(stream_id);
               folder_stream_groups[stream_group_name] = temp_list;
             }
@@ -709,8 +716,8 @@ export function build_stream_list_folders(folder_name, subfolder_name, subfolder
         );
     }
 
-    for (var subfolder of subfolders) {
-      for(var row of subfolder.get_rows()){
+    for (let subfolder of subfolders) {
+      for(let row of subfolder.get_rows()){
         if(folder_stream_groups.pinned_streams.includes(parseInt(row.sub.stream_id))) {
           row.update_whether_active();
           elems.push(row.get_li())
@@ -718,8 +725,8 @@ export function build_stream_list_folders(folder_name, subfolder_name, subfolder
       }
     }
 
-    for (var subfolder of subfolders) {
-      for(var row of subfolder.get_rows()){
+    for (let subfolder of subfolders) {
+      for(let row of subfolder.get_rows()){
         if(folder_stream_groups.muted_pinned_streams.includes(parseInt(row.sub.stream_id))) {
           row.update_whether_active();
           elems.push(row.get_li())
@@ -737,8 +744,8 @@ export function build_stream_list_folders(folder_name, subfolder_name, subfolder
         );
     }
 
-    for (var subfolder of subfolders) {
-      for(var row of subfolder.get_rows()){
+    for (let subfolder of subfolders) {
+      for(let row of subfolder.get_rows()){
         if(folder_stream_groups.normal_streams.includes(parseInt(row.sub.stream_id))) {
           row.update_whether_active();
           elems.push(row.get_li())
@@ -746,8 +753,8 @@ export function build_stream_list_folders(folder_name, subfolder_name, subfolder
       }
     }
 
-    for (var subfolder of subfolders) {
-      for(var row of subfolder.get_rows()){
+    for (let subfolder of subfolders) {
+      for(let row of subfolder.get_rows()){
         if(folder_stream_groups.muted_active_streams.includes(parseInt(row.sub.stream_id))) {
           row.update_whether_active();
           elems.push(row.get_li())
@@ -765,8 +772,8 @@ export function build_stream_list_folders(folder_name, subfolder_name, subfolder
         );
     }
 
-    for (var subfolder of subfolders) {
-      for(var row of subfolder.get_rows()){
+    for (let subfolder of subfolders) {
+      for(let row of subfolder.get_rows()){
         if(folder_stream_groups.dormant_streams.includes(parseInt(row.sub.stream_id))) {
           row.update_whether_active();
           elems.push(row.get_li())
@@ -778,10 +785,11 @@ export function build_stream_list_folders(folder_name, subfolder_name, subfolder
 }
 
 export function get_stream_li(stream_id) {
+    let row = null;
     if(stream_sidebar.get_use_folders()){
-        var row = stream_sidebar.get_row_by_id(stream_id);
+        row = stream_sidebar.get_row_by_id(stream_id);
     } else {
-        var row = stream_sidebar.get_row(stream_id);
+        row = stream_sidebar.get_row(stream_id);
     }
 
     if (!row) {
@@ -907,17 +915,6 @@ function build_stream_sidebar_li(sub, leader_name) {
     const $list_item = $(render_stream_sidebar_row(args));
     return $list_item;
 }
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
 class StreamSidebarFolder {
 
@@ -926,7 +923,7 @@ class StreamSidebarFolder {
         this.sub_folders = [];
 
         for (const [subfolder_name, rows] of Object.entries(sub_folders)) {
-          var id = stream_sidebar.subfolder_id_latest + 1;
+          let id = stream_sidebar.subfolder_id_latest + 1;
           this.sub_folders.push(new StreamSidebarSubFolder(id, subfolder_name, rows));
           stream_sidebar.subfolder_id_latest = id;
         }
@@ -941,24 +938,24 @@ class StreamSidebarFolder {
     }
 
     get_all_rows() {
-      var all_rows = [];
-      for(var subfolder of this.sub_folders) {
+      let all_rows = [];
+      for(let subfolder of this.sub_folders) {
         all_rows.push(subfolder.get_rows());
       }
       return all_rows;
     }
 
     get_all_row_ids() {
-      var ids = [];
-      for(var subfolder of this.sub_folders) {
+      let ids = [];
+      for(let subfolder of this.sub_folders) {
         ids.concat(subfolder.get_all_ids());
       }
       return ids;
     }
 
     get_row_by_id(id) {
-      for(var subfolder of this.sub_folders) {
-        var row = subfolder.get_row_by_id(id);
+      for(let subfolder of this.sub_folders) {
+        let row = subfolder.get_row_by_id(id);
         if(row != null) {
           return row;
         }
@@ -988,15 +985,15 @@ class StreamSidebarSubFolder {
 
     // return a list of ids of all rows within subfolder
     get_all_ids() {
-      var ids = [];
-      for(var row of this.rows) {
+      let ids = [];
+      for(let row of this.rows) {
         ids.push(row.sub.stream_id);
       }
       return ids;
     }
 
     get_row_by_id(id) {
-      for(var row of this.rows) {
+      for(let row of this.rows) {
         if(id == row.sub.stream_id){
           return row;
         }
@@ -1098,22 +1095,23 @@ function set_stream_unread_count(stream_id, count, stream_has_any_unread_mention
 
 export function update_streams_sidebar(force_rerender) {
 
-//     if (!force_rerender && topic_zoom.is_zoomed_in()) {
-//         // We do our best to update topics that are displayed
-//         // in case user zoomed in. Streams list will be updated,
-//         // once the user zooms out. This avoids user being zoomed out
-//         // when a new message causes streams to re-arrange.
-//         const filter = narrow_state.filter();
-//         update_stream_sidebar_for_narrow(filter);
-//         topic_zoom.set_pending_stream_list_rerender(true);
-//         return;
-//     }
-//     topic_zoom.set_pending_stream_list_rerender(false);
+    if (!force_rerender && topic_zoom.is_zoomed_in()) {
+        // We do our best to update topics that are displayed
+        // in case user zoomed in. Streams list will be updated,
+        // once the user zooms out. This avoids user being zoomed out
+        // when a new message causes streams to re-arrange.
+        const filter = narrow_state.filter();
+        update_stream_sidebar_for_narrow(filter);
+        topic_zoom.set_pending_stream_list_rerender(true);
+        return;
+    }
+    topic_zoom.set_pending_stream_list_rerender(false);
 
-//     build_stream_list(force_rerender);
+    build_stream_list(force_rerender);
 
     if(stream_sidebar.use_folders){
-      build_stream_list_below_folders(false);
+      let render_all_streams = false
+      build_stream_list_below_folders(render_all_streams);
     } else {
       build_stream_list(force_rerender);
     }
@@ -1155,7 +1153,8 @@ export function refresh_pinned_or_unpinned_stream(sub) {
     // We use kind of brute force now, which is probably fine.
     if(stream_sidebar.use_folders) {
 
-      build_stream_list_below_folders(false);
+      let render_all_streams = false
+      build_stream_list_below_folders(render_all_streams);
     } else {
       build_stream_sidebar_row(sub);
       update_streams_sidebar();
@@ -1254,15 +1253,15 @@ export function update_stream_sidebar_for_narrow(filter) {
     topic_list.rebuild($stream_li, stream_id);
 
     // DRC MODIFICATION
-    var stream_name = $("ul .active-filter .stream-name").text();
-    var id = stream_data.get_stream_id(stream_name);
-    var is_private = stream_data.is_private(stream_name);
+    let stream_name = $("ul .active-filter .stream-name").text();
+    let id = stream_data.get_stream_id(stream_name);
+    let is_private = stream_data.is_private(stream_name);
     if(stream_name == ""){
       return $stream_li;
     }
 
     if(page_params.is_guest && is_private){
-      var user_ids = peer_data.get_subscribers(stream_id);
+      let user_ids = peer_data.get_subscribers(stream_id);
       activity.drc_build_user_sidebar(user_ids);
     } else if(page_params.is_guest && !is_private){
       activity.drc_build_user_sidebar(0);
@@ -1312,9 +1311,11 @@ function keydown_enter_key() {
 function actually_update_streams_for_search() {
     // stream_sidebar.use_folders = false;
     if(stream_sidebar.use_folders){
-      build_stream_list_below_folders(true);
+      let render_all_streams = true;
+      build_stream_list_below_folders(render_all_streams);
     } else {
-      build_stream_list(true);
+      let force_render = true;
+      build_stream_list(force_render);
     }
 
     stream_cursor.redraw();
@@ -1335,7 +1336,8 @@ export function initialize() {
     if(stream_sidebar.get_use_folders() && !page_params.is_guest) {
         create_initial_sidebar_folders();
         build_stream_folder();
-        build_stream_list_below_folders(false);
+        let render_all_streams = true;
+        build_stream_list_below_folders(render_all_streams);
     } else {
         create_initial_sidebar_rows();
         build_stream_list();
@@ -1350,10 +1352,10 @@ export function initialize() {
 
 export function set_event_handlers() {
     $("#stream_folders").on("click", "li .folder_name", (e) => {
-        var $elt = $(e.target).parents("li");
-        var folder_name =  $(e.target).attr("folder_name");
+        let $elt = $(e.target).parents("li");
+        let folder_name =  $(e.target).attr("folder_name");
         const subfolder_name = ".subfolder_" + folder_name;
-        var length_of_ul = $(subfolder_name).children("li").length;
+        let length_of_ul = $(subfolder_name).children("li").length;
 
         if(length_of_ul > 0) {
             $(".subfolders").off("click");
@@ -1497,7 +1499,8 @@ export function hide_search_section() {
 
 export function initiate_search() {
     remove_stream_folders();
-    build_stream_list_below_folders(true);
+    let render_all_streams = true;
+    build_stream_list_below_folders(render_all_streams);
 
     show_search_section();
     const $filter = $(".stream-list-filter").expectOne();
@@ -1525,7 +1528,8 @@ export function clear_and_hide_search() {
     $filter.trigger("blur");
 
     build_stream_folder();
-    build_stream_list_below_folders(false);
+    let render_all_streams = false;
+    build_stream_list_below_folders(render_all_streams);
     unread_ui.update_unread_counts();
 
     hide_search_section();
