@@ -358,7 +358,7 @@ export function remove_stream_folders() {
 }
 
 export function build_subfolder_rows(folder_name) {
-    if(folder_name == null) {
+    if(folder_name == null || folder_name == undefined) {
       return;
     }
 
