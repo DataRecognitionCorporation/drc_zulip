@@ -286,7 +286,7 @@ export function create_initial_sidebar_folders() {
     const subs = stream_data.subscribed_subs();
 
     const regex = new RegExp('^[A-Z]{3}[0-9]{3}$');
-    const regex_num_letters = new RegExp('^[a-zA-Z0-9 \'_,.-]*$')
+    const regex_num_letters = new RegExp('^[a-zA-Z0-9\'_,.-]*$')
     let dict = {}
 
     for (const sub of subs) {
