@@ -86,3 +86,7 @@ core
 ## Miscellaneous
 # (Ideally this section is empty.)
 .transifexrc
+
+output/
+.terraform/
+*.tfstate

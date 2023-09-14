@@ -1,0 +1,39 @@
+pipeline {
+    agent {
+        kubernetes {
+            yamlFile 'jenkins/k8s/zulip_ci_jammy.yaml'
+        }
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '100', artifactNumToKeepStr: '100'))
+        ansiColor('xterm')
+    }
+
+    parameters {
+        string(
+            name: 'BUILD_NUMBER',
+            defaultValue: '6.1.18',
+            description: 'Build number. This must match the release in github.'
+        )
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                container('zulip-ci-jammy') {
+                    script {
+                        sh """
+                            pwd
+                            ls -lah
+                        """
+                    }
+                }
+            }
+        }
+        // stage('Deploy') {
+            
+        // }
+    }
+    
+}

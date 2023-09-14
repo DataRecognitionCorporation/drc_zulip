@@ -1,0 +1,18 @@
+metadata:
+  labels:
+    label: zulip-ci-jammy
+spec:
+  containers:
+    - name: zulip-ci-jammy
+      image: zulip/ci:jammy
+      command:
+        - sleep
+      args:
+        - 99d
+      resources:
+        limits:
+          cpu: 4
+          memory: 8Gi
+        requests:
+          cpu: 2
+          memory: 4Gi
