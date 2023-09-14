@@ -13,7 +13,7 @@ spec:
       imagePullPolicy: Always
       env:
         - name: HOME
-            value: /home/github
+          value: /home/github
       resources:
         limits:
           cpu: 4
