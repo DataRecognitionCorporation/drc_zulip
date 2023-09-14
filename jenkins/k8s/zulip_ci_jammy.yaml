@@ -22,5 +22,5 @@ spec:
           cpu: 2
           memory: 4Gi
       securityContext:
-        runAsUser: github
+        runAsUser: "github"
         allowPrivilegeEscalation: true
