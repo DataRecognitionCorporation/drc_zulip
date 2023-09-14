@@ -24,6 +24,7 @@ pipeline {
                 container('zulip-ci-jammy') {
                     script {
                         sh """
+                            whoami
                             pwd
                             ls -lah
                             ls -lah /
