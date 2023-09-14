@@ -28,8 +28,9 @@ pipeline {
                             ls -lah
                             ls -lah /
                             ls -lah /tmp/
-                            ./tools/build-release-tarball ${params.BUILD_NUMBER}
+                            ./tools/ci/production-build
                         """
+                            // ./tools/build-release-tarball ${params.BUILD_NUMBER}
                     }
                 }
             }
