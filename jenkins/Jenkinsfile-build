@@ -19,6 +19,83 @@ pipeline {
     }
 
     stages {
+        stage('Test') {
+             steps {
+                container('zulip-ci-jammy') {
+                    dir("${WORKSPACE}"){
+                        script {
+                            sh """
+                                ./tools/ci/setup-backend --skip-dev-db-build
+
+                                source tools/ci/activate-venv
+                                ./tools/test-tools
+
+                                source tools/ci/activate-venv
+                                ./tools/run-codespell
+
+                                source tools/ci/activate-venv
+                                echo "Test suite is running under $(python --version)."
+                                ./tools/lint --groups=backend --skip=gitlint,mypy # gitlint disabled because flaky
+                            
+                                source tools/ci/activate-venv
+                                ./tools/lint --groups=frontend --skip=gitlint # gitlint disabled because flaky
+
+                                source tools/ci/activate-venv
+                                ./tools/test-backend --coverage --include-webhooks --no-cov-cleanup --ban-console-output
+
+
+                                ./tools/run-mypy --version
+                                ./tools/run-mypy
+
+                                source tools/ci/activate-venv
+                                ./tools/test-migrations
+                                ./tools/setup/optimize-svg --check
+                                ./tools/setup/generate_integration_bots_avatars.py --check-missing
+
+                                chmod 000 static/generated
+                                ./scripts/lib/check-database-compatibility.py
+                                chmod 755 static/generated
+
+                                /tools/test-documentation --skip-external-links
+                                ./tools/test-help-documentation --skip-external-links
+                                ./tools/test-api
+
+                                source tools/ci/activate-venv
+                                # Run the node tests first, since they're fast and deterministic
+                                ./tools/test-js-with-node --coverage --parallel=1
+
+                                source tools/ci/activate-venv
+                                # Check that various schemas are consistent. (is fast)
+                                ./tools/check-schemas
+
+                                source tools/ci/activate-venv
+                                ./manage.py makemessages --locale en
+                                PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
+                                PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
+
+                                ource tools/ci/activate-venv
+                                ./tools/test-js-with-puppeteer
+
+                                source tools/ci/activate-venv
+                                # This final check looks for untracked files that may have been
+                                # created by test-backend or provision.
+                                untracked="$(git ls-files --exclude-standard --others)"
+                                if [ -n "$untracked" ]; then
+                                    printf >&2 "Error: untracked files:\n%s\n" "$untracked"
+                                    exit 1
+                                fi
+
+                                . /srv/zulip-py3-venv/bin/activate && \
+                                ./tools/test-locked-requirements
+
+                                ./tools/ci/setup-backend
+                            """
+                                // ./tools/build-release-tarball ${params.BUILD_NUMBER}
+                        }
+                    }
+                }
+            }
+        }
         stage('Build') {
             steps {
                 container('zulip-ci-jammy') {
