@@ -23,8 +23,7 @@ pipeline {
             steps {
                 container('zulip-ci-jammy') {
                     script {
-                        sh """
-                            whoami
+                        sh """arg
                             pwd
                             ls -lah
                             ls -lah /
