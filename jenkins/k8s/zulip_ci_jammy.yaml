@@ -9,6 +9,8 @@ spec:
         - sleep
       args:
         - 99d
+      tty: true
+      imagePullPolicy: Always
       resources:
         limits:
           cpu: 4
