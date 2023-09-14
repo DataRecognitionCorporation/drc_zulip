@@ -11,7 +11,7 @@ set -eu
 RABBITMQ_USERNAME=$("$(dirname "$0")/../get-django-setting" RABBITMQ_USERNAME)
 RABBITMQ_PASSWORD=$("$(dirname "$0")/../get-django-setting" RABBITMQ_PASSWORD)
 
-sleep 3600
+service rabbitmq-server start
 # Wait for RabbitMQ to start up
 retries=29
 # Could use rabbitmqctl await_startup when we upgrade to 3.7.11.
