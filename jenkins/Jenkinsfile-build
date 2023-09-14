@@ -26,6 +26,8 @@ pipeline {
                         sh """
                             pwd
                             ls -lah
+                            ls -lah /
+                            ls -lah /tmp/
                             ./tools/build-release-tarball ${params.BUILD_NUMBER}
                         """
                     }
