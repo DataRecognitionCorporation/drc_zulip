@@ -25,8 +25,7 @@ pipeline {
                     dir("${WORKSPACE}"){
                         script {
                             sh """
-                                chown -Rf github.github ./*
-                                sudo su github -
+                                
                                 cat /etc/passwd
                                 pwd
                                 ls -lah
