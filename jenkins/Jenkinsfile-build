@@ -24,7 +24,7 @@ pipeline {
                 container('zulip-ci-jammy') {
                     dir("${WORKSPACE}"){
                         script {
-                            sh """
+                            sh '''
                                 ./tools/ci/setup-backend --skip-dev-db-build
 
                                 source tools/ci/activate-venv
@@ -89,7 +89,7 @@ pipeline {
                                 ./tools/test-locked-requirements
 
                                 ./tools/ci/setup-backend
-                            """
+                            '''
                                 // ./tools/build-release-tarball ${params.BUILD_NUMBER}
                         }
                     }
