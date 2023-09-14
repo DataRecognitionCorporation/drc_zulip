@@ -22,5 +22,5 @@ spec:
           cpu: 2
           memory: 4Gi
       securityContext:
-        runAsUser: 1000
+        runAsUser: 1001
         allowPrivilegeEscalation: true
