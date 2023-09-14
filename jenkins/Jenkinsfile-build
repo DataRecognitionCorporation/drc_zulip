@@ -25,13 +25,8 @@ pipeline {
                     dir("${WORKSPACE}"){
                         script {
                             sh """
-                                
-                                cat /etc/passwd
-                                pwd
-                                ls -lah
-                                ls -lah /
-                                ls -lah /tmp/
                                 ./tools/ci/production-build
+                                ls -lah /tmp/
                             """
                                 // ./tools/build-release-tarball ${params.BUILD_NUMBER}
                         }
