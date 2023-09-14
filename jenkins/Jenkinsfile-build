@@ -13,7 +13,7 @@ pipeline {
     parameters {
         string(
             name: 'BUILD_NUMBER',
-            defaultValue: '6.1.18',
+            defaultValue: '6.1.8',
             description: 'Build number. This must match the release in github.'
         )
     }
