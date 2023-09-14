@@ -24,6 +24,7 @@ pipeline {
                 container('zulip-ci-jammy') {
                     script {
                         sh """
+                            sudo su github -
                             pwd
                             ls -lah
                             ls -lah /
