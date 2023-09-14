@@ -22,16 +22,20 @@ pipeline {
         stage('Build') {
             steps {
                 container('zulip-ci-jammy') {
-                    script {
-                        sh """
-                            cat /etc/passwd
-                            pwd
-                            ls -lah
-                            ls -lah /
-                            ls -lah /tmp/
-                            ./tools/ci/production-build
-                        """
-                            // ./tools/build-release-tarball ${params.BUILD_NUMBER}
+                    dir("${WORKSPACE}"){
+                        script {
+                            sh """
+                                chown -Rf github.github ./*
+                                sudo su github -
+                                cat /etc/passwd
+                                pwd
+                                ls -lah
+                                ls -lah /
+                                ls -lah /tmp/
+                                ./tools/ci/production-build
+                            """
+                                // ./tools/build-release-tarball ${params.BUILD_NUMBER}
+                        }
                     }
                 }
             }
