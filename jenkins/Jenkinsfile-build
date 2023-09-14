@@ -27,6 +27,9 @@ pipeline {
                             sh '''
                                 ./tools/ci/setup-backend --skip-dev-db-build
 
+
+                                echo #############################
+                                echo 'Test Tools'
                                 source tools/ci/activate-venv
                                 ./tools/test-tools
 
@@ -101,7 +104,10 @@ pipeline {
                 container('zulip-ci-jammy') {
                     dir("${WORKSPACE}"){
                         script {
+                            checkout scm
                             sh """
+                                git branch -a
+                                git tag
                                 ./tools/ci/production-build
                                 ls -lah /tmp/
                             """
