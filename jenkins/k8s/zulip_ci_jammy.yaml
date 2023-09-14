@@ -11,6 +11,8 @@ spec:
         - 99d
       tty: true
       imagePullPolicy: Always
+      - name: HOME
+          value: /home/github
       resources:
         limits:
           cpu: 4
