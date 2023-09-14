@@ -4,7 +4,7 @@ metadata:
 spec:
   containers:
     - name: zulip-ci-jammy
-      image: 911870898277.dkr.ecr.us-east-1.amazonaws.com/team-ss/zulip-ci:latest
+      image: 911870898277.dkr.ecr.us-east-1.amazonaws.com/team-ss/zulip-ci:1.0.7-amd64
       command:
         - sleep
       args:
