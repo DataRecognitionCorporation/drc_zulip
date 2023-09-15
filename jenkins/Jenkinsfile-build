@@ -30,9 +30,6 @@ pipeline {
                     dir("${WORKSPACE}"){
                         script {
                             sh '''
-                                cat /etc/passwd
-                                printenv
-                                printenv | grep SHELL
                                 sudo mkdir -p /srv/zulip-npm-cache
                                 sudo mkdir -p /srv/zulip-venv-cache
                                 sudo mkdir -p /srv/zulip-emoji-cache
