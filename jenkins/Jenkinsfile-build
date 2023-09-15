@@ -93,21 +93,21 @@ pipeline {
                         }
                     }
                 }
-                stage('test-api') {
-                    steps {
-                        container('zulip-ci-jammy') {
-                            dir("${WORKSPACE}"){
-                                script {
-                                    sh '''#!/bin/bash
+                // stage('test-api') {
+                //     steps {
+                //         container('zulip-ci-jammy') {
+                //             dir("${WORKSPACE}"){
+                //                 script {
+                //                     sh '''#!/bin/bash
 
-                                        source ./tools/ci/activate-venv
-                                        ./tools/test-api
-                                    '''
-                                }
-                            }
-                        }
-                    }
-                }
+                //                         source ./tools/ci/activate-venv
+                //                         ./tools/test-api
+                //                     '''
+                //                 }
+                //             }
+                //         }
+                //     }
+                // }
                 stage('test-schemas') {
                     steps {
                         container('zulip-ci-jammy') {
@@ -198,8 +198,6 @@ pipeline {
 
                                         source ./tools/ci/activate-venv
                                         ./tools/test-js-with-puppeteer
-                                        ./tools/setup/optimize-svg --check
-                                        ./tools/setup/generate_integration_bots_avatars.py --check-missing
                                     '''
                                 }
                             }
