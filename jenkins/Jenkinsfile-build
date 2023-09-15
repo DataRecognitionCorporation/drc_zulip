@@ -221,7 +221,6 @@ pipeline {
             }
         }
        
-        }
         stage('Build') {
             steps {
                 container('zulip-ci-jammy') {
