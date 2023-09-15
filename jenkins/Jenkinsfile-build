@@ -30,6 +30,8 @@ pipeline {
                     dir("${WORKSPACE}"){
                         script {
                             sh '''
+                                #!/bin/bash
+                                ps -p $$
                                 sudo mkdir -p /srv/zulip-npm-cache
                                 sudo mkdir -p /srv/zulip-venv-cache
                                 sudo mkdir -p /srv/zulip-emoji-cache
@@ -50,8 +52,8 @@ pipeline {
                             dir("${WORKSPACE}"){
                                 script {
                                     sh '''
-                                        ps -p $$
                                         #!/bin/bash
+                                        ps -p $$
                                         ps -p $$
                                         /bin/bash -c 'source ./tools/ci/activate-venv
                                         ./tools/test-tools
