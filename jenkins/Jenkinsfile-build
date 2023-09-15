@@ -29,8 +29,7 @@ pipeline {
                 container('zulip-ci-jammy') {
                     dir("${WORKSPACE}"){
                         script {
-                            bash '''
-                                
+                            sh '''#!/bin/bash
                                 ps -p $$
                                 sudo mkdir -p /srv/zulip-npm-cache
                                 sudo mkdir -p /srv/zulip-venv-cache
