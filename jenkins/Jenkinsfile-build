@@ -50,8 +50,10 @@ pipeline {
                             dir("${WORKSPACE}"){
                                 script {
                                     sh '''
+                                        ps -p $$
                                         #!/bin/bash
-                                        source ./tools/ci/activate-venv
+                                        ps -p $$
+                                        /bin/bash -c 'source ./tools/ci/activate-venv
                                         ./tools/test-tools
                                     '''
                                 }
