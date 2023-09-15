@@ -36,13 +36,14 @@ pipeline {
                                 sudo chown -Rf 1000.1000 /srv
                                 
                                 ./tools/ci/setup-backend --skip-dev-db-build
+                                source tools/ci/activate-venv
                             '''
                         }
                     }
                 }
             }
         }
-        stage('run-tests') {
+        stage('Run Tests') {
             stages {
                 stage('test-tools') {
                     steps {
@@ -223,24 +224,24 @@ pipeline {
                 }
             }
         }
-        stage('Build') {
-            steps {
-                container('zulip-ci-jammy') {
-                    dir("${WORKSPACE}"){
-                        script {
-                            checkout scm
-                            sh """
-                                git branch -a
-                                git tag
-                                ./tools/ci/production-build
-                                ls -lah /tmp/
-                            """
-                                // ./tools/build-release-tarball ${params.BUILD_NUMBER}
-                        }
-                    }
-                }
-            }
-        }
+        // stage('Build') {
+        //     steps {
+        //         container('zulip-ci-jammy') {
+        //             dir("${WORKSPACE}"){
+        //                 script {
+        //                     checkout scm
+        //                     sh """
+        //                         git branch -a
+        //                         git tag
+        //                         ./tools/ci/production-build
+        //                         ls -lah /tmp/
+        //                     """
+        //                         // ./tools/build-release-tarball ${params.BUILD_NUMBER}
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
         // stage('Deploy') {
             
         // }
