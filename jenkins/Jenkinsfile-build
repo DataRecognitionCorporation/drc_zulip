@@ -30,9 +30,7 @@ pipeline {
                     dir("${WORKSPACE}"){
                         script {
                             sh '''#!/bin/bash
-                                ps -p $$
-                                echo $SHELL
-                                printenv
+
                                 sudo mkdir -p /srv/zulip-npm-cache
                                 sudo mkdir -p /srv/zulip-venv-cache
                                 sudo mkdir -p /srv/zulip-emoji-cache
@@ -52,11 +50,9 @@ pipeline {
                         container('zulip-ci-jammy') {
                             dir("${WORKSPACE}"){
                                 script {
-                                    sh '''
-                                        #!/bin/bash
-                                        ps -p $$
-                                        ps -p $$
-                                        /bin/bash -c 'source ./tools/ci/activate-venv
+                                    sh '''#!/bin/bash
+
+                                        source ./tools/ci/activate-venv
                                         ./tools/test-tools
                                     '''
                                 }
@@ -69,8 +65,9 @@ pipeline {
                         container('zulip-ci-jammy') {
                             dir("${WORKSPACE}"){
                                 script {
-                                    sh '''
-                                        /bin/bash -c 'source ./tools/ci/activate-venv'
+                                    sh '''#!/bin/bash
+
+                                        source ./tools/ci/activate-venv
                                         ./tools/test-backend --coverage --include-webhooks --no-cov-cleanup --ban-console-output
                                     '''
                                 }
@@ -83,8 +80,9 @@ pipeline {
                         container('zulip-ci-jammy') {
                             dir("${WORKSPACE}"){
                                 script {
-                                    sh '''
-                                        /bin/bash -c 'source ./tools/ci/activate-venv'
+                                    sh '''#!/bin/bash
+
+                                        source ./tools/ci/activate-venv
                                         ./tools/test-migrations
                                         
                                     '''
@@ -98,8 +96,9 @@ pipeline {
                         container('zulip-ci-jammy') {
                             dir("${WORKSPACE}"){
                                 script {
-                                    sh '''
-                                        /bin/bash -c 'source ./tools/ci/activate-venv'
+                                    sh '''#!/bin/bash
+                                    
+                                        source ./tools/ci/activate-venv
                                         chmod 000 static/generated
                                         ./scripts/lib/check-database-compatibility.py
                                         chmod 755 static/generated
@@ -114,8 +113,9 @@ pipeline {
                         container('zulip-ci-jammy') {
                             dir("${WORKSPACE}"){
                                 script {
-                                    sh '''
-                                        /bin/bash -c 'source ./tools/ci/activate-venv'
+                                    sh '''#!/bin/bash
+
+                                        source ./tools/ci/activate-venv
                                         ./tools/test-api
                                     '''
                                 }
@@ -128,8 +128,9 @@ pipeline {
                         container('zulip-ci-jammy') {
                             dir("${WORKSPACE}"){
                                 script {
-                                    sh '''
-                                        /bin/bash -c 'source ./tools/ci/activate-venv'
+                                    sh '''#!/bin/bash
+
+                                        source ./tools/ci/activate-venv
                                         # Check that various schemas are consistent. (is fast)
                                         ./tools/check-schemas
 
@@ -144,8 +145,9 @@ pipeline {
                         container('zulip-ci-jammy') {
                             dir("${WORKSPACE}"){
                                 script {
-                                    sh '''
-                                        /bin/bash -c 'source ./tools/ci/activate-venv'
+                                    sh '''#!/bin/bash
+
+                                        source ./tools/ci/activate-venv
                                         ./manage.py makemessages --locale en
                                         PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
                                         PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
@@ -160,8 +162,9 @@ pipeline {
                         container('zulip-ci-jammy') {
                             dir("${WORKSPACE}"){
                                 script {
-                                    sh '''
-                                        /bin/bash -c 'source ./tools/ci/activate-venv'
+                                    sh '''#!/bin/bash
+
+                                        source ./tools/ci/activate-venv
                                         ./tools/test-locked-requirements || echo
                                     '''
                                 }
@@ -174,8 +177,9 @@ pipeline {
                         container('zulip-ci-jammy') {
                             dir("${WORKSPACE}"){
                                 script {
-                                    sh '''
-                                        /bin/bash -c 'source ./tools/ci/activate-venv'
+                                    sh '''#!/bin/bash
+
+                                        source ./tools/ci/activate-venv
                                         ./tools/ci/setup-backend
                                     '''
                                 }
@@ -188,8 +192,9 @@ pipeline {
                         container('zulip-ci-jammy') {
                             dir("${WORKSPACE}"){
                                 script {
-                                    sh '''
-                                        /bin/bash -c 'source ./tools/ci/activate-venv'
+                                    sh '''#!/bin/bash
+
+                                        source ./tools/ci/activate-venv
                                         # Run the node tests first, since they're fast and deterministic
                                         #./tools/test-js-with-node --coverage --parallel=1
                                         ./tools/test-js-with-node --parallel=1
@@ -204,8 +209,9 @@ pipeline {
                         container('zulip-ci-jammy') {
                             dir("${WORKSPACE}"){
                                 script {
-                                    sh '''
-                                        /bin/bash -c 'source ./tools/ci/activate-venv'
+                                    sh '''#!/bin/bash
+
+                                        source ./tools/ci/activate-venv
                                         ./tools/test-js-with-puppeteer
                                         ./tools/setup/optimize-svg --check
                                         ./tools/setup/generate_integration_bots_avatars.py --check-missing
@@ -220,8 +226,9 @@ pipeline {
                         container('zulip-ci-jammy') {
                             dir("${WORKSPACE}"){
                                 script {
-                                    sh '''
-                                        /bin/bash -c 'source ./tools/ci/activate-venv'
+                                    sh '''#!/bin/bash
+
+                                        source ./tools/ci/activate-venv
                                         ./tools/setup/optimize-svg --check
                                         ./tools/setup/generate_integration_bots_avatars.py --check-missing
                                     '''
