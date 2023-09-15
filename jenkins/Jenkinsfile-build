@@ -39,7 +39,7 @@ pipeline {
                                 sudo chown -Rf 1000.1000 /srv
                                 
                                 ./tools/ci/setup-backend --skip-dev-db-build
-                                source ./tools/ci/activate-venv
+                                /bin/bash -c 'source ./tools/ci/activate-venv'
                             '''
                         }
                     }
