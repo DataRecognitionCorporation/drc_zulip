@@ -33,7 +33,7 @@ pipeline {
                                 sudo mkdir -p /srv/zulip-npm-cache
                                 sudo mkdir -p /srv/zulip-venv-cache
                                 sudo mkdir -p /srv/zulip-emoji-cache
-                                sudo chown -Rf jenkins /srv
+                                sudo chown -Rf 1000.1000 /srv
                                 
                                 ./tools/ci/setup-backend --skip-dev-db-build
                             '''
