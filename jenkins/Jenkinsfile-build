@@ -31,6 +31,8 @@ pipeline {
                         script {
                             sh '''#!/bin/bash
                                 ps -p $$
+                                echo $SHELL
+                                printenv
                                 sudo mkdir -p /srv/zulip-npm-cache
                                 sudo mkdir -p /srv/zulip-venv-cache
                                 sudo mkdir -p /srv/zulip-emoji-cache
