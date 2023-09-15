@@ -30,9 +30,10 @@ pipeline {
                     dir("${WORKSPACE}"){
                         script {
                             sh '''
-                                dirs=(/srv/zulip-{npm,venv,emoji}-cache)
-                                sudo mkdir -p "${dirs[@]}"
-                                sudo chown -R github "${dirs[@]}"
+                                sudo mkdir -p /srv/zulip-npm-cache
+                                sudo mkdir -p /srv/zulip-venv-cache
+                                sudo mkdir -p /srv/zulip-emoji-cache
+                                sudo chown -Rf jenkins /srv
                                 
                                 ./tools/ci/setup-backend --skip-dev-db-build
                             '''
