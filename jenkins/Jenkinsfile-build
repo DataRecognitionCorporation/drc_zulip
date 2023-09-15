@@ -36,7 +36,6 @@ pipeline {
                                 sudo chown -Rf 1000.1000 /srv
                                 
                                 ./tools/ci/setup-backend --skip-dev-db-build
-                                /bin/bash -c 'source ./tools/ci/activate-venv'
                             '''
                         }
                     }
@@ -51,7 +50,7 @@ pipeline {
                             dir("${WORKSPACE}"){
                                 script {
                                     sh '''
-                                        # source tools/ci/activate-venv
+                                        /bin/bash -c 'source ./tools/ci/activate-venv'
                                         ./tools/test-tools
                                     '''
                                 }
@@ -65,7 +64,7 @@ pipeline {
                             dir("${WORKSPACE}"){
                                 script {
                                     sh '''
-                                        # source tools/ci/activate-venv
+                                        /bin/bash -c 'source ./tools/ci/activate-venv'
                                         ./tools/test-backend --coverage --include-webhooks --no-cov-cleanup --ban-console-output
                                     '''
                                 }
@@ -79,7 +78,7 @@ pipeline {
                             dir("${WORKSPACE}"){
                                 script {
                                     sh '''
-                                        # source tools/ci/activate-venv
+                                        /bin/bash -c 'source ./tools/ci/activate-venv'
                                         ./tools/test-migrations
                                         
                                     '''
@@ -94,6 +93,7 @@ pipeline {
                             dir("${WORKSPACE}"){
                                 script {
                                     sh '''
+                                        /bin/bash -c 'source ./tools/ci/activate-venv'
                                         chmod 000 static/generated
                                         ./scripts/lib/check-database-compatibility.py
                                         chmod 755 static/generated
@@ -109,6 +109,7 @@ pipeline {
                             dir("${WORKSPACE}"){
                                 script {
                                     sh '''
+                                        /bin/bash -c 'source ./tools/ci/activate-venv'
                                         ./tools/test-api
                                     '''
                                 }
@@ -122,7 +123,7 @@ pipeline {
                             dir("${WORKSPACE}"){
                                 script {
                                     sh '''
-                                        # source tools/ci/activate-venv
+                                        /bin/bash -c 'source ./tools/ci/activate-venv'
                                         # Check that various schemas are consistent. (is fast)
                                         ./tools/check-schemas
 
@@ -138,7 +139,7 @@ pipeline {
                             dir("${WORKSPACE}"){
                                 script {
                                     sh '''
-                                        # source tools/ci/activate-venv
+                                        /bin/bash -c 'source ./tools/ci/activate-venv'
                                         ./manage.py makemessages --locale en
                                         PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
                                         PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
@@ -154,8 +155,7 @@ pipeline {
                             dir("${WORKSPACE}"){
                                 script {
                                     sh '''
-                                        . /srv/zulip-py3-venv/bin/activate
-                                        
+                                        /bin/bash -c 'source ./tools/ci/activate-venv'
                                         ./tools/test-locked-requirements
                                     '''
                                 }
@@ -169,6 +169,7 @@ pipeline {
                             dir("${WORKSPACE}"){
                                 script {
                                     sh '''
+                                        /bin/bash -c 'source ./tools/ci/activate-venv'
                                         ./tools/ci/setup-backend
                                     '''
                                 }
@@ -182,7 +183,7 @@ pipeline {
                             dir("${WORKSPACE}"){
                                 script {
                                     sh '''
-                                        # source tools/ci/activate-venv
+                                        /bin/bash -c 'source ./tools/ci/activate-venv'
                                         # Run the node tests first, since they're fast and deterministic
                                         #./tools/test-js-with-node --coverage --parallel=1
                                         ./tools/test-js-with-node --parallel=1
@@ -198,7 +199,7 @@ pipeline {
                             dir("${WORKSPACE}"){
                                 script {
                                     sh '''
-                                        source tools/ci/activate-venv
+                                        /bin/bash -c 'source ./tools/ci/activate-venv'
                                         ./tools/test-js-with-puppeteer
                                         ./tools/setup/optimize-svg --check
                                         ./tools/setup/generate_integration_bots_avatars.py --check-missing
@@ -214,6 +215,7 @@ pipeline {
                             dir("${WORKSPACE}"){
                                 script {
                                     sh '''
+                                        /bin/bash -c 'source ./tools/ci/activate-venv'
                                         ./tools/setup/optimize-svg --check
                                         ./tools/setup/generate_integration_bots_avatars.py --check-missing
                                     '''
