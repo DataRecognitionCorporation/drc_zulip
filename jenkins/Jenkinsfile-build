@@ -18,7 +18,7 @@ pipeline {
     parameters {
         string(
             name: 'BUILD_NUMBER',
-            defaultValue: '6.1.8',
+            defaultValue: '6.1.18',
             description: 'Build number. This must match the release in github.'
         )
     }
@@ -54,21 +54,6 @@ pipeline {
 
                                         source ./tools/ci/activate-venv
                                         ./tools/test-tools
-                                    '''
-                                }
-                            }
-                        }
-                    }
-                }
-                stage('test-backend') {
-                    steps {
-                        container('zulip-ci-jammy') {
-                            dir("${WORKSPACE}"){
-                                script {
-                                    sh '''#!/bin/bash
-
-                                        source ./tools/ci/activate-venv
-                                        ./tools/test-backend --coverage --include-webhooks --no-cov-cleanup --ban-console-output
                                     '''
                                 }
                             }
@@ -172,7 +157,7 @@ pipeline {
                         }
                     }
                 }
-                stage('test-db-build') {
+                stage('test-backend') {
                     steps {
                         container('zulip-ci-jammy') {
                             dir("${WORKSPACE}"){
@@ -180,7 +165,7 @@ pipeline {
                                     sh '''#!/bin/bash
 
                                         source ./tools/ci/activate-venv
-                                        ./tools/ci/setup-backend
+                                        ./tools/test-backend --coverage --include-webhooks --no-cov-cleanup
                                     '''
                                 }
                             }
@@ -231,6 +216,21 @@ pipeline {
                                         source ./tools/ci/activate-venv
                                         ./tools/setup/optimize-svg --check
                                         ./tools/setup/generate_integration_bots_avatars.py --check-missing
+                                    '''
+                                }
+                            }
+                        }
+                    }
+                }
+                stage('test-db-build') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    sh '''#!/bin/bash
+
+                                        source ./tools/ci/activate-venv
+                                        ./tools/ci/setup-backend
                                     '''
                                 }
                             }
