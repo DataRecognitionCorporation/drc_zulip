@@ -41,186 +41,187 @@ pipeline {
                 }
             }
         }
-        stages {
-            stage('test-tools') {
-                steps {
-                    container('zulip-ci-jammy') {
-                        dir("${WORKSPACE}"){
-                            script {
-                                sh '''
-                                    # source tools/ci/activate-venv
-                                    ./tools/test-tools
-                                '''
+        stage('run-tests') {
+            stages {
+                stage('test-tools') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    sh '''
+                                        # source tools/ci/activate-venv
+                                        ./tools/test-tools
+                                    '''
+                                }
                             }
                         }
                     }
                 }
-            }
-            stage('test-backend') {
-                steps {
-                    container('zulip-ci-jammy') {
-                        dir("${WORKSPACE}"){
-                            script {
-                                sh '''
-                                    # source tools/ci/activate-venv
-                                    ./tools/test-backend --coverage --include-webhooks --no-cov-cleanup --ban-console-output
-                                '''
+                stage('test-backend') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    sh '''
+                                        # source tools/ci/activate-venv
+                                        ./tools/test-backend --coverage --include-webhooks --no-cov-cleanup --ban-console-output
+                                    '''
+                                }
                             }
                         }
                     }
                 }
-            }
-            stage('test-migrations') {
-                steps {
-                    container('zulip-ci-jammy') {
-                        dir("${WORKSPACE}"){
-                            script {
-                                sh '''
-                                    # source tools/ci/activate-venv
-                                    ./tools/test-migrations
-                                    
-                                '''
+                stage('test-migrations') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    sh '''
+                                        # source tools/ci/activate-venv
+                                        ./tools/test-migrations
+                                        
+                                    '''
+                                }
                             }
                         }
                     }
                 }
-            }
-            stage('test-database-compatibility') {
-                steps {
-                    container('zulip-ci-jammy') {
-                        dir("${WORKSPACE}"){
-                            script {
-                                sh '''
-                                    chmod 000 static/generated
-                                    ./scripts/lib/check-database-compatibility.py
-                                    chmod 755 static/generated
-                                '''
+                stage('test-database-compatibility') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    sh '''
+                                        chmod 000 static/generated
+                                        ./scripts/lib/check-database-compatibility.py
+                                        chmod 755 static/generated
+                                    '''
+                                }
                             }
                         }
                     }
                 }
-            }
-            stage('test-api') {
-                steps {
-                    container('zulip-ci-jammy') {
-                        dir("${WORKSPACE}"){
-                            script {
-                                sh '''
-                                    ./tools/test-api
-                                '''
+                stage('test-api') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    sh '''
+                                        ./tools/test-api
+                                    '''
+                                }
                             }
                         }
                     }
                 }
-            }
-            stage('test-schemas') {
-                steps {
-                    container('zulip-ci-jammy') {
-                        dir("${WORKSPACE}"){
-                            script {
-                                sh '''
-                                    # source tools/ci/activate-venv
-                                    # Check that various schemas are consistent. (is fast)
-                                    ./tools/check-schemas
+                stage('test-schemas') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    sh '''
+                                        # source tools/ci/activate-venv
+                                        # Check that various schemas are consistent. (is fast)
+                                        ./tools/check-schemas
 
-                                '''
+                                    '''
+                                }
                             }
                         }
                     }
                 }
-            }
-            stage('test-messaging') {
-                steps {
-                    container('zulip-ci-jammy') {
-                        dir("${WORKSPACE}"){
-                            script {
-                                sh '''
-                                    # source tools/ci/activate-venv
-                                    ./manage.py makemessages --locale en
-                                    PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
-                                    PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
-                                '''
+                stage('test-messaging') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    sh '''
+                                        # source tools/ci/activate-venv
+                                        ./manage.py makemessages --locale en
+                                        PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
+                                        PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
+                                    '''
+                                }
                             }
                         }
                     }
                 }
-            }
-            stage('test-locked-requirements') {
-                steps {
-                    container('zulip-ci-jammy') {
-                        dir("${WORKSPACE}"){
-                            script {
-                                sh '''
-                                    . /srv/zulip-py3-venv/bin/activate
-                                    
-                                    ./tools/test-locked-requirements
-                                '''
+                stage('test-locked-requirements') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    sh '''
+                                        . /srv/zulip-py3-venv/bin/activate
+                                        
+                                        ./tools/test-locked-requirements
+                                    '''
+                                }
                             }
                         }
                     }
                 }
-            }
-            stage('test-db-build') {
-                steps {
-                    container('zulip-ci-jammy') {
-                        dir("${WORKSPACE}"){
-                            script {
-                                sh '''
-                                    ./tools/ci/setup-backend
-                                '''
+                stage('test-db-build') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    sh '''
+                                        ./tools/ci/setup-backend
+                                    '''
+                                }
                             }
                         }
                     }
                 }
-            }
-            stage('test-js-with-node') {
-                steps {
-                    container('zulip-ci-jammy') {
-                        dir("${WORKSPACE}"){
-                            script {
-                                sh '''
-                                    # source tools/ci/activate-venv
-                                    # Run the node tests first, since they're fast and deterministic
-                                    #./tools/test-js-with-node --coverage --parallel=1
-                                    ./tools/test-js-with-node --parallel=1
-                                '''
+                stage('test-js-with-node') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    sh '''
+                                        # source tools/ci/activate-venv
+                                        # Run the node tests first, since they're fast and deterministic
+                                        #./tools/test-js-with-node --coverage --parallel=1
+                                        ./tools/test-js-with-node --parallel=1
+                                    '''
+                                }
                             }
                         }
                     }
                 }
-            }
-            stage('test-js-with-puppeteer') {
-                steps {
-                    container('zulip-ci-jammy') {
-                        dir("${WORKSPACE}"){
-                            script {
-                                sh '''
-                                    source tools/ci/activate-venv
-                                    ./tools/test-js-with-puppeteer
-                                    ./tools/setup/optimize-svg --check
-                                    ./tools/setup/generate_integration_bots_avatars.py --check-missing
-                                '''
+                stage('test-js-with-puppeteer') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    sh '''
+                                        source tools/ci/activate-venv
+                                        ./tools/test-js-with-puppeteer
+                                        ./tools/setup/optimize-svg --check
+                                        ./tools/setup/generate_integration_bots_avatars.py --check-missing
+                                    '''
+                                }
                             }
                         }
                     }
                 }
-            }
-            stage('misc') {
-                steps {
-                    container('zulip-ci-jammy') {
-                        dir("${WORKSPACE}"){
-                            script {
-                                sh '''
-                                    ./tools/setup/optimize-svg --check
-                                    ./tools/setup/generate_integration_bots_avatars.py --check-missing
-                                '''
+                stage('misc') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    sh '''
+                                        ./tools/setup/optimize-svg --check
+                                        ./tools/setup/generate_integration_bots_avatars.py --check-missing
+                                    '''
+                                }
                             }
                         }
                     }
                 }
             }
         }
-       
         stage('Build') {
             steps {
                 container('zulip-ci-jammy') {
