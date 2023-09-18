@@ -168,19 +168,24 @@ pipeline {
                 }
                 stage('test-backend') {
                     steps {
-                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                            container('zulip-ci-jammy') {
-                                dir("${WORKSPACE}"){
-                                    script {
-                                        sh '''#!/bin/bash
+                      
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    sh '''#!/bin/bash
 
-                                            source ./tools/ci/activate-venv
-                                            ./tools/test-backend --coverage --include-webhooks --no-cov-cleanup
-                                        '''
+                                        source ./tools/ci/activate-venv
+                                        ./tools/test-backend --coverage --include-webhooks --no-cov-cleanup
+                                    '''
+                                    if(currentBuild.currentResult == 'FAILURE') {
+                                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                            error(msg)
+                                        }
                                     }
                                 }
                             }
                         }
+                        
                     }
                 }
                 stage('test-js-with-node') {
@@ -188,17 +193,15 @@ pipeline {
                         container('zulip-ci-jammy') {
                             dir("${WORKSPACE}"){
                                 script {
-                                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                                        sh '''#!/bin/bash
-
-                                            source ./tools/ci/activate-venv
-                                            # Run the node tests first, since they're fast and deterministic
-                                            #./tools/test-js-with-node --coverage --parallel=1
-                                            ./tools/test-js-with-node --parallel=1
-                                        '''
-
-                                        if(stageResult == 'FAILURE') {
-                                            has_failures = true
+                                    sh '''#!/bin/bash
+                                        source ./tools/ci/activate-venv
+                                        # Run the node tests first, since they're fast and deterministic
+                                        #./tools/test-js-with-node --coverage --parallel=1
+                                        ./tools/test-js-with-node --parallel=1
+                                    '''
+                                    if(currentBuild.currentResult == 'FAILURE') {
+                                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                            error(msg)
                                         }
                                     }
                                 }
@@ -208,19 +211,24 @@ pipeline {
                 }
                 stage('test-js-with-puppeteer') {
                     steps {
-                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                            container('zulip-ci-jammy') {
-                                dir("${WORKSPACE}"){
-                                    script {
-                                        sh '''#!/bin/bash
+                        
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    sh '''#!/bin/bash
 
-                                            source ./tools/ci/activate-venv
-                                            ./tools/test-js-with-puppeteer
-                                        '''
+                                        source ./tools/ci/activate-venv
+                                        ./tools/test-js-with-puppeteer
+                                    '''
+                                    if(currentBuild.currentResult == 'FAILURE') {
+                                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                            error(msg)
+                                        }
                                     }
                                 }
                             }
                         }
+                        
                     }
                 }
                 stage('misc') {

@@ -53,10 +53,11 @@ pipeline {
                 container('zulip-ci-jammy') {
                     dir("${WORKSPACE}"){
                         script {
-                            uploadToArtifactory([repo: artiRepo,
+                            uploadToArtifactory([
+                                repo: 'downloads',
                                 pattern: "/tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz",
                                 git_proj: 'zulip/dev',
-                                arti_url: 'https://artifactory.datarecognitioncorp.com/artifactory/downloads/',
+                                arti_url: 'https://artifactory.datarecognitioncorp.com/artifactory',
                                 isYumRepo: false
                             ])
                                 
