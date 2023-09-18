@@ -35,10 +35,12 @@ pipeline {
 
                                 git branch -a
                                 git tag
-                                ./tools/ci/production-build
+                                
                                 ls -lah /tmp/
                                 ./tools/build-release-tarball ${params.BUILD_NUMBER}
+                                ls -lah /tmp/tmp.*/*.${params.BUILD_NUMBER}.tar.gz
                             """
+                            //./tools/ci/production-build
                                 
                         }
                     }
