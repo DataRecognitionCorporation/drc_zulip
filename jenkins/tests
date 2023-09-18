@@ -159,7 +159,7 @@ pipeline {
                 }
                 stage('test-backend') {
                     steps {
-                        catchError(buildResult: 'SUCCUSS', stageResult: 'FAILURE') {
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             container('zulip-ci-jammy') {
                                 dir("${WORKSPACE}"){
                                     script {
@@ -176,7 +176,7 @@ pipeline {
                 }
                 stage('test-js-with-node') {
                     steps {
-                        catchError(buildResult: 'SUCCUSS', stageResult: 'FAILURE') {
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             container('zulip-ci-jammy') {
                                 dir("${WORKSPACE}"){
                                     script {
@@ -195,7 +195,7 @@ pipeline {
                 }
                 stage('test-js-with-puppeteer') {
                     steps {
-                        catchError(buildResult: 'SUCCUSS', stageResult: 'FAILURE') {
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             container('zulip-ci-jammy') {
                                 dir("${WORKSPACE}"){
                                     script {

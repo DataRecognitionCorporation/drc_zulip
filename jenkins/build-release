@@ -37,6 +37,7 @@ pipeline {
                                 git tag
                                 
                                 ls -lah /tmp/
+                                ./tools/provision --build-release-tarball-only
                                 ./tools/build-release-tarball ${params.BUILD_NUMBER} \
                                     && ls -lah /tmp/tmp.*/*.${params.BUILD_NUMBER}.tar.gz
                             """
