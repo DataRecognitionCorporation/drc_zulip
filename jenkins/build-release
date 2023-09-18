@@ -1,4 +1,4 @@
-// @Library('DRC_Global_Pipeline_Libraries@master')
+@Library('DRC_Global_Pipeline_Libraries@master')
 
 pipeline {
     agent {
