@@ -266,8 +266,10 @@ pipeline {
     }
     post {
         always {
-            if(has_failures == true) {
-                error('tests failed')
+            script {
+                if(has_failures == true) {
+                    error('tests failed')
+                }
             }
         }
     }
