@@ -168,15 +168,17 @@ pipeline {
                         container('zulip-ci-jammy') {
                             dir("${WORKSPACE}"){
                                 script {
-                                    sh '''#!/bin/bash
+                                    try {
+                                        sh '''#!/bin/bash
 
-                                        source ./tools/ci/activate-venv
-                                        ./tools/test-backend --coverage --include-webhooks --no-cov-cleanup
-                                    '''
-                                    if(currentBuild.currentResult == 'FAILURE') {
+                                            source ./tools/ci/activate-venv
+                                            ./tools/test-backend --coverage --include-webhooks --no-cov-cleanup
+                                        '''
+                                    } catch(e) {
                                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                             println('test failed')
                                             has_failures = true
+                                            error(e)
                                         }
                                     }
                                 }

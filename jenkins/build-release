@@ -57,7 +57,7 @@ pipeline {
                 container('zulip-ci-jammy') {
                     dir("${WORKSPACE}"){
                         script {
-                            sh 'ls -lah /tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz'
+                            sh "ls -lah /tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz"
                             uploadToArtifactory([
                                 repo: 'downloads',
                                 pattern: "/tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz",
