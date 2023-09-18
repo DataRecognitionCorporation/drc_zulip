@@ -1,0 +1,73 @@
+@Library('DRC_Global_Pipeline_Libraries@master')
+
+def has_failures = false
+
+pipeline {
+    agent {
+        kubernetes {
+            yamlFile 'jenkins/k8s/zulip_ci_jammy.yaml'
+        }
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '100', artifactNumToKeepStr: '100'))
+        ansiColor('xterm')
+    }
+
+    environment {
+        GITHUB_ACTIONS = true
+    }
+
+
+    parameters {
+        string(
+            name: 'BUILD_NUMBER',
+            defaultValue: '6.1.18',
+            description: 'Build number. This must match the release in github.'
+        )
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                container('zulip-ci-jammy') {
+                    dir("${WORKSPACE}"){
+                        script {
+                            checkout scm
+                            sh """#!/bin/bash
+                                source ./tools/ci/activate-venv
+
+                                git branch -a
+                                git tag
+                                
+                                ls -lah /tmp/
+                                ./tools/provision --build-release-tarball-only
+                                ./tools/build-release-tarball ${params.BUILD_NUMBER} \
+                                    && mv /tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz ./
+                            """
+                            //./tools/ci/production-build
+                                
+                        }
+                    }
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                container('zulip-ci-jammy') {
+                    dir("${WORKSPACE}"){
+                        script {
+                            uploadToArtifactory([
+                                repo: 'downloads',
+                                pattern: "./*-${params.BUILD_NUMBER}.tar.gz",
+                                git_proj: 'zulip',
+                                arti_url: 'https://artifactory.datarecognitioncorp.com/artifactory',
+                                isYumRepo: false
+                            ])
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
