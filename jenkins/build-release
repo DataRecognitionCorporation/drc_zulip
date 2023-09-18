@@ -43,7 +43,7 @@ pipeline {
                                 ls -lah /tmp/
                                 ./tools/provision --build-release-tarball-only
                                 ./tools/build-release-tarball ${params.BUILD_NUMBER} \
-                                    && ls -lah /tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz
+                                    && mv /tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz ./
                             """
                             //./tools/ci/production-build
                                 
@@ -61,7 +61,7 @@ pipeline {
                             sh "echo wtfman > test.txt"
                             uploadToArtifactory([
                                 repo: 'downloads',
-                                pattern: "/tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz",
+                                pattern: "./*-${params.BUILD_NUMBER}.tar.gz",
                                 git_proj: 'zulip',
                                 arti_url: 'https://artifactory.datarecognitioncorp.com/artifactory',
                                 isYumRepo: false
