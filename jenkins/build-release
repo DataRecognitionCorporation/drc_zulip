@@ -58,9 +58,18 @@ pipeline {
                     dir("${WORKSPACE}"){
                         script {
                             sh "ls -lah /tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz"
+                            sh "echo wtfman > test.txt"
                             uploadToArtifactory([
                                 repo: 'downloads',
                                 pattern: "/tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz",
+                                git_proj: 'zulip',
+                                arti_url: 'https://artifactory.datarecognitioncorp.com/artifactory',
+                                isYumRepo: false
+                            ])
+
+                            uploadToArtifactory([
+                                repo: 'downloads',
+                                pattern: "./test.txt",
                                 git_proj: 'zulip',
                                 arti_url: 'https://artifactory.datarecognitioncorp.com/artifactory',
                                 isYumRepo: false
