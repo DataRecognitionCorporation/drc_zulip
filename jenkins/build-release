@@ -57,8 +57,6 @@ pipeline {
                 container('zulip-ci-jammy') {
                     dir("${WORKSPACE}"){
                         script {
-                            sh "ls -lah /tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz"
-                            sh "echo wtfman > test.txt"
                             uploadToArtifactory([
                                 repo: 'downloads',
                                 pattern: "./*-${params.BUILD_NUMBER}.tar.gz",
@@ -66,15 +64,6 @@ pipeline {
                                 arti_url: 'https://artifactory.datarecognitioncorp.com/artifactory',
                                 isYumRepo: false
                             ])
-
-                            uploadToArtifactory([
-                                repo: 'downloads',
-                                pattern: "./test.txt",
-                                git_proj: 'zulip',
-                                arti_url: 'https://artifactory.datarecognitioncorp.com/artifactory',
-                                isYumRepo: false
-                            ])
-                                
                         }
                     }
                 }
