@@ -60,7 +60,7 @@ pipeline {
                             uploadToArtifactory([
                                 repo: 'downloads',
                                 pattern: "/tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz",
-                                git_proj: 'zulip/dev',
+                                git_proj: 'zulip',
                                 arti_url: 'https://artifactory.datarecognitioncorp.com/artifactory',
                                 isYumRepo: false
                             ])
