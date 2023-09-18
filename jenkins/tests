@@ -1,3 +1,7 @@
+@Library('DRC_Global_Pipeline_Libraries@master')
+
+def has_failures = false
+
 pipeline {
     agent {
         kubernetes {
@@ -29,6 +33,10 @@ pipeline {
                 container('zulip-ci-jammy') {
                     dir("${WORKSPACE}"){
                         script {
+                            println(currentBuild.currentResult)
+                            sh 'printenv'
+                            println(currentStage.currentResult)
+
                             sh '''#!/bin/bash
 
                                 sudo mkdir -p /srv/zulip-npm-cache
@@ -38,6 +46,7 @@ pipeline {
                                 
                                 ./tools/ci/setup-backend --skip-dev-db-build
                             '''
+
                         }
                     }
                 }
@@ -176,10 +185,10 @@ pipeline {
                 }
                 stage('test-js-with-node') {
                     steps {
-                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                            container('zulip-ci-jammy') {
-                                dir("${WORKSPACE}"){
-                                    script {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                         sh '''#!/bin/bash
 
                                             source ./tools/ci/activate-venv
@@ -187,6 +196,10 @@ pipeline {
                                             #./tools/test-js-with-node --coverage --parallel=1
                                             ./tools/test-js-with-node --parallel=1
                                         '''
+
+                                        if(stageResult == 'FAILURE') {
+                                            has_failures = true
+                                        }
                                     }
                                 }
                             }
@@ -243,27 +256,6 @@ pipeline {
                 }
             }
         }
-        // stage('Build') {
-        //     steps {
-        //         container('zulip-ci-jammy') {
-        //             dir("${WORKSPACE}"){
-        //                 script {
-        //                     checkout scm
-        //                     sh """
-        //                         git branch -a
-        //                         git tag
-        //                         ./tools/ci/production-build
-        //                         ls -lah /tmp/
-        //                     """
-        //                         // ./tools/build-release-tarball ${params.BUILD_NUMBER}
-        //                 }
-        //             }
-        //         }
-        //     }
-        // }
-        // stage('Deploy') {
-            
-        // }
     }
-    
+    post
 }

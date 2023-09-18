@@ -39,7 +39,7 @@ pipeline {
                                 ls -lah /tmp/
                                 ./tools/provision --build-release-tarball-only
                                 ./tools/build-release-tarball ${params.BUILD_NUMBER} \
-                                    && ls -lah /tmp/tmp.*/*.${params.BUILD_NUMBER}.tar.gz
+                                    && ls -lah /tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz
                             """
                             //./tools/ci/production-build
                                 
@@ -53,10 +53,12 @@ pipeline {
                 container('zulip-ci-jammy') {
                     dir("${WORKSPACE}"){
                         script {
-                            checkout scm
-                            sh """#!/bin/bash
-                                echo test
-                            """
+                            uploadToArtifactory([repo: artiRepo,
+                                pattern: "/tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz",
+                                git_proj: 'zulip/dev',
+                                arti_url: 'https://artifactory.datarecognitioncorp.com/artifactory/downloads/',
+                                isYumRepo: false
+                            ])
                                 
                         }
                     }
