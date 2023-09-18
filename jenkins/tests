@@ -175,7 +175,8 @@ pipeline {
                                     '''
                                     if(currentBuild.currentResult == 'FAILURE') {
                                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                                            error(msg)
+                                            println('test failed')
+                                            has_failures = true
                                         }
                                     }
                                 }
@@ -197,7 +198,8 @@ pipeline {
                                     '''
                                     if(currentBuild.currentResult == 'FAILURE') {
                                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                                            error(msg)
+                                            println('test failed')
+                                            has_failures = true
                                         }
                                     }
                                 }
@@ -218,7 +220,8 @@ pipeline {
                                     '''
                                     if(currentBuild.currentResult == 'FAILURE') {
                                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                                            error(msg)
+                                            println('test failed')
+                                            has_failures = true
                                         }
                                     }
                                 }
@@ -258,6 +261,13 @@ pipeline {
                         }
                     }
                 }
+            }
+        }
+    }
+    post {
+        always {
+            if(has_failures == true) {
+                error('tests failed')
             }
         }
     }
