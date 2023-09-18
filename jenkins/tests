@@ -190,16 +190,18 @@ pipeline {
                         container('zulip-ci-jammy') {
                             dir("${WORKSPACE}"){
                                 script {
-                                    sh '''#!/bin/bash
-                                        source ./tools/ci/activate-venv
-                                        # Run the node tests first, since they're fast and deterministic
-                                        #./tools/test-js-with-node --coverage --parallel=1
-                                        ./tools/test-js-with-node --parallel=1
-                                    '''
-                                    if(currentBuild.currentResult == 'FAILURE') {
+                                    try {
+                                        sh '''#!/bin/bash
+                                            source ./tools/ci/activate-venv
+                                            # Run the node tests first, since they're fast and deterministic
+                                            #./tools/test-js-with-node --coverage --parallel=1
+                                            ./tools/test-js-with-node --parallel=1
+                                        '''
+                                    } catch(e) {
                                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                             println('test failed')
                                             has_failures = true
+                                            error(e)
                                         }
                                     }
                                 }
@@ -213,15 +215,17 @@ pipeline {
                         container('zulip-ci-jammy') {
                             dir("${WORKSPACE}"){
                                 script {
-                                    sh '''#!/bin/bash
+                                    try {
+                                        sh '''#!/bin/bash
 
-                                        source ./tools/ci/activate-venv
-                                        ./tools/test-js-with-puppeteer
-                                    '''
-                                    if(currentBuild.currentResult == 'FAILURE') {
+                                            source ./tools/ci/activate-venv
+                                            ./tools/test-js-with-puppeteer
+                                        '''
+                                    } catch(e) {
                                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                             println('test failed')
                                             has_failures = true
+                                            error(e)
                                         }
                                     }
                                 }
@@ -235,12 +239,20 @@ pipeline {
                         container('zulip-ci-jammy') {
                             dir("${WORKSPACE}"){
                                 script {
-                                    sh '''#!/bin/bash
+                                    try {
+                                        sh '''#!/bin/bash
 
-                                        source ./tools/ci/activate-venv
-                                        ./tools/setup/optimize-svg --check
-                                        ./tools/setup/generate_integration_bots_avatars.py --check-missing
-                                    '''
+                                            source ./tools/ci/activate-venv
+                                            ./tools/setup/optimize-svg --check
+                                            ./tools/setup/generate_integration_bots_avatars.py --check-missing
+                                        '''
+                                    } catch(e) {
+                                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                            println('test failed')
+                                            has_failures = true
+                                            error(e)
+                                        }
+                                    }
                                 }
                             }
                         }
