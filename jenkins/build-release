@@ -1,5 +1,7 @@
 @Library('DRC_Global_Pipeline_Libraries@master')
 
+def has_failures = false
+
 pipeline {
     agent {
         kubernetes {
