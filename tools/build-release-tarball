@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eu
+set -euo
 
 # shellcheck source=lib/git-tools.bash
 . "$(dirname "$0")"/lib/git-tools.bash
