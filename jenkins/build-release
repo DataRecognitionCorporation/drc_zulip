@@ -39,6 +39,7 @@ pipeline {
                             sh 'git pull'
                             sh 'git branch -a'
                             sh 'git tag'
+
                             sh """#!/bin/bash
                                 set -eu
                                 
@@ -58,11 +59,11 @@ pipeline {
                             sh """#!/bin/bash
                                 set -eu
                                 
-                                #source ./tools/ci/activate-venv
+                                source ./tools/ci/activate-venv
 
                                 echo '#####################################################################'
-                                #./tools/build-release-tarball ${params.BUILD_NUMBER} \
-                                #    && mv /tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz ./
+                                ./tools/build-release-tarball ${params.BUILD_NUMBER} \
+                                    && mv /tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz ./
                             """
                             //./tools/ci/production-build
                                 
