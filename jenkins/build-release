@@ -34,10 +34,12 @@ pipeline {
                 container('zulip-ci-jammy') {
                     dir("${WORKSPACE}"){
                         script {
+                            sh 'git branch -a'
+                            sh 'git tag'
                             sh """#!/bin/bash
                                 set -eu
                                 
-                                ./tools/provision --build-release-tarball-only
+                                #./tools/provision --build-release-tarball-only
                             """   
                                 // source ./tools/ci/activate-venv
                         }
@@ -53,11 +55,11 @@ pipeline {
                             sh """#!/bin/bash
                                 set -eu
                                 
-                                source ./tools/ci/activate-venv
+                                #source ./tools/ci/activate-venv
 
                                 echo '#####################################################################'
-                                ./tools/build-release-tarball ${params.BUILD_NUMBER} \
-                                    && mv /tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz ./
+                                #./tools/build-release-tarball ${params.BUILD_NUMBER} \
+                                #    && mv /tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz ./
                             """
                             //./tools/ci/production-build
                                 
