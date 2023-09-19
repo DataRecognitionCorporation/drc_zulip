@@ -37,9 +37,9 @@ pipeline {
                             sh """#!/bin/bash
                                 set -eu
                                 
-                                source ./tools/ci/activate-venv
                                 ./tools/provision --build-release-tarball-only
                             """   
+                                // source ./tools/ci/activate-venv
                         }
                     }
                 }
