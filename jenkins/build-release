@@ -16,6 +16,7 @@ pipeline {
 
     environment {
         GITHUB_ACTIONS = true
+        VIRTUAL_ENV = "/srv/zulip-py3-venv"
     }
 
 
@@ -53,7 +54,7 @@ pipeline {
                                 set -eu
                                 
                                 source ./tools/ci/activate-venv
-                                
+
                                 echo '#####################################################################'
                                 ./tools/build-release-tarball ${params.BUILD_NUMBER} \
                                     && mv /tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz ./
