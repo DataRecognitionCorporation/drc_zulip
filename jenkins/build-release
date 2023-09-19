@@ -16,6 +16,7 @@ pipeline {
 
     environment {
         GITHUB_ACTIONS = true
+        VIRTUAL_ENV = "/srv/zulip-py3-venv"
     }
 
 
@@ -28,22 +29,37 @@ pipeline {
     }
 
     stages {
+         stage('Configure') {
+            steps {
+                container('zulip-ci-jammy') {
+                    dir("${WORKSPACE}"){
+                        script {
+                            sh 'git branch -a'
+                            sh 'git tag'
+                            sh """#!/bin/bash
+                                set -eu
+                                
+                                #./tools/provision --build-release-tarball-only
+                            """   
+                                // source ./tools/ci/activate-venv
+                        }
+                    }
+                }
+            }
+        }
         stage('Build') {
             steps {
                 container('zulip-ci-jammy') {
                     dir("${WORKSPACE}"){
                         script {
-                            checkout scm
                             sh """#!/bin/bash
-                                source ./tools/ci/activate-venv
-
-                                git branch -a
-                                git tag
+                                set -eu
                                 
-                                ls -lah /tmp/
-                                ./tools/provision --build-release-tarball-only
-                                ./tools/build-release-tarball ${params.BUILD_NUMBER} \
-                                    && mv /tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz ./
+                                #source ./tools/ci/activate-venv
+
+                                echo '#####################################################################'
+                                #./tools/build-release-tarball ${params.BUILD_NUMBER} \
+                                #    && mv /tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz ./
                             """
                             //./tools/ci/production-build
                                 
