@@ -28,18 +28,31 @@ pipeline {
     }
 
     stages {
+         stage('Configure') {
+            steps {
+                container('zulip-ci-jammy') {
+                    dir("${WORKSPACE}"){
+                        script {
+                            sh """#!/bin/bash
+                                set -eu
+                                
+                                source ./tools/ci/activate-venv
+                            """   
+                        }
+                    }
+                }
+            }
+        }
         stage('Build') {
             steps {
                 container('zulip-ci-jammy') {
                     dir("${WORKSPACE}"){
                         script {
                             sh """#!/bin/bash
-                                git branch -a
-                                git tag
-                                source ./tools/ci/activate-venv
-
+                                set -eu
                                 
-                                ls -lah /tmp/
+                                source ./tools/ci/activate-venv
+                            
                                 ./tools/provision --build-release-tarball-only
                                 echo '#####################################################################'
                                 ./tools/build-release-tarball ${params.BUILD_NUMBER} \
