@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo
+set -euo pipefail
 
 # shellcheck source=lib/git-tools.bash
 . "$(dirname "$0")"/lib/git-tools.bash
