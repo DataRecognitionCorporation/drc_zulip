@@ -33,7 +33,10 @@ pipeline {
             steps {
                 container('zulip-ci-jammy') {
                     dir("${WORKSPACE}"){
+
                         script {
+                            sh 'git fetch'
+                            sh 'git pull'
                             sh 'git branch -a'
                             sh 'git tag'
                             sh """#!/bin/bash
