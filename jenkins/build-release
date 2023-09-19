@@ -35,10 +35,10 @@ pipeline {
                         script {
                             checkout scm
                             sh """#!/bin/bash
-                                source ./tools/ci/activate-venv
-
                                 git branch -a
                                 git tag
+                                source ./tools/ci/activate-venv
+
                                 
                                 ls -lah /tmp/
                                 ./tools/provision --build-release-tarball-only
