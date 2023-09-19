@@ -41,10 +41,10 @@ pipeline {
 
                                 
                                 ls -lah /tmp/
-                                ./tools/provision --build-release-tarball-only
                                 ./tools/build-release-tarball ${params.BUILD_NUMBER} \
                                     && mv /tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz ./
                             """
+                            // ./tools/provision --build-release-tarball-only
                             //./tools/ci/production-build
                                 
                         }
