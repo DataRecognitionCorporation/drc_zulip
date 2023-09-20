@@ -39,6 +39,7 @@ pipeline {
                             sh 'git pull'
                             sh 'git branch -a'
                             sh 'git tag'
+                            sh 'head -n1 zulip-git-version'
 
                             sh """#!/bin/bash
                                 set -eu
@@ -61,7 +62,6 @@ pipeline {
                                 
                                 source ./tools/ci/activate-venv
 
-                                echo '#####################################################################'
                                 ./tools/build-release-tarball ${params.BUILD_NUMBER} \
                                     && mv /tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz ./
                             """
