@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo xtrace
+set -eu
 
 cd "$(dirname "$0")/.."
 remote="$(git config zulip.zulipRemote)" || remote=upstream
