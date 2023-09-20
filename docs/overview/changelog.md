@@ -5,9 +5,6 @@ This page contains the release history for the Zulip server. See also the
 
 ## Zulip Server 8.x series
 
-<<<<<<< HEAD
-### 6.2 -- 2023-05-19
-=======
 ### Zulip Server 8.0
 
 _Unreleased_
@@ -336,7 +333,6 @@ _Released 2023-05-31_
 ### Zulip Server 6.2
 
 _Released 2023-05-19_
->>>>>>> drc_main
 
 - CVE-2023-28623: Fixed a vulnerability that would allow users to sign up for a
   Zulip Server account with an unauthorized email address, despite the server
@@ -385,13 +381,9 @@ _Released 2023-05-19_
   Zulip’s default of `chrony` for time synchronization.
 - Upgraded dependencies for security and bug fixes.
 
-<<<<<<< HEAD
-### 6.1 -- 2023-01-23
-=======
 ### Zulip Server 6.1
 
 _Released 2023-01-23_
->>>>>>> drc_main
 
 - Fixed a bug that caused the web app to not load on Safari 13 and lower;
   affected users would only see a blank page.
@@ -446,13 +438,9 @@ _Released 2023-01-23_
   server error, if an invalid “invite as” value was given.
 - Renamed internal exceptions to end with `Error`.
 
-<<<<<<< HEAD
-### 6.0 -- 2022-11-17
-=======
 ### Zulip Server 6.0
 
 _Released 2022-11-17_
->>>>>>> drc_main
 
 #### Highlights
 

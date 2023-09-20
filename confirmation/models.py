@@ -45,17 +45,10 @@ def render_confirmation_key_error(
     request: HttpRequest, exception: ConfirmationKeyError
 ) -> HttpResponse:
     if exception.error_type == ConfirmationKeyError.WRONG_LENGTH:
-<<<<<<< HEAD
-        return render(request, "confirmation/link_malformed.html", status=404)
-    if exception.error_type == ConfirmationKeyError.EXPIRED:
-        return render(request, "confirmation/link_expired.html", status=404)
-    return render(request, "confirmation/link_does_not_exist.html", status=404)
-=======
         return TemplateResponse(request, "confirmation/link_malformed.html", status=404)
     if exception.error_type == ConfirmationKeyError.EXPIRED:
         return TemplateResponse(request, "confirmation/link_expired.html", status=404)
     return TemplateResponse(request, "confirmation/link_does_not_exist.html", status=404)
->>>>>>> drc_main
 
 
 def generate_key() -> str:
@@ -255,17 +248,10 @@ def validate_key(creation_key: Optional[str]) -> Optional["RealmCreationKey"]:
     try:
         key_record = RealmCreationKey.objects.get(creation_key=creation_key)
     except RealmCreationKey.DoesNotExist:
-<<<<<<< HEAD
-        raise RealmCreationKey.InvalidError()
-    time_elapsed = timezone_now() - key_record.date_created
-    if time_elapsed.total_seconds() > settings.REALM_CREATION_LINK_VALIDITY_DAYS * 24 * 3600:
-        raise RealmCreationKey.InvalidError()
-=======
         raise RealmCreationKey.InvalidError
     time_elapsed = timezone_now() - key_record.date_created
     if time_elapsed.total_seconds() > settings.REALM_CREATION_LINK_VALIDITY_DAYS * 24 * 3600:
         raise RealmCreationKey.InvalidError
->>>>>>> drc_main
     return key_record
 
 

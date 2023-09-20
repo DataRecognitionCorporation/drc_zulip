@@ -4,14 +4,9 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-<<<<<<< HEAD
-# Alaa Abdelfattah <alaa.abdelfattah16@gmail.com>, 2022
-# aljahmi2002 <aljahmi2002@gmail.com>, 2022
-=======
 # alebrahimyahmed <alebrahimyahmed@gmail.com>, 2020
 # najla seghaier <seghaier.najla95@gmail.com>, 2021
 # RanaJT, 2023
->>>>>>> drc_main
 # Tim Abbott <tabbott@kandralabs.com>, 2022
 # Rani Alwaheidi <rani.waheidi@gmail.com>, 2022
 # Akash Nimare <svnitakash@gmail.com>, 2022
@@ -26,17 +21,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2022-11-17 16:38+0000\n"
-"PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: Transifex Bot <>, 2022\n"
-"Language-Team: Arabic (https://app.transifex.com/zulip/teams/53893/ar/)\n"
-=======
 "POT-Creation-Date: 2023-05-31 01:00+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: RanaJT, 2023\n"
 "Language-Team: Arabic (http://app.transifex.com/zulip/zulip/language/ar/)\n"
->>>>>>> drc_main
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1311,19 +1299,6 @@ msgstr "انقر فوق الزر أدناه لإكمال التسجيل."
 msgid "Complete registration"
 msgstr "اكمل التسجيل"
 
-<<<<<<< HEAD
-#: templates/zerver/emails/confirm_registration.source.html:23
-#: templates/zerver/emails/invitation.source.html:19
-#: templates/zerver/emails/realm_reactivation.source.html:19
-#: templates/zerver/emails/realm_reactivation.txt:13
-#, python-format
-msgid ""
-"Contact us any time at %(support_email)s if you run into trouble, have any "
-"feedback, or just want to chat!"
-msgstr ""
-
-=======
->>>>>>> drc_main
 #: templates/zerver/emails/confirm_registration.subject.txt:2
 msgid "Create your Zulip organization"
 msgstr "قم بإنشاء منظمة \"زوليب\" الخاصة بك"
@@ -1347,13 +1322,6 @@ msgstr "انقر فوق الرابط أدناه لإكمال التسجيل."
 #: templates/zerver/emails/realm_reactivation.txt:14
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Contact us any time at %(support_email)s if you run into trouble,have any "
-"feedback, or just want to chat!"
-msgstr ""
-"اتصل بنا في أي وقت على %(support_email)s إذا واجهت مشكلة ، أو لديك أي "
-"ملاحظات ، أو تريد الدردشة فقط!"
-=======
 "Do you have questions or feedback to share? Contact us at %(support_email)s "
 "— we'd love to help!"
 msgstr ""
@@ -1368,7 +1336,6 @@ msgid ""
 "If you have any questions, please contact this Zulip server's administrators"
 " at %(support_email)s."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/custom_email_base.pre.html:18
 #: templates/zerver/emails/digest.html:39
@@ -1505,19 +1472,9 @@ msgstr "مرحبًا بك في Zulip!"
 #: templates/zerver/emails/followup_day1.html:26
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"You've created a demo Zulip organization. Note that this organization will "
-"be automatically deleted in 30 days. Learn more about demo organizations <a "
-"href=\"https://zulip.com/help/demo-organizations\">here</a>!"
-msgstr ""
-"لقد أنشأت منظمة \"زوليب\" التجريبية. لاحظ أنه سيتم حذف هذه المنظمة تلقائيًا "
-"في غضون 30 يومًا. تعلم المزيد عن المنظمات التجريبية <a "
-"href=\"https://zulip.com/help/demo-organizations\">هنا</a>!"
-=======
 "You've joined the Zulip organization <b>%(realm_name)s</b>.\n"
 "    "
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.html:32
 #, python-format
@@ -1535,11 +1492,7 @@ msgstr "عنوان URL للمنظمة: %(organization_url)s"
 #: templates/zerver/emails/followup_day1.html:37
 #: templates/zerver/emails/followup_day1.txt:20
 #, python-format
-<<<<<<< HEAD
-msgid "Username: %(ldap_username)s"
-=======
 msgid "Your username: %(ldap_username)s"
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/emails/followup_day1.html:39
@@ -1550,11 +1503,7 @@ msgstr ""
 #: templates/zerver/emails/followup_day1.html:42
 #: templates/zerver/emails/followup_day1.txt:25
 #, python-format
-<<<<<<< HEAD
-msgid "Email: %(email)s"
-=======
 msgid "Your account email: %(email)s"
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/emails/followup_day1.html:45
@@ -1564,76 +1513,23 @@ msgstr ""
 #: templates/zerver/emails/followup_day1.html:49
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"(you'll need these to sign in to the <a href=\"%(apps_page_link)s\">mobile "
-"and desktop</a> apps)"
-msgstr ""
-"(ستحتاج إلى هذه لتسجيل الدخول إلى تطبيقات <a "
-"href=\"%(apps_page_link)s\">الجوال وسطح المكتب</a>)"
-=======
 "If you are new to Zulip, check out our <a "
 "href=\"%(getting_user_started_link)s\">Getting started guide</a>!"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.html:51
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Check out our <a href=\"%(getting_started_link)s\">guide for admins</a>, "
-"become a Zulip pro with a few <a "
-"href=\"%(keyboard_shortcuts_link)s\">keyboard shortcuts</a>, or <a "
-"href=\"%(realm_uri)s\">dive right in</a>!"
-msgstr ""
-"راجع <a href=\"%(getting_started_link)s\">دليل المشرفين</a> لدينا، كن "
-"محترفًا في \"زوليب\" مع بعض <a href=\"%(keyboard_shortcuts_link)s\">اختصارات"
-" لوحة المفاتيح</a>، أو <a href=\"%(realm_uri)s\">انغمس مباشرة في</a> الأمر!"
-=======
 "We also have a guide for <a "
 "href=\"%(getting_organization_started_link)s\">Setting up your "
 "organization</a>."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.html:57
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"<a href=\"%(getting_started_link)s\">Learn more</a> about Zulip, become a "
-"pro with a few <a href=\"%(keyboard_shortcuts_link)s\">keyboard "
-"shortcuts</a>, or <a href=\"%(realm_uri)s\">dive right in</a>!"
-msgstr ""
-"<a href=\"%(getting_started_link)s\">تعرف على المزيد</a> حول \"زوليب\"، أو "
-"كن محترفًا باستخدام بعض <a href=\"%(keyboard_shortcuts_link)s\">اختصارات "
-"لوحة المفاتيح</a>، أو <a href=\"%(realm_uri)s\">انغمس مباشرة في</a> الأمر!"
-
-#: templates/zerver/emails/followup_day1.source.html:48
-#: templates/zerver/emails/followup_day1.txt:36
-msgid "Cheers,"
-msgstr ""
-
-#: templates/zerver/emails/followup_day1.source.html:49
-#: templates/zerver/emails/followup_day1.txt:37
-#: templates/zerver/emails/notify_change_in_email.source.html:14
-#: templates/zerver/emails/notify_change_in_email.txt:7
-msgid "Team Zulip"
-msgstr "فريق \"زوليب\""
-
-#: templates/zerver/emails/followup_day1.source.html:53
-msgid ""
-"PS: Follow us on <a href=\"https://twitter.com/zulip\">Twitter</a>, star us "
-"on <a href=\"https://github.com/zulip/zulip\">GitHub</a>, or chat with us "
-"live on the <a href=\"https://zulip.com/development-community/\">Zulip "
-"community server</a>!"
-msgstr ""
-"ملاحظة: تابعنا على <a href=\"https://twitter.com/zulip\">Twitter</a> أو قم "
-"بتمييزنا على <a href=\"https://github.com/zulip/zulip\">GitHub</a> أو دردش "
-"معنا مباشرةً على <a href=\"https://zulip.com/development-community/\">خادم "
-"مجتمع \"زوليب\"</a>!"
-=======
 "Questions? <a href=\"%(support_email)s\">Contact us</a> — we'd love to help!"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.subject.txt:2
 #, python-format
@@ -1648,20 +1544,10 @@ msgstr "%(realm_name)s على Zulip: تفاصيل حسابك الجديد"
 #: templates/zerver/emails/followup_day1.txt:5
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"You've created a demo Zulip organization. Note that this organization will "
-"be automatically deleted in 30 days. Learn more about demo organizations "
-"here: https://zulip.com/help/demo-organizations"
-msgstr ""
-"لقد أنشأت منظمة \"زوليب\" التجريبية. لاحظ أنه سيتم حذف هذه المؤسسة تلقائيًا "
-"في غضون 30 يومًا. تعرف على المزيد حول المنظمات التجريبية هنا: "
-"https://zulip.com/help/demo-organizations"
-=======
 " Congratulations, you have created a new demo Zulip organization. Note that "
 "this organization will be automatically deleted in 30 days. Learn more about"
 " demo organizations here: %(demo_organizations_help_link)s!"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.txt:7
 #, python-format
@@ -1677,57 +1563,20 @@ msgstr "لقد انضممت إلى منظمة Zulip %(realm_name)s."
 #: templates/zerver/emails/followup_day1.txt:14
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"(you'll need these to sign in to the mobile and desktop apps "
-"(%(apps_page_link)s))"
-msgstr ""
-"(ستحتاج إلى هذه لتسجيل الدخول إلى تطبيقات الجوال وسطح المكتب "
-"(%(apps_page_link)s))"
-=======
 "You will use the following info to log into the Zulip web, mobile and "
 "desktop apps (%(apps_page_link)s):"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.txt:29
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Check out our guide (%(getting_started_link)s) for admins, become a Zulip "
-"pro with a few keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive "
-"right in to %(realm_uri)s!"
-msgstr ""
-"راجع دليلنا (%(getting_started_link)s) للمسؤولين، كن محترفًا في \"زوليب\" مع"
-" بعض اختصارات لوحة المفاتيح (%(keyboard_shortcuts_link)s)، أو انغمس مباشرة "
-"في %(realm_uri)s!"
-=======
 "If you are new to Zulip, check out our Getting started guide "
 "(%(getting_user_started_link)s)!"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.txt:31
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Learn more (%(getting_started_link)s) about Zulip, become a pro with a few "
-"keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive right in to "
-"%(realm_uri)s!"
-msgstr ""
-"تعرف على المزيد (%(getting_started_link)s) حول \"زوليب\"، وكن محترفًا مع بعض"
-" اختصارات لوحة المفاتيح (%(keyboard_shortcuts_link)s)، أو انغمس مباشرة في "
-"%(realm_uri)s!"
-
-#: templates/zerver/emails/followup_day1.txt:39
-msgid ""
-"PS: Check us out on Twitter (@zulip), star us on GitHub "
-"(https://github.com/zulip/zulip), or chat with us live on the Zulip "
-"community server (https://zulip.com/development-community/)!"
-msgstr ""
-"ملاحظة: تابعنا على تويتر (@zulip)، أو قم بتمييزنا على GitHub "
-"(https://github.com/zulip/zulip)، أو راسلنا مباشرة على الخادم الخاص بمجتمع "
-"\"زوليب\" (https://zulip.com/development-community/)!"
-=======
 " We also have a guide for Setting up your organization "
 "(%(getting_organization_started_link)s)."
 msgstr ""
@@ -1736,7 +1585,6 @@ msgstr ""
 #, python-format
 msgid "Questions? Contact us at %(support_email)s — we'd love to help!"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.html:9
 #: templates/zerver/emails/followup_day2.txt:1
@@ -1754,17 +1602,9 @@ msgstr ""
 #: templates/zerver/emails/followup_day2.html:13
 #: templates/zerver/emails/followup_day2.txt:3
 msgid ""
-<<<<<<< HEAD
-"I wanted to share one last thing with you: a few tips about topics, since "
-"mastering topics is a key part of being a Zulip power user."
-msgstr ""
-"أردت مشاركة شيء أخير معك: بعض النصائح حول المواضيع، وذلك لأن إتقان التعامل "
-"مع المواضيع هو جزء أساسي من كونك مستخدمًا قويًا في \"زوليب\"."
-=======
 "Using topics, you can read Zulip one conversation at a time. You'll see each"
 " message in context, no matter how many different discussions are going on."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.html:16
 msgid "Streams and topics in the Zulip app"
@@ -1786,22 +1626,12 @@ msgstr "أمثلة من المواضيع القصيرة"
 #: templates/zerver/emails/followup_day2.html:25
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Topics are like email subject lines. The big difference, though, is that "
-"they're really short and lightweight. Two or three words will do it. Don't "
-"overthink 'em&mdash;you can always edit the message later!"
-msgstr ""
-"الموضوعات مثل أسطر موضوع البريد الإلكتروني. مع ذلك، فإن الاختلاف الكبير هو "
-"أنها قصيرة وخفيفة حقًا. كلمتين أو ثلاث ستفي بالغرض. لا تفرط في التفكير  - "
-"يمكنك دائمًا تعديل الرسالة لاحقًا!"
-=======
 "Don't stress about picking the perfect name for your topic. If anything is "
 "out of place, it's easy to <a href=\"%(move_messages_link)s\">move "
 "messages</a>, <a href=\"%(rename_topics_link)s\">rename topics</a>, or even "
 "<a href=\"%(move_topic_to_different_stream_link)s\">move a topic to a "
 "different stream</a>."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.html:28
 #: templates/zerver/emails/followup_day2.txt:10
@@ -1809,53 +1639,12 @@ msgstr ""
 msgid "Go to Zulip"
 msgstr "اذهب إلى \"زوليب\""
 
-<<<<<<< HEAD
-#: templates/zerver/emails/followup_day2.source.html:18
-#: templates/zerver/emails/followup_day2.txt:9
-msgid ""
-"Not recommended: \"What do people think of this new design mockup?\", \"I'm "
-"looking at Bug 345\", \"Is Acme Burgers open for lunch?\""
-msgstr ""
-"غير موصى به: \"ما رأي الناس في تصميم mockup الجديد هذا؟\"، \"أنا أبحث في Bug"
-" 345\"، \"هل Acme Burgers مفتوح للغداء؟\""
-
-#: templates/zerver/emails/followup_day2.source.html:21
-msgid "Example of a topic that is too long"
-msgstr ""
-
-#: templates/zerver/emails/followup_day2.source.html:23
-msgid ""
-"Why bother with topics? Well, two reasons: it makes conversations clearer "
-"(imagine if email didn't have them!), and it lets you more efficiently catch"
-" up on what's happened while you're away&mdash;read the topics that are "
-"relevant to you, and ignore the ones that aren't!"
-msgstr ""
-"لماذا تهتم بالموضوعات؟ حسنًا، سببان: يجعل المحادثات أكثر وضوحًا (تخيل لو أن "
-"البريد إلكتروني لا يحتوي على ذلك!) ، ويتيح لك متابعة وإدراك ما حدث أثناء عدم"
-" تواجدك بالمحادثة بكفاءة أكبر - اقرأ المواضيع ذات الصلة بك، وتجاهل التي ليست"
-" كذلك!"
-
-#: templates/zerver/emails/followup_day2.source.html:25
-msgid "Take it for a spin now."
-msgstr "خذ جولة الآن."
-
-#: templates/zerver/emails/followup_day2.source.html:27
-#: templates/zerver/emails/followup_day2.txt:16
-#: templates/zerver/emails/notify_new_login.source.html:40
-#: templates/zerver/emails/notify_new_login.txt:20
-msgid "Thanks,"
-msgstr "شكرا،"
-
-#: templates/zerver/emails/followup_day2.source.html:34
-msgid "Unsubscribe from welcome emails"
-=======
 #: templates/zerver/emails/followup_day2.html:34
 #: templates/zerver/emails/followup_day2.txt:14
 #: templates/zerver/emails/onboarding_zulip_guide.html:40
 #: templates/zerver/emails/onboarding_zulip_guide.txt:27
 #, python-format
 msgid "Unsubscribe from welcome emails for %(realm_name)s"
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
@@ -1864,40 +1653,18 @@ msgstr ""
 
 #: templates/zerver/emails/followup_day2.txt:3
 msgid ""
-<<<<<<< HEAD
-"Topics are like email subject lines. The big difference, though, is that "
-"they're really short and lightweight. Two or three words will do it. Don't "
-"overthink 'em -- you can always edit the message later!"
-msgstr ""
-"الموضوعات مثل سطور موضوع البريد الإلكتروني. ومع ذلك ، فإن الاختلاف الكبير هو"
-" أنها قصيرة وخفيفة الوزن حقًا. كلمتين أو ثلاث ستفعل ذلك. لا تفرط في التفكير "
-"- يمكنك دائمًا تعديل الرسالة لاحقًا!"
-=======
 "In Zulip, streams determine who gets a message. Topics tell you what the "
 "message is about."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.txt:7
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Why bother with topics? Well, two reasons: it makes conversations clearer "
-"(imagine if email didn't have them!), and it lets you more efficiently catch"
-" up on what's happened while you're away -- read the topics that are "
-"relevant to you, and ignore the ones that aren't!"
-msgstr ""
-"لماذا تهتم بالموضوعات؟ حسنًا ، هناك سببان: إنه يجعل المحادثات أكثر وضوحًا "
-"(تخيل لو لم يكن البريد الإلكتروني يحتوي عليها!) ، ويتيح لك بشكل أكثر كفاءة "
-"متابعة ما حدث أثناء تواجدك بعيدًا - اقرأ الموضوعات ذات الصلة بك ، وتجاهل تلك"
-" التي ليست كذلك!"
-=======
 "Don't stress about picking the perfect name for your topic. If anything is "
 "out of place, it's easy to move messages (%(move_messages_link)s), rename "
 "topics (%(rename_topics_link)s), or even move a topic to a different stream "
 "(%(move_topic_to_different_stream_link)s)."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/invitation.html:9
 #: templates/zerver/emails/invitation.txt:1
@@ -2091,20 +1858,12 @@ msgstr ""
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
-<<<<<<< HEAD
-msgid "Group PMs with %(huddle_display_name)s"
-=======
 msgid "Group DMs with %(huddle_display_name)s"
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format
-<<<<<<< HEAD
-msgid "PMs with %(sender_str)s"
-=======
 msgid "DMs with %(sender_str)s"
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/emails/missed_message.subject.txt:12
@@ -2577,83 +2336,14 @@ msgstr ""
 msgid "Integrations"
 msgstr "إدماجات"
 
-<<<<<<< HEAD
-#: templates/zerver/footer.html:17
-msgid "Solutions"
-msgstr ""
-
-#: templates/zerver/footer.html:20
-msgid "Business"
-msgstr "عمل تجاري"
-
-#: templates/zerver/footer.html:23
-msgid "Education"
-msgstr "تعليم"
-
-#: templates/zerver/footer.html:26
-msgid "Research"
-msgstr "بحث"
-
-#: templates/zerver/footer.html:29
-msgid "Events and conferences"
-msgstr ""
-
-#: templates/zerver/footer.html:32
-msgid "Open source projects"
-msgstr ""
-
-#: templates/zerver/footer.html:35
-msgid "Communities"
-msgstr ""
-
-#: templates/zerver/footer.html:40
-msgid "Customer stories"
-msgstr ""
-
-#: templates/zerver/footer.html:43
-msgid "Company"
-msgstr ""
-
-#: templates/zerver/footer.html:46
-msgid "Technical University of Munich"
-msgstr ""
-
-#: templates/zerver/footer.html:49
-msgid "University of California San Diego"
-msgstr ""
-
-#: templates/zerver/footer.html:52
-msgid "Lean theorem prover community"
-msgstr "المجتمع المثقف بنظرية العجاف"
-
-#: templates/zerver/footer.html:55
-msgid "Asciidoctor open-source community"
-msgstr "مجتمع Asciidoctor مفتوح المصدر"
-
-#: templates/zerver/footer.html:58
-msgid "Rust language community"
-msgstr "مجتمع لغة Rust"
-
-#: templates/zerver/footer.html:69
-msgid "Accounts"
-msgstr ""
-
-#: templates/zerver/footer.html:76
-=======
 #: templates/zerver/footer.html:15
 msgid "Desktop & mobile apps"
 msgstr "تطبيقات سطح المكتب & الهاتف المحمول"
 
 #: templates/zerver/footer.html:16 templates/zerver/portico-header.html:50
->>>>>>> drc_main
 msgid "New organization"
 msgstr ""
 
-<<<<<<< HEAD
-#: templates/zerver/footer.html:78
-msgid "Terms of Service"
-msgstr ""
-=======
 #: templates/zerver/footer.html:17
 #: templates/zerver/log_into_subdomain_token_invalid.html:13
 #: templates/zerver/login.html:5 templates/zerver/login.html:128
@@ -2661,21 +2351,14 @@ msgstr ""
 #: templates/zerver/portico-header.html:39
 msgid "Log in"
 msgstr "تسجيل الدخول"
->>>>>>> drc_main
 
 #: templates/zerver/footer.html:22
 msgid "Solutions"
 msgstr "حلول"
 
-<<<<<<< HEAD
-#: templates/zerver/footer.html:83
-msgid "For users"
-msgstr ""
-=======
 #: templates/zerver/footer.html:25
 msgid "Business"
 msgstr "اعمال"
->>>>>>> drc_main
 
 #: templates/zerver/footer.html:26
 msgid "Education"
@@ -2725,19 +2408,7 @@ msgstr "الدردشة مع الجماعة"
 msgid "Organization set up"
 msgstr ""
 
-<<<<<<< HEAD
-#: templates/zerver/footer.html:105
-msgid "For administrators"
-msgstr ""
-
-#: templates/zerver/footer.html:109
-msgid "Setting up your organization"
-msgstr "إعداد منظمتك"
-
-#: templates/zerver/footer.html:114
-=======
 #: templates/zerver/footer.html:51
->>>>>>> drc_main
 msgid "Installing a Zulip server"
 msgstr "تثبيت خادم \"زوليب\" "
 
@@ -2749,19 +2420,7 @@ msgstr "ترقية خادم \"زوليب\""
 msgid "Contributing"
 msgstr ""
 
-<<<<<<< HEAD
-#: templates/zerver/footer.html:130
-msgid "For contributors"
-msgstr ""
-
-#: templates/zerver/footer.html:132
-msgid "GitHub"
-msgstr "GitHub"
-
-#: templates/zerver/footer.html:135
-=======
 #: templates/zerver/footer.html:68
->>>>>>> drc_main
 msgid "Contributing guide"
 msgstr ""
 
@@ -3095,31 +2754,16 @@ msgid "No licenses available"
 msgstr ""
 
 #: templates/zerver/no_spare_licenses.html:12
-<<<<<<< HEAD
-msgid "This organization cannot accept new members right now."
-=======
 msgid "Organization cannot accept new members right now"
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/no_spare_licenses.html:16
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"\n"
-"    New members cannot join this organization because all Zulip licenses are currently in use. Please contact the person who\n"
-"    invited you and ask them to increase the number of licenses, then try again.\n"
-"    "
-msgstr ""
-"\n"
-"    لا يمكن لأعضاء جدد أن ينضموا لهذه المنظمة لأن جميع تراخيص \"زوليب\" مستخدمة لديهم في الوقت الحالي. رجاءً تواصل مع الشخص الذي قام بدعوتكم واطلب منه أن يقوم بزيادة عدد التراخيص، ثم حاول مرة أخرى.\n"
-"    "
-=======
 "New members cannot currently join <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a> because all Zulip Cloud licenses "
 "are in use."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/no_spare_licenses.html:19
 msgid ""
@@ -3733,12 +3377,8 @@ msgstr ""
 
 #: zerver/actions/message_edit.py:1035
 #, python-brace-format
-<<<<<<< HEAD
-msgid "A message was moved here from {old_location} by {user}."
-=======
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
->>>>>>> drc_main
 msgstr ""
 
 #: zerver/actions/message_edit.py:1039

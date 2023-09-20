@@ -115,9 +115,5 @@ ret = subprocess.call([*puppet_cmd, "--detailed-exitcodes"], env=puppet_env)
 # ret = 2 => changes, no errors
 # ret = 4 => no changes, yes errors
 # ret = 6 => changes, yes errors
-<<<<<<< HEAD
-if ret != 0 and ret != 2:
-=======
 if ret not in (0, 2):
->>>>>>> drc_main
     sys.exit(2)

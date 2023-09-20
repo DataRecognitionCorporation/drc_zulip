@@ -49,11 +49,7 @@
   "A stream with this name already exists": "يوجد بالفعل غرفة بهذا الاسم",
   "A user group needs to have a name": "تحتاج مجموعة المستخدمين إلى اسم",
   "A user group with this name already exists": "توجد بالفعل مجموعة مستخدمين بهذا الاسم",
-<<<<<<< HEAD
-  "A wide image for the upper left corner of the app.": "",
-=======
   "A wide image (200×25 pixels) for the upper left corner of the app.": "",
->>>>>>> drc_main
   "API documentation": "وثائق الـ API ",
   "API key": "مفتاح الـ API",
   "About Zulip": "حول \"زوليب\"",
@@ -61,12 +57,6 @@
   "Account & privacy": "الحساب والخصوصية",
   "Action": "إجراء",
   "Actions": "إجراءات",
-<<<<<<< HEAD
-  "Active": "",
-  "Active bots": "",
-  "Active now": "نشط الآن",
-  "Active users": "المستخدمين الفاعلين",
-=======
   "Active": "نشيط",
   "Active an hour ago": "",
   "Active bots": "روبوتات نشطة",
@@ -79,7 +69,6 @@
   "Active {last_active_date}": "",
   "Active {minutes} minutes ago": "",
   "Activity unknown": "",
->>>>>>> drc_main
   "Add": "إضافة",
   "Add GIF": "إضافة صورة متحركة",
   "Add a new alert word": "إضافة كلمة تنبيه جديدة",
@@ -93,10 +82,6 @@
   "Add alert word": "إضافة كلمة تنبيه",
   "Add all users": "إضافة كل المستخدمين",
   "Add another user...": "إضافة مستخدم آخر ...",
-<<<<<<< HEAD
-  "Add choice": "",
-=======
->>>>>>> drc_main
   "Add code playground": "إضافة مكان تجربة الشِفرة",
   "Add emoji": "أضف رمز تعبيري",
   "Add emoji reaction": "",
@@ -104,11 +89,7 @@
   "Add global time": "إضافة التوقيت العالمي",
   "Add linkifier": "إضافة رابط",
   "Add members": "إضافة اعضاء",
-<<<<<<< HEAD
-  "Add member…": "",
-=======
   "Add member…": "إضافة عضو…",
->>>>>>> drc_main
   "Add new default stream": "إضافة غرفة افتراضية جديدة",
   "Add new user group": "إضافة مجموعة مستخدمين جديدة",
   "Add one or more users": "أضف مستخدما واحدا أو أكثر",
@@ -123,15 +104,10 @@
   "Added successfully!": "أضيف بنجاح!",
   "Added successfully.": "أضيف بنجاح.",
   "Administrator": "مسؤول",
-<<<<<<< HEAD
-  "Administrators can delete any message.": "",
-  "Admins": "",
-=======
   "Administrators and moderators this Zulip organization will be able to see this email address.": "",
   "Administrators can delete any message.": "يمكن للمسؤولين حذف أي رسالة.",
   "Administrators of this Zulip organization will be able to see this email address.": "",
   "Admins": "المشرفون",
->>>>>>> drc_main
   "Admins and moderators": "المشرفون والوسطاء",
   "Admins only": "",
   "Admins, moderators and full members": "المشرفون والوسطاء والأعضاء الكاملون",
@@ -140,15 +116,6 @@
   "Admins, moderators, members and guests": "المشرفون والوسطاء والأعضاء والضيوف",
   "Advanced": "متقدم",
   "Advertise organization in the Zulip communities directory": "أعلن عن المنظمة في دليل مجتمعات Zulip",
-<<<<<<< HEAD
-  "Alert word": "",
-  "Alert word already exists!": "",
-  "Alert word removed successfully!": "",
-  "Alert words": "كلمات التنبيه",
-  "Alert words allow you to be notified as if you were @-mentioned when certain words or phrases are used in Zulip. Alert words are not case sensitive.": "تتيح لك كلمات التنبيه أن يتم إشعارك كما لو تمت الإشارة إليك @ عند استخدام كلمات أو عبارات معينة في \"زوليب\". كلمات التنبيه ليست حساسة لحالة الأحرف.",
-  "Alerted messages": "",
-  "All": "",
-=======
   "Alert word": "كلمة تنبيه",
   "Alert word \"{alert_word}\" removed successfully!": "",
   "Alert word already exists!": "كلمة التنبيه موجودة بالفعل!",
@@ -157,7 +124,6 @@
   "Alerted messages": "",
   "All": "الجميع",
   "All direct messages": "كل الرسائل المباشرة",
->>>>>>> drc_main
   "All messages": "جميع الرسائل",
   "All messages including muted streams": "جميع الرسائل بما في ذلك الغرف الصامتة",
   "All streams": "كل التيارات",
@@ -175,21 +141,11 @@
   "Already subscribed users:": "",
   "Always": "",
   "An API key can be used to programmatically access a Zulip account. Anyone with access to your API key has the ability to read your messages, send messages on your behalf, and otherwise impersonate you on Zulip, so you should guard your API key as carefully as you guard your password. <br /> We recommend creating bots and using the bots' accounts and API keys to access the Zulip API, unless the task requires access to your account.": "يمكن استخدام مفتاح الـ API للوصول برمجيًا إلى حساب \"زوليب\". يتمتع أي شخص لديه الوصول إلى مفتاح الـ API الخاص بك بالقدرة على قراءة رسائلك وإرسال الرسائل نيابةً عنك وينتحل شخصيتك على \"زوليب\"، لذلك يجب عليك حماية مفتاح الـ API الخاص بك بعناية كما تحمي كلمة مرورك.<br /> نوصي بإنشاء روبوتات واستخدام حسابات الروبوتات ومفاتيح الـ API للوصول إلى الـ API الخاص بـ \"زوليب\"، ما لم تتطلب المهمة الوصول إلى حسابك.",
-<<<<<<< HEAD
-  "An hour ago": "",
-  "An unknown error occurred.": "",
-  "Announce stream": "أعلن عن الغرفة",
-  "Any member of this organization can add custom emoji.": "",
-  "Any organization administrator can conduct an export.": "يمكن لأي مسؤول في المنظمة إجراء عملية تصدير.",
-  "Any time": "",
-  "Anyone in this organization can add bots.": "يمكن لأي شخص في هذه المنظمة إضافة الروبوتات.",
-=======
   "An hour ago": "قبل ساعة",
   "An unknown error occurred.": "حدث خطأ غير معروف.",
   "Announce new stream in": "",
   "Any organization administrator can conduct an export.": "يمكن لأي مسؤول في المنظمة إجراء عملية تصدير.",
   "Any time": "في أي وقت",
->>>>>>> drc_main
   "April": "نيسان",
   "Archive <z-link></z-link>?": "",
   "Archive stream": "أرشفة الغرفة",
@@ -199,13 +155,8 @@
   "Are you sure you want to deactivate this organization?": "",
   "Are you sure you want to deactivate your account?": "",
   "Are you sure you want to delete all drafts?  This action cannot be undone.": "هل أنت متأكد أنك تريد حذف كافة المسودات؟ لا يمكن التراجع عن هذا الإجراء بعد القيام به.",
-<<<<<<< HEAD
-  "Are you sure you want to delete your profile picture?": "",
-  "Are you sure you want to mention all <strong>{count}</strong> people in this stream? <br /> This will send email and mobile push notifications to most of those <strong>{count}</strong> users. <br /> If you don't want to do that, please edit your message to remove the <strong>@{mention}</strong> mention.": "هل أنت متأكد أنك تريد الإشارة إلى جميع <strong>{count}</strong> الأشخاص في هذه الغرفة؟<br /> سيؤدي هذا إلى إرسال إشعارات عبر البريد الإلكتروني والجوال إلى معظم هؤلاء <strong>{count}</strong> المستخدمين .<br /> إذا كنت لا تريد القيام بذلك، فيرجى تعديل رسالتك لإزالة <strong>@{mention}</strong> الإشارة.",
-=======
   "Are you sure you want to delete your profile picture?": "هل أنت متأكد أنك تريد حذف صورة ملفك الشخصي؟",
   "Are you sure you want to mark all messages as read? This action cannot be undone.": "",
->>>>>>> drc_main
   "Are you sure you want to mute <b>{user_name}</b>?  Messages sent by muted users will never trigger notifications, will be marked as read, and will be hidden.": "هل أنت متأكد أنك تريد كتم صوت <b>{user_name}</b>؟ لن تقوم الرسائل المرسلة من قبل المستخدمين الذين تم كتم صوتهم بإصدار الإشعارات مطلقًا، وسيتم وضع علامة عليها كمقروءة وسيتم إخفاؤها.",
   "Are you sure you want to permanently delete <b>{topic_name}</b>?": "هل أنت متأكد من أنك تريد حذف <b>{topic_name}</b> نهائيًا؟",
   "Are you sure you want to resend the invitation to <z-email></z-email>?": "هل أنت متأكد أنك تريد إعادة إرسال الدعوة إلى<z-email></z-email>؟",
@@ -250,19 +201,6 @@
   "Card": "",
   "Center the view around message ID <z-value></z-value>.": "قم بتوسيط العرض حول الـ ID الخاص بالرسالة<z-value></z-value> .",
   "Change": "تغيير",
-<<<<<<< HEAD
-  "Change color": "",
-  "Change email": "",
-  "Change group info": "تغيير معلومات المجموعة",
-  "Change password": "",
-  "Change send shortcut": "",
-  "Change stream info": "تغيير معلومات الغرفة",
-  "Change stream permissions": "تغيير أذونات الغرفة",
-  "Change stream permissions for #{stream_name}": "تغيير أذونات الغرفة لـ # {stream_name}",
-  "Check all": "",
-  "Check your email ({email}) to confirm the new address.": "",
-  "Choose avatar": "",
-=======
   "Change avatar": "تغيير الصورة الرمزية",
   "Change color": "غير اللون",
   "Change email": "تغيير البريد الالكتروني",
@@ -272,21 +210,11 @@
   "Check all": "تحقق من الكل",
   "Check your email ({email}) to confirm the new address.": "تحقق من بريدك الإلكتروني ({email}) لتأكيد العنوان الجديد.",
   "Choose avatar": "اختر الصورة الرمزية",
->>>>>>> drc_main
   "Choose members": "اختر الأعضاء",
   "Choose subscribers": "",
   "Clear avatar": "مسح الصورة الرمزية",
   "Clear image": "",
   "Clear profile picture": "مسح صورة الملف الشخصي",
-<<<<<<< HEAD
-  "Click here to reveal.": "",
-  "Click outside the input box to save. We'll automatically notify anyone that was added or removed.": "انقر خارج مربع الإدخال للحفظ. سنقوم تلقائيًا بإشعار أي شخص تمت إضافته أو إزالته.",
-  "Click to join video call": "",
-  "Click to view or download.": "",
-  "Close": "إغلاق",
-  "Close modal": "",
-  "Close this dialog window": "",
-=======
   "Click here to reveal.": "انقر هنا للكشف.",
   "Click on the pencil (<z-pencil-icon></z-pencil-icon>) icon to edit and reschedule a message.": "",
   "Click outside the input box to save. We'll automatically notify anyone that was added or removed.": "انقر خارج مربع الإدخال للحفظ. سنقوم تلقائيًا بإشعار أي شخص تمت إضافته أو إزالته.",
@@ -294,7 +222,6 @@
   "Close": "اغلاق",
   "Close modal": "إغلاق مشروط",
   "Close this dialog window": "أغلق نافذة الحوار هذه",
->>>>>>> drc_main
   "Code playgrounds": "مكان تجربة الشِفرة",
   "Code playgrounds are interactive in-browser development environments, such as <z-link-repl>replit</z-link-repl>, that are designed to make it convenient to edit and debug code. Zulip <z-link-code-blocks>code blocks</z-link-code-blocks> that are tagged with a programming language will have a button visible on hover that allows users to open the code block on the code playground site.": "",
   "Collapse compose": "طي التأليف",
@@ -310,10 +237,6 @@
   "Compose your message here": "ألّف رسالتك هنا",
   "Compose your message here...": "ألّف رسالتك هنا...",
   "Composing messages": "تأليف الرسائل",
-<<<<<<< HEAD
-  "Configure external code playgrounds for your Zulip organization. Code playgrounds are interactive in-browser development environments, such as <z-link-repl>replit</z-link-repl>, that are designed to make it convenient to edit and debug code. Zulip code blocks that are <z-link-markdown-help>tagged with a programming language</z-link-markdown-help> will have a button visible on hover that allows you to open the code block in the code playground site.": "قم بتكوين مكان تجربة شِفرة خارجي لمنظمة \"زوليب\" الخاصة بك. مكان تجربة الشِفرة هي بيئات تطوير تفاعلية داخل المستعرض ، مثل<z-link-repl> اعادتها</z-link-repl>، والتي تم تصميمها لتسهيل التعديل على الشِفرة البرمجية وتصحيحها. قطع شِفرة \"زوليب\" التي هي<z-link-markdown-help> معرفة بلغة برمجية</z-link-markdown-help> ستمتلك زر مرئي عند التمرير يسمح لك بفتح قطعة الشِفرة البرمجية في مكان تجربة شِفرة.",
-=======
->>>>>>> drc_main
   "Configure how Zulip notifies you about new messages.": "اضبط كيفية إشعار \"زوليب\" لك بالرسائل الجديدة.",
   "Configure regular expression patterns that will be used to automatically transform any matching text in Zulip messages and topics into links.": "",
   "Configure the <z-link>default personal preference settings</z-link> for new users joining your organization.": "أنشئ<z-link> إعدادات التفضيلات الشخصية الافتراضية</z-link> للمستخدمين الجدد الذين ينضمون إلى مؤسستك.",
@@ -325,13 +248,8 @@
   "Contact a moderator to unresolve this topic.": "",
   "Contact support": "اتصل بالدعم",
   "Convert emoticons before sending (<code>:)</code> becomes 😃)": "تحويل الرموز قبل الإرسال (<code>:)</code> تصبح 😃)",
-<<<<<<< HEAD
-  "Cookie Bot": "",
-  "Copied!": "",
-=======
   "Cookie Bot": "بوت ملفات تعريف الارتباط",
   "Copied!": "نسخ!",
->>>>>>> drc_main
   "Copy address": "",
   "Copy and close": "",
   "Copy code": "نسخ الشِفرة",
@@ -340,15 +258,10 @@
   "Copy link to topic": "نسخ رابط الموضوع",
   "Copy mention syntax": "نسخ سياق الإشارة",
   "Copy version": "نسخ الإصدار",
-<<<<<<< HEAD
-  "Copy zuliprc": "",
-  "Create": "أنشأ",
-=======
   "Copy zuliprc": "نسخ zuliprc",
   "Could not resolve topic": "",
   "Could not unresolve topic": "",
   "Create": "إنشاء",
->>>>>>> drc_main
   "Create a stream": "إنشاء غرفة",
   "Create new stream": "إنشاء تيار جديد",
   "Create new user group": "",
@@ -360,16 +273,9 @@
   "Currently viewing all messages.": "جارٍ عرض جميع الرسائل.",
   "Currently viewing the entire stream.": "جارٍ عرض كل الغرفة.",
   "Custom": "مخصص",
-<<<<<<< HEAD
-  "Custom emoji": "رموز تعبيرية مخصصة",
-  "Custom emoji added!": "",
-  "Custom language: {query}": "",
-  "Custom linkifier added!": "",
-=======
   "Custom emoji": "الرموز التعبيرية المخصصة",
   "Custom language: {query}": "لغة مخصصة: {query}",
   "Custom linkifier added!": "تمت إضافة رابط مخصص!",
->>>>>>> drc_main
   "Custom playground added!": "تمت إضافة مكان تجربة مخصص!",
   "Custom profile fields": "",
   "Custom time": "وقت مخصص",
@@ -379,18 +285,11 @@
   "DMs, mentions, and alerts": "",
   "Dark": "المضلم",
   "Dark theme": "الوضع المظلم",
-<<<<<<< HEAD
-  "Data exports": "",
-  "Date muted": "تاريخ الوضع الصامت",
-  "Date uploaded": "",
-  "Day logo": "",
-=======
   "Dark theme logo": "شعار الوضع المضلم",
   "Data exports": "تصدير البيانات",
   "Date muted": "تاريخ الوضع الصامت",
   "Date updated": "",
   "Date uploaded": "تاريخ الرفع",
->>>>>>> drc_main
   "Day of the week to send digests": "يوم من الأسبوع لإرسال الموجزات",
   "Deactivate": "",
   "Deactivate account": "",
@@ -407,14 +306,9 @@
   "Default is {language}. Use 'text' to disable highlighting.": "الافتراضي هو {language}. استخدم \"النص\" لإلغاء التمييز.",
   "Default language for code blocks": "اللغة الافتراضية لقطع الشِفرة البرمجية",
   "Default streams": "الغرف الافتراضية",
-<<<<<<< HEAD
-  "Default user settings": "",
-  "Default view": "",
-=======
   "Default streams for this organization": "",
   "Default user settings": "إعدادات المستخدم الافتراضية",
   "Default view": "العرض الافتراضي",
->>>>>>> drc_main
   "Delay before sending message notification emails": "التأخير قبل إرسال إشعارات رسائل البريد الإلكتروني",
   "Delay period (minutes)": "",
   "Delete": "حذف",
@@ -431,14 +325,9 @@
   "Delete logo": "",
   "Delete message": "حذف رسالة",
   "Delete message?": "حذف الرسالة؟",
-<<<<<<< HEAD
-  "Delete profile picture": "",
-  "Delete selected draft": " حذف المسودة المحددة",
-=======
   "Delete profile picture": "حذف صورة الملف الشخصي",
   "Delete scheduled message": "",
   "Delete selected draft": "حذف المسودة المحددة",
->>>>>>> drc_main
   "Delete topic": "حذف موضوع",
   "Delete {user_group_name}?": "حذف {user_group_name}؟",
   "Deleted": "",
@@ -472,14 +361,6 @@
   "Display names of reacting users when few users have reacted to a message": "إظهار اسماء المستخدمين المتفاعلين عندما يتفاعل عدد قليل من المستخدمين للرسالة",
   "Display on user card": "",
   "Display settings": "اعدادات العرض",
-<<<<<<< HEAD
-  "Do you want to add everyone?": "",
-  "Domain": "مجال",
-  "Don’t allow disposable email addresses": "لا تسمح بعناوين البريد الإلكتروني المؤقتة",
-  "Download": "حمل",
-  "Download .zuliprc": "",
-  "Download botserverrc": "",
-=======
   "Do you still want to move the latest {total_messages_allowed_to_move, plural, one {message} other {# messages}}?": "",
   "Do you want to add everyone?": "هل تريد إضافة الجميع؟",
   "Domain": "مجال",
@@ -487,7 +368,6 @@
   "Download": "تحميل",
   "Download .zuliprc": "تحميل .zuliprc",
   "Download botserverrc": "تحميل botserverrc",
->>>>>>> drc_main
   "Download config of all active outgoing webhook bots in Zulip Botserver format.": "تنزيل التهيئة لجميع روبوتات الويب هوك الصادرة والنشطة بتنسيق Botserver الخاص بـ\"زوليب\".",
   "Download file": "",
   "Download the latest version.": "تنزيل أحدث إصدار.",
@@ -530,12 +410,8 @@
   "Email footers (e.g., signature)": "",
   "Email message notifications": "إشعارات رسائل البريد الإلكتروني",
   "Email notifications": "إشعارات البريد الالكتروني",
-<<<<<<< HEAD
-  "Emails (one on each line or comma-separated)": "",
-=======
   "Emails (one on each line or comma-separated)": "رسائل البريد الإلكتروني (واحدة في كل سطر أو مفصولة بفواصل)",
   "Emoji": "",
->>>>>>> drc_main
   "Emoji name": "اسم من الرموز التعبيرية",
   "Emoji set changed successfully!": "",
   "Emoji theme": "",
@@ -546,15 +422,9 @@
   "End of results from your <z-link>history</z-link>.": "نهاية النتائج من <z-link>سجلك</z-link> .",
   "Endpoint URL": "",
   "Enter sends when composing a message": "اضغط على ارسال عند إنشاء رسالة",
-<<<<<<< HEAD
-  "Error": "",
-  "Error adding subscription": "",
-  "Error checking subscription": "",
-=======
   "Error": "خطأ",
   "Error adding subscription": "خطأ في إضافة الاشتراك",
   "Error checking subscription.": "",
->>>>>>> drc_main
   "Error creating stream": "خطأ في إنشاء الغرفة",
   "Error creating user group.": "خطأ في إنشاء مجموعة مستخدمين.",
   "Error deleting message": "",
@@ -573,31 +443,18 @@
   "Escape key navigates to default view": "ينتقل بك مفتاح Escape إلى العرض الافتراضي",
   "Estimated messages per week": "",
   "Event or conference": "حدث أو مؤتمر",
-<<<<<<< HEAD
-  "Everyone": "الجميع",
-  "Everyone sees this in their own time zone.": "",
-=======
   "Everyone": "Everyone",
   "Everyone on the internet": "",
   "Everyone sees global times in their own time zone.": "",
   "Everyone sees this in their own time zone.": "يرى الجميع هذا في منطقتهم الزمنية.",
->>>>>>> drc_main
   "Exclude messages with topic <z-value></z-value>.": "استبعاد الرسائل التابعة لموضوع<z-value></z-value> .",
   "Exit search": "الخروج من البحث",
   "Expand compose": "توسيع الإنشاء",
   "Expand direct messages": "",
   "Expand message": "",
-<<<<<<< HEAD
-  "Expand message (-)": "",
-  "Expand private messages": "",
-  "Expires at": "تنتهي الصلاحية في",
-  "Expires on {date}": "",
-  "Export failed": "",
-=======
   "Expires at": "تنتهي الصلاحية في",
   "Expires on {date} at {time}": "",
   "Export failed": "فشل التصدير",
->>>>>>> drc_main
   "Export organization": "تصدير المنظمة",
   "Export started. Check back in a few minutes.": "بدأ التصدير. عد للتحقق في غضون بضع دقائق.",
   "Exports all users, settings, and all data visible in public streams.": "يصدر جميع المستخدمين والإعدادات وجميع البيانات المرئية في الغرف العامة.",
@@ -607,20 +464,6 @@
   "Failed to create video call.": "",
   "Failed to generate preview": "",
   "Failed to upload %'{file}'": "فشل الرفع ٪'{file}';",
-<<<<<<< HEAD
-  "Failed!": "",
-  "Failed: A custom emoji with this name already exists.": "",
-  "Failed: Emoji name is required.": "",
-  "February": "شباط",
-  "Field choices": "خيارات الحقول",
-  "File": "ملف",
-  "File and image uploads have been disabled for this organization.": "",
-  "File name: {filename}": "",
-  "File size must be at most {max_file_size} MiB.": "",
-  "File type is not supported.": "",
-  "Filter bots": "",
-  "Filter by category": "",
-=======
   "Failed!": "باءت بالفشل!",
   "Failed: A custom emoji with this name already exists.": "فشل: يوجد بالفعل رمز تعبيري مخصص بهذا الاسم.",
   "Failed: Emoji name is required.": "فشل: اسم الرمز التعبيري مطلوب.",
@@ -635,7 +478,6 @@
   "Filter": "",
   "Filter bots": "تصفية الروبوتات",
   "Filter by category": "تصفية حسب الفئة",
->>>>>>> drc_main
   "Filter code playgrounds": "تصفية أماكن تجربة الشِفرة",
   "Filter deactivated users": "",
   "Filter default streams": "تصفية الغرف الافتراضية",
@@ -658,21 +500,11 @@
   "First message": "الرسالة الأولى",
   "First time? Read our <z-link>guidelines</z-link> for creating and naming streams.": "أول مرة؟ اقرأ<z-link> قواعدنا الإرشادية</z-link> لإنشاء وتسمية الغرف.",
   "First time? Read our <z-link>guidelines</z-link> for creating user groups.": "أول مرة؟ اقرأ <z-link>قواعدنا الإرشادية </z-link> لإنشاء مجموعات المستخدمين.",
-<<<<<<< HEAD
-  "Fixed width": "العرض الثابت",
-  "Fixed width mode": "",
-  "Fluid width": "العرض السلس",
-  "Fluid width mode": "وضع العرض السلس",
-  "For example, to configure code playgrounds for languages like Python or JavaScript, you could specify the <i>Language</i> and <i>URL prefix</i> fields as:": "على سبيل المثال ، لتكوين أماكن تجربة الشِفرة البرمجية للغات مثل Python أو JavaScript، يمكنك تحديد حقول <i>اللغة</i> و<i>بادئة URL</i> على النحو التالي:",
-  "Forgotten it?": "",
-  "Forked from upstream at {zulip_merge_base}": "",
-=======
   "For example, to configure a code playground for code blocks tagged as Python, you can set:": "",
   "For more examples and technical details, see the <z-link>help center documentation</z-link> on adding code playgrounds.": "",
   "For more examples, see the <z-link>help center documentation</z-link> on adding linkifiers.": "",
   "Forgot it?": "نسيت؟",
   "Forked from upstream at {zulip_merge_base}": "متشعب من المنبع في {zulip_merge_base}",
->>>>>>> drc_main
   "Friday": "الجمعة",
   "Full name": "",
   "GIPHY attribution": "",
@@ -691,12 +523,8 @@
   "Go to #{display_recipient}": "",
   "Go to #{display_recipient} > {topic}": "",
   "Go to conversation": "انتقل للمحادثة",
-<<<<<<< HEAD
-  "Go to default view": "",
-=======
   "Go to default view": "انتقل إلى العرض الافتراضي",
   "Go to direct messages with {display_reply_to}": "",
->>>>>>> drc_main
   "Got it": "فهمتك",
   "Got it!": "",
   "Government": "حكومة",
@@ -716,15 +544,6 @@
   "Hint (up to 80 characters)": "",
   "Humans": "البشر",
   "Idle": "خامل",
-<<<<<<< HEAD
-  "Ignored deactivated users:": "",
-  "Image": "",
-  "In a meeting": "",
-  "Inactive": "غير نشط",
-  "Inactive bots": "",
-  "Include PMs": "",
-  "Include content of private messages in desktop notifications": "تضمين محتوى الرسائل الخاصة في إشعارات سطح المكتب",
-=======
   "If you don't know your password, you can <z-link>reset it</z-link>.": "",
   "Ignored deactivated users:": "المستخدمون المعطّلون الذين تم تجاهلهم:",
   "Image": "صورة",
@@ -733,7 +552,6 @@
   "Inactive bots": "روبوتات غير نشطة",
   "Include DMs": "",
   "Include content of direct messages in desktop notifications": "",
->>>>>>> drc_main
   "Include message content in message notification emails": "تضمين محتوى الرسالة في رسائل البريد الإلكتروني للإشعارات",
   "Include muted": "تضمين الصامتة",
   "Include organization name in subject of message notification emails": "تضمين اسم المؤسسة في موضوع رسائل البريد الإلكتروني للإشعارات",
@@ -744,19 +562,12 @@
   "Interface": "واجهة المستخدم",
   "Invalid URL": "عنوان URL غير صالح",
   "Invalid stream ID": "مُعرف غرفة غير صالح",
-<<<<<<< HEAD
-  "Invalid time format: {timestamp}": "",
-  "Invitation expires after": "",
-  "Invitations": "",
-  "Invitations are required for joining this organization": "",
-=======
   "Invalid time format: {timestamp}": "تنسيق الوقت غير صالح: {timestamp}",
   "Invalid user": "مستخدم غير صالح",
   "Invalid users": "",
   "Invitation expires after": "تنتهي الدعوة بعد",
   "Invitations": "الدعوات",
   "Invitations are required for joining this organization": "الدعوات مطلوبة للانضمام إلى هذه المنظمة",
->>>>>>> drc_main
   "Invite": "يدعو",
   "Invite link": "",
   "Invite more users": "قم بدعوة المزيد من المستخدمين",
@@ -844,27 +655,12 @@
   "Manage user groups": "إدارة مجموعات المستخدم",
   "March": "آذار",
   "Mark all messages as read": "تمييز جميع الرسائل كمقروءة",
-<<<<<<< HEAD
-  "Mark as read": "تمييز كمقروءة",
-=======
   "Mark all messages as read?": "",
   "Mark as read": "تمييز كمقروء",
->>>>>>> drc_main
   "Mark as resolved": "تمييز بتم الحل",
   "Mark as unread from here": "التمييز كغير مقروء من هنا",
   "Mark as unread from selected message": "التمييز كغير مقروء من الرسالة المختارة",
   "Mark as unresolved": "تمييز بلم يتم الحل",
-<<<<<<< HEAD
-  "Marketing team": "",
-  "Marking all messages as read…": "تمييز جميع الرسائل كمقروءة ...",
-  "May": "",
-  "Me": "أنا",
-  "Member": "",
-  "Members": "أعضاء",
-  "Members can only view or manage invitations that you yourself sent.": "",
-  "Mention a time-zone-aware time": "",
-  "Mentioned in": "",
-=======
   "Marketing team": "فريق التسويق",
   "Marking all messages as read…": "تمييز جميع الرسائل كمقروءة ...",
   "May": "يمكن",
@@ -873,7 +669,6 @@
   "Members": "أعضاء",
   "Mention a time-zone-aware time": "اذكر وقت المنطقة الزمنية",
   "Mentioned in": "مذكور في",
->>>>>>> drc_main
   "Mentions": "الإشارات",
   "Menu": "قائمة",
   "Menus": "القائمات",
@@ -887,22 +682,12 @@
   "Message length shouldn't be greater than {max_length} characters.": "يجب ألا يزيد طول الرسالة عن {max_length} رمز.",
   "Message retention": "",
   "Message retention period": "فترة الاحتفاظ بالرسائل",
-<<<<<<< HEAD
-  "Message scheduled for {deliver_at}": "",
-  "Message {recipient_label}": "",
-  "Message {recipient_names}": "",
-  "Message {recipient_name} ({recipient_status})": "",
-  "Messages in all public streams": "",
-  "Messages in this stream will be automatically deleted after {retention_days} days.": "",
-  "Messages in this stream will be retained forever.": "سيتم الاحتفاظ بالرسائل في هذه الغرفة إلى الأبد.",
-=======
   "Message {recipient_label}": "رسالة {recipient_label}",
   "Message {recipient_names}": "رسالة {recipient_names}",
   "Message {recipient_name} ({recipient_status})": "الرسالة {recipient_name} ({recipient_status})",
   "Messages in all public streams": "",
   "Messages will not be automatically marked as read because this is not a conversation view. <z-link>Change setting</z-link>": "",
   "Messages will not be automatically marked as read. <z-link>Change setting</z-link>": "",
->>>>>>> drc_main
   "Mobile": "جوال",
   "Mobile message notifications": "",
   "Mobile notifications": "",
@@ -928,14 +713,9 @@
   "Move some messages?": "",
   "Move this and all following messages in this topic": "نقل هذه الرسالة وجميع الرسائل التالية في هذا الموضوع",
   "Move topic": "نقل موضوع",
-<<<<<<< HEAD
-  "Moved ({last_edit_timestr})": "",
-  "Moved by {full_name}": "",
-=======
   "Moved ({last_edit_timestr})": "تم النقل ({last_edit_timestr})",
   "Moved by {full_name}": "تم النقل بواسطة {full_name}",
   "Moving messages": "",
->>>>>>> drc_main
   "Must be invited by a subscriber; new subscribers can only see messages sent after they join; hidden from non-administrator users": "يجب أن تتم الدعوة من قبل المشترك؛ يمكن للمشتركين الجدد فقط رؤية الرسائل المرسلة بعد انضمامهم ؛ مخفية عن المستخدمين غير المسؤولين",
   "Must be invited by a subscriber; new subscribers can view complete message history; hidden from non-administrator users": "يجب أن تتم الدعوة من قبل المشترك؛ يمكن للمشتركين الجدد عرض سجل الرسائل بالكامل؛ مخفية عن المستخدمين غير المسؤولين",
   "Mute stream": "كتم الغرفة",
@@ -944,17 +724,9 @@
   "Mute user": "كتم المستخدم",
   "Muted": "مكتوم الصوت",
   "Muted streams don't show up in \"All messages\" or generate notifications unless you are mentioned.": "الغرف المكتومة لا تظهر في \"كل الرسائل\" أو تنشئ إشعارات إلا أن يتم ذكرك.",
-<<<<<<< HEAD
-  "Muted topics": "المواضيع المكتومة",
-  "Muted user": "مستخدم تم كتمه",
-  "Muted users": "المستخدمين المكتومين",
-  "N": "N",
-  "Name": "",
-=======
   "Muted user": "المستخدم المكتوم",
   "Muted users": "المستخدمين المكتومين",
   "Name": "اسم",
->>>>>>> drc_main
   "Name changes are disabled in this organization. Contact an administrator to change your name.": "تم تعطيل تغييرات الاسم في هذه المنظمة. اتصل بمسؤول لتغيير اسمك.",
   "Narrow to all direct messages": "",
   "Narrow to all unmuted messages": "تضييق العرض لجميع الرسائل غير المكتومة",
@@ -985,22 +757,6 @@
   "Never": "",
   "Never ask on this computer": "لا تسأل أبدًا على هذا الكمبيوتر",
   "Never expires": "لا تنتهي أبدًا",
-<<<<<<< HEAD
-  "Never had one? Forgotten it?": "لم يكن لديك واحدة؟ نسيتها؟",
-  "New": "",
-  "New choice": "",
-  "New email": "",
-  "New message": "رسالة جديدة",
-  "New option": "",
-  "New password": "",
-  "New password is too weak": "",
-  "New private message": "رسالة خاصة جديدة",
-  "New stream announcements": "إعلانات الغرفة الجديدة",
-  "New stream message": "رسالة تيار جديد",
-  "New subscribers can only see messages sent after they join.": "",
-  "New subscribers can view complete message history.": "يمكن للمشتركين الجدد عرض سجل الرسائل كامل.",
-  "New task": "",
-=======
   "New": "جديد",
   "New direct message": "رسائلة مباشرة جديدة",
   "New email": "بريد إلكتروني جديد",
@@ -1011,18 +767,12 @@
   "New stream announcements": "إعلانات الغرفة الجديدة",
   "New stream message": "رسالة تيار جديد",
   "New task": "مهمة جديدة",
->>>>>>> drc_main
   "New topic": "موضوع جديد",
   "New user announcements": "إعلانات المستخدم الجديد",
   "Next message": "الرسالة التالية",
   "Next unread direct message": "الرسالة المباشرة الغير مقروءة التالية",
   "Next unread topic": "الموضوع غير المقروء التالي",
-<<<<<<< HEAD
-  "Next week": "",
-  "Night logo": "الشعار الليلي",
-=======
   "Next week": "الاسبوع القادم",
->>>>>>> drc_main
   "No bots match your current filter.": "لا روبوتات تطابق تصفيتك الحالية.",
   "No custom emoji.": "",
   "No default streams match you current filter.": "لا توجد غُرف افتراضية تطابق تصفيتك الحالية.",
@@ -1229,33 +979,18 @@
   "Read receipts are not available for Notification Bot messages.": "مؤشرات القراءة غير متوفرة لرسائل إشعارات الروبوت",
   "Receives new stream announcements": "يتلقى إعلانات غرفة جديدة",
   "Recent conversations": "",
-<<<<<<< HEAD
-  "Remind me about this": "",
-  "Reminder not set!": "لم يتم تعيين تذكير!",
-  "Reminder set!": "",
-  "Remove": "",
-  "Remove from default": "",
-=======
   "Remove": "إزالة",
   "Remove from default": "إزالة من الافتراضي",
->>>>>>> drc_main
   "Removed successfully.": "تمت الإزالة بنجاح.",
   "Rename topic": "",
   "Rename topic to:": "",
   "Reply @-mentioning sender": "",
   "Reply directly to sender": "رد المباشر الي المرسل",
   "Reply mentioning bot": "الرد بذكر الروبوت",
-<<<<<<< HEAD
-  "Reply mentioning user": "",
-  "Reply to author": "الرد على المؤلف",
-  "Reply to message": "الرد على الرسالة",
-  "Reply to selected message": "",
-=======
   "Reply mentioning user": "الرد بذكر المستخدم",
   "Reply to message": "الرد على الرسالة",
   "Reply to selected conversation": "",
   "Reply to selected message": "الرد على الرسالة المحددة",
->>>>>>> drc_main
   "Request education pricing": "",
   "Request sponsorship": "",
   "Requesting user": "المستخدم صاحب الطلب",
@@ -1268,15 +1003,9 @@
   "Restore draft": "",
   "Restrict email domains of new users?": "",
   "Restrict to a list of domains": "تقييد قائمة المجالات",
-<<<<<<< HEAD
-  "Retain for N days after posting": "احتفظ بها لمدة N أيام بعد النشر",
-  "Retain forever": "",
-  "Retry": "",
-=======
   "Retain forever": "احتفظ بها إلى الأبد",
   "Retention period (days)": "",
   "Retry": "أعد المحاولة",
->>>>>>> drc_main
   "Revoke": "إبطال",
   "Revoke invitation link": "",
   "Revoke invitation to {email}": "",
@@ -1330,24 +1059,6 @@
   "Send message": "أرسل الرسالة",
   "Send mobile notifications even if I'm online": "إرسال إشعارات الجوال حتى وإن كُنت متصلًا.",
   "Send mobile notifications even if user is online": "إرسال إشعارات الجوال حتى وإن كان المستخدم متصلًا",
-<<<<<<< HEAD
-  "Send private message": "",
-  "Send weekly digest emails to inactive users": "إرسال موجز رسائل البريد الإلكتروني الأسبوعية للمستخدمين غير النشطين",
-  "Sent!": "أُرسلت!",
-  "Sent! Scroll down to view your message.": "أرسلت! قم بالتمرير للأسفل لعرض رسالتك.",
-  "Sent! Your message is outside your current narrow.": "",
-  "Sent! Your message was sent to a stream you have muted.": "أرسلت! تم إرسال رسالتك إلى غرفة قمت بكتمها.",
-  "Sent! Your message was sent to a topic you have muted.": "أُرسلت! تم إرسال رسالتك إلى موضوع قمت بكتمه.",
-  "Sent! Your recent message is outside the current search.": "",
-  "September": "أيلول",
-  "Set a status": "",
-  "Set status": "",
-  "Set up two factor authentication": "",
-  "Settings": "Settings",
-  "Setup": "",
-  "Several people are typing…": "العديد من الأشخاص يكتبون...",
-  "Show API key": "",
-=======
   "Send weekly digest emails to inactive users": "إرسال موجز رسائل البريد الإلكتروني الأسبوعية للمستخدمين غير النشطين",
   "Sent!": "أرسلت!",
   "Sent! Your message is outside your current narrow.": "أرسلت! رسالتك خارج نطاقك الحالي.",
@@ -1360,7 +1071,6 @@
   "Setup": "اقامة",
   "Several people are typing…": "العديد من الأشخاص يكتبون...",
   "Show API key": "إظهار مفتاح API",
->>>>>>> drc_main
   "Show counts for starred messages": "إظهار عدد الرسائل المميزة بنجمة",
   "Show fewer": "",
   "Show images in thread": "",
@@ -1389,14 +1099,9 @@
   "Star selected message": "تمييز الرسالة المحددة بنجمة",
   "Star this message": "",
   "Starred messages": "الرسائل المميزة بنجمة",
-<<<<<<< HEAD
-  "Start export of public data": "",
-  "Status": "",
-=======
   "Start a new topic or select one from the list.": "",
   "Start export of public data": "ابدأ في تصدير البيانات العامة",
   "Status": "حالة",
->>>>>>> drc_main
   "Stream": "تيار",
   "Stream color": "لون الغرفة",
   "Stream created recently": "تم إنشاء الغرفة مؤخرًا",
@@ -1416,58 +1121,33 @@
   "Subscribe to/unsubscribe from selected stream": "الاشتراك/إلغاء الاشتراك من الغرفة المحددة",
   "Subscribed": "",
   "Subscribed streams": "غرف الاشتراك",
-<<<<<<< HEAD
-  "Subscriber count": "",
-  "Subscribers": "",
-  "Successfully subscribed users:": "",
-  "Sunday": "",
-=======
   "Subscriber count": "عدد المشتركين",
   "Subscribers": "مشتركين",
   "Successfully subscribed user:": "",
   "Successfully subscribed users:": "المستخدمون المشتركون بنجاح:",
   "Sunday": "الأحد",
->>>>>>> drc_main
   "Support Zulip": "دعم \"زوليب\"",
   "Switch between tabs": "",
   "Switch to dark theme": "التبديل إلى الوضع المظلم",
-<<<<<<< HEAD
-  "Switch to light theme": "",
-  "Sync with computer": "",
-  "System bot": "",
-  "Task already exists": "",
-  "Task list": "",
-=======
   "Switch to light theme": "قم بالتبديل إلى المظهر الفاتح",
   "System bot": "بوت النظام",
   "Task already exists": "المهمة موجودة بالفعل",
   "Task list": "قائمة المهام",
->>>>>>> drc_main
   "Test desktop notification": "فحص إشعار سطح المكتب",
   "The administrators provided the following comment:": "قدم المسؤولون التعليق التالي:",
   "The basics": "الأساسيات",
   "The group description cannot contain newline characters.": "لا يمكن أن يحتوي وصف المجموعة على رموز سطر جديد.",
-<<<<<<< HEAD
-  "The recipient {recipient} is not valid": "",
-  "The recipients {recipients} are not valid": "",
-=======
   "The recipient {recipient} is not valid.": "",
   "The recipients {recipients} are not valid.": "",
->>>>>>> drc_main
   "The sender's email address": "",
   "The stream <b>#{stream_name}</b> does not exist. Manage your subscriptions <z-link>on your Streams page</z-link>.": "",
   "The stream description cannot contain newline characters.": "لا يمكن أن يحتوي وصف الغرفة على سطر جديد.",
   "Their password will be cleared from our systems, and any bots they maintain will be disabled.": "سيتم مسح كلمة المرور الخاصة بهم من أنظمتنا، وسيتم تعطيل أي روبوتات طوروها.",
-<<<<<<< HEAD
-  "Theme": "",
-  "There are no current alert words.": "",
-=======
   "Theme": "سمة",
   "There are no current alert words.": "لا توجد كلمات تنبيه حالية.",
   "There are no messages here.": "",
   "There are no streams you can view in this organization.": "",
   "There is a default emoji with this name. Do you want to override it with a custom emoji? The name <code>:{emoji_name}:</code> will no longer work to access the default emoji.": "",
->>>>>>> drc_main
   "They administer the following bots:": "يديرون الروبوتات التالية:",
   "This Zulip server is running an old version and should be upgraded.": "يعمل خادم \"زوليب\" هذا على إصدار قديم ويجب ترقيته.",
   "This action cannot be undone.": "لا يمكن التراجع عن هذا الإجراء بعد القيام به.",
@@ -1478,9 +1158,6 @@
   "This is a <z-link>demo organization</z-link> and will be automatically deleted in {days_remaining} days.": "هذه <z-link>منظمة تجريبية</z-link> وسيتم حذفها تلقائيًا في غضون {days_remaining} يوم.",
   "This is not a <z-link>publicly accessible</z-link> conversation.": "هذه ليست محادثة <z-link>متاحة للعامة</z-link>.",
   "This is what a Zulip notification looks like.": "هذا ما يبدو عليه إشعار \"زوليب\".",
-<<<<<<< HEAD
-  "This message was hidden because you have muted the sender.": "",
-=======
   "This message could not be sent at the scheduled time.": "",
   "This message is no longer scheduled for {deliver_at}.": "",
   "This message was hidden because you have muted the sender.": "تم إخفاء هذه الرسالة لأنك كتمت صوت المرسل.",
@@ -1500,7 +1177,6 @@
   "This organization is configured so that only administrators can add custom emoji.": "",
   "This organization is configured so that only administrators can add generic bots.": "",
   "This organization is configured so that only administrators can modify user groups.": "",
->>>>>>> drc_main
   "This organization is configured to restrict editing of message content to {minutes_to_edit} minutes after it is sent.": "تم تكوين هذه المنظمة لتقييد تعديل محتوى الرسالة بـ {minutes_to_edit} دقيقة بعد إرسالها.",
   "This stream does not exist or is private.": "هذا المجرى غير موجود أو أنه خاص.",
   "This stream does not yet have a description.": "هذه الغرفة لا يوجد لديها وصف حتى الآن.",
@@ -1525,15 +1201,10 @@
   "To add syntax highlighting to a multi-line code block, add the language's <b>first</b> <z-link>Pygments short name</z-link> after the first set of back-ticks. You can also make a code block by indenting each line with 4 spaces.": "لإضافة تمييز على مظهر الجملة إلى قطعة شِفرة برمجية متعددة الأسطر، أضف اللغة <b>أولاً</b><z-link> الاسم المختصر لـ Pygments</z-link> بعد أول مجموعة من back-ticks. يمكنك أيضًا إنشاء قطعة شِفرة برمجية عن طريق ترك مسافة بادئة لكل سطر بأربع مسافات.",
   "To invite users, please <z-link-billing>increase the number of licenses</z-link-billing> or <z-link-help-page>deactivate inactive users</z-link-help-page>.": "لدعوة المستخدمين، من فضلك <z-link-billing>قم بزيادة عدد التراخيص</z-link-billing> أو <z-link-help-page> تعطيل المستخدمين غير النشطين</z-link-help-page>.",
   "To preserve your reading state, this view does not mark messages as read.": "للحفاظ على حالة القراءة لك، لا يقوم هذا العرض بوضع علامة على الرسائل كمقروءة.",
-<<<<<<< HEAD
-  "Today": "",
-  "Toggle subscription": "",
-=======
   "Today": "اليوم",
   "Today at {time}": "",
   "Toggle first emoji reaction on selected message": "",
   "Toggle subscription": "تبديل الاشتراك",
->>>>>>> drc_main
   "Toggle the gear menu": "تبديل قائمة التحكم",
   "Toggle topic mute": "",
   "Tomorrow": "غدًا",
@@ -1548,14 +1219,6 @@
   "Turn off invisible mode": "ايقاف تشغيل الوضع غير المرئي",
   "Two factor authentication": "المصادقة الثنائية",
   "Type": "نوع",
-<<<<<<< HEAD
-  "URL format string": "تنسيق نص الـ URL",
-  "URL pattern": "",
-  "URL prefix": "",
-  "USERS": "المستخدمون",
-  "Uncheck all": "إلغاء الكل",
-  "Unknown": "",
-=======
   "URL pattern": "نمط عنوان URL",
   "URL prefix": "بادئة URL",
   "URL template": "",
@@ -1564,7 +1227,6 @@
   "Undo": "Undo",
   "Undo mute": "",
   "Unknown": "مجهول",
->>>>>>> drc_main
   "Unknown stream": "غرفة غير معروفة",
   "Unknown stream #{search_text}": "",
   "Unmute": "إلغاء الكتم",
@@ -1580,16 +1242,10 @@
   "Unstar": "",
   "Unstar all messages": "إلغاء النجمة عن جميع الرسائل",
   "Unstar all messages in topic": "إلغاء النجمة عن جميع الرسائل في الموضوع",
-<<<<<<< HEAD
-  "Unstar messages in topic": "",
-  "Unsubscribe": "",
-  "Unsubscribe from {stream_name}": "",
-=======
   "Unstar messages in topic": "إلغاء نجمة الرسائل في الموضوع",
   "Unstar this message": "",
   "Unsubscribe": "إلغاء الاشتراك",
   "Unsubscribe from <z-link></z-link>": "",
->>>>>>> drc_main
   "Unsubscribed successfully!": "تم إلغاء الاشتراك بنجاح!",
   "Up to {time_limit} after posting": "حتى {time_limit} بعد النشر",
   "Update successful: Subdomains allowed for {domain}": "تم التحديث بنجاح: نطاقات فرعية مسموحة لـ {domain}",
@@ -1605,15 +1261,8 @@
   "Upload profile picture": "رفع صورة الملف الشخصي",
   "Upload stalled for %'{seconds}' seconds, aborting.": "توقف الرفع لمدة %'{seconds}' ثوانٍ، يتم إحباطه.",
   "Uploaded files": "الملفات المرفوعة",
-<<<<<<< HEAD
-  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "سيؤدي تحميل رمز تعبيري مخصص بهذا الاسم إلى تجاوز الرموز التعبيرية المضمنة. الاستمرار؟",
-  "Uploading {filename}…": "جاري رفع {filename}…",
-  "Uploading…": "جارٍ الرفع…",
-  "Usage statistics": "",
-=======
   "Uploading {filename}…": "جاري رفع {filename}…",
   "Usage statistics": "إحصائيات الاستخدام",
->>>>>>> drc_main
   "Use full width on wide screens": "استخدم العرض الكامل على الشاشات الواسعة",
   "Use html encoding (not recommended)": "",
   "Use organization level settings {org_level_message_retention_setting}": "استخدم إعدادات مستوى المنظمة {org_level_message_retention_setting}",
@@ -1639,17 +1288,11 @@
   "User(s) join as": "ينضم المستخدم (المستخدمون) بصفته",
   "Users": "المستخدمين",
   "Users can always disable their personal read receipts.": "يمكن للمستخدمين تعطيل مؤشرات القراءة الشخصية دائمًا.",
-<<<<<<< HEAD
-  "Vacationing": "",
-  "Version {zulip_version}": "",
-  "Video call provider": "",
-=======
   "Vacationing": "اجازة",
   "Version {zulip_version}": "الإصدار {zulip_version}",
   "Video call provider": "مزود مكالمات الفيديو",
   "View all streams": "",
   "View direct messages": "عرض الرسائل المباشرة",
->>>>>>> drc_main
   "View drafts": "عرض المسودات",
   "View edit history": "عرض سجل التعديل",
   "View file": "",
@@ -1659,10 +1302,6 @@
   "View message source": "عرض مصدر الرسائل",
   "View messages sent": "",
   "View messages with yourself": "",
-<<<<<<< HEAD
-  "View private messages": "",
-=======
->>>>>>> drc_main
   "View profile": "",
   "View read receipts": "عرض مؤشر القراءة",
   "View recent conversations": "",
@@ -1674,17 +1313,10 @@
   "View your profile": "",
   "Visual": "",
   "Visual desktop notifications": "إشعارات سطح المكتب المرئية",
-<<<<<<< HEAD
-  "Waiting period (days)": "",
-  "Waiting period before new members turn into full members": "",
-  "Warning: <strong>{stream_name}</strong> is a private stream.": "تحذير: <strong>{stream_name}</strong> هي غرفة خاصة.",
-  "We are about to have a poll.  Please wait for the question.": "",
-=======
   "Waiting period (days)": "فترة الانتظار (أيام)",
   "Waiting period before new members turn into full members": "فترة الانتظار قبل أن يتحول الأعضاء الجدد إلى أعضاء كاملي العضوية",
   "Warning: <strong>#{stream_name}</strong> is a private stream.": "",
   "We are about to have a poll.  Please wait for the question.": "نحن على وشك إجراء استطلاع. من فضلك انتظر السؤال.",
->>>>>>> drc_main
   "We strongly recommend enabling desktop notifications. They help Zulip keep your team connected.": "نوصي بشدة بتمكين إشعارات سطح المكتب. هذا يساعد \"زوليب\" على إبقاء فريقك على اتصال.",
   "We've replaced the \"{originalHotkey}\" hotkey with \"{replacementHotkey}\" to make this common shortcut easier to trigger.": "لقد استبدلنا مفتاح التشغيل السريع \"{originalHotkey}\" بـ  \"{replacementHotkey}\" لتسهيل تشغيل هذا الاختصار الشائع.",
   "Web-public": "الويب العام",
@@ -1696,45 +1328,22 @@
   "Whether wildcard mentions like @all are treated as mentions for the purpose of notifications.": "ما إذا كانت إشارات أحرف البدل مثل @all يتم التعامل معها على أنها إشارات لغرض الإشعارات.",
   "Which parts of the email should be included in the Zulip message sent to this stream?": "",
   "Who can access the stream?": "من يمكنه الوصول إلى الغرفة؟",
-<<<<<<< HEAD
-  "Who can access user email addresses": "",
-  "Who can add bots": "",
-  "Who can add custom emoji": "",
-=======
   "Who can access user's email address": "",
   "Who can access your email address": "",
   "Who can add bots": "من يمكنه إضافة الروبوتات",
   "Who can add custom emoji": "من يمكنه إضافة رموز تعبيرية مخصصة",
->>>>>>> drc_main
   "Who can add users to streams": "من يمكنه إضافة مستخدمين إلى الغرف",
   "Who can create and manage user groups": "",
   "Who can create private streams": "من يمكنه إنشاء غرف خاصة",
   "Who can create public streams": "من يمكنه إنشاء غرف عامة",
   "Who can create web-public streams": "من يمكنه إنشاء غرف عامة على الويب",
-<<<<<<< HEAD
-  "Who can delete their own messages": "",
-  "Who can edit the topic of any message": "",
-  "Who can invite users to this organization": "",
-  "Who can move messages between streams": "من يمكنه نقل الرسائل بين الغرف",
-=======
   "Who can delete their own messages": "من يمكنه حذف رسائله الخاصة",
   "Who can invite users to this organization": "من يمكنه دعوة المستخدمين لهذه المنظمة",
   "Who can move messages to another stream": "",
   "Who can move messages to another topic": "",
->>>>>>> drc_main
   "Who can post to the stream?": "من يمكنه النشر في الغرفة؟",
   "Who can unsubscribe others from this stream?": "",
   "Who can use @all/@everyone mentions in large streams": "من يمكنه استخدام الإشارة @all/@everyone في الغرف الكبيرة",
-<<<<<<< HEAD
-  "Who can use private messages": "",
-  "Why not <z-link>start a conversation with yourself</z-link>?": "لما لا <z-link>ابدأ محادثة مع نفسك</z-link>؟",
-  "Why not <z-link>start the conversation</z-link>?": "لما لا <z-link>ابدأ المحادثة</z-link>؟",
-  "Word": "",
-  "Working remotely": "",
-  "Working…": "يعمل…",
-  "Write": "كتابة",
-  "Yes, please!": "",
-=======
   "Who can use direct messages": "",
   "Why not <z-link>start a conversation with yourself</z-link>?": "لما لا <z-link>ابدأ محادثة مع نفسك</z-link>؟",
   "Why not <z-link>start the conversation</z-link>?": "لما لا <z-link>ابدأ المحادثة</z-link>؟",
@@ -1745,7 +1354,6 @@
   "Yes, please!": "نعم من فضلك!",
   "Yes, save": "نعم , حفظ",
   "Yes, schedule": "نعم ,جدول",
->>>>>>> drc_main
   "Yes, send": "نعم أرسل",
   "Yesterday": "أمس",
   "You": "انت",
@@ -1753,17 +1361,10 @@
   "You (click to remove) reacted with {emoji_name}": "أنت (انقر للإزالة) تفاعلت مع {emoji_name}",
   "You (click to remove), {comma_separated_usernames} and {last_username} reacted with {emoji_name}": "أنت (انقر للإزالة)، {comma_separated_usernames} و {last_username} تفاعلت مع {emoji_name}",
   "You and": "انت و",
-<<<<<<< HEAD
-  "You and {display_reply_to}": "",
-  "You and {recipients}": "",
-  "You are not allowed to send group private messages in this organization.": "",
-  "You are not allowed to send private messages in this organization.": "",
-=======
   "You and {display_reply_to}": "أنت و {display_reply_to}",
   "You and {recipients}": "أنت و {recipients}",
   "You are about to disable all notifications for private messages, @&#8209;mentions and alerts, which may cause you to miss messages that require your timely attention. If you would like to temporarily disable all desktop notifications, consider <z-link>turning on \"Do not disturb\"</z-link> instead.": "",
   "You are not allowed to send direct messages in this organization.": "",
->>>>>>> drc_main
   "You are not currently subscribed to this stream.": "أنت غير مشترك حاليا في هذه الغرفة.",
   "You are not subscribed to any streams.": "",
   "You are not subscribed to stream <z-stream-name></z-stream-name>": "",
@@ -1778,20 +1379,6 @@
   "You can reactivate deactivated users from <z-link>organization settings</z-link>.": "يمكنك إعادة تنشيط المستخدمين المعطلين من <z-link>إعدادات المنظمة</z-link>.",
   "You can use email to send messages to Zulip streams.": "",
   "You cannot create a stream with no subscribers!": "لا يمكنك إنشاء غرفة بدون مشتركين!",
-<<<<<<< HEAD
-  "You cannot create a user_group with no members!": "لا يمكنك إنشاء مجموعة مستخدمين بدون اعضاء!",
-  "You cannot send messages to deactivated users.": "",
-  "You do not have permission to post in this stream.": "ليس لديك الإذن للنشر في هذه الغرفة.",
-  "You do not have permission to use wildcard mentions in this stream.": "ليس لديك إذن لاستخدام إشارات أحرف البدل في هذه الغرفة.",
-  "You get": "",
-  "You have muted <z-stream-topic></z-stream-topic>.": "لقد كتمت <z-stream-topic></z-stream-topic>.",
-  "You have no active bots.": "",
-  "You have no group private messages with {person} yet.": "",
-  "You have no inactive bots.": "",
-  "You have no private messages with these users yet.": "",
-  "You have no private messages with {person} yet.": "",
-  "You have no private messages yet!": "ليس لديك رسائل خاصة حتى الآن!",
-=======
   "You cannot create a user group with no members!": "",
   "You cannot send messages to deactivated users.": "لا يمكنك إرسال رسائل للمستخدمين المعطلين.",
   "You do not have permission to add other users to streams in this organization.": "",
@@ -1814,40 +1401,23 @@
   "You have no direct messages yet!": "ليس لديك اي رسائل مباشرة حتي الان!",
   "You have no inactive bots.": "ليس لديك روبوتات غير نشطة.",
   "You have no starred messages.": "",
->>>>>>> drc_main
   "You have no unread messages!": "ليس لديك رسائل غير مقروءة!",
   "You have not configured any topics yet.": "",
   "You have not muted any users yet.": "لم تقم بكتم أي مستخدم حتى الآن.",
   "You have not sent any direct messages to yourself yet!": "إنك لم ترسل أي رسائل مباشرة إلى نفسك حتى الآن!",
   "You have not uploaded any files.": "لم تقم برفع أي ملفات.",
-<<<<<<< HEAD
-  "You have nothing to send!": "",
-=======
->>>>>>> drc_main
   "You haven't been mentioned yet!": "لم يتم ذكرك بعد!",
   "You haven't received any messages sent by {person} yet.": "",
   "You must be an organization administrator to create a stream without subscribing.": "يجب أن تكون مسؤول منظمة لإنشاء غرفة بدون اشتراك.",
-<<<<<<< HEAD
-  "You need to be running Zephyr mirroring in order to send messages!": "",
-  "You searched for:": "",
-  "You subscribed to stream {stream_name}": "لقد اشتركت في الغرفة {stream_name}",
-  "You type": "",
-  "You unsubscribed from stream {stream_name}": "لقد ألغيت اشتراكك في الغرفة {stream_name}",
-=======
   "You need to be running Zephyr mirroring in order to send messages!": "تحتاج إلى تشغيل Zephyr mirroring من أجل إرسال الرسائل!",
   "You searched for:": "لقد بحثت عن:",
   "You subscribed to stream <z-stream-name></z-stream-name>": "",
   "You type": "أنت تكتب",
   "You unsubscribed from stream <z-stream-name></z-stream-name>": "",
   "You will not receive notifications about new messages.": "",
->>>>>>> drc_main
   "You're not subscribed to this stream. You will not be notified if other users reply to your message.": "أنت غير مشترك في هذه الغرفة. لن يتم إعلامك إذا قام المستخدمون الآخرون بالرد على رسالتك.",
   "Your API key:": "",
   "Your Zulip account on <z-link></z-link> has been deactivated, and you will no longer be able to log in.": "تم تعطيل حساب Zulip الخاص بك في<z-link></z-link>، ولن تتمكن بعد الآن من تسجيل الدخول.",
-<<<<<<< HEAD
-  "Your status": "",
-  "Your time zone:": "",
-=======
   "Your message has been scheduled for {deliver_at}.": "",
   "Your message is taking longer than expected to be sent. Sending…": "",
   "Your message was sent to a stream you have muted.": "",
@@ -1856,7 +1426,6 @@
   "Your status": "حالتك",
   "Your time zone:": "منطقتك الزمنية:",
   "Zoom to message in conversation context": "",
->>>>>>> drc_main
   "Zulip": "\"زوليب\"",
   "Zulip Server dev environment": "",
   "Zulip Server {display_version}": "",
@@ -1866,20 +1435,11 @@
   "Zulip needs to send email to confirm users' addresses and send notifications.": "يحتاج \"زوليب\" إرسال بريد إلكتروني لتأكيد عناوين المستخدمين وإرسال الإشعارات.",
   "Zulip needs your permission to <z-link>enable desktop notifications.</z-link>": "\"زوليب\" يحتاج إلى إذنك <z-link>لتمكين إشعارات سطح المكتب.</z-link>",
   "Zulip's translations are contributed by our amazing community of volunteer translators. If you'd like to help, see the <z-link>Zulip translation guidelines</z-link>.": "ساهم مجتمع المترجمين المتطوعين لدينا في ترجمة \"زوليب\". إذا كنت ترغب في المساعدة، فراجع ملف<z-link>إرشادات ترجمة \"زوليب\"</z-link>.",
-<<<<<<< HEAD
-  "[Configure]": "",
-  "[Disable]": "",
-  "[More…]": "",
-  "[Quoting…]": "",
-  "[Unset]": "",
-  "and": "",
-=======
   "[Configure]": "[تهيئة]",
   "[Disable]": "[تعطيل]",
   "[More…]": "[أكثر…]",
   "[Quoting…]": "[نقلا عن ...]",
   "[Unset]": "[غير محدّد]",
->>>>>>> drc_main
   "and {remaining_senders, plural, one {1 other} other {# others}}.": "و {remaining_senders, plural, one {1 other} other {# others}}.",
   "back to streams": "",
   "beta": "تجريبي",
@@ -1901,33 +1461,12 @@
   "more conversations": "",
   "more topics": "",
   "or": "أو",
-<<<<<<< HEAD
-  "private messages with yourself": "",
-  "private messages with {recipient}": "",
-=======
->>>>>>> drc_main
   "she/her": "هي/ ـها",
   "they/them": "هم/ ـهم",
   "{N, plural, one {Done! {N} message marked as read.} other {Done! {N} messages marked as read.}}": "{N, plural, zero {} one {} two {} few {} many {} other {}}",
   "{N, plural, one {Done! {N} message marked as unread.} other {Done! {N} messages marked as unread.}}": "{N, plural, zero {} one {} two {} few {} many {} other {}}",
   "{N, plural, one {Working… {N} message marked as read so far.} other {Working… {N} messages marked as read so far.}}": "{N, plural, zero {} one {} two {} few {} many {} other {}}",
   "{N, plural, one {Working… {N} message marked as unread so far.} other {Working… {N} messages marked as unread so far.}}": "{N, plural, zero {} one {} two {} few {} many {} other {}}",
-<<<<<<< HEAD
-  "{comma_separated_usernames} and {last_username} reacted with {emoji_name}": "",
-  "{date} at {time}": "",
-  "{days_old} days ago": "",
-  "{full_name} is typing…": "",
-  "{hours} hours ago": "",
-  "{items_selected} selected": "",
-  "{last_active_date}": "",
-  "{minutes} min to edit": "",
-  "{minutes} minutes ago": "",
-  "{modal_heading_text}": "{modal_heading_text}",
-  "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, zero {} one {} two {} few {} many {} other {}}",
-  "{seconds} sec to edit": "",
-  "{starred_status} this message": "",
-  "{starred_status} this message (Ctrl + s)": "",
-=======
   "{comma_separated_usernames} and {last_username} reacted with {emoji_name}": "تفاعل {comma_separated_usernames} و {last_username} بـ {emoji_name}",
   "{date} at {time}": "{date} في {time}",
   "{days_old} days ago": "قبل {days_old} يوم",
@@ -1940,7 +1479,6 @@
   "{modal_heading_text}": "{modal_heading_text}",
   "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, zero {تمت <z-link> قراءة </z-link> هذه الرسالة بواسطة {num_of_people} شخص:} one {تمت <z-link> قراءة </z-link> هذه الرسالة بواسطة شخص واحد {num_of_people}:} two {تمت <z-link> قراءة </z-link> هذه الرسالة بواسطة {num_of_people} شخصين:} few {تمت <z-link> قراءة </z-link>هذه الرسالة بواسطة {num_of_people} اشخاص:} many {تمت <z-link> قراءة </z-link> هذه الرسالة بواسطة {num_of_people} اشخاص:} other {تمت <z-link> قراءة </z-link> هذه الرسالة بواسطة {num_of_people} اشخاص:}}",
   "{seconds} sec to edit": "{seconds} ثانية للتعديل",
->>>>>>> drc_main
   "{user_time} local time": "{user_time} الوقت المحلي",
   "{username} [said]({link_to_message}):": "{username} [said]({link_to_message}):",
   "{username} reacted with {emoji_name}": ""

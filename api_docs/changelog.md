@@ -18,8 +18,6 @@ clients should check the `zulip_feature_level` field, present in the
 /register`](/api/register-queue) responses, to determine the API
 format used by the Zulip server that they are interacting with.
 
-<<<<<<< HEAD:templates/zerver/api/changelog.md
-=======
 ## Changes in Zulip 8.0
 
 **Feature level 211**
@@ -520,7 +518,6 @@ No changes; feature level used for Zulip 7.0 release.
 Feature level 158 is reserved for future use in 6.x maintenance
 releases.
 
->>>>>>> drc_main:api_docs/changelog.md
 ## Changes in Zulip 6.2
 
 **Feature level 157**

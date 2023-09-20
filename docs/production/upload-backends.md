@@ -55,8 +55,6 @@ uploading files, this process does not upload them to Amazon S3; see
 [migration instructions](#migrating-from-local-uploads-to-amazon-s3-backend)
 below for those steps.
 
-<<<<<<< HEAD
-=======
 ## S3 local caching
 
 For performance reasons, Zulip stores a cache of recently served user
@@ -99,7 +97,6 @@ update the nginx configuration for the new value.
 
 [s3-resolver]: deployment.md#nameserver
 
->>>>>>> drc_main
 ## S3 bucket policy
 
 The best way to do the S3 integration with Amazon is to create a new IAM user

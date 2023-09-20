@@ -2,10 +2,7 @@
 set -euo pipefail
 
 if [[ ! -e /usr/share/doc/groonga-apt-source/copyright ]]; then
-<<<<<<< HEAD
-=======
     arrow_keyring=$(readlink -f "$LIST_PATH/apache-arrow-keyring.gpg")
->>>>>>> drc_main
     pgroonga_apt_sign_key=$(readlink -f "$LIST_PATH/pgroonga-packages.groonga.org.asc")
 
     remove_pgroonga_apt_tmp_dir() {

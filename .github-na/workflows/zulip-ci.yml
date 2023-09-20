@@ -247,15 +247,12 @@ jobs:
       - name: Check development database build
         run: ./tools/ci/setup-backend
 
-<<<<<<< HEAD:.github-na/workflows/zulip-ci.yml
-=======
       - name: Verify pnpm store path
         run: |
           set -x
           path="$(pnpm store path)"
           [[ "$path" == /__w/.pnpm-store/* ]]
 
->>>>>>> drc_main:.github/workflows/zulip-ci.yml
       - name: Generate failure report string
         id: failure_report_string
         if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
