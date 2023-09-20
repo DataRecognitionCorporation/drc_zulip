@@ -40,29 +40,29 @@ pipeline {
                             sh 'git branch -a'
                             sh 'git tag'
 
-                            sh '''#!/bin/bash
-                                set -euo xtrace
-                                git config zulip.zulipRemote origin
+                            // sh '''#!/bin/bash
+                            //     set -euo xtrace
+                            //     git config zulip.zulipRemote origin
 
-                                remote=origin
-                                git describe --always --tags --match='[0-9]*'
-                                branches=$(git for-each-ref --format='%(objectname)' "refs/remotes/$remote/main" "refs/remotes/$remote/drc_*.x" "refs/remotes/$remote/*-branch")
-                                mapfile -t branches <<<"$branches"
-                                if merge_base="$(git merge-base -- HEAD "${branches[@]}")"; then
-                                    git describe --always --tags --match='[0-9]*' -- "$merge_base"
-                                fi
+                            //     remote=origin
+                            //     git describe --always --tags --match='[0-9]*'
+                            //     branches=$(git for-each-ref --format='%(objectname)' "refs/remotes/$remote/main" "refs/remotes/$remote/drc_*.x" "refs/remotes/$remote/*-branch")
+                            //     mapfile -t branches <<<"$branches"
+                            //     if merge_base="$(git merge-base -- HEAD "${branches[@]}")"; then
+                            //         git describe --always --tags --match='[0-9]*' -- "$merge_base"
+                            //     fi
 
 
 
-                                ./tools/cache-zulip-git-version
-                                head -n1 zulip-git-version
-                                OVERRIDE_MERGE_BASE="$version" ./tools/cache-zulip-git-version
-                                generated_version=$(head -n1 zulip-git-version)
-                                echo $generated_version
-                            '''
+                            //     ./tools/cache-zulip-git-version
+                            //     head -n1 zulip-git-version
+                            //     OVERRIDE_MERGE_BASE="$version" ./tools/cache-zulip-git-version
+                            //     generated_version=$(head -n1 zulip-git-version)
+                            //     echo $generated_version
+                            // '''
 
                             sh """#!/bin/bash
-                                set -eu
+                                set -euo xtrace
                                 git config zulip.zulipRemote origin
                                 
                                 ./tools/provision --build-release-tarball-only
