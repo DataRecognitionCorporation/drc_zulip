@@ -42,14 +42,17 @@ pipeline {
 
                             sh '''#!/bin/bash
                                 -o xtrace
-                                
+
                                 remote=origin
                                 git describe --always --tags --match='[0-9]*'
-                                branches="$(git for-each-ref --format='%(objectname)' "refs/remotes/$remote/main" "refs/remotes/$remote/drc_*.x" "refs/remotes/$remote/*-branch")"
+                                branches=$(git for-each-ref --format='%(objectname)' "refs/remotes/$remote/main" "refs/remotes/$remote/drc_*.x" "refs/remotes/$remote/*-branch")
                                 mapfile -t branches <<<"$branches"
                                 if merge_base="$(git merge-base -- HEAD "${branches[@]}")"; then
                                     git describe --always --tags --match='[0-9]*' -- "$merge_base"
                                 fi
+
+
+                                
                                 ./tools/cache-zulip-git-version
                                 head -n1 zulip-git-version
                                 OVERRIDE_MERGE_BASE="$version" ./tools/cache-zulip-git-version
