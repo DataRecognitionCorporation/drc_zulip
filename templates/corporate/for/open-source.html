@@ -22,7 +22,7 @@
             <h1 class="center">Zulip for open source projects</h1>
             <p>
                 Grow your community with thoughtful and inclusive discussion.
-                <br/><a href="/plans">Zulip Cloud Standard</a> is free for open-source
+                <br/><a href="/plans/">Zulip Cloud Standard</a> is free for open-source
                 projects!
             </p>
         </div>
@@ -35,7 +35,7 @@
             <a href="/new/" class="button">
                 {{ _('Create organization') }}
             </a>
-            <a href="/accounts/go/?next=/upgrade%23sponsorship" class="button">
+            <a href="/accounts/go/?next=/upgrade/%23sponsorship" class="button">
                 {{ _('Request sponsorship') }}
             </a>
             <a href="/self-hosting/" class="button">
@@ -47,8 +47,8 @@
     <div class="feature-intro">
         <h1 class="center"> Make Zulip the communication hub for your open-source community. </h1>
         <p>
-            <a href="/hello">Zulip</a> is the only <a href="/features">modern
-            team chat app</a> that is <a href="/why-zulip">ideal</a> for both
+            <a href="/hello/">Zulip</a> is the only <a href="/features/">modern
+            team chat app</a> that is <a href="/why-zulip/">ideal</a> for both
             live and asynchronous conversations. Discuss issues, pull requests
             and feature ideas, engage with users, answer questions, and
             onboard new contributors.
@@ -98,12 +98,19 @@
                         </div>
                     </li>
                 </ul>
-                <blockquote class="twitter-tweet" data-cards="hidden"><p lang="en" dir="ltr">We just moved the Lichess team (~100 persons) to <a href="https://twitter.com/zulip?ref_src=twsrc%5Etfw">@zulip</a>, and I&#39;m loving it. The topics in particular make it vastly superior to slack &amp; discord, when it comes to dealing with many conversations.<br />Zulip is also open-source! <a href="https://t.co/lxHjf3YPMe">https://t.co/lxHjf3YPMe</a></p>&mdash; Thibault D (@ornicar) <a href="https://twitter.com/ornicar/status/1412672302601457664?ref_src=twsrc%5Etfw">July 7, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js"></script>
+                <div class="quote">
+                    <blockquote>
+                        We just moved the Lichess team (~100 persons) to <a href="https://twitter.com/zulip?ref_src=twsrc%5Etfw">@zulip</a>, and I&#39;m loving it. The topics in particular make it vastly superior to slack &amp; discord, when it comes to dealing with many conversations.<br />Zulip is also open-source!
+                    </blockquote>
+                    <div class="author">
+                        — <a href="https://twitter.com/ornicar">Thibault D (@ornicar)</a>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="feature-half">
             <div class="feature-image topics-image">
-                <img alt="" src="/static/images/landing-page/open_source/streams_and_topics_day.png" />
+                <img alt="" src="{{ static('images/landing-page/open_source/streams_and_topics_day.png') }}" />
             </div>
         </div>
     </div>
@@ -111,7 +118,7 @@
     <div class="feature-container alternate-grid">
         <div class="feature-half md-hide">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/education/knowledge-repository.svg" />
+                <img alt="" src="{{ static('images/landing-page/education/knowledge-repository.svg') }}" />
             </div>
         </div>
         <div class="feature-half">
@@ -123,7 +130,7 @@
                     <li>
                         <div class="list-content">
                             Maintain access to your organization's entire
-                            message history with free <a href="/plans">Zulip
+                            message history with free <a href="/plans/">Zulip
                             Cloud Standard</a> hosting. Information is at your
                             fingertips with Zulip's <a
                             href="/help/search-for-messages">powerful full-text
@@ -173,7 +180,7 @@
         </div>
         <div class="feature-half md-display">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/education/knowledge-repository.svg" />
+                <img alt="" src="{{ static('images/landing-page/education/knowledge-repository.svg') }}" />
             </div>
         </div>
     </div>
@@ -225,7 +232,7 @@
                     </li>
                     <li>
                         <div class="list-content">
-                            Check out <a href="/for/communities">Zulip for
+                            Check out <a href="/for/communities/">Zulip for
                             communities</a>
                             to learn more about how Zulip facilitates
                             contributor engagement and inclusion.
@@ -237,7 +244,7 @@
         </div>
         <div class="feature-half">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/open_source/build_inclusive_communities.svg" />
+                <img alt="" src="{{ static('images/landing-page/open_source/build_inclusive_communities.svg') }}" />
             </div>
         </div>
     </div>
@@ -246,7 +253,7 @@
     <div class="feature-container alternate-grid">
         <div class="feature-half md-hide">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/companies/software-engineer.svg" />
+                <img alt="" src="{{ static('images/landing-page/companies/software-engineer.svg') }}" />
             </div>
         </div>
         <div class="feature-half">
@@ -261,7 +268,7 @@
                             open-source software</a>, with no "open core"
                             catch. We work hard to make it <a href="https://zulip.readthedocs.io/en/latest/production/install.html">easy to set up</a>,
                             <a href="https://zulip.readthedocs.io/en/stable/production/export-and-import.html#backups">backup</a>,
-                            and <a href="https://zulip.readthedocs.io/en/stable/production/upgrade-or-modify.html">maintain</a>
+                            and <a href="https://zulip.readthedocs.io/en/stable/production/upgrade.html">maintain</a>
                             a self-hosted Zulip installation, where you
                             have full control of your data.
                         </div>
@@ -318,7 +325,7 @@
         </div>
         <div class="feature-half md-display">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/companies/software-engineer.svg" />
+                <img alt="" src="{{ static('images/landing-page/companies/software-engineer.svg') }}" />
             </div>
         </div>
     </div>
@@ -353,7 +360,7 @@
                     <li>
                         <div class="list-content">
                             If you made a mistake, no worries! You
-                            can <a href="/help/edit-or-delete-a-message">edit your
+                            can <a href="/help/edit-a-message">edit your
                             message</a>, or move it to a
                             different <a href="/help/move-content-to-another-topic">topic</a>
                             or <a href="/help/move-content-to-another-stream">stream</a>.
@@ -367,15 +374,15 @@
                         discussion work!
                     </blockquote>
                     <div class="author">
-                        &mdash; <a href="https://github.com/matklad/">Aleksey Kladov</a>
-                        , Senior software engineer, NEAR Protocol
+                        &mdash; <a href="https://github.com/matklad/">Aleksey Kladov</a>,
+                        Senior software engineer, NEAR Protocol
                     </div>
                 </div>
             </div>
         </div>
         <div class="feature-half">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/companies/message-formatting-top.png" />
+                <img alt="" src="{{ static('images/landing-page/companies/message-formatting-top.png') }}" />
             </div>
         </div>
     </div>
@@ -384,7 +391,7 @@
     <div class="feature-container alternate-grid">
         <div class="feature-half md-hide">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/companies/message-formatting-bottom.png" />
+                <img alt="" src="{{ static('images/landing-page/companies/message-formatting-bottom.png') }}" />
             </div>
         </div>
         <div class="feature-half">
@@ -443,7 +450,7 @@
         </div>
         <div class="feature-half md-display">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/companies/message-formatting-bottom.png" />
+                <img alt="" src="{{ static('images/landing-page/companies/message-formatting-bottom.png') }}" />
             </div>
         </div>
     </div>
@@ -474,7 +481,7 @@
                     <li>
                         <div class="list-content">
                             Native integrations for GitHub, Jira, Twitter, Sentry
-                            and <a href="/integrations">hundreds of
+                            and <a href="/integrations/">hundreds of
                             other tools</a> can initiate new topics,
                             creating lightweight discussion spaces for
                             each issue.
@@ -513,7 +520,7 @@
         </div>
         <div class="feature-half">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/companies/integrations_with_border.png" />
+                <img alt="" src="{{ static('images/landing-page/companies/integrations_with_border.png') }}" />
             </div>
         </div>
     </div>
@@ -521,7 +528,7 @@
     <div class="feature-container alternate-grid">
         <div class="feature-half md-hide">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/education/flexible-administration.svg" />
+                <img alt="" src="{{ static('images/landing-page/education/flexible-administration.svg') }}" />
             </div>
         </div>
         <div class="feature-half">
@@ -566,7 +573,7 @@
         </div>
         <div class="feature-half md-display">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/education/flexible-administration.svg" />
+                <img alt="" src="{{ static('images/landing-page/education/flexible-administration.svg') }}" />
             </div>
         </div>
     </div>
@@ -580,7 +587,7 @@
                 <ul>
                     <li>
                         <div class="list-content">
-                            With <a href="/apps">apps for every
+                            With <a href="/apps/">apps for every
                             platform</a>, you can check Zulip at your computer or on your
                             phone. Zulip works great in a browser, so no download is
                             required.
@@ -598,7 +605,7 @@
                     <li>
                         <div class="list-content">
                             Use Zulip in your language of choice, with translations into
-                            <a href="https://www.transifex.com/zulip/zulip/">23 languages</a>.
+                            <a href="https://explore.transifex.com/zulip/zulip/">23 languages</a>.
                         </div>
                     </li>
                     <li>
@@ -614,7 +621,7 @@
         </div>
         <div class="feature-half">
             <div class="feature-image">
-                <img class="mirror-image" alt="" src="/static/images/landing-page/education/mobile.svg" />
+                <img class="mirror-image" alt="" src="{{ static('images/landing-page/education/mobile.svg') }}" />
             </div>
         </div>
     </div>
@@ -708,9 +715,9 @@
     </div>
 
 
-    <div class="bottom-register-buttons">
+    <div class="bottom-register-buttons extra_margin_before_footer">
         <h1>
-            <a href="/plans">Zulip Cloud Standard</a> is free for open-source projects!
+            <a href="/plans/">Zulip Cloud Standard</a> is free for open-source projects!
         </h1>
         <div class="bottom-text-large">
             <p>Join the hundreds of open-source projects we sponsor.</p>
@@ -719,7 +726,7 @@
             <a href="/new/" class="button">
                 {{ _('Create organization') }}
             </a>
-            <a href="/accounts/go/?next=/upgrade%23sponsorship" class="button">
+            <a href="/accounts/go/?next=/upgrade/%23sponsorship" class="button">
                 {{ _('Request sponsorship') }}
             </a>
             <a href="/self-hosting/" class="button">

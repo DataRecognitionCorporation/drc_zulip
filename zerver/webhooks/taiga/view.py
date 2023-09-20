@@ -9,30 +9,29 @@ should be in bold.
 from typing import Dict, List, Optional, Tuple, Union
 
 from django.http import HttpRequest, HttpResponse
+from typing_extensions import TypeAlias
 
 from zerver.decorator import webhook_view
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_bool, check_none_or, check_string, to_wild_value
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_bool, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-EventType = Dict[str, Union[str, Dict[str, Optional[Union[str, bool]]]]]
-ReturnType = Tuple[WildValue, WildValue]
+EventType: TypeAlias = Dict[str, Union[str, Dict[str, Optional[Union[str, bool]]]]]
+ReturnType: TypeAlias = Tuple[WildValue, WildValue]
 
 
 @webhook_view("Taiga")
-@has_request_variables
+@typed_endpoint
 def api_taiga_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    message: WildValue = REQ(argument_type="body", converter=to_wild_value),
+    *,
+    message: WebhookPayload[WildValue],
 ) -> HttpResponse:
     parsed_events = parse_message(message)
-    content_lines = []
-    for event in parsed_events:
-        content_lines.append(generate_content(event) + "\n")
-    content = "".join(sorted(content_lines))
+    content = "".join(sorted(generate_content(event) + "\n" for event in parsed_events))
     topic = "General"
     if message["data"].get("milestone") and "name" in message["data"]["milestone"]:
         topic = message["data"]["milestone"]["name"].tame(check_string)
@@ -59,12 +58,12 @@ templates = {
     },
     "relateduserstory": {
         "create": (
-            "[{user}]({user_link}) added a related user story "
-            "{userstory_subject} to the epic {epic_subject}."
+            "[{user}]({user_link}) added a related user story"
+            " {userstory_subject} to the epic {epic_subject}."
         ),
         "delete": (
-            "[{user}]({user_link}) removed a related user story "
-            + "{userstory_subject} from the epic {epic_subject}."
+            "[{user}]({user_link}) removed a related user story"
+            " {userstory_subject} from the epic {epic_subject}."
         ),
     },
     "userstory": {
@@ -90,7 +89,7 @@ templates = {
         "delete": "[{user}]({user_link}) deleted user story {subject}.",
         "due_date": "[{user}]({user_link}) changed due date of user story {subject}"
         " from {old} to {new}.",
-        "set_due_date": "[{user}]({user_link}) set due date of user story {subject}" " to {new}.",
+        "set_due_date": "[{user}]({user_link}) set due date of user story {subject} to {new}.",
     },
     "milestone": {
         "create": "[{user}]({user_link}) created sprint {subject}.",
@@ -121,9 +120,8 @@ templates = {
         "commented": "[{user}]({user_link}) commented on task {subject}.",
         "delete": "[{user}]({user_link}) deleted task {subject}.",
         "changed_us": "[{user}]({user_link}) moved task {subject} from user story {old} to {new}.",
-        "due_date": "[{user}]({user_link}) changed due date of task {subject}"
-        " from {old} to {new}.",
-        "set_due_date": "[{user}]({user_link}) set due date of task {subject}" " to {new}.",
+        "due_date": "[{user}]({user_link}) changed due date of task {subject} from {old} to {new}.",
+        "set_due_date": "[{user}]({user_link}) set due date of task {subject} to {new}.",
     },
     "issue": {
         "create": "[{user}]({user_link}) created issue {subject}.",
@@ -146,7 +144,7 @@ templates = {
         "delete": "[{user}]({user_link}) deleted issue {subject}.",
         "due_date": "[{user}]({user_link}) changed due date of issue {subject}"
         " from {old} to {new}.",
-        "set_due_date": "[{user}]({user_link}) set due date of issue {subject}" " to {new}.",
+        "set_due_date": "[{user}]({user_link}) set due date of issue {subject} to {new}.",
         "blocked": "[{user}]({user_link}) blocked issue {subject}.",
         "unblocked": "[{user}]({user_link}) unblocked issue {subject}.",
     },
@@ -264,7 +262,7 @@ def parse_change_event(change_type: str, message: WildValue) -> Optional[EventTy
         if not tamed_old:
             event_type = "set_" + change_type
             values["new"] = tamed_new
-        elif not tamed_old == tamed_new:
+        elif tamed_old != tamed_new:
             event_type = change_type
             values.update(old=tamed_old, new=tamed_new)
         else:
@@ -309,7 +307,7 @@ def parse_message(
         events.append(parse_create_or_delete(message))
     elif message["action"].tame(check_string) == "change":
         if message["change"]["diff"]:
-            for value in message["change"]["diff"].keys():
+            for value in message["change"]["diff"].keys():  # noqa: SIM118
                 parsed_event = parse_change_event(value, message)
                 if parsed_event:
                     events.append(parsed_event)

@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Mapping, Type, Union
 from django.core.files.uploadedfile import UploadedFile
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
+from typing_extensions import TypeAlias
 
 from analytics.lib.counts import COUNT_STATS, CountStat, do_drop_all_analytics_tables
 from analytics.lib.fixtures import generate_time_series_data
@@ -23,8 +24,17 @@ from zerver.lib.create_user import create_user
 from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.timestamp import floor_to_day
-from zerver.lib.upload import upload_message_image_from_request
-from zerver.models import Client, Realm, Recipient, Stream, Subscription, UserGroup, UserProfile
+from zerver.lib.upload import upload_message_attachment_from_request
+from zerver.models import (
+    Client,
+    Realm,
+    RealmAuditLog,
+    Recipient,
+    Stream,
+    Subscription,
+    UserGroup,
+    UserProfile,
+)
 
 
 class Command(BaseCommand):
@@ -116,25 +126,29 @@ class Command(BaseCommand):
         stream.save(update_fields=["recipient"])
 
         # Subscribe shylock to the stream to avoid invariant failures.
-        # TODO: This should use subscribe_users_to_streams from populate_db.
-        subs = [
-            Subscription(
-                recipient=recipient,
-                user_profile=shylock,
-                is_user_active=shylock.is_active,
-                color=STREAM_ASSIGNMENT_COLORS[0],
-            ),
-        ]
-        Subscription.objects.bulk_create(subs)
+        Subscription.objects.create(
+            recipient=recipient,
+            user_profile=shylock,
+            is_user_active=shylock.is_active,
+            color=STREAM_ASSIGNMENT_COLORS[0],
+        )
+        RealmAuditLog.objects.create(
+            realm=realm,
+            modified_user=shylock,
+            modified_stream=stream,
+            event_last_message_id=0,
+            event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
+            event_time=installation_time,
+        )
 
         # Create an attachment in the database for set_storage_space_used_statistic.
         IMAGE_FILE_PATH = static_path("images/test-images/checkbox.png")
         file_info = os.stat(IMAGE_FILE_PATH)
         file_size = file_info.st_size
         with open(IMAGE_FILE_PATH, "rb") as fp:
-            upload_message_image_from_request(UploadedFile(fp), shylock, file_size)
+            upload_message_attachment_from_request(UploadedFile(fp), shylock, file_size)
 
-        FixtureData = Mapping[Union[str, int, None], List[int]]
+        FixtureData: TypeAlias = Mapping[Union[str, int, None], List[int]]
 
         def insert_fixture_data(
             stat: CountStat,
@@ -142,7 +156,7 @@ class Command(BaseCommand):
             table: Type[BaseCount],
         ) -> None:
             end_times = time_range(
-                last_end_time, last_end_time, stat.frequency, len(list(fixture_data.values())[0])
+                last_end_time, last_end_time, stat.frequency, len(next(iter(fixture_data.values())))
             )
             if table == InstallationCount:
                 id_args: Dict[str, Any] = {}
@@ -154,7 +168,7 @@ class Command(BaseCommand):
                 id_args = {"stream": stream, "realm": realm}
 
             for subgroup, values in fixture_data.items():
-                table.objects.bulk_create(
+                table._default_manager.bulk_create(
                     table(
                         property=stat.property,
                         subgroup=subgroup,

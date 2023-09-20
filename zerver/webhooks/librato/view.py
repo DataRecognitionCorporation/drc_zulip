@@ -4,12 +4,12 @@ from typing import Any, Callable, Dict, List, Mapping, Tuple
 import orjson
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
+from pydantic import Json
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_dict
+from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -42,7 +42,7 @@ class LibratoWebhookParser:
 
     def parse_violation(self, violation: Dict[str, Any]) -> Tuple[str, str]:
         metric_name = violation["metric"]
-        recorded_at = datetime.fromtimestamp((violation["recorded_at"]), tz=timezone.utc).strftime(
+        recorded_at = datetime.fromtimestamp(violation["recorded_at"], tz=timezone.utc).strftime(
             "%Y-%m-%d %H:%M:%S"
         )
         return metric_name, recorded_at
@@ -98,7 +98,7 @@ class LibratoWebhookHandler(LibratoWebhookParser):
     def handle_alert_clear_message(self) -> str:
         alert_clear_template = "Alert [alert_name]({alert_url}) has cleared at {trigger_time} UTC!"
         trigger_time = datetime.fromtimestamp(
-            (self.payload["trigger_time"]), tz=timezone.utc
+            self.payload["trigger_time"], tz=timezone.utc
         ).strftime("%Y-%m-%d %H:%M:%S")
         alert_id, alert_name, alert_url, alert_runbook_url = self.parse_alert()
         content = alert_clear_template.format(
@@ -159,11 +159,14 @@ class LibratoWebhookHandler(LibratoWebhookParser):
 
 
 @webhook_view("Librato")
-@has_request_variables
+@typed_endpoint
 def api_librato_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Mapping[str, Any] = REQ(json_validator=check_dict(), default={}),
+    *,
+    payload: Json[
+        Mapping[str, Any]
+    ] = {},  # noqa: B006 # Mapping is indeed immutable, but Json's type annotation drops that information
 ) -> HttpResponse:
     try:
         attachments = orjson.loads(request.body).get("attachments", [])

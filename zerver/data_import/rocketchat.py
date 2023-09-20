@@ -1,8 +1,8 @@
+import hashlib
 import logging
 import os
 import random
 import secrets
-import subprocess
 import uuid
 from typing import Any, Dict, List, Set, Tuple
 
@@ -33,8 +33,8 @@ from zerver.data_import.sequencer import NEXT_ID, IdMapper
 from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.markdown import IMAGE_EXTENSIONS
-from zerver.lib.upload import sanitize_name
-from zerver.lib.utils import make_safe_digest, process_list_in_batches
+from zerver.lib.upload.base import sanitize_name
+from zerver.lib.utils import process_list_in_batches
 from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
 
 
@@ -80,14 +80,14 @@ def process_users(
             else:
                 is_mirror_dummy = True
 
-            if not user_dict.get("emails"):
-                user_dict["emails"] = [
-                    {
-                        "address": "{}-{}@{}".format(
-                            user_dict["username"], user_dict["type"], domain_name
-                        )
-                    }
-                ]
+        if user_dict.get("emails") is None:
+            user_dict["emails"] = [
+                {
+                    "address": "{}-{}@{}".format(
+                        user_dict["username"], user_dict["type"], domain_name
+                    )
+                }
+            ]
 
         # TODO: Change this to use actual exported avatar
         avatar_source = "G"
@@ -105,6 +105,8 @@ def process_users(
             realm_owners.append(id)
         elif "guest" in user_dict["roles"]:
             role = UserProfile.ROLE_GUEST
+        elif "bot" in user_dict["roles"]:
+            is_bot = True
 
         if is_bot:
             bots.append(id)
@@ -282,7 +284,7 @@ def build_custom_emoji(
     # Build custom emoji
     for rc_emoji in custom_emoji_data["emoji"]:
         # Subject to change with changes in database
-        emoji_file_id = ".".join([rc_emoji["name"], rc_emoji["extension"]])
+        emoji_file_id = f'{rc_emoji["name"]}.{rc_emoji["extension"]}'
 
         emoji_file_info = emoji_file_data[emoji_file_id]
 
@@ -669,12 +671,12 @@ def process_messages(
             content=content,
             date_sent=int(message["ts"].timestamp()),
             reactions=reactions,
-            has_link=True if message.get("urls") else False,
+            has_link=bool(message.get("urls")),
         )
 
         # Add recipient_id to message_dict
         if is_pm_data:
-            # Message is in a PM or a huddle.
+            # Message is in a 1:1 or group direct message.
             rc_channel_id = message["rid"]
             if rc_channel_id in huddle_id_to_huddle_map:
                 huddle_id = huddle_id_mapper.get(rc_channel_id)
@@ -683,7 +685,7 @@ def process_messages(
                 rc_member_ids = direct_id_to_direct_map[rc_channel_id]["uids"]
 
                 if len(rc_member_ids) == 1:  # nocoverage
-                    # PMs to yourself only have one user.
+                    # direct messages to yourself only have one user.
                     rc_member_ids.append(rc_member_ids[0])
                 if rc_sender_id == rc_member_ids[0]:
                     zulip_member_id = user_id_mapper.get(rc_member_ids[1])
@@ -847,9 +849,7 @@ def separate_channel_private_and_livechat_messages(
     private_messages: List[Dict[str, Any]],
     livechat_messages: List[Dict[str, Any]],
 ) -> None:
-    private_channels_list = list(direct_id_to_direct_map.keys()) + list(
-        huddle_id_to_huddle_map.keys()
-    )
+    private_channels_list = [*direct_id_to_direct_map, *huddle_id_to_huddle_map]
     for message in messages:
         if not message.get("rid"):
             # Message does not belong to any channel (might be
@@ -898,7 +898,7 @@ def map_receiver_id_to_recipient_id(
 def get_string_huddle_hash(id_list: List[str]) -> str:
     id_list = sorted(set(id_list))
     hash_key = ",".join(str(x) for x in id_list)
-    return make_safe_digest(hash_key)
+    return hashlib.sha1(hash_key.encode()).hexdigest()
 
 
 def categorize_channels_and_map_with_id(
@@ -1219,7 +1219,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
         upload_id_to_upload_data_map=upload_id_to_upload_data_map,
         output_dir=output_dir,
     )
-    # Process private messages
+    # Process direct messages
     process_messages(
         realm_id=realm_id,
         messages=private_messages,
@@ -1257,7 +1257,3 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
     attachment: Dict[str, List[Any]] = {"zerver_attachment": zerver_attachment}
     create_converted_data_files(attachment, output_dir, "/attachment.json")
     create_converted_data_files(uploads_list, output_dir, "/uploads/records.json")
-
-    logging.info("Start making tarball")
-    subprocess.check_call(["tar", "-czf", output_dir + ".tar.gz", output_dir, "-P"])
-    logging.info("Done making tarball")

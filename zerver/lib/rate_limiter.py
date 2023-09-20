@@ -13,7 +13,6 @@ from django.http import HttpRequest
 from zerver.lib.cache import cache_with_key
 from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.redis_utils import get_redis_client
-from zerver.lib.utils import statsd
 from zerver.models import UserProfile
 
 # Implement a rate-limiting scheme inspired by the one described here, but heavily modified
@@ -69,7 +68,7 @@ class RateLimitedObject(ABC):
         request_notes.ratelimits_applied[-1].secs_to_freedom = seconds_until_reset
 
     def block_access(self, seconds: int) -> None:
-        "Manually blocks an entity for the desired number of seconds"
+        """Manually blocks an entity for the desired number of seconds"""
         self.backend.block_access(self.key(), seconds)
 
     def unblock_access(self) -> None:
@@ -79,11 +78,11 @@ class RateLimitedObject(ABC):
         self.backend.clear_history(self.key())
 
     def max_api_calls(self) -> int:
-        "Returns the API rate limit for the highest limit"
+        """Returns the API rate limit for the highest limit"""
         return self.get_rules()[-1][1]
 
     def max_api_window(self) -> int:
-        "Returns the API time window for the highest limit"
+        """Returns the API time window for the highest limit"""
         return self.get_rules()[-1][0]
 
     def api_calls_left(self) -> Tuple[int, float]:
@@ -160,31 +159,11 @@ def bounce_redis_key_prefix_for_testing(test_name: str) -> None:
     KEY_PREFIX = test_name + ":" + str(os.getpid()) + ":"
 
 
-def add_ratelimit_rule(range_seconds: int, num_requests: int, domain: str = "api_by_user") -> None:
-    "Add a rate-limiting rule to the ratelimiter"
-    global rules
-
-    if domain not in rules:
-        # If we don't have any rules for domain yet, the domain key needs to be
-        # added to the rules dictionary.
-        rules[domain] = []
-
-    rules[domain].append((range_seconds, num_requests))
-    rules[domain].sort(key=lambda x: x[0])
-
-
-def remove_ratelimit_rule(
-    range_seconds: int, num_requests: int, domain: str = "api_by_user"
-) -> None:
-    global rules
-    rules[domain] = [x for x in rules[domain] if x[0] != range_seconds and x[1] != num_requests]
-
-
 class RateLimiterBackend(ABC):
     @classmethod
     @abstractmethod
     def block_access(cls, entity_key: str, seconds: int) -> None:
-        "Manually blocks an entity for the desired number of seconds"
+        """Manually blocks an entity for the desired number of seconds"""
 
     @classmethod
     @abstractmethod
@@ -303,7 +282,7 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
 
     @classmethod
     def clear_history(cls, entity_key: str) -> None:
-        for rule, reset_times_for_rule in cls.reset_times.items():
+        for reset_times_for_rule in cls.reset_times.values():
             reset_times_for_rule.pop(entity_key, None)
         cls.timestamps_blocked_until.pop(entity_key, None)
 
@@ -325,7 +304,6 @@ class TornadoInMemoryRateLimiterBackend(RateLimiterBackend):
             ratelimited, time_till_free = cls.need_to_limit(entity_key, time_window, max_count)
 
             if ratelimited:
-                statsd.incr(f"ratelimiter.limited.{entity_key}")
                 break
 
         return ratelimited, time_till_free
@@ -340,7 +318,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
 
     @classmethod
     def block_access(cls, entity_key: str, seconds: int) -> None:
-        "Manually blocks an entity for the desired number of seconds"
+        """Manually blocks an entity for the desired number of seconds"""
         _, _, blocking_key = cls.get_keys(entity_key)
         with client.pipeline() as pipe:
             pipe.set(blocking_key, 1)
@@ -389,7 +367,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
 
     @classmethod
     def is_ratelimited(cls, entity_key: str, rules: List[Tuple[int, int]]) -> Tuple[bool, float]:
-        "Returns a tuple of (rate_limited, time_till_free)"
+        """Returns a tuple of (rate_limited, time_till_free)"""
         assert rules
         list_key, set_key, blocking_key = cls.get_keys(entity_key)
 
@@ -483,7 +461,11 @@ class RedisRateLimiterBackend(RateLimiterBackend):
                     break
                 except redis.WatchError:  # nocoverage # Ideally we'd have a test for this.
                     if count > 10:
+<<<<<<< HEAD
                         raise RateLimiterLockingError()
+=======
+                        raise RateLimiterLockingError
+>>>>>>> drc_main
                     count += 1
 
                     continue
@@ -494,10 +476,7 @@ class RedisRateLimiterBackend(RateLimiterBackend):
     ) -> Tuple[bool, float]:
         ratelimited, time = cls.is_ratelimited(entity_key, rules)
 
-        if ratelimited:
-            statsd.incr(f"ratelimiter.limited.{entity_key}")
-
-        else:
+        if not ratelimited:
             try:
                 cls.incr_ratelimit(entity_key, max_api_calls, max_api_window)
             except RateLimiterLockingError:

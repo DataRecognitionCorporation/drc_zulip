@@ -1,6 +1,5 @@
 import logging
 import os
-import subprocess
 from typing import Any, Dict, List, Set, Tuple
 
 import dateutil.parser
@@ -8,6 +7,7 @@ import orjson
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
+from typing_extensions import TypeAlias
 
 from zerver.data_import.import_util import (
     ZerverFieldsT,
@@ -30,7 +30,7 @@ from zerver.models import Recipient, UserProfile
 from zproject.backends import GitHubAuthBackend
 
 # stubs
-GitterDataT = List[Dict[str, Any]]
+GitterDataT: TypeAlias = List[Dict[str, Any]]
 
 realm_id = 0
 
@@ -48,20 +48,20 @@ def gitter_workspace_to_realm(
     NOW = float(timezone_now().timestamp())
     zerver_realm: List[ZerverFieldsT] = build_zerver_realm(realm_id, realm_subdomain, NOW, "Gitter")
 
+    realm = build_realm(zerver_realm, realm_id, domain_name)
+
     # Users will have GitHub's generated noreply email addresses so their only way to log in
     # at first is via GitHub. So we set GitHub to be the only authentication method enabled
     # default to avoid user confusion.
-    assert len(zerver_realm) == 1
-    authentication_methods = [
-        (auth_method[0], False)
-        if auth_method[0] != GitHubAuthBackend.auth_backend_name
-        else (auth_method[0], True)
-        for auth_method in zerver_realm[0]["authentication_methods"]
+    realm["zerver_realmauthenticationmethod"] = [
+        {
+            "name": GitHubAuthBackend.auth_backend_name,
+            "realm": realm_id,
+            # The id doesn't matter since it gets set by the import later properly, but we need to set
+            # it to something in the dict.
+            "id": 1,
+        }
     ]
-
-    zerver_realm[0]["authentication_methods"] = authentication_methods
-
-    realm = build_realm(zerver_realm, realm_id, domain_name)
 
     zerver_userprofile, avatars, user_map = build_userprofile(int(NOW), domain_name, gitter_data)
     zerver_stream, zerver_defaultstream, stream_map = build_stream_map(int(NOW), gitter_data)
@@ -387,8 +387,6 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int = 6) ->
     create_converted_data_files([], output_dir, "/uploads/records.json")
     # IO attachments records
     create_converted_data_files(attachment, output_dir, "/attachment.json")
-
-    subprocess.check_call(["tar", "-czf", output_dir + ".tar.gz", output_dir, "-P"])
 
     logging.info("######### DATA CONVERSION FINISHED #########\n")
     logging.info("Zulip data dump created at %s", output_dir)

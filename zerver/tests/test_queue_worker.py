@@ -1,10 +1,11 @@
 import base64
 import datetime
+import itertools
 import os
 import signal
 import time
 from collections import defaultdict
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 from inspect import isabstract
 from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional
 from unittest.mock import MagicMock, patch
@@ -14,6 +15,7 @@ import time_machine
 from django.conf import settings
 from django.db.utils import IntegrityError
 from django.test import override_settings
+from typing_extensions import TypeAlias
 
 from zerver.lib.email_mirror import RateLimitedRealmMirror
 from zerver.lib.email_mirror_helpers import encode_email_address
@@ -36,15 +38,13 @@ from zerver.models import (
 from zerver.tornado.event_queue import build_offline_notification
 from zerver.worker import queue_processors
 from zerver.worker.queue_processors import (
-    EmailSendingWorker,
     FetchLinksEmbedData,
-    LoopQueueProcessingWorker,
     MissedMessageWorker,
     QueueProcessingWorker,
     get_active_worker_queues,
 )
 
-Event = Dict[str, Any]
+Event: TypeAlias = Dict[str, Any]
 
 
 class FakeClient:
@@ -112,6 +112,271 @@ class WorkerTest(ZulipTestCase):
             self.assert_length(activity_records, 1)
             self.assertEqual(activity_records[0].count, 2)
 
+<<<<<<< HEAD
+=======
+    def test_missed_message_worker(self) -> None:
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        hamlet1_msg_id = self.send_personal_message(
+            from_user=cordelia,
+            to_user=hamlet,
+            content="hi hamlet",
+        )
+
+        hamlet2_msg_id = self.send_personal_message(
+            from_user=cordelia,
+            to_user=hamlet,
+            content="goodbye hamlet",
+        )
+
+        hamlet3_msg_id = self.send_personal_message(
+            from_user=cordelia,
+            to_user=hamlet,
+            content="hello again hamlet",
+        )
+
+        othello_msg_id = self.send_personal_message(
+            from_user=cordelia,
+            to_user=othello,
+            content="where art thou, othello?",
+        )
+
+        hamlet_event1 = dict(
+            user_profile_id=hamlet.id,
+            message_id=hamlet1_msg_id,
+            trigger=NotificationTriggers.DIRECT_MESSAGE,
+        )
+        hamlet_event2 = dict(
+            user_profile_id=hamlet.id,
+            message_id=hamlet2_msg_id,
+            trigger=NotificationTriggers.DIRECT_MESSAGE,
+            mentioned_user_group_id=4,
+        )
+        othello_event = dict(
+            user_profile_id=othello.id,
+            message_id=othello_msg_id,
+            trigger=NotificationTriggers.DIRECT_MESSAGE,
+        )
+
+        events = [hamlet_event1, hamlet_event2, othello_event]
+
+        mmw = MissedMessageWorker()
+        batch_duration = datetime.timedelta(
+            seconds=hamlet.email_notifications_batching_period_seconds
+        )
+        assert (
+            hamlet.email_notifications_batching_period_seconds
+            == othello.email_notifications_batching_period_seconds
+        )
+
+        send_mock = patch(
+            "zerver.lib.email_notifications.do_send_missedmessage_events_reply_in_zulip",
+        )
+
+        bonus_event_hamlet = dict(
+            user_profile_id=hamlet.id,
+            message_id=hamlet3_msg_id,
+            trigger=NotificationTriggers.DIRECT_MESSAGE,
+        )
+
+        def check_row(
+            row: ScheduledMessageNotificationEmail,
+            scheduled_timestamp: datetime.datetime,
+            mentioned_user_group_id: Optional[int],
+        ) -> None:
+            self.assertEqual(row.trigger, NotificationTriggers.DIRECT_MESSAGE)
+            self.assertEqual(row.scheduled_timestamp, scheduled_timestamp)
+            self.assertEqual(row.mentioned_user_group_id, mentioned_user_group_id)
+
+        def advance() -> Optional[float]:
+            mmw.stopping = False
+
+            def inner(check: Callable[[], bool], timeout: Optional[float]) -> bool:
+                # The check should never pass, since we've just (with
+                # the lock) ascertained above the cv.wait that its
+                # conditions are not met.
+                self.assertFalse(check())
+
+                # Set ourself to stop at the top of the next loop, but
+                # pretend we didn't get an event
+                mmw.stopping = True
+                return False
+
+            with patch.object(mmw.cv, "wait_for", side_effect=inner):
+                mmw.work()
+            return mmw.has_timeout
+
+        # With nothing enqueued, the condition variable is pending
+        # forever.  We double-check that the condition is false in
+        # steady-state.
+        has_timeout = advance()
+        self.assertFalse(has_timeout)
+
+        # Enqueues the events to the internal queue, as if from RabbitMQ
+        time_zero = datetime.datetime(2021, 1, 1, tzinfo=datetime.timezone.utc)
+        with time_machine.travel(time_zero, tick=False), patch.object(
+            mmw.cv, "notify"
+        ) as notify_mock:
+            for event in events:
+                mmw.consume_single_event(event)
+        # All of these notify, because has_timeout is still false in
+        # each case.  This represents multiple consume() calls getting
+        # the lock before the worker escapes the wait_for, and is
+        # unlikely in real life but does not lead to incorrect
+        # behaviour.
+        self.assertEqual(notify_mock.call_count, 3)
+
+        # This leaves a timeout set, since there are objects pending
+        with time_machine.travel(time_zero, tick=False):
+            has_timeout = advance()
+        self.assertTrue(has_timeout)
+
+        expected_scheduled_timestamp = time_zero + batch_duration
+
+        # The events should be saved in the database
+        hamlet_row1 = ScheduledMessageNotificationEmail.objects.get(
+            user_profile_id=hamlet.id, message_id=hamlet1_msg_id
+        )
+        check_row(hamlet_row1, expected_scheduled_timestamp, None)
+
+        hamlet_row2 = ScheduledMessageNotificationEmail.objects.get(
+            user_profile_id=hamlet.id, message_id=hamlet2_msg_id
+        )
+        check_row(hamlet_row2, expected_scheduled_timestamp, 4)
+
+        othello_row1 = ScheduledMessageNotificationEmail.objects.get(
+            user_profile_id=othello.id, message_id=othello_msg_id
+        )
+        check_row(othello_row1, expected_scheduled_timestamp, None)
+
+        # If another event is received, test that it gets saved with the same
+        # `expected_scheduled_timestamp` as the earlier events.
+
+        few_moments_later = time_zero + datetime.timedelta(seconds=3)
+        with time_machine.travel(few_moments_later, tick=False), patch.object(
+            mmw.cv, "notify"
+        ) as notify_mock:
+            mmw.consume_single_event(bonus_event_hamlet)
+        self.assertEqual(notify_mock.call_count, 0)
+
+        with time_machine.travel(few_moments_later, tick=False):
+            has_timeout = advance()
+        self.assertTrue(has_timeout)
+        hamlet_row3 = ScheduledMessageNotificationEmail.objects.get(
+            user_profile_id=hamlet.id, message_id=hamlet3_msg_id
+        )
+        check_row(hamlet_row3, expected_scheduled_timestamp, None)
+
+        # Now let us test `maybe_send_batched_emails`
+        # If called too early, it shouldn't process the emails.
+        one_minute_premature = expected_scheduled_timestamp - datetime.timedelta(seconds=60)
+        with time_machine.travel(one_minute_premature, tick=False):
+            has_timeout = advance()
+        self.assertTrue(has_timeout)
+        self.assertEqual(ScheduledMessageNotificationEmail.objects.count(), 4)
+
+        # If called after `expected_scheduled_timestamp`, it should process all emails.
+        one_minute_overdue = expected_scheduled_timestamp + datetime.timedelta(seconds=60)
+        with time_machine.travel(one_minute_overdue, tick=True):
+            with send_mock as sm, self.assertLogs(level="INFO") as info_logs:
+                has_timeout = advance()
+                self.assertTrue(has_timeout)
+                self.assertEqual(ScheduledMessageNotificationEmail.objects.count(), 0)
+                has_timeout = advance()
+                self.assertFalse(has_timeout)
+
+        self.assertEqual(
+            [
+                f"INFO:root:Batch-processing 3 missedmessage_emails events for user {hamlet.id}",
+                f"INFO:root:Batch-processing 1 missedmessage_emails events for user {othello.id}",
+            ],
+            info_logs.output,
+        )
+
+        # Verify the payloads now
+        args = [c[0] for c in sm.call_args_list]
+        arg_dict = {
+            arg[0].id: dict(
+                missed_messages=arg[1],
+                count=arg[2],
+            )
+            for arg in args
+        }
+
+        hamlet_info = arg_dict[hamlet.id]
+        self.assertEqual(hamlet_info["count"], 3)
+        self.assertEqual(
+            {m["message"].content for m in hamlet_info["missed_messages"]},
+            {"hi hamlet", "goodbye hamlet", "hello again hamlet"},
+        )
+
+        othello_info = arg_dict[othello.id]
+        self.assertEqual(othello_info["count"], 1)
+        self.assertEqual(
+            {m["message"].content for m in othello_info["missed_messages"]},
+            {"where art thou, othello?"},
+        )
+
+        # Hacky test coming up! We want to test the try-except block in the consumer which handles
+        # IntegrityErrors raised when the message was deleted before it processed the notification
+        # event.
+        # However, Postgres defers checking ForeignKey constraints to when the current transaction
+        # commits. This poses some difficulties in testing because of Django running tests inside a
+        # transaction which never commits. See https://code.djangoproject.com/ticket/22431 for more
+        # details, but the summary is that IntegrityErrors due to database constraints are raised at
+        # the end of the test, not inside the `try` block. So, we have the code inside the `try` block
+        # raise `IntegrityError` by mocking.
+        with patch(
+            "zerver.models.ScheduledMessageNotificationEmail.objects.create",
+            side_effect=IntegrityError,
+        ), self.assertLogs(level="DEBUG") as debug_logs, patch.object(
+            mmw.cv, "notify"
+        ) as notify_mock:
+            mmw.consume_single_event(hamlet_event1)
+            self.assertEqual(notify_mock.call_count, 0)
+            self.assertIn(
+                "DEBUG:root:ScheduledMessageNotificationEmail row could not be created. The message may have been deleted. Skipping event.",
+                debug_logs.output,
+            )
+
+        # Verify that we make forward progress if one of the messages
+        # throws an exception.  First, enqueue the messages, and get
+        # them to create database rows:
+        time_zero = datetime.datetime(2021, 1, 1, tzinfo=datetime.timezone.utc)
+        with time_machine.travel(time_zero, tick=False), patch.object(
+            mmw.cv, "notify"
+        ) as notify_mock:
+            mmw.consume_single_event(hamlet_event1)
+            mmw.consume_single_event(hamlet_event2)
+            mmw.consume_single_event(othello_event)
+            # See above note about multiple notifies
+            self.assertEqual(notify_mock.call_count, 3)
+            has_timeout = advance()
+            self.assertTrue(has_timeout)
+
+        # Next, set up a fail-y consumer:
+        def fail_some(user: UserProfile, *args: Any) -> None:
+            if user.id == hamlet.id:
+                raise RuntimeError
+
+        one_minute_overdue = expected_scheduled_timestamp + datetime.timedelta(seconds=60)
+        with time_machine.travel(one_minute_overdue, tick=False), self.assertLogs(
+            level="ERROR"
+        ) as error_logs, send_mock as sm:
+            sm.side_effect = fail_some
+            has_timeout = advance()
+            self.assertTrue(has_timeout)
+            self.assertEqual(ScheduledMessageNotificationEmail.objects.count(), 0)
+            has_timeout = advance()
+            self.assertFalse(has_timeout)
+        self.assertIn(
+            "ERROR:root:Failed to process 2 missedmessage_emails for user 10",
+            error_logs.output[0],
+        )
+
+>>>>>>> drc_main
     def test_push_notifications_worker(self) -> None:
         """
         The push notifications system has its own comprehensive test suite,
@@ -256,7 +521,7 @@ class WorkerTest(ZulipTestCase):
                     self.assertEqual(mock_mirror_email.call_count, 3)
 
             # After some time passes, emails get accepted again:
-            with patch("time.time", return_value=(start_time + 11.0)):
+            with patch("time.time", return_value=start_time + 11.0):
                 fake_client.enqueue("email_mirror", data[0])
                 worker.start()
                 self.assertEqual(mock_mirror_email.call_count, 4)
@@ -374,10 +639,8 @@ class WorkerTest(ZulipTestCase):
             fake_client.enqueue("unreliable_worker", {"type": msg})
 
         fn = os.path.join(settings.QUEUE_ERROR_DIR, "unreliable_worker.errors")
-        try:
+        with suppress(FileNotFoundError):
             os.remove(fn)
-        except OSError:  # nocoverage # error handling for the directory not existing
-            pass
 
         with simulated_queue_client(fake_client):
             worker = UnreliableWorker()
@@ -411,10 +674,8 @@ class WorkerTest(ZulipTestCase):
             fake_client.enqueue("unreliable_loopworker", {"type": msg})
 
         fn = os.path.join(settings.QUEUE_ERROR_DIR, "unreliable_loopworker.errors")
-        try:
+        with suppress(FileNotFoundError):
             os.remove(fn)
-        except OSError:  # nocoverage # error handling for the directory not existing
-            pass
 
         with simulated_queue_client(fake_client):
             loopworker = UnreliableLoopWorker()
@@ -446,38 +707,51 @@ class WorkerTest(ZulipTestCase):
 
             def consume(self, data: Mapping[str, Any]) -> None:
                 if data["type"] == "timeout":
-                    time.sleep(5)
+                    time.sleep(1.5)
                 processed.append(data["type"])
 
         fake_client = FakeClient()
-        for msg in ["good", "fine", "timeout", "back to normal"]:
-            fake_client.enqueue("timeout_worker", {"type": msg})
 
-        fn = os.path.join(settings.QUEUE_ERROR_DIR, "timeout_worker.errors")
-        try:
-            os.remove(fn)
-        except OSError:  # nocoverage # error handling for the directory not existing
-            pass
+        def assert_timeout(should_timeout: bool, threaded: bool, disable_timeout: bool) -> None:
+            processed.clear()
+            for msg in ["good", "fine", "timeout", "back to normal"]:
+                fake_client.enqueue("timeout_worker", {"type": msg})
 
-        with simulated_queue_client(fake_client):
-            worker = TimeoutWorker()
-            worker.setup()
-            worker.ENABLE_TIMEOUTS = True
-            with self.assertLogs(level="ERROR") as m:
-                worker.start()
-                self.assertEqual(
-                    m.records[0].message,
-                    "Timed out in timeout_worker after 1 seconds processing 1 events",
-                )
-                self.assertIn(m.records[0].stack_info, m.output[0])
+            fn = os.path.join(settings.QUEUE_ERROR_DIR, "timeout_worker.errors")
+            with suppress(FileNotFoundError):
+                os.remove(fn)
 
-        self.assertEqual(processed, ["good", "fine", "back to normal"])
-        with open(fn) as f:
-            line = f.readline().strip()
-        events = orjson.loads(line.split("\t")[1])
-        self.assert_length(events, 1)
-        event = events[0]
-        self.assertEqual(event["type"], "timeout")
+            with simulated_queue_client(fake_client):
+                worker = TimeoutWorker(threaded=threaded, disable_timeout=disable_timeout)
+                worker.setup()
+                if not should_timeout:
+                    worker.start()
+                else:
+                    with self.assertLogs(level="ERROR") as m:
+                        worker.start()
+                        self.assertEqual(
+                            m.records[0].message,
+                            "Timed out in timeout_worker after 1 seconds processing 1 events",
+                        )
+                        self.assertIn(m.records[0].stack_info, m.output[0])
+
+            if not should_timeout:
+                self.assertEqual(processed, ["good", "fine", "timeout", "back to normal"])
+                return
+
+            self.assertEqual(processed, ["good", "fine", "back to normal"])
+            with open(fn) as f:
+                line = f.readline().strip()
+            events = orjson.loads(line.split("\t")[1])
+            self.assert_length(events, 1)
+            event = events[0]
+            self.assertEqual(event["type"], "timeout")
+
+        # Do the bulky truth table check
+        assert_timeout(should_timeout=False, threaded=True, disable_timeout=False)
+        assert_timeout(should_timeout=False, threaded=True, disable_timeout=True)
+        assert_timeout(should_timeout=True, threaded=False, disable_timeout=False)
+        assert_timeout(should_timeout=False, threaded=False, disable_timeout=True)
 
     def test_embed_links_timeout(self) -> None:
         @queue_processors.assign_queue("timeout_worker", is_test_queue=True)
@@ -502,7 +776,6 @@ class WorkerTest(ZulipTestCase):
         with simulated_queue_client(fake_client):
             worker = TimeoutWorker()
             worker.setup()
-            worker.ENABLE_TIMEOUTS = True
             with self.assertLogs(level="WARNING") as m:
                 worker.start()
                 self.assertEqual(
@@ -522,13 +795,18 @@ class WorkerTest(ZulipTestCase):
             TestWorker()
 
     def test_get_active_worker_queues(self) -> None:
-        test_queue_names = set(get_active_worker_queues(only_test_queues=True))
+        # Find all recursive subclasses of QueueProcessingWorker
+        base_classes = [QueueProcessingWorker]
+        all_classes = []
+        while base_classes:
+            new_subclasses = (base_class.__subclasses__() for base_class in base_classes)
+            base_classes = list(itertools.chain(*new_subclasses))
+            all_classes += base_classes
         worker_queue_names = {
-            queue_class.queue_name
-            for base in [QueueProcessingWorker, EmailSendingWorker, LoopQueueProcessingWorker]
-            for queue_class in base.__subclasses__()
-            if not isabstract(queue_class)
+            queue_class.queue_name for queue_class in all_classes if not isabstract(queue_class)
         }
+
+        test_queue_names = set(get_active_worker_queues(only_test_queues=True))
 
         # Verify that the set of active worker queues equals the set
         # of subclasses without is_test_queue set.

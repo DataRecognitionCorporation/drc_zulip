@@ -9,8 +9,13 @@ import orjson
 from zerver.data_import.gitter import do_convert_data, get_usermentions
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, Realm, UserProfile, get_realm
-from zproject.backends import GitHubAuthBackend, auth_enabled_helper, github_auth_enabled
+from zerver.models import Message, UserProfile, get_realm
+from zproject.backends import (
+    AUTH_BACKEND_NAME_MAP,
+    GitHubAuthBackend,
+    auth_enabled_helper,
+    github_auth_enabled,
+)
 
 
 class GitterImporter(ZulipTestCase):
@@ -90,16 +95,16 @@ class GitterImporter(ZulipTestCase):
         self.assertIn(messages["zerver_message"][0]["content"], "test message")
 
         # test usermessages and soft-deactivation of users
-        user_should_be_long_term_idle = [
+        [user_should_be_long_term_idle] = (
             user
             for user in realm["zerver_userprofile"]
             if user["delivery_email"] == "username1@users.noreply.github.com"
-        ][0]
-        user_should_not_be_long_term_idle = [
+        )
+        [user_should_not_be_long_term_idle] = (
             user
             for user in realm["zerver_userprofile"]
             if user["delivery_email"] == "username2@users.noreply.github.com"
-        ][0]
+        )
         self.assertEqual(user_should_be_long_term_idle["long_term_idle"], True)
 
         # Only the user who's not soft-deactivated gets UserMessages.
@@ -126,12 +131,12 @@ class GitterImporter(ZulipTestCase):
 
         # test rendered_messages
         realm_users = UserProfile.objects.filter(realm=realm)
-        messages = Message.objects.filter(sender__in=realm_users)
+        messages = Message.objects.filter(realm_id=realm.id, sender__in=realm_users)
         for message in messages:
             self.assertIsNotNone(message.rendered_content, None)
 
         self.assertTrue(github_auth_enabled(realm))
-        for auth_backend_name in Realm.AUTHENTICATION_FLAGS:
+        for auth_backend_name in AUTH_BACKEND_NAME_MAP:
             if auth_backend_name == GitHubAuthBackend.auth_backend_name:
                 continue
 

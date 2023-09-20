@@ -52,7 +52,7 @@ ACTIONS_TO_MESSAGE_MAPPER = {
     SET_DESC: "set description for {card_url_template} to:\n~~~ quote\n{desc}\n~~~\n",
     CHANGE_DESC: (
         "changed description for {card_url_template} from\n"
-        + "~~~ quote\n{old_desc}\n~~~\nto\n~~~ quote\n{desc}\n~~~\n"
+        "~~~ quote\n{old_desc}\n~~~\nto\n~~~ quote\n{desc}\n~~~\n"
     ),
     REMOVE_DESC: "removed description from {card_url_template}.",
     ARCHIVE: "archived {card_url_template}.",
@@ -78,7 +78,7 @@ def prettify_date(date_string: str) -> str:
 def process_card_action(payload: WildValue, action_type: str) -> Optional[Tuple[str, str]]:
     proper_action = get_proper_action(payload, action_type)
     if proper_action is not None:
-        return get_subject(payload), get_body(payload, proper_action)
+        return get_topic(payload), get_body(payload, proper_action)
     return None
 
 
@@ -131,7 +131,7 @@ def get_proper_action(payload: WildValue, action_type: str) -> Optional[str]:
     return action_type
 
 
-def get_subject(payload: WildValue) -> str:
+def get_topic(payload: WildValue) -> str:
     return get_action_data(payload)["board"]["name"].tame(check_string)
 
 

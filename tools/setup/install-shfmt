@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 set -eu
 
-version=3.5.1
+version=3.7.0
 arch="$(uname -m)"
 
 case $arch in
     "x86_64")
         binary="shfmt_v${version}_linux_amd64"
-        sha256=56099a689b68534f98e1f8f05d3df6750ab53e3db68f514ee45595bf5b79d158
+        sha256=0264c424278b18e22453fe523ec01a19805ce3b8ebf18eaf3aadc1edc23f42e3
         ;;
 
     "aarch64")
         binary="shfmt_v${version}_linux_arm64"
-        sha256=09d7902de04d52ebe0b332d84a9746d195f7e930806bdc2436f84d0de6a2d368
+        sha256=111612560d15bd53d8e8f8f85731176ce12f3b418ec473d39a40ed6bbec772de
         ;;
 esac
 
@@ -21,6 +21,7 @@ check_version() {
 }
 
 if ! check_version 2>/dev/null; then
+    set -x
     tmpdir="$(mktemp -d)"
     trap 'rm -r "$tmpdir"' EXIT
     cd "$tmpdir"

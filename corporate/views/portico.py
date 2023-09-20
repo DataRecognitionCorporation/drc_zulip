@@ -52,7 +52,7 @@ def plans_view(request: HttpRequest) -> HttpResponse:
     realm = get_realm_from_request(request)
     free_trial_days = settings.FREE_TRIAL_DAYS
     sponsorship_pending = False
-    sponsorship_url = "/upgrade#sponsorship"
+    sponsorship_url = "/upgrade/#sponsorship"
     if is_subdomain_root_or_alias(request):
         # If we're on the root domain, we make this link first ask you which organization.
         sponsorship_url = f"/accounts/go/?{urlencode({'next': sponsorship_url})}"
@@ -60,9 +60,9 @@ def plans_view(request: HttpRequest) -> HttpResponse:
 
     if realm is not None:
         if realm.plan_type == Realm.PLAN_TYPE_SELF_HOSTED and settings.PRODUCTION:
-            return HttpResponseRedirect("https://zulip.com/plans")
+            return HttpResponseRedirect("https://zulip.com/plans/")
         if not request.user.is_authenticated:
-            return redirect_to_login(next="/plans")
+            return redirect_to_login(next="/plans/")
         if request.user.is_guest:
             return TemplateResponse(request, "404.html", status=404)
         customer = get_customer_by_realm(realm)
@@ -92,7 +92,7 @@ def team_view(request: HttpRequest) -> HttpResponse:
         with open(settings.CONTRIBUTOR_DATA_FILE_PATH, "rb") as f:
             data = orjson.loads(f.read())
     except FileNotFoundError:
-        data = {"contributors": {}, "date": "Never ran."}
+        data = {"contributors": [], "date": "Never ran."}
 
     return TemplateResponse(
         request,
@@ -126,6 +126,11 @@ def communities_view(request: HttpRequest) -> HttpResponse:
     for realm in want_to_be_advertised_realms:
         open_to_public = not realm.invite_required and not realm.emails_restricted_to_domains
         if realm.allow_web_public_streams_access() or open_to_public:
+            [org_type] = (
+                org_type
+                for org_type in Realm.ORG_TYPES
+                if Realm.ORG_TYPES[org_type]["id"] == realm.org_type
+            )
             eligible_realms.append(
                 {
                     "id": realm.id,
@@ -133,11 +138,7 @@ def communities_view(request: HttpRequest) -> HttpResponse:
                     "realm_url": realm.uri,
                     "logo_url": get_realm_icon_url(realm),
                     "description": get_realm_text_description(realm),
-                    "org_type_key": [
-                        org_type
-                        for org_type in Realm.ORG_TYPES
-                        if Realm.ORG_TYPES[org_type]["id"] == realm.org_type
-                    ][0],
+                    "org_type_key": org_type,
                 }
             )
             unique_org_type_ids.add(realm.org_type)
@@ -152,7 +153,7 @@ def communities_view(request: HttpRequest) -> HttpResponse:
         org_types.pop("unspecified", None)
 
     # Change display name of non-profit orgs.
-    if org_types.get("nonprofit"):
+    if org_types.get("nonprofit"):  # nocoverage
         org_types["nonprofit"]["name"] = "Non-profit"
 
     return TemplateResponse(

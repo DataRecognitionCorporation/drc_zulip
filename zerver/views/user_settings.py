@@ -1,10 +1,12 @@
+from email.headerregistry import Address
 from typing import Any, Dict, Optional
 
 from django.conf import settings
 from django.contrib.auth import authenticate, update_session_auth_hash
+from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils.html import escape
 from django.utils.safestring import SafeString
@@ -27,6 +29,7 @@ from zerver.actions.user_settings import (
     do_start_email_change_process,
 )
 from zerver.decorator import human_users_only
+from zerver.forms import generate_password_reset_url
 from zerver.lib.avatar import avatar_url
 from zerver.lib.email_validation import (
     get_realm_email_validator,
@@ -78,7 +81,7 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
 
     if not user_profile.is_active:
         # TODO: Make this into a user-facing error, not JSON
-        raise UserDeactivatedError()
+        raise UserDeactivatedError
 
     if user_profile.realm.email_changes_disabled and not user_profile.is_realm_admin:
         raise JsonableError(_("Email address changes are disabled in this organization."))
@@ -87,6 +90,20 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
 
     context = {"realm_name": user_profile.realm.name, "new_email": new_email}
     language = user_profile.default_language
+
+    if old_email == "":
+        # The assertions here are to help document the only circumstance under which
+        # this condition should be possible.
+        assert (
+            user_profile.realm.demo_organization_scheduled_deletion_date is not None
+            and user_profile.is_realm_owner
+        )
+        # Because demo organizations are created without setting an email and password
+        # we want to redirect to setting a password after configuring and confirming
+        # an email for the owner's account.
+        reset_password_url = generate_password_reset_url(user_profile, default_token_generator)
+        return HttpResponseRedirect(reset_password_url)
+
     send_email(
         "zerver/emails/notify_change_in_email",
         to_emails=[old_email],
@@ -96,20 +113,21 @@ def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpRes
         context=context,
         realm=user_profile.realm,
     )
-
+    old_email_address = Address(addr_spec=old_email)
+    new_email_address = Address(addr_spec=new_email)
     ctx = {
         "new_email_html_tag": SafeString(
-            f'<a href="mailto:{escape(new_email)}">{escape(new_email)}</a>'
+            f'<a href="mailto:{escape(new_email)}">{escape(new_email_address.username)}@<wbr>{escape(new_email_address.domain)}</wbr></a>'
         ),
         "old_email_html_tag": SafeString(
-            f'<a href="mailto:{escape(old_email)}">{escape(old_email)}</a>'
+            f'<a href="mailto:{escape(old_email)}">{escape(old_email_address.username)}@<wbr>{escape(old_email_address.domain)}</wbr></a>'
         ),
     }
     return render(request, "confirmation/confirm_email_change.html", context=ctx)
 
 
 emojiset_choices = {emojiset["key"] for emojiset in UserProfile.emojiset_choices()}
-default_view_options = ["recent_topics", "all_messages"]
+default_view_options = ["recent_topics", "inbox", "all_messages"]
 
 
 def check_settings_values(
@@ -128,7 +146,11 @@ def check_settings_values(
         and notification_sound not in get_available_notification_sounds()
         and notification_sound != "none"
     ):
-        raise JsonableError(_("Invalid notification sound '{}'").format(notification_sound))
+        raise JsonableError(
+            _("Invalid notification sound '{notification_sound}'").format(
+                notification_sound=notification_sound
+            )
+        )
 
     if email_notifications_batching_period_seconds is not None and (
         email_notifications_batching_period_seconds <= 0
@@ -136,8 +158,8 @@ def check_settings_values(
     ):
         # We set a limit of one week for the batching period
         raise JsonableError(
-            _("Invalid email batching period: {} seconds").format(
-                email_notifications_batching_period_seconds
+            _("Invalid email batching period: {seconds} seconds").format(
+                seconds=email_notifications_batching_period_seconds
             )
         )
 
@@ -153,6 +175,10 @@ def json_change_settings(
     new_password: Optional[str] = REQ(default=None),
     twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
     dense_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    web_mark_read_on_scroll_policy: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.WEB_MARK_READ_ON_SCROLL_POLICY_CHOICES),
+        default=None,
+    ),
     starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
     fluid_layout_width: Optional[bool] = REQ(json_validator=check_bool, default=None),
     high_contrast_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
@@ -171,6 +197,10 @@ def json_change_settings(
     demote_inactive_streams: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.DEMOTE_STREAMS_CHOICES), default=None
     ),
+    web_stream_unreads_count_display_policy: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES),
+        default=None,
+    ),
     timezone: Optional[str] = REQ(str_validator=check_timezone, default=None),
     email_notifications_batching_period_seconds: Optional[int] = REQ(
         json_validator=check_int, default=None
@@ -187,6 +217,21 @@ def json_change_settings(
         json_validator=check_bool, default=None
     ),
     wildcard_mentions_notify: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_followed_topic_desktop_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_followed_topic_email_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_followed_topic_push_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_followed_topic_audible_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_followed_topic_wildcard_mentions_notify: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
     notification_sound: Optional[str] = REQ(default=None),
     enable_desktop_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enable_sounds: Optional[bool] = REQ(json_validator=check_bool, default=None),
@@ -209,7 +254,10 @@ def json_change_settings(
     desktop_icon_count_display: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.DESKTOP_ICON_COUNT_DISPLAY_CHOICES), default=None
     ),
-    realm_name_in_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    realm_name_in_email_notifications_policy: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.REALM_NAME_IN_EMAIL_NOTIFICATIONS_POLICY_CHOICES),
+        default=None,
+    ),
     presence_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enter_sends: Optional[bool] = REQ(json_validator=check_bool, default=None),
     send_private_typing_notifications: Optional[bool] = REQ(
@@ -219,6 +267,9 @@ def json_change_settings(
     send_read_receipts: Optional[bool] = REQ(json_validator=check_bool, default=None),
     user_list_style: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.USER_LIST_STYLE_CHOICES), default=None
+    ),
+    email_address_visibility: Optional[int] = REQ(
+        json_validator=check_int_in(UserProfile.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None
     ),
 ) -> HttpResponse:
     if (
@@ -248,8 +299,8 @@ def json_change_settings(
             assert e.secs_to_freedom is not None
             secs_to_freedom = int(e.secs_to_freedom)
             raise JsonableError(
-                _("You're making too many attempts! Try again in {} seconds.").format(
-                    secs_to_freedom
+                _("You're making too many attempts! Try again in {seconds} seconds.").format(
+                    seconds=secs_to_freedom
                 ),
             )
 
@@ -314,24 +365,13 @@ def json_change_settings(
             check_change_full_name(user_profile, full_name, user_profile)
 
     # Loop over user_profile.property_types
-    request_settings = {k: v for k, v in list(locals().items()) if k in user_profile.property_types}
-    for k, v in list(request_settings.items()):
+    request_settings = {k: v for k, v in locals().items() if k in user_profile.property_types}
+    for k, v in request_settings.items():
         if v is not None and getattr(user_profile, k) != v:
             do_change_user_setting(user_profile, k, v, acting_user=user_profile)
 
     if timezone is not None and user_profile.timezone != timezone:
         do_change_user_setting(user_profile, "timezone", timezone, acting_user=user_profile)
-
-    # TODO: Do this more generally.
-    from zerver.lib.request import RequestNotes
-
-    request_notes = RequestNotes.get_notes(request)
-    for req_var in request.POST:
-        if req_var not in request_notes.processed_parameters:
-            request_notes.ignored_parameters.add(req_var)
-
-    if len(request_notes.ignored_parameters) > 0:
-        result["ignored_parameters_unsupported"] = list(request_notes.ignored_parameters)
 
     return json_success(request, data=result)
 
@@ -343,13 +383,13 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
     if avatar_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
         raise JsonableError(str(AVATAR_CHANGES_DISABLED_ERROR))
 
-    user_file = list(request.FILES.values())[0]
+    [user_file] = request.FILES.values()
     assert isinstance(user_file, UploadedFile)
     assert user_file.size is not None
     if (settings.MAX_AVATAR_FILE_SIZE_MIB * 1024 * 1024) < user_file.size:
         raise JsonableError(
-            _("Uploaded file is larger than the allowed limit of {} MiB").format(
-                settings.MAX_AVATAR_FILE_SIZE_MIB,
+            _("Uploaded file is larger than the allowed limit of {max_size} MiB").format(
+                max_size=settings.MAX_AVATAR_FILE_SIZE_MIB,
             )
         )
     upload_avatar_image(user_file, user_profile, user_profile)

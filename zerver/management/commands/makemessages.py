@@ -52,12 +52,12 @@ strip_whitespace_left = re.compile(
 )
 
 regexes = [
-    r"{{#tr}}([\s\S]*?)(?:{{/tr}}|{{#\*inline )",  # '.' doesn't match '\n' by default
-    r'{{\s*t "(.*?)"\W*}}',
-    r"{{\s*t '(.*?)'\W*}}",
-    r'\(t "(.*?)"\)',
-    r'=\(t "(.*?)"\)(?=[^{]*}})',
-    r"=\(t '(.*?)'\)(?=[^{]*}})",
+    r"{{~?#tr}}([\s\S]*?)(?:~?{{/tr}}|{{#\*inline )",  # '.' doesn't match '\n' by default
+    r'{{~?\s*t "([\s\S]*?)"\W*~?}}',
+    r"{{~?\s*t '([\s\S]*?)'\W*~?}}",
+    r'\(t "([\s\S]*?)"\)',
+    r'=\(t "([\s\S]*?)"\)(?=[^{]*}})',
+    r"=\(t '([\s\S]*?)'\)(?=[^{]*}})",
 ]
 tags = [
     ("err_", "error"),
@@ -83,7 +83,7 @@ class Command(makemessages.Command):
         super().add_arguments(parser)
         parser.add_argument(
             "--frontend-source",
-            default="static/templates",
+            default="web/templates",
             help="Name of the Handlebars template directory",
         )
         parser.add_argument(
@@ -150,7 +150,6 @@ class Command(makemessages.Command):
         try:
             ignore_patterns = options.get("ignore_patterns", [])
             ignore_patterns.append("docs/*")
-            ignore_patterns.append("templates/zerver/emails/compiled/*")
             ignore_patterns.append("templates/zerver/emails/custom/*")
             ignore_patterns.append("var/*")
             options["ignore_patterns"] = ignore_patterns
@@ -190,9 +189,9 @@ class Command(makemessages.Command):
                     data = reader.read()
                     translation_strings.extend(self.extract_strings(data))
         for dirpath, dirnames, filenames in itertools.chain(
-            os.walk("static/js"), os.walk("static/shared/js")
+            os.walk("web/src"), os.walk("web/shared/src")
         ):
-            for filename in [f for f in filenames if f.endswith(".js") or f.endswith(".ts")]:
+            for filename in [f for f in filenames if f.endswith((".js", ".ts"))]:
                 if filename.startswith("."):
                     continue
                 with open(os.path.join(dirpath, filename)) as reader:
@@ -207,8 +206,8 @@ class Command(makemessages.Command):
                 "--additional-function-names=$t,$t_html",
                 "--format=simple",
                 "--ignore=**/*.d.ts",
-                "static/js/**/*.js",
-                "static/js/**/*.ts",
+                "web/src/**/*.js",
+                "web/src/**/*.ts",
             ]
         )
         translation_strings.extend(json.loads(extracted).values())
@@ -277,9 +276,6 @@ class Command(makemessages.Command):
             except (OSError, ValueError):
                 old_strings = {}
 
-            new_strings = {
-                k: v
-                for k, v in self.get_new_strings(old_strings, translation_strings, locale).items()
-            }
+            new_strings = self.get_new_strings(old_strings, translation_strings, locale)
             with open(output_path, "w") as writer:
                 json.dump(new_strings, writer, indent=2, sort_keys=True)

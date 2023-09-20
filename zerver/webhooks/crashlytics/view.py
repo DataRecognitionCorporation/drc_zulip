@@ -2,9 +2,9 @@
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_int, check_string, to_wild_value
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_int, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -18,19 +18,20 @@ VERIFICATION_EVENT = "verification"
 
 
 @webhook_view("Crashlytics")
-@has_request_variables
+@typed_endpoint
 def api_crashlytics_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
+    *,
+    payload: WebhookPayload[WildValue],
 ) -> HttpResponse:
     event = payload["event"]
     if event == VERIFICATION_EVENT:
-        subject = CRASHLYTICS_SETUP_TOPIC_TEMPLATE
+        topic = CRASHLYTICS_SETUP_TOPIC_TEMPLATE
         body = CRASHLYTICS_SETUP_MESSAGE_TEMPLATE
     else:
         issue_body = payload["payload"]
-        subject = CRASHLYTICS_TOPIC_TEMPLATE.format(
+        topic = CRASHLYTICS_TOPIC_TEMPLATE.format(
             display_id=issue_body["display_id"].tame(check_int),
             title=issue_body["title"].tame(check_string),
         )
@@ -39,5 +40,5 @@ def api_crashlytics_webhook(
             url=issue_body["url"].tame(check_string),
         )
 
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(request, user_profile, topic, body)
     return json_success(request)

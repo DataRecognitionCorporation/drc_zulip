@@ -1,6 +1,7 @@
 import importlib
 import os
 from typing import List
+from unittest import mock
 
 import django.urls.resolvers
 from django.test import Client
@@ -12,8 +13,9 @@ from zerver.lib.url_redirects import (
     LANDING_PAGE_REDIRECTS,
     POLICY_DOCUMENTATION_REDIRECTS,
 )
-from zerver.models import Realm, Stream
+from zerver.models import Stream
 from zproject import urls
+from zproject.backends import AUTH_BACKEND_NAME_MAP
 
 
 class PublicURLTest(ZulipTestCase):
@@ -31,6 +33,33 @@ class PublicURLTest(ZulipTestCase):
                 expected_status,
                 msg=f"Expected {expected_status}, received {response.status_code} for {method} to {url}",
             )
+
+    def test_help_pages(self) -> None:
+        # Test all files in help documentation directory (except for 'index.md',
+        # 'missing.md' and `help/include/` files).
+
+        help_urls = []
+        for doc in os.listdir("./help/"):
+            if doc.startswith(".") or "~" in doc or "#" in doc:
+                continue  # nocoverage -- just here for convenience
+            if doc in {"index.md", "include", "missing.md"}:
+                continue
+            url = "/help/" + os.path.splitext(doc)[0]  # Strip the extension.
+            help_urls.append(url)
+
+        # We have lots of help files, so this will be expensive!
+        self.assertGreater(len(help_urls), 190)
+
+        expected_tag = """<meta property="og:description" content="This is a help page" />"""
+
+        for url in help_urls:
+            with mock.patch(
+                "zerver.lib.html_to_text.html_to_text", return_value="This is a help page"
+            ) as m:
+                response = self.client_get(url)
+                m.assert_called_once()
+                self.assertIn(expected_tag, response.content.decode())
+                self.assertEqual(response.status_code, 200)
 
     def test_public_urls(self) -> None:
         """
@@ -64,16 +93,13 @@ class PublicURLTest(ZulipTestCase):
                 "/api/v1/messages",
                 "/api/v1/streams",
             ],
-            404: ["/help/nonexistent", "/help/include/admin", "/help/" + "z" * 1000],
+            404: [
+                "/help/api-doc-template",
+                "/help/nonexistent",
+                "/help/include/admin",
+                "/help/" + "z" * 1000,
+            ],
         }
-
-        # Add all files in 'templates/zerver/help' directory (except for 'main.html' and
-        # 'index.md') to `get_urls['200']` list.
-        for doc in os.listdir("./templates/zerver/help"):
-            if doc.startswith(".") or "~" in doc or "#" in doc:
-                continue  # nocoverage -- just here for convenience
-            if doc not in {"main.html", "index.md", "include", "missing.md"}:
-                get_urls[200].append("/help/" + os.path.splitext(doc)[0])  # Strip the extension.
 
         post_urls = {
             200: ["/accounts/login/"],
@@ -110,7 +136,7 @@ class PublicURLTest(ZulipTestCase):
         Here we simply sanity-check that all the URLs load
         correctly.
         """
-        auth_types = [auth.lower() for auth in Realm.AUTHENTICATION_FLAGS]
+        auth_types = [auth.lower() for auth in AUTH_BACKEND_NAME_MAP]
         for auth in [
             "azuread",
             "email",

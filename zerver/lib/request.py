@@ -1,4 +1,3 @@
-import threading
 from collections import defaultdict
 from dataclasses import dataclass, field
 from functools import wraps
@@ -30,6 +29,7 @@ from typing_extensions import Concatenate, ParamSpec
 from zerver.lib import rate_limiter
 from zerver.lib.exceptions import ErrorCode, InvalidJSONError, JsonableError
 from zerver.lib.notes import BaseNotes
+from zerver.lib.response import MutableJsonResponse
 from zerver.lib.types import Validator
 from zerver.lib.validator import check_anything
 from zerver.models import Client, Realm
@@ -56,22 +56,22 @@ class RequestNotes(BaseNotes[HttpRequest, "RequestNotes"]):
     client_version: Optional[str] = None
     log_data: Optional[MutableMapping[str, Any]] = None
     rate_limit: Optional[str] = None
-    requestor_for_logs: Optional[str] = None
+    requester_for_logs: Optional[str] = None
     # We use realm_cached to indicate whether the realm is cached or not.
     # Because the default value of realm is None, which can indicate "unset"
     # and "nonexistence" at the same time.
     realm: Optional[Realm] = None
     has_fetched_realm: bool = False
     set_language: Optional[str] = None
-    ratelimits_applied: List[rate_limiter.RateLimitResult] = field(default_factory=lambda: [])
+    ratelimits_applied: List[rate_limiter.RateLimitResult] = field(default_factory=list)
     query: Optional[str] = None
     error_format: Optional[str] = None
     placeholder_open_graph_description: Optional[str] = None
     saved_response: Optional[HttpResponse] = None
     tornado_handler_id: Optional[int] = None
     processed_parameters: Set[str] = field(default_factory=set)
-    ignored_parameters: Set[str] = field(default_factory=set)
     remote_server: Optional["RemoteZulipServer"] = None
+    is_webhook_view: bool = False
 
     @classmethod
     def init_notes(cls) -> "RequestNotes":
@@ -347,7 +347,7 @@ def has_request_variables(
 
     post_params = []
 
-    view_func_full_name = ".".join([req_func.__module__, req_func.__name__])
+    view_func_full_name = f"{req_func.__module__}.{req_func.__name__}"
 
     for name, value in zip(default_param_names, default_param_values):
         if isinstance(value, _REQ):
@@ -439,7 +439,9 @@ def has_request_variables(
                 except orjson.JSONDecodeError:
                     if param.argument_type == "body":
                         raise InvalidJSONError(_("Malformed JSON"))
-                    raise JsonableError(_('Argument "{}" is not valid JSON.').format(post_var_name))
+                    raise JsonableError(
+                        _('Argument "{name}" is not valid JSON.').format(name=post_var_name)
+                    )
 
                 try:
                     val = param.json_validator(post_var_name, val)
@@ -455,28 +457,37 @@ def has_request_variables(
 
             kwargs[func_var_name] = val
 
-        return req_func(request, *args, **kwargs)
+        return_value = req_func(request, *args, **kwargs)
+
+        if (
+            isinstance(return_value, MutableJsonResponse)
+            and not request_notes.is_webhook_view
+            # Implemented only for 200 responses.
+            # TODO: Implement returning unsupported ignored parameters for 400
+            # JSON error responses. This is complex because has_request_variables
+            # can be called multiple times, so when an error response is raised,
+            # there may be supported parameters that have not yet been processed,
+            # which could lead to inaccurate output.
+            and 200 <= return_value.status_code < 300
+        ):
+            ignored_parameters = {*request.POST, *request.GET}.difference(
+                request_notes.processed_parameters
+            )
+
+            # This will be called each time a function decorated with
+            # has_request_variables returns a MutableJsonResponse with a
+            # success status_code. Because a shared processed_parameters
+            # value is checked each time, the value for the
+            # ignored_parameters_unsupported key is either added/updated
+            # to the response data or it is removed in the case that all
+            # of the request parameters have been processed.
+            if ignored_parameters:
+                return_value.get_data()["ignored_parameters_unsupported"] = sorted(
+                    ignored_parameters
+                )
+            else:
+                return_value.get_data().pop("ignored_parameters_unsupported", None)
+
+        return return_value
 
     return _wrapped_req_func
-
-
-local = threading.local()
-
-
-def get_current_request() -> Optional[HttpRequest]:
-    """Returns the current HttpRequest object; this should only be used by
-    logging frameworks, which have no other access to the current
-    request.  All other codepaths should pass through the current
-    request object, rather than rely on this thread-local global.
-
-    """
-    return getattr(local, "request", None)
-
-
-def set_request(req: HttpRequest) -> None:
-    local.request = req
-
-
-def unset_request() -> None:
-    if hasattr(local, "request"):
-        del local.request

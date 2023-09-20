@@ -1,10 +1,12 @@
 import argparse
 from typing import Any
 
+from django.core.exceptions import ValidationError
 from django.core.management.base import CommandError
 
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user
+from zerver.forms import check_subdomain_available
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import UserProfile
 
@@ -35,11 +37,22 @@ workflow as `./manage.py create_user`.
             help="Subdomain for the new organization. Empty if root domain.",
             default="",
         )
+        parser.add_argument(
+            "--allow-reserved-subdomain",
+            action="store_true",
+            help="Allow use of reserved subdomains",
+        )
         self.add_create_user_args(parser)
 
-    def handle(self, *args: Any, **options: str) -> None:
+    def handle(self, *args: Any, **options: Any) -> None:
         realm_name = options["realm_name"]
         string_id = options["string_id"]
+        allow_reserved_subdomain = options["allow_reserved_subdomain"]
+
+        try:
+            check_subdomain_available(string_id, allow_reserved_subdomain)
+        except ValidationError as error:
+            raise CommandError(error.message)
 
         create_user_params = self.get_create_user_params(options)
 
@@ -53,12 +66,14 @@ workflow as `./manage.py create_user`.
             create_user_params.password,
             realm,
             create_user_params.full_name,
-            # Explicitly set tos_version=None. For servers that
-            # have configured Terms of Service, this means that
-            # users created via this mechanism will be prompted to
-            # accept the Terms of Service on first login.
+            # Explicitly set tos_version=-1. This means that users
+            # created via this mechanism would be prompted to set
+            # the email_address_visibility setting on first login.
+            # For servers that have configured Terms of Service,
+            # users will also be prompted to accept the Terms of
+            # Service on first login.
             role=UserProfile.ROLE_REALM_OWNER,
             realm_creation=True,
-            tos_version=None,
+            tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
             acting_user=None,
         )

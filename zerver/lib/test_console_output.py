@@ -1,3 +1,4 @@
+import itertools
 import logging
 import re
 import sys
@@ -19,13 +20,9 @@ class ExtraConsoleOutputFinder:
         valid_line_patterns = [
             # Example: Running zerver.tests.test_attachments.AttachmentsTests.test_delete_unauthenticated
             b"^Running ",
-            # Example: ** Test is TOO slow: analytics.tests.test_counts.TestRealmActiveHumans.test_end_to_end (0.581 s)
-            b"^\\*\\* Test is TOO slow: ",
             b"^----------------------------------------------------------------------",
             # Example: INFO: URL coverage report is in var/url_coverage.txt
             b"^INFO: URL coverage report is in",
-            # Example: INFO: Try running: ./tools/create-test-api-docs
-            b"^INFO: Try running:",
             # Example: -- Running tests in parallel mode with 4 processes
             b"^-- Running tests in",
             b"^OK",
@@ -109,8 +106,12 @@ class WrappedIO(IO[bytes]):
         return num_chars
 
     def writelines(self, data: "Iterable[ReadableBuffer]") -> None:
+<<<<<<< HEAD
+=======
+        data, data_copy = itertools.tee(data)
+>>>>>>> drc_main
         self.stream.writelines(data)
-        lines = b"".join(data)
+        lines = b"".join(data_copy)
         self.extra_output_finder.find_extra_output(lines)
 
     def __next__(self) -> bytes:

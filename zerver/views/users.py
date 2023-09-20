@@ -67,6 +67,7 @@ from zerver.lib.users import (
     check_valid_interface_type,
     get_api_key,
     get_raw_user_data,
+    max_message_id_for_user,
     validate_user_custom_profile_data,
 )
 from zerver.lib.utils import generate_api_key
@@ -88,8 +89,11 @@ from zerver.models import (
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
     InvalidFakeEmailDomainError,
+<<<<<<< HEAD
     Message,
     Realm,
+=======
+>>>>>>> drc_main
     Service,
     Stream,
     UserProfile,
@@ -117,7 +121,11 @@ def deactivate_user_backend(
 ) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, for_admin=True)
     if target.is_realm_owner and not user_profile.is_realm_owner:
+<<<<<<< HEAD
         raise OrganizationOwnerRequiredError()
+=======
+        raise OrganizationOwnerRequiredError
+>>>>>>> drc_main
     if check_last_owner(target):
         raise JsonableError(_("Cannot deactivate the only organization owner"))
     if deactivation_notification_comment is not None:
@@ -231,9 +239,15 @@ def update_user_backend(
         #
         # Logic replicated in patch_bot_backend.
         if UserProfile.ROLE_REALM_OWNER in [role, target.role] and not user_profile.is_realm_owner:
+<<<<<<< HEAD
             raise OrganizationOwnerRequiredError()
         elif not user_profile.is_realm_admin:
             raise OrganizationAdministratorRequiredError()
+=======
+            raise OrganizationOwnerRequiredError
+        elif not user_profile.is_realm_admin:
+            raise OrganizationAdministratorRequiredError
+>>>>>>> drc_main
 
         if target.role == UserProfile.ROLE_REALM_OWNER and check_last_owner(target):
             raise JsonableError(
@@ -285,14 +299,14 @@ def avatar(
         # enabled in the organization.
         realm = get_valid_realm_from_request(request)
         if not realm.allow_web_public_streams_access():
-            raise MissingAuthenticationError()
+            raise MissingAuthenticationError
 
         # We only allow the ID format for accessing a user's avatar
         # for spectators. This is mainly for defense in depth, since
         # email_address_visibility should mean spectators only
         # interact with fake email addresses anyway.
         if is_email:
-            raise MissingAuthenticationError()
+            raise MissingAuthenticationError
 
         if settings.RATE_LIMITING:
             unique_avatar_key = f"{realm.id}/{email_or_id}/{medium}"
@@ -367,9 +381,15 @@ def patch_bot_backend(
     if role is not None and bot.role != role:
         # Logic duplicated from update_user_backend.
         if UserProfile.ROLE_REALM_OWNER in [role, bot.role] and not user_profile.is_realm_owner:
+<<<<<<< HEAD
             raise OrganizationOwnerRequiredError()
         elif not user_profile.is_realm_admin:
             raise OrganizationAdministratorRequiredError()
+=======
+            raise OrganizationOwnerRequiredError
+        elif not user_profile.is_realm_admin:
+            raise OrganizationAdministratorRequiredError
+>>>>>>> drc_main
 
         do_change_user_role(bot, role, acting_user=user_profile)
 
@@ -415,7 +435,7 @@ def patch_bot_backend(
     if len(request.FILES) == 0:
         pass
     elif len(request.FILES) == 1:
-        user_file = list(request.FILES.values())[0]
+        [user_file] = request.FILES.values()
         assert isinstance(user_file, UploadedFile)
         assert user_file.size is not None
         upload_avatar_image(user_file, user_profile, bot)
@@ -557,7 +577,7 @@ def add_bot_backend(
         acting_user=user_profile,
     )
     if len(request.FILES) == 1:
-        user_file = list(request.FILES.values())[0]
+        [user_file] = request.FILES.values()
         assert isinstance(user_file, UploadedFile)
         assert user_file.size is not None
         upload_avatar_image(user_file, user_profile, bot_profile)
@@ -637,10 +657,6 @@ def get_user_data(
     compress very poorly compared to other data.
     """
     realm = user_profile.realm
-    if realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
-        # If email addresses are only available to administrators,
-        # clients cannot compute gravatars, so we force-set it to false.
-        client_gravatar = False
 
     members = get_raw_user_data(
         realm,
@@ -688,7 +704,7 @@ def create_user_backend(
     full_name_raw: str = REQ("full_name"),
 ) -> HttpResponse:
     if not user_profile.can_create_users:
-        raise JsonableError(_("User not authorized for this query"))
+        raise JsonableError(_("User not authorized to create users"))
 
     full_name = check_full_name(full_name_raw)
     form = CreateUserForm({"full_name": full_name, "email": email})
@@ -714,7 +730,7 @@ def create_user_backend(
 
     try:
         get_user_by_delivery_email(email, user_profile.realm)
-        raise JsonableError(_("Email '{}' already in use").format(email))
+        raise JsonableError(_("Email '{email}' already in use").format(email=email))
     except UserProfile.DoesNotExist:
         pass
 
@@ -726,11 +742,13 @@ def create_user_backend(
         password,
         realm,
         full_name,
-        # Explicitly set tos_version=None. For servers that have
-        # configured Terms of Service, this means that users created
-        # via this mechanism will be prompted to accept the Terms of
+        # Explicitly set tos_version=-1. This means that users
+        # created via this mechanism would be prompted to set
+        # the email_address_visibility setting on first login.
+        # For servers that have configured Terms of Service,
+        # users will also be prompted to accept the Terms of
         # Service on first login.
-        tos_version=None,
+        tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
         acting_user=user_profile,
     )
     return json_success(request, data={"user_id": target_user.id})
@@ -746,11 +764,7 @@ def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> Http
     )
     result: Dict[str, Any] = raw_user_data[user_profile.id]
 
-    result["max_message_id"] = -1
-
-    messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by("-id")[:1]
-    if messages:
-        result["max_message_id"] = messages[0].id
+    result["max_message_id"] = max_message_id_for_user(user_profile)
 
     return json_success(request, data=result)
 

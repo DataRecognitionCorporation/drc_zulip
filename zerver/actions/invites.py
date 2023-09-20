@@ -1,4 +1,5 @@
 import datetime
+import logging
 from typing import Any, Collection, Dict, List, Optional, Sequence, Set, Tuple, Union
 
 from django.conf import settings
@@ -7,6 +8,7 @@ from django.db import transaction
 from django.db.models import Q, Sum
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from zxcvbn import zxcvbn
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from analytics.models import RealmCount
@@ -23,6 +25,7 @@ from zerver.lib.send_email import FromAddress, clear_scheduled_invitation_emails
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import UnspecifiedValue
 from zerver.models import (
+    Message,
     MultiuseInvite,
     PreregistrationUser,
     Realm,
@@ -35,10 +38,15 @@ from zerver.tornado.django_api import send_event
 from zerver.actions.streams import bulk_add_subscriptions
 
 
-def notify_invites_changed(realm: Realm) -> None:
+def notify_invites_changed(
+    realm: Realm, *, changed_invite_referrer: Optional[UserProfile] = None
+) -> None:
     event = dict(type="invites_changed")
     admin_ids = [user.id for user in realm.get_admin_users_and_bots()]
-    send_event(realm, event, admin_ids)
+    recipient_ids = admin_ids
+    if changed_invite_referrer and changed_invite_referrer.id not in recipient_ids:
+        recipient_ids.append(changed_invite_referrer.id)
+    send_event(realm, event, recipient_ids)
 
 
 def do_send_confirmation_email(
@@ -58,6 +66,7 @@ def do_send_confirmation_email(
         "referrer_email": referrer.delivery_email,
         "activate_url": activation_url,
         "referrer_realm_name": referrer.realm.name,
+        "corporate_enabled": settings.CORPORATE_ENABLED,
     }
     send_email(
         "zerver/emails/invitation",
@@ -82,6 +91,81 @@ def estimate_recent_invites(realms: Collection[Realm], *, days: int) -> int:
     return recent_invites
 
 
+def too_many_recent_realm_invites(realm: Realm, num_invitees: int) -> bool:
+    # Basic check that we're blow the realm-set limit
+    recent_invites = estimate_recent_invites([realm], days=1)
+    if num_invitees + recent_invites > realm.max_invites:
+        return True
+
+    if realm.plan_type != Realm.PLAN_TYPE_LIMITED:
+        return False
+    if realm.max_invites != settings.INVITES_DEFAULT_REALM_DAILY_MAX:
+        return False
+
+    # If they're a non-paid plan with default invitation limits,
+    # we further limit how many invitations can be sent in a day
+    # as a function of how many current users they have. The
+    # allowed ratio has some heuristics to lock down likely-spammy
+    # realms.  This ratio likely only matters for the first
+    # handful of invites; if those users accept, then the realm is
+    # unlikely to hit these limits.  If a real realm hits them,
+    # the resulting message suggests that they contact support if
+    # they have a real use case.
+    warning_flags = []
+    if zxcvbn(realm.string_id)["score"] == 4:
+        # Very high entropy realm names are suspicious
+        warning_flags.append("random-realm-name")
+
+    if not realm.description:
+        warning_flags.append("no-realm-description")
+
+    if realm.icon_source == Realm.ICON_FROM_GRAVATAR:
+        warning_flags.append("no-realm-icon")
+
+    if realm.date_created >= timezone_now() - datetime.timedelta(hours=1):
+        warning_flags.append("realm-created-in-last-hour")
+
+    current_user_count = len(UserProfile.objects.filter(realm=realm, is_bot=False, is_active=True))
+    if current_user_count == 1:
+        warning_flags.append("only-one-user")
+
+    estimated_sent = RealmCount.objects.filter(
+        realm=realm, property="messages_sent:message_type:day"
+    ).aggregate(messages=Sum("value"))
+    if (
+        not estimated_sent["messages"]
+        # Only after we've done the rough-estimate check, take the
+        # time to do the exact check:
+        and not Message.objects.filter(
+            # Uses index: zerver_message_realm_sender_recipient (prefix)
+            realm=realm,
+            sender__is_bot=False,
+        ).exists()
+    ):
+        warning_flags.append("no-messages-sent")
+
+    if len(warning_flags) == 6:
+        permitted_ratio = 2
+    elif len(warning_flags) >= 3:
+        permitted_ratio = 3
+    else:
+        permitted_ratio = 5
+
+    ratio = (num_invitees + recent_invites) / current_user_count
+    logging.log(
+        logging.WARNING if ratio > permitted_ratio else logging.INFO,
+        "%s (!: %s) inviting %d more, have %d recent, but only %d current users.  Ratio %.1f, %d allowed",
+        realm.string_id,
+        ",".join(warning_flags),
+        num_invitees,
+        recent_invites,
+        current_user_count,
+        ratio,
+        permitted_ratio,
+    )
+    return ratio > permitted_ratio
+
+
 def check_invite_limit(realm: Realm, num_invitees: int) -> None:
     """Discourage using invitation emails as a vector for carrying spam."""
     msg = _(
@@ -90,8 +174,7 @@ def check_invite_limit(realm: Realm, num_invitees: int) -> None:
     if not settings.OPEN_REALM_CREATION:
         return
 
-    recent_invites = estimate_recent_invites([realm], days=1)
-    if num_invitees + recent_invites > realm.max_invites:
+    if too_many_recent_realm_invites(realm, num_invitees):
         raise InvitationError(
             msg,
             [],
@@ -283,7 +366,7 @@ def do_invite_users(
             skipped,
             sent_invitations=True,
         )
-    notify_invites_changed(user_profile.realm)
+    notify_invites_changed(user_profile.realm, changed_invite_referrer=user_profile)
 
 
 def get_invitation_expiry_date(confirmation_obj: Confirmation) -> Optional[int]:
@@ -331,13 +414,19 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> List[Dict[st
         except:
             pass
 
-    if not user_profile.is_realm_admin:
-        # We do not return multiuse invites to non-admin users.
-        return invites
+    if user_profile.is_realm_admin:
+        multiuse_confirmation_objs = Confirmation.objects.filter(
+            realm=user_profile.realm, type=Confirmation.MULTIUSE_INVITE
+        ).filter(Q(expiry_date__gte=timezone_now()) | Q(expiry_date=None))
+    else:
+        multiuse_invite_ids = MultiuseInvite.objects.filter(referred_by=user_profile).values_list(
+            "id", flat=True
+        )
+        multiuse_confirmation_objs = Confirmation.objects.filter(
+            type=Confirmation.MULTIUSE_INVITE,
+            object_id__in=multiuse_invite_ids,
+        ).filter(Q(expiry_date__gte=timezone_now()) | Q(expiry_date=None))
 
-    multiuse_confirmation_objs = Confirmation.objects.filter(
-        realm=user_profile.realm, type=Confirmation.MULTIUSE_INVITE
-    ).filter(Q(expiry_date__gte=timezone_now()) | Q(expiry_date=None))
     for confirmation_obj in multiuse_confirmation_objs:
         invite = confirmation_obj.content_object
         assert invite is not None
@@ -376,12 +465,10 @@ def get_valid_invite_confirmations_generated_by_user(
     multiuse_invite_ids = MultiuseInvite.objects.filter(referred_by=user_profile).values_list(
         "id", flat=True
     )
-    confirmations += list(
-        Confirmation.objects.filter(
-            type=Confirmation.MULTIUSE_INVITE,
-            object_id__in=multiuse_invite_ids,
-        ).filter(Q(expiry_date__gte=timezone_now()) | Q(expiry_date=None))
-    )
+    confirmations += Confirmation.objects.filter(
+        type=Confirmation.MULTIUSE_INVITE,
+        object_id__in=multiuse_invite_ids,
+    ).filter(Q(expiry_date__gte=timezone_now()) | Q(expiry_date=None))
 
     return confirmations
 
@@ -409,7 +496,7 @@ def do_create_multiuse_invite_link(
         invite.streams.set(streams)
     invite.invited_as = invited_as
     invite.save()
-    notify_invites_changed(referred_by.realm)
+    notify_invites_changed(referred_by.realm, changed_invite_referrer=referred_by)
     return create_confirmation_link(
         invite, Confirmation.MULTIUSE_INVITE, validity_in_minutes=invite_expires_in_minutes
     )
@@ -429,7 +516,7 @@ def do_revoke_user_invite(prereg_user: PreregistrationUser) -> None:
         Confirmation.objects.filter(content_type=content_type, object_id=prereg_user.id).delete()
         prereg_user.delete()
         clear_scheduled_invitation_emails(email)
-    notify_invites_changed(realm)
+    notify_invites_changed(realm, changed_invite_referrer=prereg_user.referred_by)
 
 
 def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
@@ -442,7 +529,7 @@ def do_revoke_multi_use_invite(multiuse_invite: MultiuseInvite) -> None:
         ).delete()
         multiuse_invite.status = confirmation_settings.STATUS_REVOKED
         multiuse_invite.save(update_fields=["status"])
-    notify_invites_changed(realm)
+    notify_invites_changed(realm, changed_invite_referrer=multiuse_invite.referred_by)
 
 
 def do_resend_user_invite_email(prereg_user: PreregistrationUser) -> int:

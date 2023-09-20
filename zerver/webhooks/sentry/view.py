@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urljoin
 
@@ -7,8 +7,12 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+<<<<<<< HEAD
 from zerver.lib.request import REQ, has_request_variables
+=======
+>>>>>>> drc_main
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -77,7 +81,17 @@ syntax_highlight_as_map = {
     "javascript": "javascript",
     "node": "javascript",
     "python": "python3",
+    "ruby": "ruby",
 }
+
+
+def is_sample_event(event: Dict[str, Any]) -> bool:
+    # This is just a heuristic to detect the sample event, this should
+    # not be used for making important behavior decisions.
+    title = event.get("title", "")
+    if title == "This is an example Python exception":
+        return True
+    return False
 
 
 def convert_lines_to_traceback_string(lines: Optional[List[str]]) -> str:
@@ -93,18 +107,27 @@ def convert_lines_to_traceback_string(lines: Optional[List[str]]) -> str:
 
 def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
     """Handle either an exception type event or a message type event payload."""
+<<<<<<< HEAD
     # We shouldn't support the officially deprecated Raven series of SDKs.
     if int(event["version"]) < 7:
         raise UnsupportedWebhookEventTypeError("Raven SDK")
+=======
+>>>>>>> drc_main
 
-    subject = event["title"]
+    topic = event["title"]
     platform_name = event["platform"]
     syntax_highlight_as = syntax_highlight_as_map.get(platform_name, "")
     if syntax_highlight_as == "":  # nocoverage
         logging.info("Unknown Sentry platform: %s", platform_name)
 
+    # We shouldn't support the officially deprecated Raven series of
+    # Python SDKs.
+    if platform_name == "python" and int(event["version"]) < 7 and not is_sample_event(event):
+        # The sample event is still an old "version" -- accept it even
+        # though we don't accept events from the old Python SDK.
+        raise UnsupportedWebhookEventTypeError("Raven SDK")
     context = {
-        "title": subject,
+        "title": topic,
         "level": event["level"],
         "web_link": event["web_url"],
         "datetime": event["datetime"].split(".")[0].replace("T", " "),
@@ -129,11 +152,15 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
                     exception_frame = frame
                     break
 
-            if exception_frame and "context_line" in exception_frame:
+            if (
+                exception_frame
+                and "context_line" in exception_frame
+                and exception_frame["context_line"] is not None
+            ):
                 pre_context = convert_lines_to_traceback_string(
                     exception_frame.get("pre_context", None)
                 )
-                context_line = exception_frame.get("context_line", "") + "\n"
+                context_line = exception_frame["context_line"] + "\n"
                 post_context = convert_lines_to_traceback_string(
                     exception_frame.get("post_context", None)
                 )
@@ -147,11 +174,11 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
                 )
 
                 body = EXCEPTION_EVENT_TEMPLATE_WITH_TRACEBACK.format(**context)
-                return (subject, body)
+                return (topic, body)
 
         context.update(filename=filename)  # nocoverage
         body = EXCEPTION_EVENT_TEMPLATE.format(**context)  # nocoverage
-        return (subject, body)  # nocoverage
+        return (topic, body)  # nocoverage
 
     elif "logentry" in event:
         # The event was triggered by a sentry.capture_message() call
@@ -161,14 +188,14 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
     else:
         raise UnsupportedWebhookEventTypeError("unknown-event type")
 
-    return (subject, body)
+    return (topic, body)
 
 
 def handle_issue_payload(
     action: str, issue: Dict[str, Any], actor: Dict[str, Any]
 ) -> Tuple[str, str]:
     """Handle either an issue type event."""
-    subject = issue["title"]
+    topic = issue["title"]
     datetime = issue["lastSeen"].split(".")[0].replace("T", " ")
 
     if issue["assignedTo"]:
@@ -181,7 +208,7 @@ def handle_issue_payload(
 
     if action == "created":
         context = {
-            "title": subject,
+            "title": topic,
             "level": issue["level"],
             "datetime": datetime,
             "assignee": assignee,
@@ -190,14 +217,14 @@ def handle_issue_payload(
 
     elif action == "resolved":
         context = {
-            "title": subject,
+            "title": topic,
             "actor": actor["name"],
         }
         body = ISSUE_RESOLVED_MESSAGE_TEMPLATE.format(**context)
 
     elif action == "assigned":
         context = {
-            "title": subject,
+            "title": topic,
             "assignee": assignee,
             "actor": actor["name"],
         }
@@ -205,7 +232,7 @@ def handle_issue_payload(
 
     elif action == "ignored":
         context = {
-            "title": subject,
+            "title": topic,
             "actor": actor["name"],
         }
         body = ISSUE_IGNORED_MESSAGE_TEMPLATE.format(**context)
@@ -213,17 +240,17 @@ def handle_issue_payload(
     else:
         raise UnsupportedWebhookEventTypeError("unknown-issue-action type")
 
-    return (subject, body)
+    return (topic, body)
 
 
 def handle_deprecated_payload(payload: Dict[str, Any]) -> Tuple[str, str]:
-    subject = "{}".format(payload.get("project_name"))
+    topic = "{}".format(payload.get("project_name"))
     body = DEPRECATED_EXCEPTION_MESSAGE_TEMPLATE.format(
         level=payload["level"].upper(),
         url=payload.get("url"),
         message=payload.get("message"),
     )
-    return (subject, body)
+    return (topic, body)
 
 
 def transform_webhook_payload(payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
@@ -243,16 +270,19 @@ def transform_webhook_payload(payload: Dict[str, Any]) -> Optional[Dict[str, Any
     event_path = f"events/{event_id}/"
     event["web_url"] = urljoin(payload["url"], event_path)
     timestamp = event.get("timestamp", event["received"])
-    event["datetime"] = datetime.fromtimestamp(timestamp).isoformat()
+    event["datetime"] = datetime.fromtimestamp(timestamp, timezone.utc).isoformat(
+        timespec="microseconds"
+    )
     return payload
 
 
 @webhook_view("Sentry")
-@has_request_variables
+@typed_endpoint
 def api_sentry_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(argument_type="body"),
+    *,
+    payload: WebhookPayload[Dict[str, Any]],
 ) -> HttpResponse:
     data = payload.get("data", None)
 
@@ -262,13 +292,13 @@ def api_sentry_webhook(
     # We currently support two types of payloads: events and issues.
     if data:
         if "event" in data:
-            subject, body = handle_event_payload(data["event"])
+            topic, body = handle_event_payload(data["event"])
         elif "issue" in data:
-            subject, body = handle_issue_payload(payload["action"], data["issue"], payload["actor"])
+            topic, body = handle_issue_payload(payload["action"], data["issue"], payload["actor"])
         else:
             raise UnsupportedWebhookEventTypeError(str(list(data.keys())))
     else:
-        subject, body = handle_deprecated_payload(payload)
+        topic, body = handle_deprecated_payload(payload)
 
-    check_send_webhook_message(request, user_profile, subject, body)
+    check_send_webhook_message(request, user_profile, topic, body)
     return json_success(request)

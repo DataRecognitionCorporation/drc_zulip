@@ -26,7 +26,7 @@ Zulip:
    progress, reporting problematic strings, etc.
 
 1. Sign up for [Transifex](https://www.transifex.com) and ask to join the [Zulip
-   project on Transifex](https://www.transifex.com/zulip/zulip/), requesting access
+   project on Transifex](https://explore.transifex.com/zulip/zulip/), requesting access
    to any languages that you'd like to contribute to (or add new ones).
 
    :::{note}
@@ -157,6 +157,26 @@ There are a few ways to see your translations in the Zulip UI:
 
   This can occasionally be useful for debugging.
 
+### Machine translation
+
+Transifex has [built-in machine translation
+capabilities](https://help.transifex.com/en/articles/6271130-setting-up-machine-translation).
+If machine translation is enabled for your language, you can generate one by
+clicking the **lightning** symbol above the translation box.
+
+![Transifex machine translation button](../images/transifex-machine-translation-button.png)
+
+There are a few things to keep in mind if you choose to make use of machine
+translation:
+
+- We expect human-quality translations for Zulip. While machine translation can
+  be a helpful aid, please be sure to review all machine translated strings.
+
+- We are using machine translation in HTML mode, which has a known bug that
+  causes special characters to be rendered as their HTML encodings. For example,
+  a `'` will be converted to ` &#39;`. Please be sure to fix this when reviewing
+  translations.
+
 ### Translation style guides
 
 We maintain translation style guides for Zulip, giving guidance on how
@@ -169,13 +189,14 @@ translators can understand and preserve those decisions:
 - [French](french.md)
 - [German](german.md)
 - [Hindi](hindi.md)
+- [Japanese](japanese.md)
 - [Polish](polish.md)
 - [Russian](russian.md)
 - [Spanish](spanish.md)
 
 Some translated languages don't have these, but we highly encourage
 translators for new languages (or those updating a language) write a
-style guide as they work , since it's easy to take notes as you
+style guide as they work, since it's easy to take notes as you
 translate, and doing so greatly increases the ability of future
 translators to update the translations in a consistent way. See [our
 docs on this documentation](../documentation/overview.md) for how to

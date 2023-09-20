@@ -5,8 +5,8 @@ from typing import Any, Dict, Optional
 from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import gettext as _
 
+from confirmation import settings as confirmation_settings
 from zerver.actions.message_send import internal_send_stream_message
 from zerver.actions.realm_settings import (
     do_add_deactivated_redirect,
@@ -16,17 +16,27 @@ from zerver.actions.realm_settings import (
 from zerver.lib.bulk_create import create_users
 from zerver.lib.server_initialization import create_internal_realm, server_initialized
 from zerver.lib.streams import ensure_stream, get_signups_stream
-from zerver.lib.user_groups import create_system_user_groups_for_realm
+from zerver.lib.user_groups import (
+    create_system_user_groups_for_realm,
+    get_role_based_system_groups_dict,
+)
 from zerver.models import (
     DefaultStream,
+    PreregistrationRealm,
     Realm,
     RealmAuditLog,
+    RealmAuthenticationMethod,
     RealmUserDefault,
     Stream,
     UserProfile,
+    get_org_type_display_name,
     get_realm,
     get_system_bot,
 )
+from zproject.backends import all_implemented_backend_names
+
+if settings.CORPORATE_ENABLED:
+    from corporate.lib.support import get_support_url
 
 
 def do_change_realm_subdomain(
@@ -57,7 +67,7 @@ def do_change_realm_subdomain(
             event_type=RealmAuditLog.REALM_SUBDOMAIN_CHANGED,
             event_time=timezone_now(),
             acting_user=acting_user,
-            extra_data=str({"old_subdomain": old_subdomain, "new_subdomain": new_subdomain}),
+            extra_data={"old_subdomain": old_subdomain, "new_subdomain": new_subdomain},
         )
 
         # If a realm if being renamed multiple times, we should find all the placeholder
@@ -91,12 +101,11 @@ def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
     # Custom configuration for educational organizations.  The present
     # defaults are designed for a single class, not a department or
     # larger institution, since those are more common.
-    if (
-        realm.org_type == Realm.ORG_TYPES["education_nonprofit"]["id"]
-        or realm.org_type == Realm.ORG_TYPES["education"]["id"]
+    if realm.org_type in (
+        Realm.ORG_TYPES["education_nonprofit"]["id"],
+        Realm.ORG_TYPES["education"]["id"],
     ):
-        # Limit email address visibility and user creation to administrators.
-        realm.email_address_visibility = Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+        # Limit user creation to administrators.
         realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
         # Restrict public stream creation to staff, but allow private
         # streams (useful for study groups, etc.).
@@ -107,6 +116,17 @@ def set_realm_permissions_based_on_org_type(realm: Realm) -> None:
         realm.invite_to_stream_policy = Realm.POLICY_MODERATORS_ONLY
         # Allow moderators (TAs?) to move topics between streams.
         realm.move_messages_between_streams_policy = Realm.POLICY_MODERATORS_ONLY
+
+
+@transaction.atomic(savepoint=False)
+def set_default_for_realm_permission_group_settings(realm: Realm) -> None:
+    system_groups_dict = get_role_based_system_groups_dict(realm)
+
+    for setting_name, permissions_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.items():
+        group_name = permissions_configuration.default_group_name
+        setattr(realm, setting_name, system_groups_dict[group_name])
+
+    realm.save(update_fields=list(Realm.REALM_PERMISSION_GROUP_SETTINGS.keys()))
 
 
 def setup_realm_internal_bots(realm: Realm) -> None:
@@ -135,7 +155,6 @@ def do_create_realm(
     name: str,
     *,
     emails_restricted_to_domains: Optional[bool] = None,
-    email_address_visibility: Optional[int] = None,
     description: Optional[str] = None,
     invite_required: Optional[bool] = None,
     plan_type: Optional[int] = None,
@@ -144,6 +163,7 @@ def do_create_realm(
     is_demo_organization: bool = False,
     enable_read_receipts: Optional[bool] = None,
     enable_spectator_access: Optional[bool] = None,
+    prereg_realm: Optional[PreregistrationRealm] = None,
 ) -> Realm:
     if string_id == settings.SOCIAL_AUTH_SUBDOMAIN:
         raise AssertionError("Creating a realm on SOCIAL_AUTH_SUBDOMAIN is not allowed!")
@@ -156,8 +176,6 @@ def do_create_realm(
     kwargs: Dict[str, Any] = {}
     if emails_restricted_to_domains is not None:
         kwargs["emails_restricted_to_domains"] = emails_restricted_to_domains
-    if email_address_visibility is not None:
-        kwargs["email_address_visibility"] = email_address_visibility
     if description is not None:
         kwargs["description"] = description
     if invite_required is not None:
@@ -200,6 +218,12 @@ def do_create_realm(
             )
 
         set_realm_permissions_based_on_org_type(realm)
+
+        # For now a dummy value of -1 is given to groups fields which
+        # is changed later before the transaction is committed.
+        for permissions_configuration in Realm.REALM_PERMISSION_GROUP_SETTINGS.values():
+            setattr(realm, permissions_configuration.id_field_name, -1)
+
         realm.save()
 
         RealmAuditLog.objects.create(
@@ -211,9 +235,30 @@ def do_create_realm(
             event_time=realm.date_created,
         )
 
-        RealmUserDefault.objects.create(realm=realm)
+        realm_default_email_address_visibility = RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        if realm.org_type in (
+            Realm.ORG_TYPES["education_nonprofit"]["id"],
+            Realm.ORG_TYPES["education"]["id"],
+        ):
+            # Email address of users should be initially visible to admins only.
+            realm_default_email_address_visibility = (
+                RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            )
+
+        RealmUserDefault.objects.create(
+            realm=realm, email_address_visibility=realm_default_email_address_visibility
+        )
 
         create_system_user_groups_for_realm(realm)
+        set_default_for_realm_permission_group_settings(realm)
+
+        # We create realms with all authentications methods enabled by default.
+        RealmAuthenticationMethod.objects.bulk_create(
+            [
+                RealmAuthenticationMethod(name=backend_name, realm=realm)
+                for backend_name in all_implemented_backend_names()
+            ]
+        )
 
     # Create stream once Realm object has been saved
     notifications_stream = ensure_stream(
@@ -243,25 +288,41 @@ def do_create_realm(
         # We use acting_user=None for setting the initial plan type.
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
 
-    admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
-    sender = get_system_bot(settings.NOTIFICATION_BOT, admin_realm.id)
-    # Send a notification to the admin realm
-    signup_message = _("Signups enabled")
+    if prereg_realm is not None:
+        prereg_realm.status = confirmation_settings.STATUS_USED
+        prereg_realm.created_realm = realm
+        prereg_realm.save(update_fields=["status", "created_realm"])
 
-    try:
-        signups_stream = get_signups_stream(admin_realm)
-        topic = realm.display_subdomain
+    # Send a notification to the admin realm when a new organization registers.
+    if settings.CORPORATE_ENABLED:
+        admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        sender = get_system_bot(settings.NOTIFICATION_BOT, admin_realm.id)
 
-        internal_send_stream_message(
-            sender,
-            signups_stream,
-            topic,
-            signup_message,
+        support_url = get_support_url(realm)
+        organization_type = get_org_type_display_name(realm.org_type)
+
+        message = "[{name}]({support_link}) ([{subdomain}]({realm_link})). Organization type: {type}".format(
+            name=realm.name,
+            subdomain=realm.display_subdomain,
+            realm_link=realm.uri,
+            support_link=support_url,
+            type=organization_type,
         )
-    except Stream.DoesNotExist:  # nocoverage
-        # If the signups stream hasn't been created in the admin
-        # realm, don't auto-create it to send to it; just do nothing.
-        pass
+        topic = "new organizations"
+
+        try:
+            signups_stream = get_signups_stream(admin_realm)
+
+            internal_send_stream_message(
+                sender,
+                signups_stream,
+                topic,
+                message,
+            )
+        except Stream.DoesNotExist:  # nocoverage
+            # If the signups stream hasn't been created in the admin
+            # realm, don't auto-create it to send to it; just do nothing.
+            pass
 
     setup_realm_internal_bots(realm)
     return realm

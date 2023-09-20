@@ -4,16 +4,9 @@ from typing import Dict, List
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import (
-    WildValue,
-    check_int,
-    check_none_or,
-    check_string,
-    check_union,
-    to_wild_value,
-)
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_int, check_none_or, check_string, check_union
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -50,7 +43,7 @@ subject_types: Dict[str, List[List[str]]] = {
 
 def get_value(_obj: WildValue, key: str) -> str:
     for _key in key.lstrip("!").split("/"):
-        if _key in _obj.keys():
+        if _key in _obj:
             _obj = _obj[_key]
         else:
             return ""
@@ -62,7 +55,7 @@ def format_object(
     subject_type: str,
     message: str,
 ) -> str:
-    if subject_type not in subject_types.keys():
+    if subject_type not in subject_types:
         return message
     keys: List[List[str]] = subject_types[subject_type][1:]
     title = subject_types[subject_type][0]
@@ -108,21 +101,22 @@ def format_object(
 
 
 @webhook_view("Opbeat")
-@has_request_variables
+@typed_endpoint
 def api_opbeat_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
+    *,
+    payload: WebhookPayload[WildValue],
 ) -> HttpResponse:
     """
-    This uses the subject name from opbeat to make the subject,
+    This uses the subject name from opbeat to make the topic,
     and the summary from Opbeat as the message body, with
     details about the object mentioned.
     """
 
-    message_subject = payload["title"].tame(check_string)
+    topic = payload["title"].tame(check_string)
 
     message = format_object(payload, "base", "")
 
-    check_send_webhook_message(request, user_profile, message_subject, message)
+    check_send_webhook_message(request, user_profile, topic, message)
     return json_success(request)

@@ -1,4 +1,4 @@
-from disposable_email_domains import blacklist
+from disposable_email_domains import blocklist
 from django.conf import settings
 
 
@@ -12,6 +12,8 @@ def is_reserved_subdomain(subdomain: str) -> bool:
     if subdomain in GENERIC_RESERVED_SUBDOMAINS:
         return True
     if subdomain[-1] == "s" and subdomain[:-1] in GENERIC_RESERVED_SUBDOMAINS:
+        return True
+    if settings.CORPORATE_ENABLED and ("zulip" in subdomain or "kandra" in subdomain):
         return True
     return False
 
@@ -359,7 +361,7 @@ GENERIC_RESERVED_SUBDOMAINS = {
     "xoxo",
 }
 
-DISPOSABLE_DOMAINS = set(blacklist)
+DISPOSABLE_DOMAINS = set(blocklist)
 
 WHITELISTED_EMAIL_DOMAINS = {
     # Controlled by https://www.abine.com; more legitimate than most

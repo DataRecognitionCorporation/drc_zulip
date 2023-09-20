@@ -6,6 +6,8 @@ from urllib.parse import unquote
 
 from django.http import HttpRequest
 from django.utils.translation import gettext as _
+from pydantic import Json
+from typing_extensions import Annotated, TypeAlias
 
 from zerver.actions.message_send import (
     check_send_private_message,
@@ -14,10 +16,10 @@ from zerver.actions.message_send import (
     send_rate_limited_pm_notification_to_bot_owner,
 )
 from zerver.lib.exceptions import ErrorCode, JsonableError, StreamDoesNotExistError
-from zerver.lib.request import REQ, RequestNotes, has_request_variables
+from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.validator import check_list, check_string
+from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.models import UserProfile
 
 MISSING_EVENT_HEADER_MESSAGE = """\
@@ -37,6 +39,8 @@ that this integration expects!
 
 SETUP_MESSAGE_TEMPLATE = "{integration} webhook has been successfully configured"
 SETUP_MESSAGE_USER_PART = " by {user_name}"
+
+OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[Optional[str], ApiParamConfig("topic")]
 
 
 def get_setup_webhook_message(integration: str, user_name: Optional[str] = None) -> str:
@@ -69,22 +73,21 @@ class MissingHTTPEventHeaderError(JsonableError):
         return _("Missing the HTTP event header '{header}'")
 
 
-@has_request_variables
+@typed_endpoint
 def check_send_webhook_message(
     request: HttpRequest,
     user_profile: UserProfile,
     topic: str,
     body: str,
     complete_event_type: Optional[str] = None,
-    stream: Optional[str] = REQ(default=None),
-    user_specified_topic: Optional[str] = REQ("topic", default=None),
-    only_events: Optional[List[str]] = REQ(default=None, json_validator=check_list(check_string)),
-    exclude_events: Optional[List[str]] = REQ(
-        default=None, json_validator=check_list(check_string)
-    ),
+    *,
+    stream: Optional[str] = None,
+    user_specified_topic: OptionalUserSpecifiedTopicStr = None,
+    only_events: Optional[Json[List[str]]] = None,
+    exclude_events: Optional[Json[List[str]]] = None,
     unquote_url_parameters: bool = False,
 ) -> None:
-    if complete_event_type is not None:
+    if complete_event_type is not None and (
         # Here, we implement Zulip's generic support for filtering
         # events sent by the third-party service.
         #
@@ -95,14 +98,16 @@ def check_send_webhook_message(
         #
         # We match items in only_events and exclude_events using Unix
         # shell-style wildcards.
-        if (
+        (
             only_events is not None
             and all(not fnmatch.fnmatch(complete_event_type, pattern) for pattern in only_events)
-        ) or (
+        )
+        or (
             exclude_events is not None
             and any(fnmatch.fnmatch(complete_event_type, pattern) for pattern in exclude_events)
-        ):
-            return
+        )
+    ):
+        return
 
     client = RequestNotes.get_notes(request).client
     assert client is not None
@@ -128,10 +133,10 @@ def check_send_webhook_message(
             else:
                 check_send_stream_message(user_profile, client, stream, topic, body)
         except StreamDoesNotExistError:
-            # A PM will be sent to the bot_owner by check_message, notifying
-            # that the webhook bot just tried to send a message to a non-existent
-            # stream, so we don't need to re-raise it since it clutters up
-            # webhook-errors.log
+            # A direct message will be sent to the bot_owner by check_message,
+            # notifying that the webhook bot just tried to send a message to a
+            # non-existent stream, so we don't need to re-raise it since it
+            # clutters up webhook-errors.log
             pass
 
 
@@ -150,9 +155,11 @@ def standardize_headers(input_headers: Union[None, Dict[str, Any]]) -> Dict[str,
 
     for raw_header in input_headers:
         polished_header = raw_header.upper().replace("-", "_")
-        if polished_header not in ["CONTENT_TYPE", "CONTENT_LENGTH"]:
-            if not polished_header.startswith("HTTP_"):
-                polished_header = "HTTP_" + polished_header
+        if polished_header not in [
+            "CONTENT_TYPE",
+            "CONTENT_LENGTH",
+        ] and not polished_header.startswith("HTTP_"):
+            polished_header = "HTTP_" + polished_header
         canonical_headers[polished_header] = str(input_headers[raw_header])
 
     return canonical_headers
@@ -224,4 +231,6 @@ def unix_milliseconds_to_timestamp(milliseconds: Any, webhook: str) -> datetime:
         seconds = milliseconds / 1000
         return timestamp_to_datetime(seconds)
     except (ValueError, TypeError):
-        raise JsonableError(_("The {} webhook expects time in milliseconds.").format(webhook))
+        raise JsonableError(
+            _("The {webhook} webhook expects time in milliseconds.").format(webhook=webhook)
+        )

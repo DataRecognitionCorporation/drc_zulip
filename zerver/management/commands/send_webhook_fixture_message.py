@@ -32,7 +32,7 @@ approach shown above.
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
-            "-f", "--fixture", help="The path to the fixture you'd like to send " "into Zulip"
+            "-f", "--fixture", help="The path to the fixture you'd like to send into Zulip"
         )
 
         parser.add_argument(
@@ -56,8 +56,8 @@ approach shown above.
             custom_headers_dict = orjson.loads(custom_headers)
         except orjson.JSONDecodeError as ve:
             raise CommandError(
-                "Encountered an error while attempting to parse custom headers: {}\n"
-                "Note: all strings must be enclosed within \"\" instead of ''".format(ve)
+                f"Encountered an error while attempting to parse custom headers: {ve}\n"
+                "Note: all strings must be enclosed within \"\" instead of ''"
             )
         return standardize_headers(custom_headers_dict)
 

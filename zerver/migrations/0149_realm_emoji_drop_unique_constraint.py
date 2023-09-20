@@ -17,7 +17,7 @@ class Uploader:
         self.new_path_template = "{realm_id}/emoji/images/{emoji_file_name}"
 
     def copy_files(self, src_path: str, dst_path: str) -> None:
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def ensure_emoji_images(self, realm_id: int, old_filename: str, new_filename: str) -> None:
         # Copy original image file.
@@ -51,9 +51,11 @@ class LocalUploader(Uploader):
 
     def copy_files(self, src_path: str, dst_path: str) -> None:
         assert settings.LOCAL_UPLOADS_DIR is not None
-        src_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", src_path)
+        assert settings.LOCAL_AVATARS_DIR is not None
+        assert settings.LOCAL_FILES_DIR is not None
+        src_path = os.path.join(settings.LOCAL_AVATARS_DIR, src_path)
         self.mkdirs(src_path)
-        dst_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", dst_path)
+        dst_path = os.path.join(settings.LOCAL_AVATARS_DIR, dst_path)
         self.mkdirs(dst_path)
         shutil.copyfile(src_path, dst_path)
 
@@ -80,7 +82,7 @@ def get_uploader() -> Uploader:
 
 def get_emoji_file_name(emoji_file_name: str, new_name: str) -> str:
     _, image_ext = os.path.splitext(emoji_file_name)
-    return "".join((new_name, image_ext))
+    return f"{new_name}{image_ext}"
 
 
 def migrate_realm_emoji_image_files(

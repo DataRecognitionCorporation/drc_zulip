@@ -19,7 +19,6 @@ from zerver.actions.default_streams import (
     do_remove_default_stream,
     do_remove_default_stream_group,
     do_remove_streams_from_default_stream_group,
-    get_default_streams_for_realm,
 )
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_send import (
@@ -31,6 +30,7 @@ from zerver.actions.streams import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     do_change_stream_description,
+    do_change_stream_group_based_setting,
     do_change_stream_message_retention_days,
     do_change_stream_permission,
     do_change_stream_post_policy,
@@ -46,17 +46,18 @@ from zerver.decorator import (
     require_post,
     require_realm_admin,
 )
+from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.exceptions import (
-    ErrorCode,
     JsonableError,
     OrganizationOwnerRequiredError,
     ResourceNotFoundError,
 )
 from zerver.lib.mention import MentionBackend, silent_mention_syntax_for_user
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_partial_success, json_success
+from zerver.lib.response import json_success
 from zerver.lib.retention import STREAM_MESSAGE_BATCH_SIZE as RETENTION_STREAM_MESSAGE_BATCH_SIZE
 from zerver.lib.retention import parse_message_retention_days
+from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     StreamDict,
     access_default_stream_group_by_id,
@@ -69,6 +70,7 @@ from zerver.lib.streams import (
     filter_stream_authorization,
     get_stream_permission_policy_name,
     list_to_streams,
+    stream_to_dict,
 )
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.subscription_info import gather_subscriptions
@@ -79,6 +81,8 @@ from zerver.lib.topic import (
     messages_for_topic,
 )
 from zerver.lib.types import Validator
+from zerver.lib.user_groups import access_user_group_for_setting
+from zerver.lib.users import access_user_by_email, access_user_by_id
 from zerver.lib.utils import assert_is_not_none
 from zerver.lib.validator import (
     check_bool,
@@ -94,42 +98,18 @@ from zerver.lib.validator import (
     check_union,
     to_non_negative_int,
 )
-from zerver.models import (
-    Realm,
-    Stream,
-    UserMessage,
-    UserProfile,
-    get_active_user,
-    get_active_user_profile_by_id_in_realm,
-    get_system_bot,
-)
-
-
-class PrincipalError(JsonableError):
-    code = ErrorCode.UNAUTHORIZED_PRINCIPAL
-    data_fields = ["principal"]
-    http_status_code = 403
-
-    def __init__(self, principal: Union[int, str]) -> None:
-        self.principal: Union[int, str] = principal
-
-    @staticmethod
-    def msg_format() -> str:
-        return _("User not authorized to execute queries on behalf of '{principal}'")
+from zerver.models import Realm, Stream, UserGroup, UserMessage, UserProfile, get_system_bot
 
 
 def principal_to_user_profile(agent: UserProfile, principal: Union[str, int]) -> UserProfile:
-    try:
-        if isinstance(principal, str):
-            return get_active_user(principal, agent.realm)
-        else:
-            return get_active_user_profile_by_id_in_realm(principal, agent.realm)
-    except UserProfile.DoesNotExist:
-        # We have to make sure we don't leak information about which users
-        # are registered for Zulip in a different realm.  We could do
-        # something a little more clever and check the domain part of the
-        # principal to maybe give a better error message
-        raise PrincipalError(principal)
+    if isinstance(principal, str):
+        return access_user_by_email(
+            agent, principal, allow_deactivated=False, allow_bots=True, for_admin=False
+        )
+    else:
+        return access_user_by_id(
+            agent, principal, allow_deactivated=False, allow_bots=True, for_admin=False
+        )
 
 
 def user_directly_controls_user(user_profile: UserProfile, target: UserProfile) -> bool:
@@ -137,7 +117,7 @@ def user_directly_controls_user(user_profile: UserProfile, target: UserProfile) 
     owned by the current user"""
     if user_profile == target:
         return True
-    if target.is_bot and target.bot_owner == user_profile:
+    if target.is_bot and target.bot_owner_id == user_profile.id:
         return True
     return False
 
@@ -257,6 +237,7 @@ def update_stream_backend(
     ),
     is_private: Optional[bool] = REQ(json_validator=check_bool, default=None),
     is_announcement_only: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    is_default_stream: Optional[bool] = REQ(json_validator=check_bool, default=None),
     stream_post_policy: Optional[int] = REQ(
         json_validator=check_int_in(Stream.STREAM_POST_POLICY_TYPES), default=None
     ),
@@ -265,6 +246,9 @@ def update_stream_backend(
     new_name: Optional[str] = REQ(default=None),
     message_retention_days: Optional[Union[int, str]] = REQ(
         json_validator=check_string_or_int, default=None
+    ),
+    can_remove_subscribers_group_id: Optional[int] = REQ(
+        "can_remove_subscribers_group", json_validator=check_int, default=None
     ),
 ) -> HttpResponse:
     # We allow realm administrators to to update the stream name and
@@ -281,6 +265,12 @@ def update_stream_backend(
         proposed_is_web_public = is_web_public
     else:
         proposed_is_web_public = stream.is_web_public
+
+    if is_default_stream is not None:
+        proposed_is_default_stream = is_default_stream
+    else:
+        default_stream_ids = get_default_stream_ids_for_realm(stream.realm_id)
+        proposed_is_default_stream = stream.id in default_stream_ids
 
     if stream.realm.is_zephyr_mirror_realm:
         # In the Zephyr mirroring model, history is unconditionally
@@ -311,12 +301,11 @@ def update_stream_backend(
         else:
             raise JsonableError(_("Invalid parameters"))
 
-    if is_private is not None:
-        # Default streams cannot be made private.
-        default_stream_ids = {s.id for s in get_default_streams_for_realm(stream.realm_id)}
-        if is_private and stream.id in default_stream_ids:
-            raise JsonableError(_("Default streams cannot be made private."))
+    # Ensure that a stream cannot be both a default stream for new users and private
+    if proposed_is_private and proposed_is_default_stream:
+        raise JsonableError(_("A default stream cannot be private."))
 
+    if is_private is not None:
         # We require even realm administrators to be actually
         # subscribed to make a private stream public, via this
         # stricted access_stream check.
@@ -344,9 +333,19 @@ def update_stream_backend(
             acting_user=user_profile,
         )
 
+    if is_default_stream is not None:
+        if is_default_stream:
+            do_add_default_stream(stream)
+        else:
+            do_remove_default_stream(stream)
+
     if message_retention_days is not None:
         if not user_profile.is_realm_owner:
+<<<<<<< HEAD
             raise OrganizationOwnerRequiredError()
+=======
+            raise OrganizationOwnerRequiredError
+>>>>>>> drc_main
         user_profile.realm.ensure_not_on_limited_plan()
         new_message_retention_days_value = parse_message_retention_days(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
@@ -379,6 +378,35 @@ def update_stream_backend(
             stream_post_policy = Stream.STREAM_POST_POLICY_ADMINS
     if stream_post_policy is not None:
         do_change_stream_post_policy(stream, stream_post_policy, acting_user=user_profile)
+
+    for setting_name, permissions_configuration in Stream.stream_permission_group_settings.items():
+        request_settings_dict = locals()
+        setting_group_id_name = permissions_configuration.id_field_name
+
+        if setting_group_id_name not in request_settings_dict:  # nocoverage
+            continue
+
+        if request_settings_dict[setting_group_id_name] is not None and request_settings_dict[
+            setting_group_id_name
+        ] != getattr(stream, setting_group_id_name):
+            if sub is None and stream.invite_only:
+                # Admins cannot change this setting for unsubscribed private streams.
+                raise JsonableError(_("Invalid stream ID"))
+
+            user_group_id = request_settings_dict[setting_group_id_name]
+            user_group = access_user_group_for_setting(
+                user_group_id,
+                user_profile,
+                setting_name=setting_name,
+                require_system_group=permissions_configuration.require_system_group,
+                allow_internet_group=permissions_configuration.allow_internet_group,
+                allow_owners_group=permissions_configuration.allow_owners_group,
+                allow_nobody_group=permissions_configuration.allow_nobody_group,
+                allow_everyone_group=permissions_configuration.allow_everyone_group,
+            )
+            do_change_stream_group_based_setting(
+                stream, setting_name, user_group, acting_user=user_profile
+            )
 
     return json_success(request)
 
@@ -461,9 +489,9 @@ def remove_subscriptions_backend(
 ) -> HttpResponse:
     realm = user_profile.realm
 
-    streams_as_dict: List[StreamDict] = []
-    for stream_name in streams_raw:
-        streams_as_dict.append({"name": stream_name.strip()})
+    streams_as_dict: List[StreamDict] = [
+        {"name": stream_name.strip()} for stream_name in streams_raw
+    ]
 
     unsubscribing_others = False
     if principals:
@@ -530,6 +558,7 @@ def add_subscriptions_backend(
     ),
     invite_only: bool = REQ(json_validator=check_bool, default=False),
     is_web_public: bool = REQ(json_validator=check_bool, default=False),
+    is_default_stream: bool = REQ(json_validator=check_bool, default=False),
     stream_post_policy: int = REQ(
         json_validator=check_int_in(Stream.STREAM_POST_POLICY_TYPES),
         default=Stream.STREAM_POST_POLICY_EVERYONE,
@@ -537,6 +566,9 @@ def add_subscriptions_backend(
     history_public_to_subscribers: Optional[bool] = REQ(json_validator=check_bool, default=None),
     message_retention_days: Union[str, int] = REQ(
         json_validator=check_string_or_int, default=RETENTION_DEFAULT
+    ),
+    can_remove_subscribers_group_id: Optional[int] = REQ(
+        "can_remove_subscribers_group", json_validator=check_int, default=None
     ),
     announce: bool = REQ(json_validator=check_bool, default=False),
     principals: Union[Sequence[str], Sequence[int]] = REQ(
@@ -548,6 +580,25 @@ def add_subscriptions_backend(
     realm = user_profile.realm
     stream_dicts = []
     color_map = {}
+
+    if can_remove_subscribers_group_id is not None:
+        can_remove_subscribers_group = access_user_group_for_setting(
+            can_remove_subscribers_group_id,
+            user_profile,
+            setting_name="can_remove_subscribers_group",
+            require_system_group=True,
+            allow_nobody_group=False,
+        )
+    else:
+        can_remove_subscribers_group_default_name = Stream.stream_permission_group_settings[
+            "can_remove_subscribers_group"
+        ].default_group_name
+        can_remove_subscribers_group = UserGroup.objects.get(
+            name=can_remove_subscribers_group_default_name,
+            realm=user_profile.realm,
+            is_system_group=True,
+        )
+
     for stream_dict in streams_raw:
         # 'color' field is optional
         # check for its presence in the streams_raw first
@@ -568,13 +619,31 @@ def add_subscriptions_backend(
         stream_dict_copy["message_retention_days"] = parse_message_retention_days(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
         )
+        stream_dict_copy["can_remove_subscribers_group"] = can_remove_subscribers_group
 
         stream_dicts.append(stream_dict_copy)
+
+    is_subscribing_other_users = False
+    if len(principals) > 0 and not all(user_id == user_profile.id for user_id in principals):
+        is_subscribing_other_users = True
+
+    if is_subscribing_other_users:
+        if not user_profile.can_subscribe_other_users():
+            # Guest users case will not be handled here as it will
+            # be handled by the decorator above.
+            raise JsonableError(_("Insufficient permission"))
+        subscribers = {
+            principal_to_user_profile(user_profile, principal) for principal in principals
+        }
+    else:
+        subscribers = {user_profile}
 
     # Validation of the streams arguments, including enforcement of
     # can_create_streams policy and check_stream_name policy is inside
     # list_to_streams.
-    existing_streams, created_streams = list_to_streams(stream_dicts, user_profile, autocreate=True)
+    existing_streams, created_streams = list_to_streams(
+        stream_dicts, user_profile, autocreate=True, is_default_stream=is_default_stream
+    )
     authorized_streams, unauthorized_streams = filter_stream_authorization(
         user_profile, existing_streams
     )
@@ -587,20 +656,18 @@ def add_subscriptions_backend(
     # Newly created streams are also authorized for the creator
     streams = authorized_streams + created_streams
 
-    if len(principals) > 0:
-        if realm.is_zephyr_mirror_realm and not all(stream.invite_only for stream in streams):
-            raise JsonableError(
-                _("You can only invite other Zephyr mirroring users to private streams.")
-            )
-        if not user_profile.can_subscribe_other_users():
-            # Guest users case will not be handled here as it will
-            # be handled by the decorator above.
-            raise JsonableError(_("Insufficient permission"))
-        subscribers = {
-            principal_to_user_profile(user_profile, principal) for principal in principals
-        }
-    else:
-        subscribers = {user_profile}
+    if (
+        is_subscribing_other_users
+        and realm.is_zephyr_mirror_realm
+        and not all(stream.invite_only for stream in streams)
+    ):
+        raise JsonableError(
+            _("You can only invite other Zephyr mirroring users to private streams.")
+        )
+
+    if is_default_stream:
+        for stream in created_streams:
+            do_add_default_stream(stream)
 
     (subscribed, already_subscribed) = bulk_add_subscriptions(
         realm, streams, subscribers, acting_user=user_profile, color_map=color_map
@@ -807,7 +874,9 @@ def get_stream_backend(
     stream_id: int,
 ) -> HttpResponse:
     (stream, sub) = access_stream_by_id(user_profile, stream_id, allow_realm_admin=True)
-    return json_success(request, data={"stream": stream.to_dict()})
+
+    recent_traffic = get_streams_traffic({stream.id}, user_profile.realm)
+    return json_success(request, data={"stream": stream_to_dict(stream, recent_traffic)})
 
 
 @has_request_variables
@@ -857,7 +926,19 @@ def delete_in_topic(
 ) -> HttpResponse:
     stream, ignored_sub = access_stream_by_id(user_profile, stream_id)
 
-    messages = messages_for_topic(assert_is_not_none(stream.recipient_id), topic_name)
+    messages = messages_for_topic(
+        user_profile.realm_id, assert_is_not_none(stream.recipient_id), topic_name
+    )
+    # Note: It would be better to use bulk_access_messages here, which is our core function
+    # for obtaining the accessible messages - and it's good to use it wherever we can,
+    # so that we have a central place to keep up to date with our security model for
+    # message access.
+    # However, it fetches the full Message objects, which would be bad here for very large
+    # topics.
+    # The access_stream_by_id call above ensures that the acting user currently has access to the
+    # stream (which entails having an active Subscription in case of private streams), meaning
+    # that combined with the UserMessage check below, this is a sufficient replacement for
+    # bulk_access_messages.
     if not stream.is_history_public_to_subscribers():
         # Don't allow the user to delete messages that they don't have access to.
         deletable_message_ids = UserMessage.objects.filter(
@@ -887,9 +968,13 @@ def delete_in_topic(
     try:
         timeout(50, delete_in_batches)
     except TimeoutExpiredError:
+<<<<<<< HEAD
         return json_partial_success(request, data={"code": ErrorCode.REQUEST_TIMEOUT.name})
+=======
+        return json_success(request, data={"complete": False})
+>>>>>>> drc_main
 
-    return json_success(request)
+    return json_success(request, data={"complete": True})
 
 
 @require_post
@@ -964,7 +1049,7 @@ def update_subscription_properties_backend(
 ) -> HttpResponse:
     """
     This is the entry point to changing subscription properties. This
-    is a bulk endpoint: requestors always provide a subscription_data
+    is a bulk endpoint: requesters always provide a subscription_data
     list containing dictionaries for each stream of interest.
 
     Requests are of the form:
@@ -990,11 +1075,15 @@ def update_subscription_properties_backend(
         value = change["value"]
 
         if property not in property_converters:
-            raise JsonableError(_("Unknown subscription property: {}").format(property))
+            raise JsonableError(
+                _("Unknown subscription property: {property}").format(property=property)
+            )
 
         (stream, sub) = access_stream_by_id(user_profile, stream_id)
         if sub is None:
-            raise JsonableError(_("Not subscribed to stream id {}").format(stream_id))
+            raise JsonableError(
+                _("Not subscribed to stream id {stream_id}").format(stream_id=stream_id)
+            )
 
         try:
             value = property_converters[property](property, value)
@@ -1005,16 +1094,4 @@ def update_subscription_properties_backend(
             user_profile, sub, stream, property, value, acting_user=user_profile
         )
 
-    # TODO: Do this more generally, see update_realm_user_settings_defaults.realm.py
-    from zerver.lib.request import RequestNotes
-
-    request_notes = RequestNotes.get_notes(request)
-    for req_var in request.POST:
-        if req_var not in request_notes.processed_parameters:
-            request_notes.ignored_parameters.add(req_var)
-
-    result: Dict[str, Any] = {}
-    if len(request_notes.ignored_parameters) > 0:
-        result["ignored_parameters_unsupported"] = list(request_notes.ignored_parameters)
-
-    return json_success(request, data=result)
+    return json_success(request)

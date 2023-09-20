@@ -14,6 +14,7 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import connection
 from django.db.models import F
+from django.db.models.signals import post_delete
 from django.utils.timezone import now as timezone_now
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
@@ -25,7 +26,10 @@ from zerver.actions.custom_profile_fields import (
 )
 from zerver.actions.message_send import build_message_send_dict, do_send_messages
 from zerver.actions.realm_emoji import check_add_realm_emoji
+from zerver.actions.realm_linkifiers import do_add_linkifier
+from zerver.actions.scheduled_messages import check_schedule_message
 from zerver.actions.streams import bulk_add_subscriptions
+from zerver.actions.user_groups import create_user_group_in_database
 from zerver.actions.users import do_change_user_role
 from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.generate_test_data import create_test_data, generate_topics
@@ -35,7 +39,6 @@ from zerver.lib.server_initialization import create_internal_realm, create_users
 from zerver.lib.storage import static_path
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS
 from zerver.lib.types import ProfileFieldData
-from zerver.lib.user_groups import create_user_group
 from zerver.lib.users import add_service
 from zerver.lib.utils import generate_api_key
 from zerver.models import (
@@ -58,6 +61,7 @@ from zerver.models import (
     UserMessage,
     UserPresence,
     UserProfile,
+    flush_alert_word,
     get_client,
     get_or_create_huddle,
     get_realm,
@@ -70,7 +74,7 @@ from zerver.models import (
 settings.USING_TORNADO = False
 # Disable using memcached caches to avoid 'unsupported pickle
 # protocol' errors if `populate_db` is run with a different Python
-# from `run-dev.py`.
+# from `run-dev`.
 default_cache = settings.CACHES["default"]
 settings.CACHES["default"] = {
     "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
@@ -102,9 +106,15 @@ def clear_database() -> None:
         ).flush_all()
 
     model: Any = None  # Hack because mypy doesn't know these are model classes
+
+    # The after-delete signal on this just updates caches, and slows
+    # down the deletion noticeably.  Remove the signal and replace it
+    # after we're done.
+    post_delete.disconnect(flush_alert_word, sender=AlertWord)
     for model in [
         Message,
         Stream,
+        AlertWord,
         UserProfile,
         Recipient,
         Realm,
@@ -116,13 +126,14 @@ def clear_database() -> None:
     ]:
         model.objects.all().delete()
     Session.objects.all().delete()
+    post_delete.connect(flush_alert_word, sender=AlertWord)
 
 
 def subscribe_users_to_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) -> None:
     subscriptions_to_add = []
     event_time = timezone_now()
     all_subscription_logs = []
-    profiles = UserProfile.objects.select_related().filter(realm=realm)
+    profiles = UserProfile.objects.select_related("realm").filter(realm=realm)
     for i, stream_name in enumerate(stream_dict):
         stream = Stream.objects.get(name=stream_name, realm=realm)
         recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
@@ -173,14 +184,10 @@ def create_alert_words(realm_id: int) -> None:
     recs: List[AlertWord] = []
     for user_id in user_ids:
         random.shuffle(alert_words)
-        for i in range(4):
-            recs.append(
-                AlertWord(
-                    realm_id=realm_id,
-                    user_profile_id=user_id,
-                    word=alert_words[i],
-                )
-            )
+        recs.extend(
+            AlertWord(realm_id=realm_id, user_profile_id=user_id, word=word)
+            for word in alert_words[:4]
+        )
 
     AlertWord.objects.bulk_create(recs)
 
@@ -315,7 +322,6 @@ class Command(BaseCommand):
                 string_id="zulip",
                 name="Zulip Dev",
                 emails_restricted_to_domains=False,
-                email_address_visibility=Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
                 description="The Zulip development environment default organization."
                 "  It's great for testing!",
                 invite_required=False,
@@ -332,6 +338,9 @@ class Command(BaseCommand):
 
             realm_user_default = RealmUserDefault.objects.get(realm=zulip_realm)
             realm_user_default.enter_sends = True
+            realm_user_default.email_address_visibility = (
+                RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            )
             realm_user_default.save()
 
             if options["test_suite"]:
@@ -532,11 +541,12 @@ class Command(BaseCommand):
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
             zulip_realm_bots = [
-                ("Zulip Error Bot", "error-bot@zulip.com"),
                 ("Zulip Default Bot", "default-bot@zulip.com"),
+                *(
+                    (f"Extra Bot {i}", f"extrabot{i}@zulip.com")
+                    for i in range(options["extra_bots"])
+                ),
             ]
-            for i in range(options["extra_bots"]):
-                zulip_realm_bots.append((f"Extra Bot {i}", f"extrabot{i}@zulip.com"))
 
             create_users(
                 zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT, bot_owner=desdemona
@@ -610,7 +620,7 @@ class Command(BaseCommand):
 
             subscriptions_list: List[Tuple[UserProfile, Recipient]] = []
             profiles: Sequence[UserProfile] = list(
-                UserProfile.objects.select_related().filter(is_bot=False).order_by("email")
+                UserProfile.objects.select_related("realm").filter(is_bot=False).order_by("email")
             )
 
             if options["test_suite"]:
@@ -660,7 +670,7 @@ class Command(BaseCommand):
 
             subscriptions_to_add: List[Subscription] = []
             event_time = timezone_now()
-            all_subscription_logs: (List[RealmAuditLog]) = []
+            all_subscription_logs: List[RealmAuditLog] = []
 
             i = 0
             for profile, recipient in subscriptions_list:
@@ -764,6 +774,46 @@ class Command(BaseCommand):
                     {"id": pronouns.id, "value": "he/him"},
                 ],
             )
+            # We need to create at least one scheduled message for Iago for the api-test
+            # cURL example to delete an existing scheduled message.
+            check_schedule_message(
+                sender=iago,
+                client=get_client("populate_db"),
+                recipient_type_name="stream",
+                message_to=[Stream.objects.get(name="Denmark", realm=zulip_realm).id],
+                topic_name="test-api",
+                message_content="It's time to celebrate the anniversary of provisioning this development environment :tada:!",
+                deliver_at=timezone_now() + timedelta(days=365),
+                realm=zulip_realm,
+            )
+            check_schedule_message(
+                sender=iago,
+                client=get_client("populate_db"),
+                recipient_type_name="private",
+                message_to=[iago.id],
+                topic_name=None,
+                message_content="Note to self: It's been a while since you've provisioned this development environment.",
+                deliver_at=timezone_now() + timedelta(days=365),
+                realm=zulip_realm,
+            )
+            do_add_linkifier(
+                zulip_realm,
+                "#D(?P<id>[0-9]{2,8})",
+                "https://github.com/zulip/zulip-desktop/pull/{id}",
+                acting_user=None,
+            )
+            do_add_linkifier(
+                zulip_realm,
+                "zulip-mobile#(?P<id>[0-9]{2,8})",
+                "https://github.com/zulip/zulip-mobile/pull/{id}",
+                acting_user=None,
+            )
+            do_add_linkifier(
+                zulip_realm,
+                "zulip-(?P<repo>[a-zA-Z-_0-9]+)#(?P<id>[0-9]{2,8})",
+                "https://github.com/zulip/{repo}/pull/{id}",
+                acting_user=None,
+            )
         else:
             zulip_realm = get_realm("zulip")
             recipient_streams = [
@@ -783,17 +833,11 @@ class Command(BaseCommand):
         if not options["test_suite"]:
             # Populate users with some bar data
             for user in user_profiles:
-                status: int = UserPresence.ACTIVE
                 date = timezone_now()
-                client = get_client("website")
-                if user.full_name[0] <= "H":
-                    client = get_client("ZulipAndroid")
                 UserPresence.objects.get_or_create(
                     user_profile=user,
                     realm_id=user.realm_id,
-                    client=client,
-                    timestamp=date,
-                    status=status,
+                    defaults={"last_active_time": date, "last_connected_time": date},
                 )
 
         user_profiles_ids = [user_profile.id for user_profile in user_profiles]
@@ -869,7 +913,7 @@ class Command(BaseCommand):
                     "social": {"description": "For socializing"},
                     "test": {"description": "For testing `code`"},
                     "errors": {"description": "For errors"},
-                    # 조리법 - Recipes (Korean) , Пельмени - Dumplings (Russian)
+                    # 조리법 - Recipes (Korean), Пельмени - Dumplings (Russian)
                     "조리법 "
                     + raw_emojis[0]: {"description": "Everything cooking, from pasta to Пельмени"},
                 }
@@ -1127,16 +1171,12 @@ def generate_and_send_messages(
 def send_messages(messages: List[Message]) -> None:
     # We disable USING_RABBITMQ here, so that deferred work is
     # executed in do_send_message_messages, rather than being
-    # queued.  This is important, because otherwise, if run-dev.py
+    # queued.  This is important, because otherwise, if run-dev
     # wasn't running when populate_db was run, a developer can end
     # up with queued events that reference objects from a previous
     # life of the database, which naturally throws exceptions.
     settings.USING_RABBITMQ = False
-    message_dict_list = []
-    for message in messages:
-        message_dict = build_message_send_dict(message=message)
-        message_dict_list.append(message_dict)
-    do_send_messages(message_dict_list)
+    do_send_messages([build_message_send_dict(message=message) for message in messages])
     bulk_create_reactions(messages)
     settings.USING_RABBITMQ = True
 
@@ -1236,4 +1276,6 @@ def create_user_groups() -> None:
         get_user_by_delivery_email("cordelia@zulip.com", zulip),
         get_user_by_delivery_email("hamlet@zulip.com", zulip),
     ]
-    create_user_group("hamletcharacters", members, zulip, description="Characters of Hamlet")
+    create_user_group_in_database(
+        "hamletcharacters", members, zulip, description="Characters of Hamlet", acting_user=None
+    )

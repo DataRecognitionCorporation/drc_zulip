@@ -111,6 +111,20 @@ Billing method: send invoice"""
             content_type="application/x-www-form-urlencoded",
         )
 
+    def test_customer_subscription_created_no_nickname(self) -> None:
+        expected_topic = "cus_00000000000000"
+        expected_message = """\
+[Subscription](https://dashboard.stripe.com/subscriptions/sub_E6STM5w5EX3K28) created
+Plan: https://dashboard.stripe.com/plans/plan_E6SQ6RAtmLVtzg
+Quantity: 800
+Billing method: send invoice"""
+        self.check_webhook(
+            "customer_subscription_created_no_nickname",
+            expected_topic,
+            expected_message,
+            content_type="application/x-www-form-urlencoded",
+        )
+
     def test_customer_subscription_deleted(self) -> None:
         expected_topic = "cus_00000000000000"
         expected_message = (
@@ -158,7 +172,7 @@ Billing method: send invoice"""
         expected_topic = "cus_00000000000000"
         expected_message = (
             "[Customer](https://dashboard.stripe.com/customers/cus_00000000000000) updated"
-            + "\n* Account balance is now 100"
+            "\n* Account balance is now 100"
         )
         self.check_webhook(
             "customer_updated__account_balance",

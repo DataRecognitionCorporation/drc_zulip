@@ -39,6 +39,10 @@ class ErrorCode(Enum):
     AUTHENTICATION_FAILED = auto()
     UNAUTHORIZED = auto()
     REQUEST_TIMEOUT = auto()
+    MOVE_MESSAGES_TIME_LIMIT_EXCEEDED = auto()
+    REACTION_ALREADY_EXISTS = auto()
+    REACTION_DOES_NOT_EXIST = auto()
+    SERVER_NOT_READY = auto()
 
 
 class JsonableError(Exception):
@@ -369,6 +373,7 @@ class UnsupportedWebhookEventTypeError(WebhookError):
     """
 
     code = ErrorCode.UNSUPPORTED_WEBHOOK_EVENT_TYPE
+    http_status_code = 200
     data_fields = ["webhook_name", "event_type"]
 
     def __init__(self, event_type: Optional[str]) -> None:
@@ -377,7 +382,9 @@ class UnsupportedWebhookEventTypeError(WebhookError):
 
     @staticmethod
     def msg_format() -> str:
-        return _("The '{event_type}' event isn't currently supported by the {webhook_name} webhook")
+        return _(
+            "The '{event_type}' event isn't currently supported by the {webhook_name} webhook; ignoring"
+        )
 
 
 class AnomalousWebhookPayloadError(WebhookError):
@@ -474,3 +481,61 @@ class ValidationFailureError(JsonableError):
     def __init__(self, error: ValidationError) -> None:
         super().__init__(error.messages[0])
         self.errors = error.message_dict
+
+
+class MessageMoveError(JsonableError):
+    code = ErrorCode.MOVE_MESSAGES_TIME_LIMIT_EXCEEDED
+    data_fields = [
+        "first_message_id_allowed_to_move",
+        "total_messages_in_topic",
+        "total_messages_allowed_to_move",
+    ]
+
+    def __init__(
+        self,
+        first_message_id_allowed_to_move: int,
+        total_messages_in_topic: int,
+        total_messages_allowed_to_move: int,
+    ) -> None:
+        self.first_message_id_allowed_to_move = first_message_id_allowed_to_move
+        self.total_messages_in_topic = total_messages_in_topic
+        self.total_messages_allowed_to_move = total_messages_allowed_to_move
+
+    @staticmethod
+    def msg_format() -> str:
+        return _(
+            "You only have permission to move the {total_messages_allowed_to_move}/{total_messages_in_topic} most recent messages in this topic."
+        )
+
+
+class ReactionExistsError(JsonableError):
+    code = ErrorCode.REACTION_ALREADY_EXISTS
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Reaction already exists.")
+
+
+class ReactionDoesNotExistError(JsonableError):
+    code = ErrorCode.REACTION_DOES_NOT_EXIST
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Reaction doesn't exist.")
+
+
+class ApiParamValidationError(JsonableError):
+    def __init__(self, msg: str, error_type: str) -> None:
+        super().__init__(msg)
+        self.error_type = error_type
+
+
+class ServerNotReadyError(JsonableError):
+    code = ErrorCode.SERVER_NOT_READY
+    http_status_code = 500

@@ -8,7 +8,7 @@ from zerver.models import Message, SubMessage
 
 def get_widget_data(content: str) -> Tuple[Optional[str], Optional[str]]:
     valid_widget_types = ["poll", "todo"]
-    tokens = content.split(" ")
+    tokens = re.split(r"\s+|\n+", content)
 
     # tokens[0] will always exist
     if tokens[0].startswith("/"):
@@ -33,7 +33,7 @@ def get_extra_data_from_widget_type(content: str, widget_type: Optional[str]) ->
         for line in lines:
             # If someone is using the list syntax, we remove it
             # before adding an option.
-            option = re.sub(r"(\s*[-*]?\s*)", "", line.strip(), 1)
+            option = re.sub(r"(\s*[-*]?\s*)", "", line.strip(), count=1)
             if len(option) > 0:
                 options.append(option)
         extra_data = {

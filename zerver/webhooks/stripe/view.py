@@ -6,17 +6,14 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+<<<<<<< HEAD
 from zerver.lib.request import REQ, has_request_variables
+=======
+>>>>>>> drc_main
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.validator import (
-    WildValue,
-    check_bool,
-    check_int,
-    check_none_or,
-    check_string,
-    to_wild_value,
-)
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_bool, check_int, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -54,12 +51,13 @@ ALL_EVENT_TYPES = [
 
 
 @webhook_view("Stripe", all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint
 def api_stripe_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
-    stream: str = REQ(default="test"),
+    *,
+    payload: WebhookPayload[WildValue],
+    stream: str = "test",
 ) -> HttpResponse:
     try:
         topic, body = topic_and_body(payload)
@@ -98,7 +96,11 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
             blacklist
         )
         if not previous_attributes:  # nocoverage
+<<<<<<< HEAD
             raise SuppressedEventError()
+=======
+            raise SuppressedEventError
+>>>>>>> drc_main
         return "".join(
             "\n* "
             + attribute.replace("_", " ").capitalize()
@@ -119,11 +121,16 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
         if resource == "account":
             if event == "updated":
                 if "previous_attributes" not in payload["data"]:
+<<<<<<< HEAD
                     raise SuppressedEventError()
+=======
+                    raise SuppressedEventError
+>>>>>>> drc_main
                 topic = "account updates"
                 body = update_string()
         else:
             # Part of Stripe Connect
+<<<<<<< HEAD
             raise NotImplementedEventTypeError()
     if category == "application_fee":  # nocoverage
         # Part of Stripe Connect
@@ -131,6 +138,15 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
     if category == "balance":  # nocoverage
         # Not that interesting to most businesses, I think
         raise NotImplementedEventTypeError()
+=======
+            raise NotImplementedEventTypeError
+    if category == "application_fee":  # nocoverage
+        # Part of Stripe Connect
+        raise NotImplementedEventTypeError
+    if category == "balance":  # nocoverage
+        # Not that interesting to most businesses, I think
+        raise NotImplementedEventTypeError
+>>>>>>> drc_main
     if category == "charge":
         if resource == "charge":
             if not topic:  # only in legacy fixtures
@@ -160,10 +176,17 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
             )
     if category == "checkout_beta":  # nocoverage
         # Not sure what this is
+<<<<<<< HEAD
         raise NotImplementedEventTypeError()
     if category == "coupon":  # nocoverage
         # Not something that likely happens programmatically
         raise NotImplementedEventTypeError()
+=======
+        raise NotImplementedEventTypeError
+    if category == "coupon":  # nocoverage
+        # Not something that likely happens programmatically
+        raise NotImplementedEventTypeError
+>>>>>>> drc_main
     if category == "customer":
         if resource == "customer":
             # Running into the 60 character topic limit.
@@ -196,10 +219,16 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
                 )
             if event == "created":
                 if object_["plan"]:
-                    body += "\nPlan: [{plan_nickname}](https://dashboard.stripe.com/plans/{plan_id})".format(
-                        plan_nickname=object_["plan"]["nickname"].tame(check_string),
-                        plan_id=object_["plan"]["id"].tame(check_string),
-                    )
+                    nickname = object_["plan"]["nickname"].tame(check_none_or(check_string))
+                    if nickname is not None:
+                        body += "\nPlan: [{plan_nickname}](https://dashboard.stripe.com/plans/{plan_id})".format(
+                            plan_nickname=object_["plan"]["nickname"].tame(check_string),
+                            plan_id=object_["plan"]["id"].tame(check_string),
+                        )
+                    else:
+                        body += "\nPlan: https://dashboard.stripe.com/plans/{plan_id}".format(
+                            plan_id=object_["plan"]["id"].tame(check_string),
+                        )
                 if object_["quantity"]:
                     body += "\nQuantity: {}".format(object_["quantity"].tame(check_int))
                 if "billing" in object_:  # nocoverage
@@ -260,10 +289,17 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
             )
     if category.startswith("issuing"):  # nocoverage
         # Not implemented
+<<<<<<< HEAD
         raise NotImplementedEventTypeError()
     if category.startswith("order"):  # nocoverage
         # Not implemented
         raise NotImplementedEventTypeError()
+=======
+        raise NotImplementedEventTypeError
+    if category.startswith("order"):  # nocoverage
+        # Not implemented
+        raise NotImplementedEventTypeError
+>>>>>>> drc_main
     if category in [
         "payment_intent",
         "payout",
@@ -282,7 +318,11 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
         # Not implemented. In theory doing something like
         #   body = default_body()
         # may not be hard for some of these
+<<<<<<< HEAD
         raise NotImplementedEventTypeError()
+=======
+        raise NotImplementedEventTypeError
+>>>>>>> drc_main
 
     if body is None:
         raise UnsupportedWebhookEventTypeError(event_type)

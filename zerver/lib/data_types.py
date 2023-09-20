@@ -9,6 +9,7 @@ the level of detail we desire or do comparison with OpenAPI types
 easily with the native Python type system.
 """
 
+from contextlib import suppress
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
@@ -66,7 +67,7 @@ class DictType:
     def schema(self, var_name: str) -> str:
         # Our current schema is lossy, since our OpenAPI configs
         # aren't rigorous about "required" fields yet.
-        keys = sorted(list(self.required_keys) + list(self.optional_keys))
+        keys = sorted([*self.required_keys, *self.optional_keys])
 
         sub_schema = "\n".join(schema(name, data_type) for name, data_type in keys)
         return f"{var_name} (dict):\n{indent(sub_schema)}"
@@ -103,7 +104,7 @@ class Equals:
     def schema(self, var_name: str) -> str:
         # Treat Equals as the degenerate case of EnumType, which
         # matches how we do things with OpenAPI.
-        return f"{var_name} in {repr([self.expected_value])}"
+        return f"{var_name} in {[self.expected_value]!r}"
 
 
 class NumberType:
@@ -206,10 +207,8 @@ class UnionType:
 
     def check_data(self, var_name: str, val: Any) -> None:
         for sub_type in self.sub_types:
-            try:
+            with suppress(AssertionError):
                 check_data(sub_type, var_name, val)
-            except AssertionError:
-                pass
 
             # We matched on one of our sub_types, so return
             return
@@ -261,7 +260,7 @@ def event_dict_type(
     assert "type" in rkeys
     assert "id" not in keys
     return DictType(
-        required_keys=list(required_keys) + [("id", int)],
+        required_keys=[*required_keys, ("id", int)],
         optional_keys=optional_keys,
     )
 

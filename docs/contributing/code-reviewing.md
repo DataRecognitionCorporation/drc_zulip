@@ -1,7 +1,9 @@
 # Reviewing Zulip code
 
-Code review is a key part of how Zulip does development. It's an essential aspect
-of our process to build a high-quality product with a maintainable code base.
+Code review is a key part of how Zulip does development. It's an essential
+aspect of our process to build a high-quality product with a maintainable
+codebase. See the [pull request review process](../contributing/review-process.md)
+guide for a detailed overview of Zulip's PR review process.
 
 ## Principles of code review
 
@@ -150,7 +152,7 @@ The following review steps apply to the majority of PRs.
    about commit structure in Zulip.
 
 2. Does each commit have a **clear commit message**? Check for content, format,
-   spelling and grammar. See the [Zulip version control][commit-messages]
+   spelling and grammar. See the [Zulip commit discipline][commit-messages]
    documentation for details on what we look for.
 
 You should also go through any of the following checks that are applicable:
@@ -264,10 +266,10 @@ Some scenarios to consider:
 
 - Try clicking on any interactive elements, multiple times, in a variety of orders.
 - If the feature affects the **message view**, try it out in different types of
-  narrows: topic, stream, All messages, PMs.
+  narrows: topic, stream, All messages, direct messages.
 - If the feature affects the **compose box** in the web app, try both ways of
   [resizing the compose box](https://zulip.com/help/resize-the-compose-box).
-  Test both stream messages and PMs.
+  Test both stream messages and direct messages.
 - If the feature might require **elevated permissions**, check it out as a user who has
   permissions to use it and one who does not.
 - Think about how the feature might **interact with other features**, and try out
@@ -277,18 +279,21 @@ Some scenarios to consider:
   - If the feature has to do with topic editing, do you need to think
     about what happens when a topic is resolved/unresolved?
   - If it's a message view feature, would anything go wrong if the message was
-    collapsed or muted? If it was colored like an `@`-mention or a PM?
+    collapsed or muted? If it was colored like an `@`-mention or a direct message?
 
 ## Review process and communication
 
 ### Asking for a code review
 
-There are a few good ways to ask for a code review:
+The [pull request review process](../contributing/review-process.md) guide
+provides a detailed overview of Zulip's PR review process. Your reviewers and
+Zulip's maintainers will help shepherd your PR through the process. There are
+also some additional ways to ask for a code review:
 
 - Are there folks who have been working on similar things, or a loosely related
   area? If so, they might be a good person to review your PR. `@`-mention them
   with something like "`@person`, would you be up for reviewing this?" If
-  you're not sure whether they are familiar with the code review process, you
+  you're not sure whether they are familiar with how Zulip code reviews work, you
   can also include a link to this guide.
 
 - If you're not sure who to ask, you can post a message in
@@ -296,19 +301,11 @@ There are a few good ways to ask for a code review:
   development community server](https://zulip.com/development-community/) to reach
   out to a wider group of potential reviewers.
 
-- If you would like feedback on user-facing changes, you can `@`-mention `@alya`
-  on your PR. She can also help find someone to review the code once the PR is
-  ready from a product perspective.
-
-- Finally, if you are not sure who should review the PR, just indicate clearly
-  that it is ready for review, and the project maintainers will take a look and
-  follow up with next steps.
-
-With any of these approaches, please be patient and mindful of the fact that it
-isn't always possible to provide a quick reply. Going though the [review
-process](#how-to-review-code) described above for your own PR will make your
-code easier and faster to review, which makes it much more likely that it will
-be reviewed quickly and require fewer review cycles.
+Please be patient and mindful of the fact that it isn't always possible to
+provide a quick reply. Going though the [review process](#how-to-review-code)
+described above for your own PR will make your code easier and faster to review,
+which makes it much more likely that it will be reviewed quickly and require
+fewer review cycles.
 
 ### Reviewing someone else's code
 
@@ -398,8 +395,8 @@ We also recommend the following resources on code reviews.
 - [Zulip code of conduct](../code-of-conduct.md)
 
 [code-style]: code-style.md
-[commit-discipline]: version-control.md#commit-discipline
-[commit-messages]: version-control.md#commit-messages
+[commit-discipline]: commit-discipline.md
+[commit-messages]: commit-discipline.md#commit-messages
 [test-writing]: ../testing/testing.md
 [backend-testing]: ../testing/testing-with-django.md
 [frontend-testing]: ../testing/testing-with-node.md

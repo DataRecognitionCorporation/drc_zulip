@@ -7,12 +7,13 @@ from django.urls import URLResolver, path
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy
 from django_stubs_ext import StrPromise
+from typing_extensions import TypeAlias
 
 from zerver.lib.storage import static_path
 
 """This module declares all of the (documented) integrations available
 in the Zulip server.  The Integration class is used as part of
-generating the documentation on the /integrations page, while the
+generating the documentation on the /integrations/ page, while the
 WebhookIntegration class is also used to generate the URLs in
 `zproject/urls.py` for webhook integrations.
 
@@ -31,7 +32,7 @@ Over time, we expect this registry to grow additional convenience
 features for writing and configuring integrations efficiently.
 """
 
-OptionValidator = Callable[[str, str], Optional[str]]
+OptionValidator: TypeAlias = Callable[[str, str], Optional[str]]
 
 META_CATEGORY: Dict[str, StrPromise] = {
     "meta-integration": gettext_lazy("Integration frameworks"),
@@ -425,6 +426,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("json", ["misc"], display_name="JSON formatter"),
     WebhookIntegration("librato", ["monitoring"]),
     WebhookIntegration("lidarr", ["entertainment"]),
+    WebhookIntegration("linear", ["project-management"], display_name="Linear"),
     WebhookIntegration("mention", ["marketing"], display_name="Mention"),
     WebhookIntegration("netlify", ["continuous-integration", "deployment"], display_name="Netlify"),
     WebhookIntegration("newrelic", ["monitoring"], display_name="New Relic"),
@@ -445,6 +447,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("raygun", ["monitoring"], display_name="Raygun"),
     WebhookIntegration("reviewboard", ["version-control"], display_name="Review Board"),
     WebhookIntegration("rhodecode", ["version-control"], display_name="RhodeCode"),
+    WebhookIntegration("rundeck", ["deployment"], display_name="Rundeck"),
     WebhookIntegration("semaphore", ["continuous-integration", "deployment"]),
     WebhookIntegration("sentry", ["monitoring"]),
     WebhookIntegration(
@@ -562,6 +565,13 @@ INTEGRATIONS: Dict[str, Integration] = {
         display_name="Jitsi Meet",
         doc="zerver/integrations/jitsi.md",
     ),
+    "mastodon": Integration(
+        "mastodon",
+        "mastodon",
+        ["communication"],
+        display_name="Mastodon",
+        doc="zerver/integrations/mastodon.md",
+    ),
     "matrix": Integration(
         "matrix", "matrix", ["communication"], doc="zerver/integrations/matrix.md"
     ),
@@ -574,6 +584,9 @@ INTEGRATIONS: Dict[str, Integration] = {
         stream_name="commits",
     ),
     "nagios": Integration("nagios", "nagios", ["monitoring"], doc="zerver/integrations/nagios.md"),
+    "notion": Integration(
+        "notion", "notion", ["productivity"], doc="zerver/integrations/notion.md"
+    ),
     "openshift": Integration(
         "openshift",
         "openshift",
@@ -597,17 +610,6 @@ INTEGRATIONS: Dict[str, Integration] = {
     ),
     "svn": Integration("svn", "svn", ["version-control"], doc="zerver/integrations/svn.md"),
     "trac": Integration("trac", "trac", ["project-management"], doc="zerver/integrations/trac.md"),
-    "trello-plugin": Integration(
-        "trello-plugin",
-        "trello-plugin",
-        ["project-management"],
-        logo="images/integrations/logos/trello.svg",
-        secondary_line_text="(legacy)",
-        display_name="Trello",
-        doc="zerver/integrations/trello-plugin.md",
-        stream_name="trello",
-        legacy=True,
-    ),
     "twitter": Integration(
         "twitter",
         "twitter",
@@ -715,10 +717,8 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "buildbot": [ScreenshotConfig("started.json")],
     "canarytoken": [ScreenshotConfig("canarytoken_real.json")],
     "circleci": [
-        ScreenshotConfig(
-            "github_bionic_production_build_success_multiple_parties.json", image_name="001.png"
-        ),
-        ScreenshotConfig("bitbucket_private_repo_pull_request_failure.json", image_name="002.png"),
+        ScreenshotConfig("bitbucket_job_completed.json", image_name="001.png"),
+        ScreenshotConfig("github_job_completed.json", image_name="002.png"),
     ],
     "clubhouse": [ScreenshotConfig("story_create.json")],
     "codeship": [ScreenshotConfig("error_build.json")],
@@ -762,14 +762,15 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "jotform": [ScreenshotConfig("response.json")],
     "json": [ScreenshotConfig("json_github_push__1_commit.json")],
     "librato": [ScreenshotConfig("three_conditions_alert.json", payload_as_query_param=True)],
-    "lidarr": [ScreenshotConfig("lidarr_tracks_grabbed.json")],
+    "lidarr": [ScreenshotConfig("lidarr_album_grabbed.json")],
+    "linear": [ScreenshotConfig("issue_create_complex.json")],
     "mention": [ScreenshotConfig("webfeeds.json")],
     "nagios": [BaseScreenshotConfig("service_notify.json")],
     "netlify": [ScreenshotConfig("deploy_building.json")],
     "newrelic": [
-        ScreenshotConfig("incident_opened.json", "001.png"),
-        ScreenshotConfig("incident_acknowledged.json", "002.png"),
-        ScreenshotConfig("incident_closed.json", "003.png"),
+        ScreenshotConfig("incident_active_new.json", "001.png"),
+        ScreenshotConfig("incident_acknowledged_new.json", "002.png"),
+        ScreenshotConfig("incident_closed_new.json", "003.png"),
     ],
     "opbeat": [ScreenshotConfig("error_reopen.json")],
     "opencollective": [ScreenshotConfig("one_time_donation.json")],
@@ -782,6 +783,7 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "raygun": [ScreenshotConfig("new_error.json")],
     "reviewboard": [ScreenshotConfig("review_request_published.json")],
     "rhodecode": [ScreenshotConfig("push.json")],
+    "rundeck": [ScreenshotConfig("start.json")],
     "semaphore": [ScreenshotConfig("pull_request.json")],
     "sentry": [
         ScreenshotConfig("event_for_exception_python.json"),
@@ -828,3 +830,12 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
         )
     ],
 }
+
+
+def get_all_event_types_for_integration(integration: Integration) -> Optional[List[str]]:
+    integration = INTEGRATIONS[integration.name]
+    if isinstance(integration, WebhookIntegration) and hasattr(
+        integration.function, "_all_event_types"
+    ):
+        return integration.function._all_event_types
+    return None

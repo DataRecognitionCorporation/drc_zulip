@@ -1,13 +1,15 @@
 # Library code for use in management commands
 import logging
-from argparse import ArgumentParser, RawTextHelpFormatter
+from argparse import ArgumentParser, RawTextHelpFormatter, _ActionsContainer
 from dataclasses import dataclass
-from typing import Any, Collection, Dict, Optional
+from functools import reduce
+from typing import Any, Dict, Optional
 
 from django.conf import settings
 from django.core import validators
 from django.core.exceptions import MultipleObjectsReturned, ValidationError
 from django.core.management.base import BaseCommand, CommandError, CommandParser
+from django.db.models import Q, QuerySet
 
 from zerver.lib.initial_password import initial_password
 from zerver.models import Client, Realm, UserProfile, get_client
@@ -84,7 +86,7 @@ server via `ps -ef` or reading bash history. Prefer
 
     def add_user_list_args(
         self,
-        parser: ArgumentParser,
+        parser: _ActionsContainer,
         help: str = "A comma-separated list of email addresses.",
         all_users_help: str = "All users in realm.",
     ) -> None:
@@ -115,7 +117,7 @@ server via `ps -ef` or reading bash history. Prefer
         realm: Optional[Realm],
         is_bot: Optional[bool] = None,
         include_deactivated: bool = False,
-    ) -> Collection[UserProfile]:
+    ) -> QuerySet[UserProfile]:
         if "all_users" in options:
             all_users = options["all_users"]
 
@@ -137,16 +139,32 @@ server via `ps -ef` or reading bash history. Prefer
                 return user_profiles
 
         if options["users"] is None:
-            return []
+            return UserProfile.objects.none()
         emails = {email.strip() for email in options["users"].split(",")}
-        return [self.get_user(email, realm) for email in emails]
+        # This is inefficient, but we fetch (and throw away) the
+        # get_user of each email, so that we verify that the email
+        # address/realm returned only one result; it may return more
+        # if realm is not specified but email address was.
+        for email in emails:
+            self.get_user(email, realm)
+
+        user_profiles = UserProfile.objects.all().select_related("realm")
+        if realm is not None:
+            user_profiles = user_profiles.filter(realm=realm)
+        email_matches = [Q(delivery_email__iexact=e) for e in emails]
+        user_profiles = user_profiles.filter(reduce(lambda a, b: a | b, email_matches)).order_by(
+            "id"
+        )
+
+        # Return the single query, for ease of composing.
+        return user_profiles
 
     def get_user(self, email: str, realm: Optional[Realm]) -> UserProfile:
         # If a realm is specified, try to find the user there, and
         # throw an error if they don't exist.
         if realm is not None:
             try:
-                return UserProfile.objects.select_related().get(
+                return UserProfile.objects.select_related("realm").get(
                     delivery_email__iexact=email.strip(), realm=realm
                 )
             except UserProfile.DoesNotExist:
@@ -158,12 +176,13 @@ server via `ps -ef` or reading bash history. Prefer
         # optimistically try to see if there is exactly one user with
         # that email; if so, we'll return it.
         try:
-            return UserProfile.objects.select_related().get(delivery_email__iexact=email.strip())
+            return UserProfile.objects.select_related("realm").get(
+                delivery_email__iexact=email.strip()
+            )
         except MultipleObjectsReturned:
             raise CommandError(
-                "This Zulip server contains multiple users with that email "
-                + "(in different realms); please pass `--realm` "
-                "to specify which one to modify."
+                "This Zulip server contains multiple users with that email (in different realms);"
+                " please pass `--realm` to specify which one to modify."
             )
         except UserProfile.DoesNotExist:
             raise CommandError(f"This Zulip server does not contain a user with email '{email}'")

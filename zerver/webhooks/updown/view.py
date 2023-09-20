@@ -5,9 +5,13 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+<<<<<<< HEAD
 from zerver.lib.request import REQ, has_request_variables
+=======
+>>>>>>> drc_main
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_int, check_none_or, check_string, to_wild_value
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_int, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -18,9 +22,9 @@ def send_message_for_event(
     request: HttpRequest, user_profile: UserProfile, event: WildValue
 ) -> None:
     event_type = get_event_type(event)
-    subject = TOPIC_TEMPLATE.format(service_url=event["check"]["url"].tame(check_string))
+    topic = TOPIC_TEMPLATE.format(service_url=event["check"]["url"].tame(check_string))
     body = EVENT_TYPE_BODY_MAPPER[event_type](event)
-    check_send_webhook_message(request, user_profile, subject, body, event_type)
+    check_send_webhook_message(request, user_profile, topic, body, event_type)
 
 
 def get_body_for_up_event(event: WildValue) -> str:
@@ -75,11 +79,12 @@ ALL_EVENT_TYPES = list(EVENT_TYPE_BODY_MAPPER.keys())
 
 
 @webhook_view("Updown", all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint
 def api_updown_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
+    *,
+    payload: WebhookPayload[WildValue],
 ) -> HttpResponse:
     for event in payload:
         send_message_for_event(request, user_profile, event)

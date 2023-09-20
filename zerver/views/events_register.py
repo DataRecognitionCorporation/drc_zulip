@@ -4,11 +4,13 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
+from typing_extensions import TypeAlias
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.compatibility import is_pronouns_field_type_supported
 from zerver.lib.events import do_events_register
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
+from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_bool, check_dict, check_int, check_list, check_string
@@ -33,7 +35,7 @@ def _default_narrow(
     return narrow
 
 
-NarrowT = Sequence[Sequence[str]]
+NarrowT: TypeAlias = Sequence[Sequence[str]]
 
 
 @has_request_variables
@@ -61,6 +63,7 @@ def events_register_backend(
                 ("user_avatar_url_field_optional", check_bool),
                 ("stream_typing_notifications", check_bool),
                 ("user_settings_object", check_bool),
+                ("linkifier_url_template", check_bool),
             ],
             value_validator=check_bool,
         ),
@@ -98,16 +101,18 @@ def events_register_backend(
         user_profile = None
         realm = get_valid_realm_from_request(request)
         if not realm.allow_web_public_streams_access():
-            raise MissingAuthenticationError()
+            raise MissingAuthenticationError
 
         # These parameters must be false for anonymous requests.
         if client_gravatar:
             raise JsonableError(
-                _("Invalid '{}' parameter for anonymous request").format("client_gravatar")
+                _("Invalid '{key}' parameter for anonymous request").format(key="client_gravatar")
             )
         if include_subscribers:
             raise JsonableError(
-                _("Invalid '{}' parameter for anonymous request").format("include_subscribers")
+                _("Invalid '{key}' parameter for anonymous request").format(
+                    key="include_subscribers"
+                )
             )
 
         # Language set by spectator to be passed down to clients as user_settings.
@@ -127,6 +132,11 @@ def events_register_backend(
     pronouns_field_type_supported = is_pronouns_field_type_supported(
         request.headers.get("User-Agent")
     )
+
+    # TODO: We eventually want to let callers pass in dictionaries over the wire,
+    #       but we will still need to support tuples for a long time.
+    modern_narrow = narrow_dataclasses_from_tuples(narrow)
+
     ret = do_events_register(
         user_profile,
         realm,
@@ -137,7 +147,7 @@ def events_register_backend(
         event_types,
         queue_lifespan_secs,
         all_public_streams,
-        narrow=narrow,
+        narrow=modern_narrow,
         include_subscribers=include_subscribers,
         include_streams=include_streams,
         client_capabilities=client_capabilities,

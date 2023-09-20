@@ -44,11 +44,11 @@ organization in Zulip). The following files are involved in the process:
 
 **Frontend**
 
-- `static/templates/settings/organization_permissions_admin.hbs`: defines
+- `web/templates/settings/organization_permissions_admin.hbs`: defines
   the structure of the admin permissions page (checkboxes for each organization
   permission setting).
-- `static/js/settings_org.js`: handles organization setting form submission.
-- `static/js/server_events_dispatch.js`: handles events coming from the server
+- `web/src/settings_org.js`: handles organization setting form submission.
+- `web/src/server_events_dispatch.js`: handles events coming from the server
   (ex: pushing an organization change to other open browsers and updating
   the application's state).
 
@@ -60,15 +60,15 @@ organization in Zulip). The following files are involved in the process:
 
 **Frontend testing**
 
-- `frontend_tests/puppeteer_tests/admin.ts`: end-to-end tests for the organization
+- `web/e2e-tests/admin.test.ts`: end-to-end tests for the organization
   admin settings pages.
-- `frontend_tests/node_tests/dispatch.js`
+- `web/tests/dispatch.test.js`
 
 **Documentation**
 
 - `zerver/openapi/zulip.yaml`: OpenAPI definitions for the Zulip REST API.
-- `templates/zerver/api/changelog.md`: documentation listing all changes to the Zulip Server API.
-- `templates/zerver/help/...`: end user facing documentation (Help Center) for the application.
+- `api_docs/changelog.md`: documentation listing all changes to the Zulip Server API.
+- `help/...`: end user facing documentation (Help Center) for the application.
 
 ### Adding a field to the database
 
@@ -124,17 +124,17 @@ Realm setting, in `test_realm.py`).
 ### Frontend changes
 
 **JavaScript/TypeScript:** Zulip's JavaScript and TypeScript sources are
-located in the directory `static/js/`. The exact files you may need to change
+located in the directory `web/src/`. The exact files you may need to change
 depend on your feature. If you've added a new event that is sent to clients,
-be sure to add a handler for it in `static/js/server_events_dispatch.js`.
+be sure to add a handler for it in `web/src/server_events_dispatch.js`.
 
-**CSS:** The primary CSS file is `static/styles/zulip.css`. If your new
+**CSS:** The primary CSS file is `web/styles/zulip.css`. If your new
 feature requires UI changes, you may need to add additional CSS to this
 file.
 
 **Templates:** The initial page structure is rendered via Jinja2
 templates located in `templates/zerver/app`. For JavaScript, Zulip uses
-Handlebars templates located in `static/templates`. Templates are
+Handlebars templates located in `web/templates`. Templates are
 precompiled as part of the build/deploy process.
 
 Zulip is fully internationalized, so when writing both HTML templates
@@ -144,8 +144,8 @@ or JavaScript/TypeScript/Python code that generates user-facing strings, be sure
 **Testing:** There are two types of frontend tests: node-based unit
 tests and blackbox end-to-end tests. The blackbox tests are run in a
 headless Chromium browser using Puppeteer and are located in
-`frontend_tests/puppeteer_tests/`. The unit tests use Node's `assert`
-module are located in `frontend_tests/node_tests/`. For more
+`web/e2e-tests/`. The unit tests use Node's `assert`
+module are located in `web/tests/`. For more
 information on writing and running tests, see the
 [testing documentation](../testing/testing.md).
 
@@ -157,14 +157,14 @@ For detailed information on the kinds of documentation Zulip has, see
 [Documentation](../documentation/overview.md).
 
 **Help center documentation:** You will likely need to at least update,
-extend and link to `/help/` articles that are related to your new
-feature. [Writing help center articles](../documentation/helpcenter.md)
+extend and link to articles in the `help/` directory that are related
+to your new feature. [Writing help center articles](../documentation/helpcenter.md)
 provides more detailed information about writing and editing feature
-`/help/` articles.
+`help/` directory articles.
 
 **API documentation:** A new feature will probably impact the REST API
 documentation as well, which will mean updating `zerver/openapi/zulip.yaml`
-and modifying `templates/zerver/api/changelog.md` for a new feature
+and modifying `api_docs/changelog.md` for a new feature
 level. [Documenting REST API endpoints](../documentation/api.md)
 explains Zulip's API documentation system and provides a step by step
 guide to adding or updating documentation for an API endpoint.
@@ -246,9 +246,7 @@ is helpful.
 
 ### Test your migration changes
 
-Apply the migration using Django's `migrate` command: `./manage.py migrate`.
-
-Output:
+Apply the migration using Django's `migrate` command, `./manage.py migrate`:
 
 ```console
 shell $ ./manage.py migrate
@@ -340,12 +338,12 @@ field), you'll need to create a new function to explicitly update this
 field and send an event. For example:
 
 ```python
-# zerver/actions/realm_settings.p
+# zerver/actions/realm_settings.py
 
 def do_set_realm_authentication_methods(
     realm: Realm, authentication_methods: Dict[str, bool], *, acting_user: Optional[UserProfile]
 ) -> None:
-    for key, value in list(authentication_methods.items()):
+    for key, value in authentication_methods.items():
         index = getattr(realm.authentication_methods, key).number
         realm.authentication_methods.set_bit(index, int(value))
     realm.save(update_fields=['authentication_methods'])
@@ -517,6 +515,12 @@ the setting enabled).
 Visit Zulip's [Django testing](../testing/testing-with-django.md)
 documentation to learn more about the backend testing framework.
 
+Also note that you may already need to update the API documentation for
+your new feature to pass new or existing backend tests at this point.
+The tutorial for [writing REST API endpoints](../documentation/api.md)
+can be a helpful resource, especially the section on [debugging schema
+validation errors](../documentation//api.md#debugging-schema-validation-errors).
+
 ### Update the frontend
 
 After completing the process of adding a new feature on the backend,
@@ -526,7 +530,7 @@ to server when a realm is updated) and the change event needs to be
 handled on the client.
 
 To add the checkbox to the admin page, modify the relevant template in
-`static/templates/settings/`, which can be
+`web/templates/settings/`, which can be
 `organization_permissions_admin.hbs` or `organization_settings_admin.hbs`
 (omitted here since it is relatively straightforward).
 
@@ -534,10 +538,10 @@ If you're adding a non-checkbox field, you'll need to specify the type
 of the field via the `data-setting-widget-type` attribute in the HTML
 template.
 
-Then add the new form control in `static/js/admin.js`.
+Then add the new form control in `web/src/admin.js`.
 
 ```diff
- // static/js/admin.js
+ // web/src/admin.js
 
  export function build_page() {
      const options = {
@@ -550,7 +554,7 @@ Then add the new form control in `static/js/admin.js`.
 ```
 
 The JavaScript code for organization settings and permissions can be found in
-`static/js/settings_org.js`.
+`web/src/settings_org.js`.
 
 In frontend, we have split the `property_types` into three objects:
 
@@ -591,8 +595,8 @@ manually handle such situations in a couple key functions:
 
 - `settings_org.update_dependent_subsettings`: This handles settings
   whose value and state depend on other elements. For example,
-  `realm_waiting_period_threshold` is only shown for with the right
-  state of `realm_waiting_period_setting`.
+  `realm_waiting_period_threshold_custom_input` is only shown for with
+  the right state of `realm_waiting_period_threshold`.
 
 Finally, update `server_events_dispatch.js` to handle related events coming from
 the server. There is an object, `realm_settings`, in the function
@@ -610,7 +614,7 @@ setting has changed, your function should be referenced in the
 `settings_emoji.update_custom_emoji_ui`.
 
 ```diff
- // static/js/server_events_dispatch.js
+ // web/src/server_events_dispatch.js
 
  function dispatch_normal_event(event) {
      switch (event.type) {
@@ -640,9 +644,9 @@ Here are few important cases you should consider when testing your changes:
 
 - If your setting is dependent on another setting, carefully check
   that both are properly synchronized. For example, the input element
-  for `realm_waiting_period_threshold` is shown only when we have
-  selected the custom time limit option in the
-  `realm_waiting_period_setting` dropdown.
+  for `realm_waiting_period_threshold_custom_input` is shown only when
+  we have selected the custom time limit option in the
+  `realm_waiting_period_threshold` dropdown.
 
 - Do some manual testing for the real-time synchronization of input
   elements across the browsers and just like "Discard changes" button,
@@ -662,11 +666,11 @@ frontend tests: [node-based unit tests](../testing/testing-with-node.md) and
 
 At the minimum, if you created a new function to update UI in
 `settings_org.js`, you will need to mock that function in
-`frontend_tests/node_tests/dispatch.js`. Add the name of the UI
+`web/tests/dispatch.test.js`. Add the name of the UI
 function you created to the following object with `noop` as the value:
 
 ```js
-// frontend_tests/node_tests/dispatch.js
+// web/tests/dispatch.test.js
 
 set_global('settings_org', {
     update_email_change_display: noop,
@@ -690,10 +694,10 @@ this feature would be to update and/or augment Zulip's existing
 changes and additions.
 
 At the very least, this will involve modifying (or adding) a Markdown
-file documenting the feature to `templates/zerver/help/` in the main
-Zulip server repository, where the source for Zulip's end user
-documentation is stored. Details about writing, editing and testing
-these Markdown files can be found in:
+file documenting the feature in the `help/` directory of the main Zulip
+server repository, where the source for Zulip's end user documentation
+is stored. Details about writing, editing and testing these Markdown
+files can be found in:
 [Writing help center articles](../documentation/helpcenter.md).
 
 Also, new features will often impact Zulip's REST API documentation,
@@ -708,7 +712,7 @@ documentation is to read more about Zulip's
 and [OpenAPI configuration](../documentation/openapi.md).
 
 In particular, if there is an API change, **make sure** you document
-your new feature in `templates/zerver/api/changelog.md` and bump the
+your new feature in `api_docs/changelog.md` and bump the
 `API_FEATURE_LEVEL` in `version.py`. The API feature level allows the
 developers of mobile clients and other tools using the Zulip API to
 programmatically determine whether the Zulip server they are

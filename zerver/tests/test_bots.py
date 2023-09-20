@@ -1,6 +1,6 @@
 import filecmp
 import os
-from typing import Any, Dict, List, Mapping, Optional
+from typing import Any, Dict, Optional
 from unittest.mock import MagicMock, patch
 
 import orjson
@@ -9,7 +9,7 @@ from django.test import override_settings
 from zulip_bots.custom_exceptions import ConfigValidationError
 
 from zerver.actions.bots import do_change_bot_owner
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.realm_settings import do_set_realm_user_default_setting
 from zerver.actions.streams import do_change_stream_permission
 from zerver.actions.users import do_change_can_create_users, do_change_user_role, do_deactivate_user
 from zerver.lib.bot_config import ConfigError, get_bot_config
@@ -19,7 +19,9 @@ from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
 from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
 from zerver.models import (
     Realm,
+    RealmUserDefault,
     Service,
+    Subscription,
     UserProfile,
     get_bot_services,
     get_realm,
@@ -118,7 +120,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         error_message = (
             "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
-            + "Please contact your server administrator."
+            "Please contact your server administrator."
         )
         self.assert_json_error(result, error_message)
         self.assert_num_bots_equal(0)
@@ -162,8 +164,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         hamlet = self.example_user("hamlet")
         self.login("hamlet")
         self.assert_num_bots_equal(0)
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=5):
+        with self.capture_send_event_calls(expected_num_events=4) as events:
             result = self.create_bot()
         self.assert_num_bots_equal(1)
 
@@ -318,18 +319,18 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         # Test that we don't mangle the email field with
         # email_address_visibility limited to admins
         user = self.example_user("hamlet")
-        do_set_realm_property(
-            user.realm,
+        realm_user_default = RealmUserDefault.objects.get(realm=user.realm)
+        do_set_realm_user_default_setting(
+            realm_user_default,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
         user.refresh_from_db()
 
         self.login_user(user)
         self.assert_num_bots_equal(0)
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=5):
+        with self.capture_send_event_calls(expected_num_events=4) as events:
             result = self.create_bot()
         self.assert_num_bots_equal(1)
 
@@ -382,8 +383,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         request_data = {
             "principals": '["' + iago.email + '"]',
         }
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=3):
+        with self.capture_send_event_calls(expected_num_events=3) as events:
             result = self.common_subscribe_to_streams(hamlet, ["Rome"], request_data)
             self.assert_json_success(result)
 
@@ -399,8 +399,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot_request_data = {
             "principals": '["hambot-bot@zulip.testserver"]',
         }
-        events_bot: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events_bot, expected_num_events=2):
+        with self.capture_send_event_calls(expected_num_events=2) as events_bot:
             result = self.common_subscribe_to_streams(hamlet, ["Rome"], bot_request_data)
             self.assert_json_success(result)
 
@@ -426,8 +425,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         )
 
         self.assert_num_bots_equal(0)
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=5):
+        with self.capture_send_event_calls(expected_num_events=4) as events:
             result = self.create_bot(default_sending_stream="Denmark")
         self.assert_num_bots_equal(1)
         self.assertEqual(result["default_sending_stream"], "Denmark")
@@ -510,8 +508,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         )
 
         self.assert_num_bots_equal(0)
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=5):
+        with self.capture_send_event_calls(expected_num_events=4) as events:
             result = self.create_bot(default_events_register_stream="Denmark")
         self.assert_num_bots_equal(1)
         self.assertEqual(result["default_events_register_stream"], "Denmark")
@@ -853,6 +850,56 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         profile = get_user(bot_email, bot_realm)
         self.assertEqual(profile.bot_type, UserProfile.DEFAULT_BOT)
 
+    def test_reactivating_bot_with_deactivated_owner(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "Test bot",
+            "short_name": "testbot",
+            "bot_type": "1",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        bot_id = result.json()["user_id"]
+
+        test_bot = UserProfile.objects.get(id=bot_id, is_bot=True)
+        private_stream = self.make_stream("private_stream", invite_only=True)
+        public_stream = self.make_stream("public_stream")
+        self.subscribe(test_bot, "private_stream")
+        self.subscribe(self.example_user("hamlet"), "private_stream")
+        self.subscribe(test_bot, "public_stream")
+        self.subscribe(self.example_user("hamlet"), "public_stream")
+
+        private_stream_test = self.make_stream("private_stream_test", invite_only=True)
+        self.subscribe(self.example_user("iago"), "private_stream_test")
+        self.subscribe(test_bot, "private_stream_test")
+
+        do_deactivate_user(test_bot, acting_user=None)
+
+        # Deactivate the bot owner
+        do_deactivate_user(self.example_user("hamlet"), acting_user=None)
+
+        self.login("iago")
+        result = self.client_post(f"/json/users/{bot_id}/reactivate")
+        self.assert_json_success(result)
+        test_bot = UserProfile.objects.get(id=bot_id, is_bot=True)
+        assert test_bot.bot_owner is not None
+        self.assertEqual(test_bot.bot_owner.id, self.example_user("iago").id)
+
+        self.assertFalse(
+            Subscription.objects.filter(
+                user_profile=test_bot, recipient__type_id=private_stream.id, active=True
+            ).exists()
+        )
+        self.assertTrue(
+            Subscription.objects.filter(
+                user_profile=test_bot, recipient__type_id=private_stream_test.id, active=True
+            ).exists()
+        )
+        self.assertTrue(
+            Subscription.objects.filter(
+                user_profile=test_bot, recipient__type_id=public_stream.id, active=True
+            ).exists()
+        )
+
     def test_patch_bot_full_name(self) -> None:
         self.login("hamlet")
         bot_info = {
@@ -1082,6 +1129,54 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         bot_user.refresh_from_db()
         self.assertEqual(bot_user.bot_owner, cordelia)
+
+    def test_patch_bot_owner_with_private_streams(self) -> None:
+        self.login("iago")
+        hamlet = self.example_user("hamlet")
+        self.create_bot()
+
+        bot_realm = get_realm("zulip")
+        bot_email = "hambot-bot@zulip.testserver"
+        bot_user = get_user(bot_email, bot_realm)
+
+        private_stream = self.make_stream("private_stream", invite_only=True)
+        public_stream = self.make_stream("public_stream")
+        self.subscribe(bot_user, "private_stream")
+        self.subscribe(self.example_user("iago"), "private_stream")
+        self.subscribe(bot_user, "public_stream")
+        self.subscribe(self.example_user("iago"), "public_stream")
+
+        private_stream_test = self.make_stream("private_stream_test", invite_only=True)
+        self.subscribe(self.example_user("hamlet"), "private_stream_test")
+        self.subscribe(bot_user, "private_stream_test")
+
+        bot_info = {
+            "bot_owner_id": hamlet.id,
+        }
+        result = self.client_patch(f"/json/bots/{bot_user.id}", bot_info)
+        self.assert_json_success(result)
+        bot_user = get_user(bot_email, bot_realm)
+        assert bot_user.bot_owner is not None
+        self.assertEqual(bot_user.bot_owner.id, hamlet.id)
+
+        assert private_stream.recipient_id is not None
+        self.assertFalse(
+            Subscription.objects.filter(
+                user_profile=bot_user, recipient_id=private_stream.recipient_id, active=True
+            ).exists()
+        )
+        assert private_stream_test.recipient_id is not None
+        self.assertTrue(
+            Subscription.objects.filter(
+                user_profile=bot_user, recipient_id=private_stream_test.recipient_id, active=True
+            ).exists()
+        )
+        assert public_stream.recipient_id is not None
+        self.assertTrue(
+            Subscription.objects.filter(
+                user_profile=bot_user, recipient_id=public_stream.recipient_id, active=True
+            ).exists()
+        )
 
     def test_patch_bot_avatar(self) -> None:
         self.login("hamlet")
@@ -1499,7 +1594,10 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         email = "hambot-bot@zulip.testserver"
         # Important: We intentionally use the wrong method, post, here.
         result = self.client_post(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
-        response_dict = self.assert_json_success(result)
+
+        # TODO: The "method" parameter is not currently tracked as a processed parameter
+        # by has_request_variables. Assert it is returned as an ignored parameter.
+        response_dict = self.assert_json_success(result, ignored_parameters=["method"])
 
         self.assertEqual("Fred", response_dict["full_name"])
 

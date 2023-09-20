@@ -14,9 +14,9 @@ since 2013.
 
 ## Keeping Zulip 100% open source
 
-Many modern “open-source” companies use an intentionally crippled “open-source”
-version as a demo for their non-open-source paid product. In contrast, we are
-committed to keeping Zulip [100% open
+Many modern “open-source” companies use a version of their product with some
+basic functionality intentionally removed as a demo for their non-open-source
+paid product. In contrast, we are committed to keeping Zulip [100% open
 source](https://github.com/zulip/zulip#readme).
 
 When you [self-host Zulip](/self-hosting/), you get all the
@@ -82,7 +82,7 @@ An important part of Zulip’s mission is ensuring that worthy organizations, fr
 communities](/case-studies/lean/), are able to use Zulip whether or not they
 have funding.
 
-We sponsor [Zulip Cloud Standard](/plans) hosting for [open-source
+We sponsor [Zulip Cloud Standard](/plans/) hosting for [open-source
 projects](/for/open-source/), [research groups](/for/research/),
 [education](/for/education/), [non-profits](/for/communities/) and other
 [communities](/for/communities/). This program has grown exponentially since its

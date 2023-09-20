@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List
 from unittest import mock
 
 from django.utils.timezone import now as timezone_now
@@ -6,6 +6,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.cache import cache_delete, to_dict_cache_key_id
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import MessageDict, messages_for_ids, sew_messages_and_reactions
+from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import make_client
 from zerver.lib.topic import TOPIC_LINKS
@@ -18,7 +19,6 @@ from zerver.models import (
     Recipient,
     Stream,
     UserProfile,
-    flush_per_request_caches,
     get_display_recipient,
     get_realm,
     get_stream,
@@ -176,7 +176,6 @@ class MessageDictTest(ZulipTestCase):
         num_ids = len(ids)
         self.assertTrue(num_ids >= 600)
 
-        flush_per_request_caches()
         with self.assert_database_query_count(7):
             rows = list(MessageDict.get_raw_db_rows(ids))
 
@@ -249,16 +248,16 @@ class MessageDictTest(ZulipTestCase):
         # and not linkified when sent to a stream in 'lear'.
         zulip_realm = get_realm("zulip")
         lear_realm = get_realm("lear")
-        url_format_string = r"https://trac.example.com/ticket/%(id)s"
+        url_template = r"https://trac.example.com/ticket/{id}"
         links = {"url": "https://trac.example.com/ticket/123", "text": "#123"}
         topic_name = "test #123"
 
         linkifier = RealmFilter(
-            realm=zulip_realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
+            realm=zulip_realm, pattern=r"#(?P<id>[0-9]{2,8})", url_template=url_template
         )
         self.assertEqual(
-            str(linkifier),
-            "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
+            repr(linkifier),
+            "<RealmFilter: zulip: #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/{id}>",
         )
 
         def get_message(sender: UserProfile, realm: Realm) -> Message:
@@ -490,20 +489,16 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
     def _verify_display_recipient(
         self,
         display_recipient: DisplayRecipientT,
-        expected_recipient_objects: Union[Stream, List[UserProfile]],
+        expected_recipient_objects: List[UserProfile],
     ) -> None:
-        if isinstance(expected_recipient_objects, Stream):
-            self.assertEqual(display_recipient, expected_recipient_objects.name)
-
-        else:
-            for user_profile in expected_recipient_objects:
-                recipient_dict: UserDisplayRecipient = {
-                    "email": user_profile.email,
-                    "full_name": user_profile.full_name,
-                    "id": user_profile.id,
-                    "is_mirror_dummy": user_profile.is_mirror_dummy,
-                }
-                self.assertTrue(recipient_dict in display_recipient)
+        for user_profile in expected_recipient_objects:
+            recipient_dict: UserDisplayRecipient = {
+                "email": user_profile.email,
+                "full_name": user_profile.full_name,
+                "id": user_profile.id,
+                "is_mirror_dummy": user_profile.is_mirror_dummy,
+            }
+            self.assertTrue(recipient_dict in display_recipient)
 
     def test_display_recipient_personal(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -544,12 +539,8 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
             allow_edit_history=False,
         )
 
-        self._verify_display_recipient(
-            messages[0]["display_recipient"], get_stream("Verona", cordelia.realm)
-        )
-        self._verify_display_recipient(
-            messages[1]["display_recipient"], get_stream("Denmark", cordelia.realm)
-        )
+        self.assertEqual(messages[0]["display_recipient"], "Verona")
+        self.assertEqual(messages[1]["display_recipient"], "Denmark")
 
     def test_display_recipient_huddle(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -607,13 +598,9 @@ class TestMessageForIdsDisplayRecipientFetching(ZulipTestCase):
         self._verify_display_recipient(
             messages[0]["display_recipient"], [hamlet, cordelia, othello]
         )
-        self._verify_display_recipient(
-            messages[1]["display_recipient"], get_stream("Verona", hamlet.realm)
-        )
+        self.assertEqual(messages[1]["display_recipient"], "Verona")
         self._verify_display_recipient(messages[2]["display_recipient"], [hamlet, cordelia])
-        self._verify_display_recipient(
-            messages[3]["display_recipient"], get_stream("Denmark", hamlet.realm)
-        )
+        self.assertEqual(messages[3]["display_recipient"], "Denmark")
         self._verify_display_recipient(
             messages[4]["display_recipient"], [hamlet, cordelia, othello, iago]
         )

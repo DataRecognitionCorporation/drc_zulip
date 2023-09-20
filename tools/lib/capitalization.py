@@ -15,6 +15,7 @@ IGNORED_PHRASES = [
     r"Botserver",
     r"Cookie Bot",
     r"DevAuthBackend",
+    r"DSN",
     r"GCM",
     r"GitHub",
     r"Gravatar",
@@ -29,8 +30,8 @@ IGNORED_PHRASES = [
     r"Markdown",
     r"OTP",
     r"Pivotal",
-    r"PM",
-    r"PMs",
+    r"DM",
+    r"DMs",
     r"Slack",
     r"Google",
     r"Terms of Service",
@@ -69,7 +70,7 @@ IGNORED_PHRASES = [
     r"streamname",
     r"user@example\.com",
     # Fragments of larger strings
-    (r"your subscriptions on your Streams page"),
+    r"your subscriptions on your Streams page",
     r"Add global time<br />Everyone sees global times in their own time zone\.",
     r"user",
     r"an unknown operating system",
@@ -96,9 +97,9 @@ IGNORED_PHRASES = [
     r"\bN\b",
     # Capital c feels obtrusive in clear status option
     r"clear",
-    r"group private messages with \{recipient\}",
-    r"private messages with \{recipient\}",
-    r"private messages with yourself",
+    r"group direct messages with \{recipient\}",
+    r"direct messages with \{recipient\}",
+    r"direct messages with yourself",
     r"GIF",
     # Emoji name placeholder
     r"leafy green vegetable",
@@ -106,6 +107,12 @@ IGNORED_PHRASES = [
     r"your-organization-url",
     # Used in invite modal
     r"or",
+    # Used in GIPHY integration setting. GIFs Rating.
+    r"rated Y",
+    r"rated G",
+    r"rated PG",
+    r"rated PG13",
+    r"rated R",
     # Used in GIPHY popover.
     r"GIFs",
     r"GIPHY",
@@ -125,6 +132,10 @@ IGNORED_PHRASES = [
     r"he/him",
     r"she/her",
     r"they/them",
+    # Used in message-move-time-limit setting label
+    r"does not apply to moderators and administrators",
+    # Used in message-delete-time-limit setting label
+    r"does not apply to administrators",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

@@ -25,7 +25,7 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("ping", TOPIC_REPO, expected_message)
 
     def test_star_event(self) -> None:
-        expected_message = "Codertocat starred the repository [Codertocat/Hello-World](https://github.com/Codertocat/Hello-World)."
+        expected_message = "[Codertocat](https://github.com/Codertocat) starred the repository [Codertocat/Hello-World](https://github.com/Codertocat/Hello-World)."
         expected_topic = "Hello-World"
         self.check_webhook("star", expected_topic, expected_message)
 
@@ -37,11 +37,24 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "eeshangarg [deleted](https://github.com/eeshangarg/public-repo/compare/2e8cf535fb38...000000000000) the branch feature."
         self.check_webhook("push__delete_branch", "public-repo / feature", expected_message)
 
+    def test_push_force_1_commit(self) -> None:
+        expected_message = "sbansal1999 [force pushed](https://github.com/sbansal1999/zulip/compare/b6de8891fc10...971d76ca3094) 1 commit to branch temp.\n\n* log: Add important.txt which is useful for logging errors. ([971d76ca309](https://github.com/sbansal1999/zulip/commit/971d76ca309446a9c20381f6271cea8a59b4e40a))"
+        self.check_webhook("push__force_1_commit", "zulip / temp", expected_message)
+
+    def test_push__force_remove_commits(self) -> None:
+        expected_message = "sbansal1999 [force pushed](https://github.com/sbansal1999/zulip/compare/2084a91af9ca...9a8749ea8fe7) the branch temp."
+        self.check_webhook("push__force_remove_commits", "zulip / temp", expected_message)
+
     def test_push_local_branch_without_commits(self) -> None:
         expected_message = "eeshangarg [pushed](https://github.com/eeshangarg/public-repo/compare/feature) the branch feature."
         self.check_webhook(
             "push__local_branch_without_commits", "public-repo / feature", expected_message
         )
+
+    def test_push_merege_queue_ignore(self) -> None:
+        self.url = self.build_webhook_url()
+        payload = self.get_body("push__merge_queue")
+        self.verify_post_is_ignored(payload, "push")
 
     def test_push_1_commit(self) -> None:
         expected_message = "baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 1 commit to branch changes.\n\n* Update README.md ([0d1a26e67d8](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"
@@ -142,6 +155,63 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "baxterthehacker opened [issue #2 Spelling error in the README file](https://github.com/baxterthehacker/public-repo/issues/2):\n\n~~~ quote\nIt looks like you accidentally spelled 'commit' with two 't's.\n~~~"
         self.check_webhook("issues", expected_topic, expected_message)
 
+    def test_issue_assigned(self) -> None:
+        expected_message = "sbansal1999 assigned [issue #7](https://github.com/sbansal1999/testing-gh/issues/7) to sbansal1999."
+        expected_topic = "testing-gh / issue #7 Sample Issue testing something"
+        self.check_webhook("issues__assigned", expected_topic, expected_message)
+
+    def test_issue_assigned_with_custom_topic_in_url(self) -> None:
+        self.url = self.build_webhook_url(topic="notifications")
+        expected_topic = "notifications"
+        expected_message = "sbansal1999 assigned [issue #7 Sample Issue testing something](https://github.com/sbansal1999/testing-gh/issues/7) to sbansal1999."
+        self.check_webhook("issues__assigned", expected_topic, expected_message)
+
+    def test_issue_unassigned(self) -> None:
+        expected_message = "sbansal1999 unassigned sbansal1999 from [issue #9](https://github.com/sbansal1999/testing-gh/issues/9)."
+        expected_topic = "testing-gh / issue #9 idk man"
+        self.check_webhook("issues__unassigned", expected_topic, expected_message)
+
+    def test_issue_unassigned_with_custom_topic_in_url(self) -> None:
+        self.url = self.build_webhook_url(topic="notifications")
+        expected_topic = "notifications"
+        expected_message = "sbansal1999 unassigned sbansal1999 from [issue #9 idk man](https://github.com/sbansal1999/testing-gh/issues/9)."
+        self.check_webhook("issues__unassigned", expected_topic, expected_message)
+
+    def test_issue_labeled(self) -> None:
+        expected_topic = "testing-gh / issue #9 idk man"
+        expected_message = "[sbansal1999](https://github.com/sbansal1999) added the bug label to [Issue #9](https://github.com/sbansal1999/testing-gh/issues/9)."
+        self.check_webhook("issues__labeled", expected_topic, expected_message)
+
+    def test_issue_labeled_with_custom_topic_in_url(self) -> None:
+        self.url = self.build_webhook_url(topic="notifications")
+        expected_topic = "notifications"
+        expected_message = "[sbansal1999](https://github.com/sbansal1999) added the bug label to [Issue #9 idk man](https://github.com/sbansal1999/testing-gh/issues/9)."
+        self.check_webhook("issues__labeled", expected_topic, expected_message)
+
+    def test_issue_unlabeled(self) -> None:
+        expected_topic = "testing-gh / issue #9 idk man"
+        expected_message = "[sbansal1999](https://github.com/sbansal1999) removed the bug label from [Issue #9](https://github.com/sbansal1999/testing-gh/issues/9)."
+        self.check_webhook("issues__unlabeled", expected_topic, expected_message)
+
+    def test_issue_milestoned(self) -> None:
+        expected_topic = "testing-gh / issue #6 This is a sample issue to test GH I..."
+        expected_message = "[sbansal1999](https://github.com/sbansal1999) added milestone [some_random_milestone](https://github.com/sbansal1999/testing-gh/milestone/1) to [issue #6](https://github.com/sbansal1999/testing-gh/issues/6)."
+
+        self.check_webhook("issues__milestoned", expected_topic, expected_message)
+
+    def test_issue_milestoned_with_custom_topic_in_url(self) -> None:
+        self.url = self.build_webhook_url(topic="notifications")
+        expected_topic = "notifications"
+        expected_message = "[sbansal1999](https://github.com/sbansal1999) added milestone [some_random_milestone](https://github.com/sbansal1999/testing-gh/milestone/1) to [issue #6 This is a sample issue to test GH Integration Func](https://github.com/sbansal1999/testing-gh/issues/6)."
+
+        self.check_webhook("issues__milestoned", expected_topic, expected_message)
+
+    def test_issue_demilestoned(self) -> None:
+        expected_topic = "testing-gh / issue #6 This is a sample issue to test GH I..."
+        expected_message = "[sbansal1999](https://github.com/sbansal1999) removed milestone [some_random_milestone](https://github.com/sbansal1999/testing-gh/milestone/1) from [issue #6](https://github.com/sbansal1999/testing-gh/issues/6)."
+
+        self.check_webhook("issues__demilestoned", expected_topic, expected_message)
+
     def test_membership_msg(self) -> None:
         expected_message = (
             "baxterthehacker added [kdaigle](https://github.com/kdaigle) to the Contractors team."
@@ -157,12 +227,12 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("member", TOPIC_REPO, expected_message)
 
     def test_pull_request_opened_msg(self) -> None:
-        expected_message = "baxterthehacker opened [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `changes` to `master`:\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
+        expected_message = "baxterthehacker opened [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `baxterthehacker:changes` to `baxterthehacker:master`:\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
         self.check_webhook("pull_request__opened", TOPIC_PR, expected_message)
 
     def test_pull_request_opened_with_preassigned_assignee_msg(self) -> None:
         expected_topic = "Scheduler / PR #4 Improve README"
-        expected_message = "eeshangarg opened [PR #4](https://github.com/eeshangarg/Scheduler/pull/4) (assigned to eeshangarg) from `improve-readme-2` to `master`."
+        expected_message = "eeshangarg opened [PR #4](https://github.com/eeshangarg/Scheduler/pull/4) from `eeshangarg:improve-readme-2` to `eeshangarg:master` (assigned to eeshangarg)."
         self.check_webhook(
             "pull_request__opened_with_preassigned_assignee", expected_topic, expected_message
         )
@@ -170,11 +240,11 @@ class GitHubWebhookTest(WebhookTestCase):
     def test_pull_request_opened_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
-        expected_message = "baxterthehacker opened [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1) from `changes` to `master`:\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
+        expected_message = "baxterthehacker opened [PR #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1) from `baxterthehacker:changes` to `baxterthehacker:master`:\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
         self.check_webhook("pull_request__opened", expected_topic, expected_message)
 
     def test_pull_request_synchronized_msg(self) -> None:
-        expected_message = "baxterthehacker updated [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `changes` to `master`."
+        expected_message = "baxterthehacker updated [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.check_webhook("pull_request__synchronized", TOPIC_PR, expected_message)
 
     def test_pull_request_closed_msg(self) -> None:
@@ -240,14 +310,19 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("status__with_target_url", TOPIC_REPO, expected_message)
 
     def test_pull_request_review_msg(self) -> None:
-        expected_message = "baxterthehacker submitted [PR review](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884)."
+        expected_message = "baxterthehacker submitted [PR review](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884):\n\n~~~ quote\nLooks great!\n~~~"
         self.check_webhook("pull_request_review", TOPIC_PR, expected_message)
 
     def test_pull_request_review_msg_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
-        expected_message = "baxterthehacker submitted [PR review for #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884)."
+        expected_message = "baxterthehacker submitted [PR review for #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#pullrequestreview-2626884):\n\n~~~ quote\nLooks great!\n~~~"
         self.check_webhook("pull_request_review", expected_topic, expected_message)
+
+    def test_pull_request_review_msg_with_empty_body(self) -> None:
+        expected_topic = "groonga / PR #1581 grn_db_value_lock: unlock GRN_TYPE obj..."
+        expected_message = "kou submitted [PR review](https://github.com/groonga/groonga/pull/1581#pullrequestreview-1483047907)."
+        self.check_webhook("pull_request_review__empty_body", expected_topic, expected_message)
 
     def test_pull_request_review_comment_msg(self) -> None:
         expected_message = "baxterthehacker created [PR review comment](https://github.com/baxterthehacker/public-repo/pull/1#discussion_r29724692):\n\n~~~ quote\nMaybe you should use more emojji on this line.\n~~~"
@@ -282,15 +357,17 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("push__tag", TOPIC_REPO, expected_message)
 
     def test_pull_request_edited_msg(self) -> None:
-        expected_message = "baxterthehacker edited [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `changes` to `master`."
+        expected_message = (
+            "baxterthehacker edited [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
+        )
         self.check_webhook("pull_request__edited", TOPIC_PR, expected_message)
 
     def test_pull_request_edited_with_body_change(self) -> None:
-        expected_message = "cozyrohan edited [PR #1](https://github.com/cozyrohan/public-repo/pull/1) from `issue-#1` to `main`:\n\n~~~ quote\nPR EDITED\n~~~"
+        expected_message = "cozyrohan edited [PR #1](https://github.com/cozyrohan/public-repo/pull/1):\n\n~~~ quote\nPR EDITED\n~~~"
         self.check_webhook("pull_request__edited_with_body_change", TOPIC_PR, expected_message)
 
     def test_pull_request_synchronized_with_body(self) -> None:
-        expected_message = "baxterthehacker updated [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from `changes` to `master`."
+        expected_message = "baxterthehacker updated [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
         self.check_webhook("pull_request__synchronized_with_body", TOPIC_PR, expected_message)
 
     def test_pull_request_assigned_msg(self) -> None:
@@ -488,7 +565,7 @@ A temporary team so that I can get some webhook fixtures!
         stack_info = m.call_args[1]["stack_info"]
 
         self.assertIn(
-            "The 'team/edited (changes: bogus_key1/bogus_key2)' event isn't currently supported by the GitHub webhook",
+            "The 'team/edited (changes: bogus_key1/bogus_key2)' event isn't currently supported by the GitHub webhook; ignoring",
             msg,
         )
         self.assertTrue(stack_info)

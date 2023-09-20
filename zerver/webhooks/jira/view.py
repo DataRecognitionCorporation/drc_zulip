@@ -9,9 +9,13 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import AnomalousWebhookPayloadError, UnsupportedWebhookEventTypeError
+<<<<<<< HEAD
 from zerver.lib.request import REQ, has_request_variables
+=======
+>>>>>>> drc_main
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_none_or, check_string, to_wild_value
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import Realm, UserProfile, get_user_by_delivery_email
 
@@ -166,7 +170,7 @@ def get_issue_title(payload: WildValue) -> str:
     return get_in(payload, ["issue", "fields", "summary"]).tame(check_string)
 
 
-def get_issue_subject(payload: WildValue) -> str:
+def get_issue_topic(payload: WildValue) -> str:
     return f"{get_issue_id(payload)}: {get_issue_title(payload)}"
 
 
@@ -351,18 +355,23 @@ ALL_EVENT_TYPES = list(JIRA_CONTENT_FUNCTION_MAPPER.keys())
 
 
 @webhook_view("Jira", all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint
 def api_jira_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
+    *,
+    payload: WebhookPayload[WildValue],
 ) -> HttpResponse:
     event = get_event_type(payload)
     if event in IGNORED_EVENTS:
         return json_success(request)
 
     if event is None:
+<<<<<<< HEAD
         raise AnomalousWebhookPayloadError()
+=======
+        raise AnomalousWebhookPayloadError
+>>>>>>> drc_main
 
     if event is not None:
         content_func = JIRA_CONTENT_FUNCTION_MAPPER.get(event)
@@ -370,10 +379,10 @@ def api_jira_webhook(
     if content_func is None:
         raise UnsupportedWebhookEventTypeError(event)
 
-    subject = get_issue_subject(payload)
+    topic = get_issue_topic(payload)
     content: str = content_func(payload, user_profile)
 
     check_send_webhook_message(
-        request, user_profile, subject, content, event, unquote_url_parameters=True
+        request, user_profile, topic, content, event, unquote_url_parameters=True
     )
     return json_success(request)

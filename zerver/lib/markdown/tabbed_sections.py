@@ -9,10 +9,10 @@ from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 
 START_TABBED_SECTION_REGEX = re.compile(r"^\{start_tabs\}$")
 END_TABBED_SECTION_REGEX = re.compile(r"^\{end_tabs\}$")
-TAB_CONTENT_REGEX = re.compile(r"^\{tab\|\s*(.+?)\s*\}$")
+TAB_CONTENT_REGEX = re.compile(r"^\{tab\|([^}]+)\}$")
 
-CODE_SECTION_TEMPLATE = """
-<div class="code-section {tab_class}" markdown="1">
+TABBED_SECTION_TEMPLATE = """
+<div class="tabbed-section {tab_class}" markdown="1">
 {nav_bar}
 <div class="blocks">
 {blocks}
@@ -27,11 +27,11 @@ NAV_BAR_TEMPLATE = """
 """.strip()
 
 NAV_LIST_ITEM_TEMPLATE = """
-<li data-language="{data_language}" tabindex="0">{label}</li>
+<li data-tab-key="{data_tab_key}" tabindex="0">{label}</li>
 """.strip()
 
 DIV_TAB_CONTENT_TEMPLATE = """
-<div data-language="{data_language}" markdown="1">
+<div data-tab-key="{data_tab_key}" markdown="1">
 {content}
 </div>
 """.strip()
@@ -53,8 +53,10 @@ TAB_SECTION_LABELS = {
     "desktop": "Desktop",
     "mobile": "Mobile",
     "mm-default": "Default installation",
+    "mm-cloud": "Cloud instance",
     "mm-docker": "Docker",
     "mm-gitlab-omnibus": "GitLab Omnibus",
+    "mm-self-hosting-cloud-export": "Self hosting (cloud export)",
     "require-invitations": "Require invitations",
     "allow-anyone-to-join": "Allow anyone to join",
     "restrict-by-email-domain": "Restrict by email domain",
@@ -76,6 +78,7 @@ TAB_SECTION_LABELS = {
     "private-streams": "Private streams",
     "web-public-streams": "Web-public streams",
     "via-user-card": "Via user card",
+    "via-user-profile": "Via user profile",
     "via-organization-settings": "Via organization settings",
     "via-personal-settings": "Via personal settings",
     "default-subdomain": "Default subdomain",
@@ -86,8 +89,18 @@ TAB_SECTION_LABELS = {
     "onelogin": "OneLogin",
     "azuread": "AzureAD",
     "keycloak": "Keycloak",
+    "auth0": "Auth0",
     "logged-in": "If you are logged in",
     "logged-out": "If you are logged out",
+    "user": "User",
+    "bot": "Bot",
+    "on-sign-up": "On sign-up",
+    "via-markdown": "Via Markdown",
+    "via-compose-box-buttons": "Via compose box buttons",
+    "stream-compose": "Compose to a stream",
+    "dm-compose": "Compose a DM",
+    "v6": "Zulip Server 6.0+",
+    "v4": "Zulip Server 4.0+",
 }
 
 
@@ -113,13 +126,13 @@ class TabbedSectionsPreprocessor(Preprocessor):
                 tab_class = "no-tabs"
                 tab_section["tabs"] = [
                     {
-                        "tab_name": "instructions-for-all-platforms",
+                        "tab_key": "instructions-for-all-platforms",
                         "start": tab_section["start_tabs_index"],
                     }
                 ]
             nav_bar = self.generate_nav_bar(tab_section)
             content_blocks = self.generate_content_blocks(tab_section, lines)
-            rendered_tabs = CODE_SECTION_TEMPLATE.format(
+            rendered_tabs = TABBED_SECTION_TEMPLATE.format(
                 tab_class=tab_class, nav_bar=nav_bar, blocks=content_blocks
             )
 
@@ -143,7 +156,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
 
             content = "\n".join(lines[start_index:end_index]).strip()
             tab_content_block = DIV_TAB_CONTENT_TEMPLATE.format(
-                data_language=tab["tab_name"],
+                data_tab_key=tab["tab_key"],
                 # Wrapping the content in two newlines is necessary here.
                 # If we don't do this, the inner Markdown does not get
                 # rendered properly.
@@ -155,14 +168,14 @@ class TabbedSectionsPreprocessor(Preprocessor):
     def generate_nav_bar(self, tab_section: Dict[str, Any]) -> str:
         li_elements = []
         for tab in tab_section["tabs"]:
-            tab_name = tab.get("tab_name")
-            tab_label = TAB_SECTION_LABELS.get(tab_name)
+            tab_key = tab.get("tab_key")
+            tab_label = TAB_SECTION_LABELS.get(tab_key)
             if tab_label is None:
                 raise ValueError(
-                    f"Tab '{tab_name}' is not present in TAB_SECTION_LABELS in zerver/lib/markdown/tabbed_sections.py"
+                    f"Tab '{tab_key}' is not present in TAB_SECTION_LABELS in zerver/lib/markdown/tabbed_sections.py"
                 )
 
-            li = NAV_LIST_ITEM_TEMPLATE.format(data_language=tab_name, label=tab_label)
+            li = NAV_LIST_ITEM_TEMPLATE.format(data_tab_key=tab_key, label=tab_label)
             li_elements.append(li)
 
         return NAV_BAR_TEMPLATE.format(tabs="\n".join(li_elements))
@@ -177,7 +190,7 @@ class TabbedSectionsPreprocessor(Preprocessor):
             tab_content_match = TAB_CONTENT_REGEX.search(line)
             if tab_content_match:
                 block.setdefault("tabs", [])
-                tab = {"start": index, "tab_name": tab_content_match.group(1)}
+                tab = {"start": index, "tab_key": tab_content_match.group(1)}
                 block["tabs"].append(tab)
 
             end_match = END_TABBED_SECTION_REGEX.search(line)

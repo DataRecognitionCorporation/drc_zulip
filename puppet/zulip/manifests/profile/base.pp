@@ -75,7 +75,7 @@ class zulip::profile::base {
 
   file { '/etc/zulip':
     ensure => directory,
-    mode   => '0644',
+    mode   => '0755',
     owner  => 'zulip',
     group  => 'zulip',
     links  => follow,
@@ -100,21 +100,40 @@ class zulip::profile::base {
     mode   => '0640',
     owner  => 'root',
     group  => 'root',
-    source => 'puppet:///modules/zulip/limits.conf',
+    source => 'puppet:///modules/zulip/security/limits.conf',
+  }
+  file { '/etc/systemd/system.conf.d/':
+    ensure => directory,
+    mode   => '0755',
+    owner  => 'root',
+    group  => 'root',
+  }
+  file { '/etc/systemd/system.conf.d/limits.conf':
+    ensure => file,
+    mode   => '0644',
+    owner  => 'root',
+    group  => 'root',
+    source => 'puppet:///modules/zulip/systemd/system.conf.d/limits.conf',
+  }
+
+  service { 'puppet':
+    ensure  => stopped,
+    enable  => false,
+    require => Package['puppet'],
   }
 
   # This directory is written to by cron jobs for reading by Nagios
   file { '/var/lib/nagios_state/':
     ensure => directory,
     group  => 'zulip',
-    mode   => '0774',
+    mode   => '0775',
   }
 
   file { '/var/log/zulip':
     ensure => directory,
     owner  => 'zulip',
     group  => 'zulip',
-    mode   => '0640',
+    mode   => '0750',
   }
 
   file { "${zulip::common::nagios_plugins_dir}/zulip_base":

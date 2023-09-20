@@ -8,6 +8,7 @@ from django.conf import settings
 from django.db import connection, models
 from django.db.models import F
 from psycopg2.sql import SQL, Composable, Identifier, Literal
+from typing_extensions import TypeAlias
 
 from analytics.models import (
     BaseCount,
@@ -62,7 +63,7 @@ class CountStat:
         else:
             self.interval = self.time_increment
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f"<CountStat: {self.property}>"
 
     def last_successful_fill(self) -> Optional[datetime]:
@@ -316,7 +317,7 @@ def do_increment_logging_stat(
     else:  # CountStat.HOUR:
         end_time = ceiling_to_hour(event_time)
 
-    row, created = table.objects.get_or_create(
+    row, created = table._default_manager.get_or_create(
         property=stat.property,
         subgroup=subgroup,
         end_time=end_time,
@@ -346,7 +347,7 @@ def do_drop_single_stat(property: str) -> None:
 
 ## DataCollector-level operations ##
 
-QueryFn = Callable[[Dict[str, Composable]], Composable]
+QueryFn: TypeAlias = Callable[[Dict[str, Composable]], Composable]
 
 
 def do_pull_by_sql_query(
@@ -446,7 +447,13 @@ def count_message_by_user_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
         realm_clause: Composable = SQL("")
     else:
-        realm_clause = SQL("zerver_userprofile.realm_id = {} AND").format(Literal(realm.id))
+        # We limit both userprofile and message so that we only see
+        # users from this realm, but also get the performance speedup
+        # of limiting messages by realm.
+        realm_clause = SQL(
+            "zerver_userprofile.realm_id = {} AND zerver_message.realm_id = {} AND"
+        ).format(Literal(realm.id), Literal(realm.id))
+    # Uses index: zerver_message_realm_date_sent (or the only-date index)
     return lambda kwargs: SQL(
         """
     INSERT INTO analytics_usercount
@@ -473,7 +480,13 @@ def count_message_type_by_user_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
         realm_clause: Composable = SQL("")
     else:
-        realm_clause = SQL("zerver_userprofile.realm_id = {} AND").format(Literal(realm.id))
+        # We limit both userprofile and message so that we only see
+        # users from this realm, but also get the performance speedup
+        # of limiting messages by realm.
+        realm_clause = SQL(
+            "zerver_userprofile.realm_id = {} AND zerver_message.realm_id = {} AND"
+        ).format(Literal(realm.id), Literal(realm.id))
+    # Uses index: zerver_message_realm_date_sent (or the only-date index)
     return lambda kwargs: SQL(
         """
     INSERT INTO analytics_usercount
@@ -522,7 +535,10 @@ def count_message_by_stream_query(realm: Optional[Realm]) -> QueryFn:
     if realm is None:
         realm_clause: Composable = SQL("")
     else:
-        realm_clause = SQL("zerver_stream.realm_id = {} AND").format(Literal(realm.id))
+        realm_clause = SQL(
+            "zerver_stream.realm_id = {} AND zerver_message.realm_id = {} AND"
+        ).format(Literal(realm.id), Literal(realm.id))
+    # Uses index: zerver_message_realm_date_sent (or the only-date index)
     return lambda kwargs: SQL(
         """
     INSERT INTO analytics_streamcount

@@ -11,6 +11,10 @@ sys.path.append(ZULIP_PATH)
 
 from tools.setup.emoji.custom_emoji_names import CUSTOM_EMOJI_NAME_MAPS
 from tools.setup.emoji.emoji_setup_utils import get_emoji_code
+<<<<<<< HEAD
+=======
+from zerver.lib.emoji_utils import hex_codepoint_to_emoji, unqualify_emoji
+>>>>>>> drc_main
 
 CLDR_DATA_FILE = os.path.join(
     ZULIP_PATH, "node_modules", "cldr-annotations-modern", "annotations", "en", "annotations.json"
@@ -80,9 +84,15 @@ def cleanup_name(name: str) -> str:
         ":": "",
         ".": "",
         ",": "",
+<<<<<<< HEAD
+=======
+        "(": "",
+        ")": "",
+>>>>>>> drc_main
         "&": "and",
-        "‘": "'",
-        "’": "'",
+        "‘": "",
+        "’": "",
+        "'": "",
     }
     for before, after in replacements.items():
         name = name.replace(before, after)
@@ -104,6 +114,7 @@ def convert_non_ascii_chars(name: str) -> str:
         "ã": "a",
         "í": "i",
         "å": "a",
+        "ü": "u",
     }
     for before, after in replacements.items():
         name = name.replace(before, after)
@@ -136,6 +147,7 @@ def main() -> None:
             all_emojis[emoji_code] = CUSTOM_EMOJI_NAME_MAPS[emoji_code]
         else:
             # create the unicode character(s) for the emoji, since this is the key into the CLDR data
+<<<<<<< HEAD
             emoji = "".join(
                 chr(int(h, 16))
                 for h in (emoji_dict["non_qualified"] or emoji_dict["unified"]).split("-")
@@ -143,6 +155,11 @@ def main() -> None:
                 # https://github.com/iamcal/emoji-data/pull/217
                 if h != "FE0F"
             )
+=======
+            # We can't just use emoji_dict["non_qualified"] because of this upstream bug:
+            # https://github.com/iamcal/emoji-data/pull/217
+            emoji = unqualify_emoji(hex_codepoint_to_emoji(emoji_dict["unified"]))
+>>>>>>> drc_main
             if emoji not in CLDR_DATA:
                 print(
                     f"{emoji} not found in custom emoji name maps, but also not found in CLDR data. Skipping."
@@ -179,7 +196,7 @@ def main() -> None:
     # If the alias was specifically specified in custom_emoji_names, then we can keep just
     # that one, but otherwise there's no particular emoji that is an obvious candidate
     # for the alias so just remove the alias for all relevant emoji.
-    for alias in alias_to_emoji_code.keys():
+    for alias in alias_to_emoji_code:
         if len(alias_to_emoji_code[alias]) > 1:
             for emoji_code in alias_to_emoji_code[alias]:
                 if emoji_code not in CUSTOM_EMOJI_NAME_MAPS:
@@ -192,7 +209,7 @@ def main() -> None:
             # These are known names where we don't have an ascii-only version and there are ascii aliases
             # that a user can still enter instead to get the same emoji.
             if name in ["ココ", "サ", "指", "空"]:
-                assert any(alias.isascii() for alias in aliases)
+                assert any(alias.isascii() for alias in emoji_names["aliases"])
                 continue
             if not name.isascii():
                 ascii_alias = convert_non_ascii_chars(name)

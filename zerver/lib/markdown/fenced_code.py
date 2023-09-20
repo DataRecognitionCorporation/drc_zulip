@@ -135,9 +135,14 @@ Missing required -X argument in curl command:
 
     for line in lines:
         regex = r'curl [-](sS)?X "?(GET|DELETE|PATCH|POST)"?'
+<<<<<<< HEAD
         if line.startswith("curl"):
             if re.search(regex, line) is None:
                 raise MarkdownRenderingError(error_msg.format(command=line.strip()))
+=======
+        if line.startswith("curl") and re.search(regex, line) is None:
+            raise MarkdownRenderingError(error_msg.format(command=line.strip()))
+>>>>>>> drc_main
 
 
 CODE_VALIDATORS: Dict[Optional[str], Callable[[List[str]], None]] = {
@@ -211,7 +216,7 @@ class ZulipBaseHandler:
         """Returns a formatted text.
         Subclasses should override this method.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 def generic_handler(
@@ -466,8 +471,18 @@ class FencedBlockPreprocessor(Preprocessor):
                 css_class=self.codehilite_conf["css_class"][0],
                 style=self.codehilite_conf["pygments_style"][0],
                 use_pygments=self.codehilite_conf["use_pygments"][0],
-                lang=(lang or None),
+                lang=lang or None,
                 noclasses=self.codehilite_conf["noclasses"][0],
+                # By default, the Pygments PHP lexers won't highlight
+                # code without a `<?php` marker at the start of the
+                # code block, which is undesired in the common case of
+                # pasting a snippet of PHP code rather than whole
+                # file. The `startinline` option overrides this
+                # behavior for PHP-descended languages and has no
+                # effect on other lexers.
+                #
+                # See https://pygments.org/docs/lexers/#lexers-for-php-and-related-languages
+                startinline=True,
             )
 
             code = highliter.hilite().rstrip("\n")
@@ -545,7 +560,7 @@ class FencedBlockPreprocessor(Preprocessor):
         return txt
 
 
-def makeExtension(*args: Any, **kwargs: None) -> FencedCodeExtension:
+def makeExtension(*args: Any, **kwargs: Any) -> FencedCodeExtension:
     return FencedCodeExtension(kwargs)
 
 

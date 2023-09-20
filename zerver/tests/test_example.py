@@ -1,5 +1,4 @@
 import datetime
-from typing import Any, List, Mapping
 from unittest import mock
 
 import orjson
@@ -11,14 +10,7 @@ from zerver.lib.streams import access_stream_for_send_message
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message
 from zerver.lib.users import is_administrator_role
-from zerver.models import (
-    UserProfile,
-    UserStatus,
-    get_display_recipient,
-    get_realm,
-    get_stream,
-    get_user_by_delivery_email,
-)
+from zerver.models import UserProfile, UserStatus, get_realm, get_stream, get_user_by_delivery_email
 
 
 # Most Zulip tests use ZulipTestCase, which inherits from django.test.TestCase.
@@ -128,6 +120,7 @@ class TestFullStack(ZulipTestCase):
                 avatar_url=content["user"]["avatar_url"],
                 avatar_version=1,
                 date_joined=content["user"]["date_joined"],
+                delivery_email=None,
                 email=cordelia.email,
                 full_name=cordelia.full_name,
                 is_active=True,
@@ -196,7 +189,7 @@ class TestFullStack(ZulipTestCase):
 
         # We often use assert_json_error for negative tests.
         result = self.client_post("/json/users", valid_params)
-        self.assert_json_error(result, "User not authorized for this query", 400)
+        self.assert_json_error(result, "User not authorized to create users", 400)
 
         do_change_can_create_users(iago, True)
         incomplete_params = dict(
@@ -229,11 +222,8 @@ class TestFullStack(ZulipTestCase):
 
         params = dict(status_text="on vacation")
 
-        events: List[Mapping[str, Any]] = []
-
-        # Use the tornado_redirected_to_list context manager to capture
-        # events.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        # Use the capture_send_event_calls context manager to capture events.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(cordelia, "/api/v1/users/me/status", params)
 
         self.assert_json_success(result)
@@ -332,7 +322,7 @@ class TestMessageHelpers(ZulipTestCase):
         # extended to send multiple similar messages.
         self.assertEqual(iago_message.id, sent_message_id)
         self.assertEqual(iago_message.sender_id, hamlet.id)
-        self.assertEqual(get_display_recipient(iago_message.recipient), "Denmark")
+        self.assert_message_stream_name(iago_message, "Denmark")
         self.assertEqual(iago_message.topic_name(), "lunch")
         self.assertEqual(iago_message.content, "I want pizza!")
 
@@ -406,13 +396,13 @@ class TestDevelopmentEmailsLog(ZulipTestCase):
             )  # Generates emails and redirects to /emails/
             self.assertEqual("/emails/", result["Location"])  # Make sure redirect URL is correct.
 
-            # The above call to /emails/generate/ creates 15 emails and
+            # The above call to /emails/generate/ creates the emails and
             # logs the below line for every email.
             output_log = (
                 "INFO:root:Emails sent in development are available at http://testserver/emails"
             )
             # logger.output is a list of all the log messages captured. Verify it is as expected.
-            self.assertEqual(logger.output, [output_log] * 15)
+            self.assertEqual(logger.output, [output_log] * 17)
 
             # Now, lets actually go the URL the above call redirects to, i.e., /emails/
             result = self.client_get(result["Location"])

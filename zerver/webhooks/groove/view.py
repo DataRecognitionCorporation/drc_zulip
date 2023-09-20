@@ -1,21 +1,18 @@
 # Webhooks for external integrations.
-from functools import partial
 from typing import Callable, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
+from returns.curry import partial
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+<<<<<<< HEAD
 from zerver.lib.request import REQ, has_request_variables
+=======
+>>>>>>> drc_main
 from zerver.lib.response import json_success
-from zerver.lib.validator import (
-    WildValue,
-    check_int,
-    check_none_or,
-    check_string,
-    check_url,
-    to_wild_value,
-)
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_int, check_none_or, check_string, check_url
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     get_http_headers_from_filename,
@@ -66,13 +63,11 @@ def ticket_assigned_body(payload: WildValue) -> Optional[str]:
 
     if assignee or assigned_group:
         if assignee and assigned_group:
-            kwargs["assignee_info"] = "{assignee} from {assigned_group}".format(
-                assignee=assignee, assigned_group=assigned_group
-            )
+            kwargs["assignee_info"] = f"{assignee} from {assigned_group}"
         elif assignee:
-            kwargs["assignee_info"] = "{assignee}".format(assignee=assignee)
+            kwargs["assignee_info"] = f"{assignee}"
         elif assigned_group:
-            kwargs["assignee_info"] = "{assigned_group}".format(assigned_group=assigned_group)
+            kwargs["assignee_info"] = f"{assigned_group}"
 
         return TICKET_ASSIGNED_TEMPLATE.format(**kwargs)
     else:
@@ -111,11 +106,12 @@ ALL_EVENT_TYPES = list(EVENTS_FUNCTION_MAPPER.keys())
 
 
 @webhook_view("Groove", all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint
 def api_groove_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
+    *,
+    payload: WebhookPayload[WildValue],
 ) -> HttpResponse:
     event = validate_extract_webhook_http_header(request, "X-Groove-Event", "Groove")
     assert event is not None

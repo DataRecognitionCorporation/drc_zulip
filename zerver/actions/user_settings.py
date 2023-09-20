@@ -1,7 +1,6 @@
 import datetime
 from typing import Iterable, Optional, Union
 
-import orjson
 from django.conf import settings
 from django.db import transaction
 from django.db.models import F
@@ -13,14 +12,21 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import (
     cache_delete,
     delete_user_profile_caches,
+    flush_user_profile,
     user_profile_by_api_key_cache_key,
 )
+from zerver.lib.create_user import get_display_email_address
 from zerver.lib.i18n import get_language_name
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.upload import delete_avatar_image
-from zerver.lib.users import check_bot_name_available, check_full_name
+from zerver.lib.users import (
+    can_access_delivery_email,
+    check_bot_name_available,
+    check_full_name,
+    get_users_with_access_to_real_email,
+)
 from zerver.lib.utils import generate_api_key
 from zerver.models import (
     Draft,
@@ -35,24 +41,61 @@ from zerver.models import (
     get_client,
     get_user_profile_by_id,
 )
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event, send_event_on_commit
 
 
 def send_user_email_update_event(user_profile: UserProfile) -> None:
     payload = dict(user_id=user_profile.id, new_email=user_profile.email)
     event = dict(type="realm_user", op="update", person=payload)
-    transaction.on_commit(
-        lambda: send_event(
+    send_event_on_commit(
+        user_profile.realm,
+        event,
+        active_user_ids(user_profile.realm_id),
+    )
+
+
+def send_delivery_email_update_events(
+    user_profile: UserProfile, old_visibility_setting: int, visibility_setting: int
+) -> None:
+    active_users = user_profile.realm.get_active_users()
+    delivery_email_now_visible_user_ids = []
+    delivery_email_now_invisible_user_ids = []
+
+    for active_user in active_users:
+        could_access_delivery_email_previously = can_access_delivery_email(
+            active_user, user_profile.id, old_visibility_setting
+        )
+        can_access_delivery_email_now = can_access_delivery_email(
+            active_user, user_profile.id, visibility_setting
+        )
+
+        if could_access_delivery_email_previously != can_access_delivery_email_now:
+            if can_access_delivery_email_now:
+                delivery_email_now_visible_user_ids.append(active_user.id)
+            else:
+                delivery_email_now_invisible_user_ids.append(active_user.id)
+
+    if delivery_email_now_visible_user_ids:
+        person = dict(user_id=user_profile.id, delivery_email=user_profile.delivery_email)
+        event = dict(type="realm_user", op="update", person=person)
+        send_event_on_commit(
             user_profile.realm,
             event,
-            active_user_ids(user_profile.realm_id),
+            delivery_email_now_visible_user_ids,
         )
-    )
+    if delivery_email_now_invisible_user_ids:
+        person = dict(user_id=user_profile.id, delivery_email=None)
+        event = dict(type="realm_user", op="update", person=person)
+        send_event_on_commit(
+            user_profile.realm,
+            event,
+            delivery_email_now_invisible_user_ids,
+        )
 
 
 @transaction.atomic(savepoint=False)
 def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> None:
-    delete_user_profile_caches([user_profile])
+    delete_user_profile_caches([user_profile], user_profile.realm)
 
     user_profile.delivery_email = new_email
     if user_profile.email_address_is_realm_public():
@@ -61,12 +104,12 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
     else:
         user_profile.save(update_fields=["delivery_email"])
 
-    # We notify just the target user (and eventually org admins, only
-    # when email_address_visibility=EMAIL_ADDRESS_VISIBILITY_ADMINS)
-    # about their new delivery email, since that field is private.
+    # We notify all the users who have access to delivery email.
     payload = dict(user_id=user_profile.id, delivery_email=new_email)
     event = dict(type="realm_user", op="update", person=payload)
-    transaction.on_commit(lambda: send_event(user_profile.realm, event, [user_profile.id]))
+    delivery_email_visible_user_ids = get_users_with_access_to_real_email(user_profile)
+
+    send_event_on_commit(user_profile.realm, event, delivery_email_visible_user_ids)
 
     if user_profile.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
         # If the user is using Gravatar to manage their email address,
@@ -106,10 +149,23 @@ def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> 
         old_email=old_email,
         new_email=new_email,
         activate_url=activation_url,
+        organization_host=user_profile.realm.host,
     )
     language = user_profile.default_language
+
+    email_template = "zerver/emails/confirm_new_email"
+
+    if old_email == "":
+        # The assertions here are to help document the only circumstance under which
+        # this condition should be possible.
+        assert (
+            user_profile.realm.demo_organization_scheduled_deletion_date is not None
+            and user_profile.is_realm_owner
+        )
+        email_template = "zerver/emails/confirm_demo_organization_email"
+
     send_email(
-        "zerver/emails/confirm_new_email",
+        template_prefix=email_template,
         to_emails=[new_email],
         from_name=FromAddress.security_email_from_name(language=language),
         from_address=FromAddress.tokenized_no_reply_address(),
@@ -151,7 +207,7 @@ def do_change_full_name(
         modified_user=user_profile,
         event_type=RealmAuditLog.USER_FULL_NAME_CHANGED,
         event_time=event_time,
-        extra_data=old_name,
+        extra_data={RealmAuditLog.OLD_VALUE: old_name, RealmAuditLog.NEW_VALUE: full_name},
     )
     payload = dict(user_id=user_profile.id, full_name=user_profile.full_name)
     send_event(
@@ -198,7 +254,7 @@ def check_change_bot_full_name(
 
 
 @transaction.atomic(durable=True)
-def do_change_tos_version(user_profile: UserProfile, tos_version: str) -> None:
+def do_change_tos_version(user_profile: UserProfile, tos_version: Optional[str]) -> None:
     user_profile.tos_version = tos_version
     user_profile.save(update_fields=["tos_version"])
     event_time = timezone_now()
@@ -267,12 +323,10 @@ def notify_avatar_url_change(user_profile: UserProfile) -> None:
                 avatar_url=avatar_url(user_profile),
             ),
         )
-        transaction.on_commit(
-            lambda: send_event(
-                user_profile.realm,
-                bot_event,
-                bot_owner_user_ids(user_profile),
-            )
+        send_event_on_commit(
+            user_profile.realm,
+            bot_event,
+            bot_owner_user_ids(user_profile),
         )
 
     payload = dict(
@@ -286,12 +340,10 @@ def notify_avatar_url_change(user_profile: UserProfile) -> None:
     )
 
     event = dict(type="realm_user", op="update", person=payload)
-    transaction.on_commit(
-        lambda: send_event(
-            user_profile.realm,
-            event,
-            active_user_ids(user_profile.realm_id),
-        )
+    send_event_on_commit(
+        user_profile.realm,
+        event,
+        active_user_ids(user_profile.realm_id),
     )
 
 
@@ -311,7 +363,7 @@ def do_change_avatar_fields(
         realm=user_profile.realm,
         modified_user=user_profile,
         event_type=RealmAuditLog.USER_AVATAR_SOURCE_CHANGED,
-        extra_data=str({"avatar_source": avatar_source}),
+        extra_data={"avatar_source": avatar_source},
         event_time=event_time,
         acting_user=acting_user,
     )
@@ -363,26 +415,19 @@ def do_change_user_setting(
     # TODO: Move these database actions into a transaction.atomic block.
     user_profile.save(update_fields=[setting_name])
 
-    if setting_name in UserProfile.notification_setting_types:
-        # Prior to all personal settings being managed by property_types,
-        # these were only created for notification settings.
-        #
-        # TODO: Start creating these for all settings, and do a
-        # backfilled=True migration.
-        RealmAuditLog.objects.create(
-            realm=user_profile.realm,
-            event_type=RealmAuditLog.USER_SETTING_CHANGED,
-            event_time=event_time,
-            acting_user=acting_user,
-            modified_user=user_profile,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.OLD_VALUE: old_value,
-                    RealmAuditLog.NEW_VALUE: setting_value,
-                    "property": setting_name,
-                }
-            ).decode(),
-        )
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        event_type=RealmAuditLog.USER_SETTING_CHANGED,
+        event_time=event_time,
+        acting_user=acting_user,
+        modified_user=user_profile,
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: setting_value,
+            "property": setting_name,
+        },
+    )
+
     # Disabling digest emails should clear a user's email queue
     if setting_name == "enable_digest_emails" and not setting_value:
         clear_scheduled_emails(user_profile.id, ScheduledEmail.DIGEST)
@@ -402,7 +447,7 @@ def do_change_user_setting(
         assert isinstance(setting_value, str)
         event["language_name"] = get_language_name(setting_value)
 
-    transaction.on_commit(lambda: send_event(user_profile.realm, event, [user_profile.id]))
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
     if setting_name in UserProfile.notification_settings_legacy:
         # This legacy event format is for backwards-compatibility with
@@ -414,9 +459,7 @@ def do_change_user_setting(
             "notification_name": setting_name,
             "setting": setting_value,
         }
-        transaction.on_commit(
-            lambda: send_event(user_profile.realm, legacy_event, [user_profile.id])
-        )
+        send_event_on_commit(user_profile.realm, legacy_event, [user_profile.id])
 
     if setting_name in UserProfile.display_settings_legacy or setting_name == "timezone":
         # This legacy event format is for backwards-compatibility with
@@ -432,9 +475,7 @@ def do_change_user_setting(
             assert isinstance(setting_value, str)
             legacy_event["language_name"] = get_language_name(setting_value)
 
-        transaction.on_commit(
-            lambda: send_event(user_profile.realm, legacy_event, [user_profile.id])
-        )
+        send_event_on_commit(user_profile.realm, legacy_event, [user_profile.id])
 
     # Updates to the time zone display setting are sent to all users
     if setting_name == "timezone":
@@ -444,13 +485,31 @@ def do_change_user_setting(
             timezone=canonicalize_timezone(user_profile.timezone),
         )
         timezone_event = dict(type="realm_user", op="update", person=payload)
-        transaction.on_commit(
-            lambda: send_event(
-                user_profile.realm,
-                timezone_event,
-                active_user_ids(user_profile.realm_id),
-            )
+        send_event_on_commit(
+            user_profile.realm,
+            timezone_event,
+            active_user_ids(user_profile.realm_id),
         )
+
+    if setting_name == "email_address_visibility":
+        send_delivery_email_update_events(
+            user_profile, old_value, user_profile.email_address_visibility
+        )
+
+        if UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE not in [old_value, setting_value]:
+            # We use real email addresses on UserProfile.email only if
+            # EMAIL_ADDRESS_VISIBILITY_EVERYONE is configured, so
+            # changes between values that will not require changing
+            # that field, so we can save work and return here.
+            return
+
+        user_profile.email = get_display_email_address(user_profile)
+        user_profile.save(update_fields=["email"])
+
+        transaction.on_commit(lambda: flush_user_profile(sender=UserProfile, instance=user_profile))
+
+        send_user_email_update_event(user_profile)
+        notify_avatar_url_change(user_profile)
 
     if setting_name == "enable_drafts_synchronization" and setting_value is False:
         # Delete all of the drafts from the backend but don't send delete events
@@ -469,7 +528,7 @@ def do_change_user_setting(
         # setting; not doing so can make it look like the settings
         # change didn't have any effect.
         if setting_value:
-            status = UserPresence.ACTIVE
+            status = UserPresence.LEGACY_STATUS_ACTIVE_INT
             presence_time = timezone_now()
         else:
             # HACK: Remove existing presence data for the current user
@@ -486,7 +545,7 @@ def do_change_user_setting(
             #
             # We add a small additional offset as a fudge factor in
             # case of clock skew.
-            status = UserPresence.IDLE
+            status = UserPresence.LEGACY_STATUS_IDLE_INT
             presence_time = timezone_now() - datetime.timedelta(
                 seconds=settings.OFFLINE_THRESHOLD_SECS + 120
             )

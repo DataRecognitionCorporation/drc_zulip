@@ -15,10 +15,12 @@ from zerver.lib.i18n import (
     get_language_list,
     get_language_translation_data,
 )
+from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.realm_description import get_realm_rendered_description
 from zerver.lib.request import RequestNotes
 from zerver.models import Message, Realm, Stream, UserProfile
 from zerver.views.message_flags import get_latest_update_message_flag_activity
+from zproject.config import get_config
 
 
 @dataclass
@@ -119,7 +121,7 @@ def build_page_params_for_home_page_load(
     user_profile: Optional[UserProfile],
     realm: Realm,
     insecure_desktop_app: bool,
-    narrow: List[List[str]],
+    narrow: List[NarrowTerm],
     narrow_stream: Optional[Stream],
     narrow_topic: Optional[str],
     first_in_realm: bool,
@@ -137,6 +139,7 @@ def build_page_params_for_home_page_load(
         "user_avatar_url_field_optional": True,
         "stream_typing_notifications": False,  # Set this to True when frontend support is implemented.
         "user_settings_object": True,
+        "linkifier_url_template": True,
     }
 
     if user_profile is not None:
@@ -185,7 +188,6 @@ def build_page_params_for_home_page_load(
         insecure_desktop_app=insecure_desktop_app,
         login_page=settings.HOME_NOT_LOGGED_IN,
         warn_no_email=settings.WARN_NO_EMAIL,
-        search_pills_enabled=settings.SEARCH_PILLS_ENABLED,
         # Only show marketing email settings if on Zulip Cloud
         corporate_enabled=settings.CORPORATE_ENABLED,
         ## Misc. extra data.
@@ -208,25 +210,39 @@ def build_page_params_for_home_page_load(
         # There is no event queue for spectators since
         # events support for spectators is not implemented yet.
         no_event_queue=user_profile is None,
+        server_sentry_dsn=settings.SENTRY_FRONTEND_DSN,
     )
 
-    for field_name in register_ret.keys():
+    if settings.SENTRY_FRONTEND_DSN is not None:
+        page_params["realm_sentry_key"] = realm.string_id
+        page_params["server_sentry_environment"] = get_config(
+            "machine", "deploy_type", "development"
+        )
+        page_params["server_sentry_sample_rate"] = settings.SENTRY_FRONTEND_SAMPLE_RATE
+        page_params["server_sentry_trace_rate"] = settings.SENTRY_FRONTEND_TRACE_RATE
+
+    for field_name in register_ret:
         page_params[field_name] = register_ret[field_name]
 
     if narrow_stream is not None:
         # In narrow_stream context, initial pointer is just latest message
         recipient = narrow_stream.recipient
-        try:
-            max_message_id = (
-                Message.objects.filter(recipient=recipient).order_by("id").reverse()[0].id
-            )
-        except IndexError:
-            max_message_id = -1
+        page_params["max_message_id"] = -1
+        max_message = (
+            # Uses index: zerver_message_realm_recipient_id
+            Message.objects.filter(realm_id=realm.id, recipient=recipient)
+            .order_by("-id")
+            .only("id")
+            .first()
+        )
+        if max_message:
+            page_params["max_message_id"] = max_message.id
         page_params["narrow_stream"] = narrow_stream.name
         if narrow_topic is not None:
             page_params["narrow_topic"] = narrow_topic
-        page_params["narrow"] = [dict(operator=term[0], operand=term[1]) for term in narrow]
-        page_params["max_message_id"] = max_message_id
+        page_params["narrow"] = [
+            dict(operator=term.operator, operand=term.operand) for term in narrow
+        ]
         assert isinstance(page_params["user_settings"], dict)
         page_params["user_settings"]["enable_desktop_notifications"] = False
 

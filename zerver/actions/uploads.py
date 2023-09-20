@@ -1,11 +1,12 @@
 import logging
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 from zerver.lib.markdown import MessageRenderingResult
-from zerver.lib.upload import claim_attachment, delete_message_image
+from zerver.lib.upload import claim_attachment, delete_message_attachment
 from zerver.models import (
     Attachment,
     Message,
+    ScheduledMessage,
     Stream,
     UserProfile,
     get_old_unclaimed_attachments,
@@ -26,7 +27,9 @@ def notify_attachment_update(
     send_event(user_profile.realm, event, [user_profile.id])
 
 
-def do_claim_attachments(message: Message, potential_path_ids: List[str]) -> bool:
+def do_claim_attachments(
+    message: Union[Message, ScheduledMessage], potential_path_ids: List[str]
+) -> bool:
     claimed = False
     for path_id in potential_path_ids:
         user_profile = message.sender
@@ -40,8 +43,8 @@ def do_claim_attachments(message: Message, potential_path_ids: List[str]) -> boo
         if not validate_attachment_request(user_profile, path_id):
             # Technically, there are 2 cases here:
             # * The user put something in their message that has the form
-            # of an upload, but doesn't correspond to a file that doesn't
-            # exist.  validate_attachment_request will return None.
+            # of an upload URL, but does not actually correspond to a previously
+            # uploaded file.  validate_attachment_request will return None.
             # * The user is trying to send a link to a file they don't have permission to
             # access themselves.  validate_attachment_request will return False.
             #
@@ -59,7 +62,10 @@ def do_claim_attachments(message: Message, potential_path_ids: List[str]) -> boo
         attachment = claim_attachment(
             user_profile, path_id, message, is_message_realm_public, is_message_web_public
         )
-        notify_attachment_update(user_profile, "update", attachment.to_dict())
+        if not isinstance(message, ScheduledMessage):
+            # attachment update events don't say anything about scheduled messages,
+            # so sending an event is pointless.
+            notify_attachment_update(user_profile, "update", attachment.to_dict())
     return claimed
 
 
@@ -68,16 +74,22 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
         weeks_ago
     )
 
+    # An attachment may be removed from Attachments and
+    # ArchiveAttachments in the same run; prevent warnings from the
+    # backing store by only removing it from there once.
+    already_removed = set()
     for attachment in old_unclaimed_attachments:
-        delete_message_image(attachment.path_id)
+        delete_message_attachment(attachment.path_id)
+        already_removed.add(attachment.path_id)
         attachment.delete()
     for archived_attachment in old_unclaimed_archived_attachments:
-        delete_message_image(archived_attachment.path_id)
+        if archived_attachment.path_id not in already_removed:
+            delete_message_attachment(archived_attachment.path_id)
         archived_attachment.delete()
 
 
 def check_attachment_reference_change(
-    message: Message, rendering_result: MessageRenderingResult
+    message: Union[Message, ScheduledMessage], rendering_result: MessageRenderingResult
 ) -> bool:
     # For a unsaved message edit (message.* has been updated, but not
     # saved to the database), adjusts Attachment data to correspond to

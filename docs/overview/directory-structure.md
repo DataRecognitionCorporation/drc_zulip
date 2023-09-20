@@ -50,23 +50,25 @@ templating systems.
 - `templates/zerver/` For [Jinja2](http://jinja.pocoo.org/) templates
   for the backend (for zerver app; logged-in content is in `templates/zerver/app`).
 
-- `static/templates/` [Handlebars](https://handlebarsjs.com/) templates for the frontend.
+- `web/templates/` [Handlebars](https://handlebarsjs.com/) templates for the frontend.
 
 ---
 
-### JavaScript, TypeScript, and other static assets
+### JavaScript, TypeScript, and other frontend assets
 
-- `static/js/` Zulip's own JavaScript and TypeScript sources.
+- `web/src/` Zulip's own JavaScript and TypeScript sources.
 
-- `static/styles/` Zulip's own CSS.
+- `web/styles/` Zulip's own CSS.
 
-- `static/images/` Zulip's images.
+- `web/images/` Images bundled with webpack.
 
-- `static/third/` Third-party JavaScript and CSS that has been vendored.
+- `static/images/` Images served directly to the web.
 
-- `node_modules/` Third-party JavaScript installed via `yarn`.
+- `web/third/` Third-party JavaScript and CSS that has been vendored.
 
-- `static/shared/icons/` Icons placed in this directory are compiled
+- `node_modules/` Third-party JavaScript installed via pnpm.
+
+- `web/shared/icons/` Icons placed in this directory are compiled
   into an icon font.
 
 ---
@@ -75,9 +77,9 @@ templating systems.
 
 - `zerver/tests/` Backend tests.
 
-- `frontend_tests/node_tests/` Node Frontend unit tests.
+- `web/tests/` Node Frontend unit tests.
 
-- `frontend_tests/puppeteer_tests/` Puppeteer frontend integration tests.
+- `web/e2e-tests/` Puppeteer frontend integration tests.
 
 - `tools/test-*` Developer-facing test runner scripts.
 

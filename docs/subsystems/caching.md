@@ -10,9 +10,9 @@ caching).
 
 On the backend, Zulip uses `memcached`, a popular key-value store, for
 caching. Our `memcached` caching helps let us optimize Zulip's
-performance and scalability, since most requests don't need to talk to
-the database (which, even for a trivial query with everything on the
-same machine, usually takes 3-10x as long as a memcached fetch).
+performance and scalability, since we often avoid overhead related
+to database requests. With Django a typical trivial query can
+often take 3-10x as long as a memcached fetch.
 
 We use Django's built-in caching integration to manage talking to
 memcached, and then a small application-layer library
@@ -32,10 +32,10 @@ amount of Zulip's core caching code correctly, then the code most developers
 naturally write will both benefit from caching and not create any cache
 consistency problems.
 
-The overall result of this design is that in the vast majority of
+The overall result of this design is that for many places in the
 Zulip's Django codebase, all one needs to do is call the standard
-accessor functions for data (like `get_user` or `get_stream` to fetch
-user and stream objects, or for view code, functions like
+accessor functions for data (like `get_user` to fetch
+user objects, or, for view code, functions like
 `access_stream_by_id`, which checks permissions), and everything will
 work great. The data fetches automatically benefit from `memcached`
 caching, since those accessor methods have already been written to
@@ -61,15 +61,16 @@ framework; as you can see, it's very little code on top of our
 
 ```python
 def user_profile_cache_key_id(email: str, realm_id: int) -> str:
-    return u"user_profile:%s:%s" % (make_safe_digest(email.strip()), realm_id,)
+    return f"user_profile:{hashlib.sha1(email.strip().encode()).hexdigest()}:{realm_id}"
 
-def user_profile_cache_key(email: str, realm: 'Realm') -> str:
+def user_profile_cache_key(email: str, realm: "Realm") -> str:
     return user_profile_cache_key_id(email, realm.id)
 
-@cache_with_key(user_profile_cache_key, timeout=3600*24*7)
+@cache_with_key(user_profile_cache_key, timeout=3600 * 24 * 7)
 def get_user(email: str, realm: Realm) -> UserProfile:
-    return UserProfile.objects.select_related().get(
-        email__iexact=email.strip(), realm=realm)
+    return UserProfile.objects.select_related("realm", "bot_owner").get(
+        email__iexact=email.strip(), realm=realm
+    )
 ```
 
 This decorator implements a pretty classic caching paradigm:
@@ -95,7 +96,7 @@ This decorator implements a pretty classic caching paradigm:
   `KEY_PREFIX` is rotated every time we deploy to production; see
   below for details.
 
-We use this decorator in more than 30 places in Zulip, and it saves a
+We use this decorator in about 30 places in Zulip, and it saves a
 huge amount of otherwise very self-similar caching code.
 
 ### Cautions
@@ -219,9 +220,9 @@ test run).
 ### Manual testing and memcached
 
 Zulip's development environment will automatically flush (delete all
-keys in) `memcached` when provisioning and when starting `run-dev.py`.
+keys in) `memcached` when provisioning and when starting `run-dev`.
 You can run the server with that behavior disabled using
-`tools/run-dev.py --no-clear-memcached`.
+`tools/run-dev --no-clear-memcached`.
 
 ### Performance
 
@@ -239,10 +240,10 @@ We generally try to avoid in-process backend caching in Zulip's Django
 codebase, because every Zulip production installation involves
 multiple servers. We do have a few, however:
 
-- `per_request_display_recipient_cache`: A cache flushed at the start
-  of every request; this simplifies correctly implementing our goal of
-  not repeatedly fetching the "display recipient" (e.g. stream name)
-  for each message in the `GET /messages` codebase.
+- `@return_same_value_during_entire_request`: We use this decorator to
+  cache values in memory during the lifetime of a request. We use this
+  for linkifiers and display recipients. The middleware knows how to
+  flush the relevant in-memory caches at the start of a request.
 - Caches of various data, like the `SourceMap` object, that are
   expensive to construct, not needed for most requests, and don't
   change once a Zulip server has been deployed in production.

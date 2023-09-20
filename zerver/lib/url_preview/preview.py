@@ -27,8 +27,8 @@ link_regex = re.compile(
 
 # Use Chrome User-Agent, since some sites refuse to work on old browsers
 ZULIP_URL_PREVIEW_USER_AGENT = (
-    "Mozilla/5.0 (compatible; ZulipURLPreview/{version}; +{external_host})"
-).format(version=ZULIP_VERSION, external_host=settings.ROOT_DOMAIN_URI)
+    f"Mozilla/5.0 (compatible; ZulipURLPreview/{ZULIP_VERSION}; +{settings.ROOT_DOMAIN_URI})"
+)
 
 # FIXME: This header and timeout are not used by pyoembed, when trying to autodiscover!
 HEADERS = {"User-Agent": ZULIP_URL_PREVIEW_USER_AGENT}
@@ -81,7 +81,7 @@ def catch_network_errors(func: Callable[..., Any]) -> Callable[..., Any]:
 
 
 @catch_network_errors
-@cache_with_key(preview_url_cache_key, with_statsd_key="urlpreview_data")
+@cache_with_key(preview_url_cache_key)
 def get_link_embed_data(
     url: str, maxwidth: int = 640, maxheight: int = 480
 ) -> Optional[UrlEmbedData]:

@@ -3,13 +3,15 @@ import hashlib
 import logging
 import os
 import smtplib
+from contextlib import suppress
 from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
 from email.utils import formataddr, parseaddr
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Tuple, Union
 
 import backoff
+import css_inline
 import orjson
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives, get_connection
@@ -18,15 +20,14 @@ from django.core.mail.backends.smtp import EmailBackend
 from django.core.mail.message import sanitize_address
 from django.core.management import CommandError
 from django.db import transaction
+from django.db.models import QuerySet
 from django.http import HttpRequest
 from django.template import loader
-from django.template.exceptions import TemplateDoesNotExist
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 
-from confirmation.models import generate_key, one_click_unsubscribe_link
-from scripts.setup.inline_email_css import inline_template
+from confirmation.models import generate_key
 from zerver.lib.logging_util import log_to_file
 from zerver.models import EMAIL_TYPES, Realm, ScheduledEmail, UserProfile, get_user_profile_by_id
 from zproject.email_backends import EmailLogBackEnd, get_forward_address
@@ -37,6 +38,10 @@ MAX_CONNECTION_TRIES = 3
 
 logger = logging.getLogger("zulip.send_email")
 log_to_file(logger, settings.EMAIL_LOG_PATH)
+
+
+def get_inliner_instance() -> css_inline.CSSInliner:
+    return css_inline.CSSInliner()
 
 
 class FromAddress:
@@ -112,12 +117,20 @@ def build_email(
         # except having just a domain instead of an email address.
         extra_headers["List-Id"] = formataddr((realm.name, realm.host))
 
+    assert settings.STATIC_URL is not None
     context = {
         **context,
         "support_email": FromAddress.SUPPORT,
-        "email_images_base_uri": settings.ROOT_DOMAIN_URI + "/static/images/emails",
+        # Emails use unhashed image URLs so that those continue to
+        # work over time, even if the prod-static directory is cleaned
+        # out; as such, they just use a STATIC_URL prefix.
+        "email_images_base_url": settings.STATIC_URL + "images/emails",
         "physical_address": settings.PHYSICAL_ADDRESS,
     }
+
+    def get_inlined_template(template: str) -> str:
+        inliner = get_inliner_instance()
+        return inliner.inline(template)
 
     def render_templates() -> Tuple[str, str, str]:
         email_subject = (
@@ -131,14 +144,8 @@ def build_email(
             template_prefix + ".txt", context=context, using="Jinja2_plaintext"
         )
 
-        try:
-            html_message = loader.render_to_string(template_prefix + ".html", context)
-        except TemplateDoesNotExist:
-            emails_dir = os.path.dirname(template_prefix)
-            template = os.path.basename(template_prefix)
-            compiled_template_prefix = os.path.join(emails_dir, "compiled", template)
-            html_message = loader.render_to_string(compiled_template_prefix + ".html", context)
-        return (html_message, message, email_subject)
+        html_message = loader.render_to_string(template_prefix + ".html", context)
+        return (get_inlined_template(html_message), message, email_subject)
 
     # The i18n story for emails is a bit complicated.  For emails
     # going to a single user, we want to use the language that user
@@ -447,7 +454,7 @@ def clear_scheduled_emails(user_id: int, email_type: Optional[int] = None) -> No
 
     for item in items:
         item.users.remove(user_id)
-        if item.users.all().count() == 0:
+        if not item.users.all().exists():
             # Due to our transaction holding the row lock we have a guarantee
             # that the obtained COUNT is accurate, thus we can reliably use it
             # to decide whether to delete the ScheduledEmail row.
@@ -471,10 +478,14 @@ def deliver_scheduled_emails(email: ScheduledEmail) -> None:
     data = orjson.loads(email.data)
     user_ids = list(email.users.values_list("id", flat=True))
     if not user_ids and not email.address:
-        # This state doesn't make sense, so something must be mutating,
-        # or in the process of deleting, the object. We assume it will bring
-        # things to a correct state, and we just do nothing except logging this event.
-        logger.error("ScheduledEmail id %s has empty users and address attributes.", email.id)
+        # This state doesn't make sense, so something must have mutated the object
+        logger.warning(
+            "ScheduledEmail %s at %s had empty users and address attributes: %r",
+            email.id,
+            email.scheduled_timestamp,
+            data,
+        )
+        email.delete()
         return
 
     if user_ids:
@@ -495,7 +506,11 @@ def get_header(option: Optional[str], header: Optional[str], name: str) -> str:
 
 
 def send_custom_email(
-    users: Iterable[UserProfile], *, target_emails: Sequence[str] = [], options: Dict[str, Any]
+    users: QuerySet[UserProfile],
+    *,
+    target_emails: Sequence[str] = [],
+    options: Dict[str, Any],
+    add_context: Optional[Callable[[Dict[str, object], UserProfile], None]] = None,
 ) -> None:
     """
     Helper for `manage.py send_custom_email`.
@@ -513,13 +528,12 @@ def send_custom_email(
         parsed_email_template = Parser(policy=default).parsestr(text)
         email_template_hash = hashlib.sha256(text.encode()).hexdigest()[0:32]
 
-    email_filename = f"custom/custom_email_{email_template_hash}.source.html"
     email_id = f"zerver/emails/custom/custom_email_{email_template_hash}"
     markdown_email_base_template_path = "templates/zerver/emails/custom_email_base.pre.html"
-    html_source_template_path = f"templates/{email_id}.source.html"
+    html_template_path = f"templates/{email_id}.html"
     plain_text_template_path = f"templates/{email_id}.txt"
     subject_path = f"templates/{email_id}.subject.txt"
-    os.makedirs(os.path.dirname(html_source_template_path), exist_ok=True)
+    os.makedirs(os.path.dirname(html_template_path), exist_ok=True)
 
     # First, we render the Markdown input file just like our
     # user-facing docs with render_markdown_path.
@@ -531,28 +545,32 @@ def send_custom_email(
     rendered_input = render_markdown_path(plain_text_template_path.replace("templates/", ""))
 
     # And then extend it with our standard email headers.
-    with open(html_source_template_path, "w") as f:
+    with open(html_template_path, "w") as f:
         with open(markdown_email_base_template_path) as base_template:
-            # Note that we're doing a hacky non-Jinja2 substitution here;
-            # we do this because the normal render_markdown_path ordering
-            # doesn't commute properly with inline_email_css.
+            # We use an ugly string substitution here, because we want to:
+            #  1. Only run Jinja once on the supplied content
+            #  2. Allow the supplied content to have jinja interpolation in it
+            #  3. Have that interpolation happen in the context of
+            #     each individual email we send, so the contents can
+            #     vary user-to-user
             f.write(base_template.read().replace("{{ rendered_input }}", rendered_input))
 
     with open(subject_path, "w") as f:
         f.write(get_header(options.get("subject"), parsed_email_template.get("subject"), "subject"))
 
-    inline_template(email_filename)
-
     # Finally, we send the actual emails.
-    for user_profile in users:
+    for user_profile in users.select_related("realm").order_by("id"):
         if options.get("admins_only") and not user_profile.is_realm_admin:
             continue
-        context = {
+        context: Dict[str, object] = {
+            "realm": user_profile.realm,
+            "realm_string_id": user_profile.realm.string_id,
             "realm_uri": user_profile.realm.uri,
             "realm_name": user_profile.realm.name,
-            "unsubscribe_link": one_click_unsubscribe_link(user_profile, "marketing"),
         }
-        try:
+        if add_context is not None:
+            add_context(context, user_profile)
+        with suppress(EmailNotDeliveredError):
             send_email(
                 email_id,
                 to_user_ids=[user_profile.id],
@@ -564,8 +582,11 @@ def send_custom_email(
                 context=context,
                 dry_run=options["dry_run"],
             )
+<<<<<<< HEAD
         except EmailNotDeliveredError:
             pass
+=======
+>>>>>>> drc_main
 
         if options["dry_run"]:
             break

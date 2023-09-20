@@ -30,12 +30,13 @@ for any particular type of object.
 import re
 import sys
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import (
     Any,
     Callable,
     Collection,
+    Container,
     Dict,
     Iterator,
     List,
@@ -53,6 +54,8 @@ import orjson
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
 from django.utils.translation import gettext as _
+from pydantic import ValidationInfo, model_validator
+from pydantic.functional_validators import ModelWrapValidatorHandler
 
 from zerver.lib.exceptions import InvalidJSONError, JsonableError
 from zerver.lib.timezone import canonicalize_timezone
@@ -83,7 +86,7 @@ def check_required_string(var_name: str, val: object) -> str:
     return s
 
 
-def check_string_in(possible_values: Union[Set[str], List[str]]) -> Validator[str]:
+def check_string_in(possible_values: Container[str]) -> Validator[str]:
     def validator(var_name: str, val: object) -> str:
         s = check_string(var_name, val)
         if s not in possible_values:
@@ -147,7 +150,10 @@ def check_date(var_name: str, val: object) -> str:
     if not isinstance(val, str):
         raise ValidationError(_("{var_name} is not a string").format(var_name=var_name))
     try:
-        if datetime.strptime(val, "%Y-%m-%d").strftime("%Y-%m-%d") != val:
+        if (
+            datetime.strptime(val, "%Y-%m-%d").replace(tzinfo=timezone.utc).strftime("%Y-%m-%d")
+            != val
+        ):
             raise ValidationError(_("{var_name} is not a date").format(var_name=var_name))
     except ValueError:
         raise ValidationError(_("{var_name} is not a date").format(var_name=var_name))
@@ -310,7 +316,7 @@ def check_dict(
             delta_keys = set(val.keys()) - required_keys_set - optional_keys_set
             if len(delta_keys) != 0:
                 raise ValidationError(
-                    _("Unexpected arguments: {}").format(", ".join(list(delta_keys)))
+                    _("Unexpected arguments: {keys}").format(keys=", ".join(delta_keys))
                 )
 
         return cast(Dict[str, ResultT], val)
@@ -627,6 +633,17 @@ def check_string_or_int(var_name: str, val: object) -> Union[str, int]:
 class WildValue:
     var_name: str
     value: object
+
+    @model_validator(mode="wrap")
+    @classmethod
+    def to_wild_value(
+        cls,
+        value: object,
+        # We bypass the original WildValue handler to customize it
+        handler: ModelWrapValidatorHandler["WildValue"],
+        info: ValidationInfo,
+    ) -> "WildValue":
+        return wrap_wild_value("request", value)
 
     def __bool__(self) -> bool:
         return bool(self.value)

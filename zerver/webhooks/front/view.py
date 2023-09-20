@@ -5,9 +5,9 @@ from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_string, to_wild_value
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -21,9 +21,15 @@ def get_message_data(payload: WildValue) -> Tuple[str, str, str, str]:
 
 
 def get_source_name(payload: WildValue) -> str:
-    first_name = payload["source"]["data"]["first_name"].tame(check_string)
-    last_name = payload["source"]["data"]["last_name"].tame(check_string)
-    return f"{first_name} {last_name}"
+    type = payload["source"]["_meta"]["type"].tame(check_string)
+    if type == "teammate":
+        first_name = payload["source"]["data"]["first_name"].tame(check_string)
+        last_name = payload["source"]["data"]["last_name"].tame(check_string)
+        return f"{first_name} {last_name}"
+    elif type == "rule":
+        name = payload["source"]["data"]["name"].tame(check_string)
+        return f"'{name}' rule"
+    return f"({type})"
 
 
 def get_target_name(payload: WildValue) -> str:
@@ -35,28 +41,22 @@ def get_target_name(payload: WildValue) -> str:
 def get_inbound_message_body(payload: WildValue) -> str:
     link, outbox, inbox, subject = get_message_data(payload)
     return (
-        "[Inbound message]({link}) from **{outbox}** to **{inbox}**:\n"
-        "```quote\n*Subject*: {subject}\n```".format(
-            link=link, outbox=outbox, inbox=inbox, subject=subject
-        )
+        f"[Inbound message]({link}) from **{outbox}** to **{inbox}**:\n"
+        f"```quote\n*Subject*: {subject}\n```"
     )
 
 
 def get_outbound_message_body(payload: WildValue) -> str:
     link, outbox, inbox, subject = get_message_data(payload)
     return (
-        "[Outbound message]({link}) from **{inbox}** to **{outbox}**:\n"
-        "```quote\n*Subject*: {subject}\n```".format(
-            link=link, inbox=inbox, outbox=outbox, subject=subject
-        )
+        f"[Outbound message]({link}) from **{inbox}** to **{outbox}**:\n"
+        f"```quote\n*Subject*: {subject}\n```"
     )
 
 
 def get_outbound_reply_body(payload: WildValue) -> str:
     link, outbox, inbox, subject = get_message_data(payload)
-    return "[Outbound reply]({link}) from **{inbox}** to **{outbox}**.".format(
-        link=link, inbox=inbox, outbox=outbox
-    )
+    return f"[Outbound reply]({link}) from **{inbox}** to **{outbox}**."
 
 
 def get_comment_body(payload: WildValue) -> str:
@@ -72,9 +72,7 @@ def get_conversation_assigned_body(payload: WildValue) -> str:
     if source_name == target_name:
         return f"**{source_name}** assigned themselves."
 
-    return "**{source_name}** assigned **{target_name}**.".format(
-        source_name=source_name, target_name=target_name
-    )
+    return f"**{source_name}** assigned **{target_name}**."
 
 
 def get_conversation_unassigned_body(payload: WildValue) -> str:
@@ -138,11 +136,12 @@ def get_body_based_on_event(event: str) -> Callable[[WildValue], str]:
 
 
 @webhook_view("Front", all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint
 def api_front_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
+    *,
+    payload: WebhookPayload[WildValue],
 ) -> HttpResponse:
     event = payload["type"].tame(check_string)
     if event not in EVENT_FUNCTION_MAPPER:

@@ -3,8 +3,8 @@ from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
 from zerver.lib.validator import (
     WildValue,
     check_int,
@@ -12,7 +12,6 @@ from zerver.lib.validator import (
     check_string,
     check_string_in,
     check_url,
-    to_wild_value,
 )
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.webhooks.git import get_short_sha
@@ -54,39 +53,47 @@ Job `{job_name}` within Pipeline #{pipeline_number} {formatted_status}.
 {commit_details}
 """
 
-ALL_EVENT_TYPES = ["job-completed", "workflow-completed"]
+ALL_EVENT_TYPES = ["ping", "job-completed", "workflow-completed"]
 
 
 @webhook_view("CircleCI", all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint
 def api_circleci_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
+    *,
+    payload: WebhookPayload[WildValue],
 ) -> HttpResponse:
-    subject = get_subject(payload)
-    body = get_body(payload)
+    type = payload["type"].tame(check_string)
+    if type == "ping":
+        # Ping events don't have full payloads, so our normal codepath won't work
+        topic = "Test event"
+        body = "Webhook '{name}' test event successful.".format(
+            name=payload["webhook"]["name"].tame(check_string)
+        )
+    else:
+        topic = get_topic(payload)
+        body = get_body(payload)
 
-    pipeline = payload["pipeline"]
-
-    # We currently don't support projects using VCS providers other than GitHub,
-    # BitBucket and GitLab.
-    if "trigger_parameters" in pipeline and pipeline["trigger"]["type"] != "gitlab":
-        raise JsonableError(
-            _("Projects using this version control system provider aren't supported")
-        )  # nocoverage
+        # We currently don't support projects using VCS providers other than GitHub,
+        # BitBucket and GitLab.
+        pipeline = payload["pipeline"]
+        if "trigger_parameters" in pipeline and pipeline["trigger"]["type"] != "gitlab":
+            raise JsonableError(
+                _("Projects using this version control system provider aren't supported")
+            )  # nocoverage
 
     check_send_webhook_message(
         request,
         user_profile,
-        subject,
+        topic,
         body,
         payload["type"].tame(check_string),
     )
     return json_success(request)
 
 
-def get_subject(payload: WildValue) -> str:
+def get_topic(payload: WildValue) -> str:
     return payload["project"]["name"].tame(check_string)
 
 

@@ -1,6 +1,7 @@
 import datetime
 import os
 import shutil
+from collections import defaultdict
 from typing import Any, Callable, Dict, FrozenSet, Iterable, List, Optional, Set, Tuple
 from unittest.mock import patch
 
@@ -27,9 +28,10 @@ from zerver.actions.realm_settings import (
     do_change_realm_plan_type,
     do_set_realm_authentication_methods,
 )
+from zerver.actions.scheduled_messages import check_schedule_message
 from zerver.actions.user_activity import do_update_user_activity, do_update_user_activity_interval
 from zerver.actions.user_status import do_update_user_status
-from zerver.actions.user_topics import do_mute_topic
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import do_deactivate_user
 from zerver.lib import upload
 from zerver.lib.avatar_hash import user_avatar_path
@@ -47,8 +49,7 @@ from zerver.lib.test_helpers import (
     read_test_image_file,
     use_s3_backend,
 )
-from zerver.lib.upload import claim_attachment, upload_avatar_image, upload_message_file
-from zerver.lib.user_topics import add_topic_mute
+from zerver.lib.upload import claim_attachment, upload_avatar_image, upload_message_attachment
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     AlertWord,
@@ -67,6 +68,7 @@ from zerver.models import (
     RealmEmoji,
     RealmUserDefault,
     Recipient,
+    ScheduledMessage,
     Stream,
     Subscription,
     UserGroup,
@@ -82,6 +84,8 @@ from zerver.models import (
     get_huddle_hash,
     get_realm,
     get_stream,
+    get_system_bot,
+    get_user_by_delivery_email,
 )
 
 
@@ -153,7 +157,7 @@ class ExportFile(ZulipTestCase):
         self, user_profile: UserProfile, *, emoji_name: str = "whatever"
     ) -> None:
         message = most_recent_message(user_profile)
-        url = upload_message_file(
+        url = upload_message_attachment(
             "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
         )
         attachment_path_id = url.replace("/user_uploads/", "")
@@ -354,7 +358,7 @@ class RealmImportExportTest(ExportFile):
         # We create an attachment tied to a personal message. That means it shouldn't be
         # included in a public export, as it's private data.
         personal_message_id = self.send_personal_message(user_profile, self.example_user("othello"))
-        url = upload_message_file(
+        url = upload_message_attachment(
             "dummy.txt", len(b"zulip!"), "text/plain", b"zulip!", user_profile
         )
         attachment_path_id = url.replace("/user_uploads/", "")
@@ -368,7 +372,7 @@ class RealmImportExportTest(ExportFile):
         self.export_realm(realm, public_only=True)
 
         # The attachment row shouldn't have been exported:
-        self.assertEqual((read_json("attachment.json")["zerver_attachment"]), [])
+        self.assertEqual(read_json("attachment.json")["zerver_attachment"], [])
 
         # Aside of the attachment row, we also need to verify that the file itself
         # isn't included.
@@ -436,10 +440,10 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(exported_realm_user_default[0]["default_language"], "de")
 
         exported_usergroups = data["zerver_usergroup"]
-        self.assert_length(exported_usergroups, 8)
-        self.assertEqual(exported_usergroups[1]["name"], "@role:administrators")
-        self.assertFalse("direct_members" in exported_usergroups[1])
-        self.assertFalse("direct_subgroups" in exported_usergroups[1])
+        self.assert_length(exported_usergroups, 9)
+        self.assertEqual(exported_usergroups[2]["name"], "role:administrators")
+        self.assertFalse("direct_members" in exported_usergroups[2])
+        self.assertFalse("direct_subgroups" in exported_usergroups[2])
 
         data = read_json("messages-000001.json")
         um = UserMessage.objects.all()[0]
@@ -555,7 +559,7 @@ class RealmImportExportTest(ExportFile):
             [self.example_user("cordelia"), self.example_user("ZOE"), self.example_user("othello")],
         )
 
-        # Create PMs
+        # Create direct messages
         pm_a_msg_id = self.send_personal_message(
             self.example_user("AARON"), self.example_user("othello")
         )
@@ -639,7 +643,7 @@ class RealmImportExportTest(ExportFile):
             type_id__in=public_stream_ids, type=Recipient.STREAM
         )
         public_stream_message_ids = Message.objects.filter(
-            recipient__in=public_stream_recipients
+            realm_id=realm.id, recipient__in=public_stream_recipients
         ).values_list("id", flat=True)
 
         # Messages from Private stream C are not exported since no member gave consent
@@ -652,7 +656,7 @@ class RealmImportExportTest(ExportFile):
             type_id__in=private_stream_ids, type=Recipient.STREAM
         )
         private_stream_message_ids = Message.objects.filter(
-            recipient__in=private_stream_recipients
+            realm_id=realm.id, recipient__in=private_stream_recipients
         ).values_list("id", flat=True)
 
         pm_recipients = Recipient.objects.filter(
@@ -660,7 +664,7 @@ class RealmImportExportTest(ExportFile):
         )
         pm_query = Q(recipient__in=pm_recipients) | Q(sender__in=consented_user_ids)
         exported_pm_ids = (
-            Message.objects.filter(pm_query)
+            Message.objects.filter(pm_query, realm=realm.id)
             .values_list("id", flat=True)
             .values_list("id", flat=True)
         )
@@ -672,7 +676,7 @@ class RealmImportExportTest(ExportFile):
         )
         pm_query = Q(recipient__in=huddle_recipients) | Q(sender__in=consented_user_ids)
         exported_huddle_ids = (
-            Message.objects.filter(pm_query)
+            Message.objects.filter(pm_query, realm=realm.id)
             .values_list("id", flat=True)
             .values_list("id", flat=True)
         )
@@ -707,6 +711,9 @@ class RealmImportExportTest(ExportFile):
         cordelia = self.example_user("cordelia")
         othello = self.example_user("othello")
 
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        cross_realm_bot = get_system_bot(settings.WELCOME_BOT, internal_realm.id)
+
         with get_test_image_file("img.png") as img_file:
             realm_emoji = check_add_realm_emoji(
                 realm=hamlet.realm, name="hawaii", author=hamlet, image_file=img_file
@@ -726,6 +733,18 @@ class RealmImportExportTest(ExportFile):
         do_set_realm_authentication_methods(
             original_realm, authentication_methods, acting_user=None
         )
+
+        # Set up an edge-case RealmAuditLog with acting_user in a different realm. Such an acting_user can't be covered
+        # by the export, so we'll test that it is handled by getting set to None.
+        self.assertTrue(
+            RealmAuditLog.objects.filter(
+                modified_user=hamlet, event_type=RealmAuditLog.USER_CREATED
+            ).count(),
+            1,
+        )
+        RealmAuditLog.objects.filter(
+            modified_user=hamlet, event_type=RealmAuditLog.USER_CREATED
+        ).update(acting_user_id=cross_realm_bot.id)
 
         # data to test import of huddles
         huddle = [
@@ -773,13 +792,11 @@ class RealmImportExportTest(ExportFile):
 
         # data to test import of muted topic
         stream = get_stream("Verona", original_realm)
-        recipient = stream.recipient
-        assert recipient is not None
-        add_topic_mute(
-            user_profile=sample_user,
-            stream_id=stream.id,
-            recipient_id=recipient.id,
-            topic_name="Verona2",
+        do_set_user_topic_visibility_policy(
+            sample_user,
+            stream,
+            "Verona2",
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
         )
 
         # data to test import of muted users
@@ -789,7 +806,24 @@ class RealmImportExportTest(ExportFile):
 
         client = get_client("website")
 
-        do_update_user_presence(sample_user, client, timezone_now(), UserPresence.ACTIVE)
+        do_update_user_presence(
+            sample_user, client, timezone_now(), UserPresence.LEGACY_STATUS_ACTIVE_INT
+        )
+
+        # Set up scheduled messages.
+        ScheduledMessage.objects.filter(realm=original_realm).delete()
+        check_schedule_message(
+            sender=hamlet,
+            client=get_client("website"),
+            recipient_type_name="stream",
+            message_to=[Stream.objects.get(name="Denmark", realm=original_realm).id],
+            topic_name="test-import",
+            message_content="test message",
+            deliver_at=timezone_now() + datetime.timedelta(days=365),
+            realm=original_realm,
+        )
+        original_scheduled_message = ScheduledMessage.objects.filter(realm=original_realm).last()
+        assert original_scheduled_message is not None
 
         # send Cordelia to the islands
         do_update_user_status(
@@ -941,6 +975,15 @@ class RealmImportExportTest(ExportFile):
                 Recipient.objects.get(type=Recipient.HUDDLE, type_id=huddle_object.id).id,
             )
 
+        self.assertEqual(ScheduledMessage.objects.filter(realm=imported_realm).count(), 1)
+        imported_scheduled_message = ScheduledMessage.objects.first()
+        assert imported_scheduled_message is not None
+        self.assertEqual(imported_scheduled_message.content, original_scheduled_message.content)
+        self.assertEqual(
+            imported_scheduled_message.scheduled_timestamp,
+            original_scheduled_message.scheduled_timestamp,
+        )
+
         for user_profile in UserProfile.objects.filter(realm=imported_realm):
             # Check that all Subscriptions have the correct is_user_active set.
             self.assertEqual(
@@ -962,6 +1005,15 @@ class RealmImportExportTest(ExportFile):
             original_realm.authentication_methods_dict(),
             imported_realm.authentication_methods_dict(),
         )
+
+        imported_hamlet = get_user_by_delivery_email(hamlet.delivery_email, imported_realm)
+        realmauditlog = RealmAuditLog.objects.get(
+            modified_user=imported_hamlet, event_type=RealmAuditLog.USER_CREATED
+        )
+        self.assertEqual(realmauditlog.realm, imported_realm)
+        # As explained above when setting up the RealmAuditLog row, the .acting_user should have been
+        # set to None due to being unexportable.
+        self.assertEqual(realmauditlog.acting_user, None)
 
         self.assertEqual(
             Message.objects.filter(realm=original_realm).count(),
@@ -992,6 +1044,13 @@ class RealmImportExportTest(ExportFile):
         @getter
         def get_active_stream_names(r: Realm) -> Set[str]:
             return {stream.name for stream in get_active_streams(r)}
+
+        @getter
+        def get_group_names_for_group_settings(r: Realm) -> Set[str]:
+            return {
+                getattr(r, permmission_name).name
+                for permmission_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
+            }
 
         # test recipients
         def get_recipient_stream(r: Realm) -> Recipient:
@@ -1124,7 +1183,7 @@ class RealmImportExportTest(ExportFile):
         def get_muted_topics(r: Realm) -> Set[str]:
             user_profile_id = get_user_id(r, "King Hamlet")
             muted_topics = UserTopic.objects.filter(
-                user_profile_id=user_profile_id, visibility_policy=UserTopic.MUTED
+                user_profile_id=user_profile_id, visibility_policy=UserTopic.VisibilityPolicy.MUTED
             )
             topic_names = {muted_topic.topic_name for muted_topic in muted_topics}
             return topic_names
@@ -1155,7 +1214,7 @@ class RealmImportExportTest(ExportFile):
 
         @getter
         def get_group_group_membership(r: Realm) -> Set[str]:
-            usergroup = UserGroup.objects.get(realm=r, name="@role:members")
+            usergroup = UserGroup.objects.get(realm=r, name="role:members")
             group_group_membership = GroupGroupMembership.objects.filter(supergroup=usergroup)
             subgroups = {membership.subgroup.name for membership in group_group_membership}
             return subgroups
@@ -1175,10 +1234,15 @@ class RealmImportExportTest(ExportFile):
             # We already check the subgroups of the group through GroupGroupMembership
             # objects, but we also want to check that direct_subgroups field is set
             # correctly since we do not include this in export data.
-            usergroup = UserGroup.objects.get(realm=r, name="@role:members")
+            usergroup = UserGroup.objects.get(realm=r, name="role:members")
             direct_subgroups = usergroup.direct_subgroups.all()
             direct_subgroup_names = {group.name for group in direct_subgroups}
             return direct_subgroup_names
+
+        @getter
+        def get_user_group_can_mention_group_setting(r: Realm) -> str:
+            user_group = UserGroup.objects.get(realm=r, name="hamletcharacters")
+            return user_group.can_mention_group.name
 
         # test botstoragedata and botconfigdata
         @getter
@@ -1196,7 +1260,7 @@ class RealmImportExportTest(ExportFile):
         # test messages
         def get_stream_messages(r: Realm) -> QuerySet[Message]:
             recipient = get_recipient_stream(r)
-            messages = Message.objects.filter(recipient=recipient)
+            messages = Message.objects.filter(realm_id=r.id, recipient=recipient)
             return messages
 
         @getter
@@ -1245,7 +1309,11 @@ class RealmImportExportTest(ExportFile):
         def get_userpresence_timestamp(r: Realm) -> Set[object]:
             # It should be sufficient to compare UserPresence timestamps to verify
             # they got exported/imported correctly.
-            return set(UserPresence.objects.filter(realm=r).values_list("timestamp", flat=True))
+            return set(
+                UserPresence.objects.filter(realm=r).values_list(
+                    "last_active_time", "last_connected_time"
+                )
+            )
 
         @getter
         def get_realm_user_default_values(r: Realm) -> Dict[str, object]:
@@ -1327,9 +1395,10 @@ class RealmImportExportTest(ExportFile):
         self.assert_length(b"zulip!", uploaded_file.size)
 
         assert settings.LOCAL_UPLOADS_DIR is not None
-        attachment_file_path = os.path.join(
-            settings.LOCAL_UPLOADS_DIR, "files", uploaded_file.path_id
-        )
+        assert settings.LOCAL_FILES_DIR is not None
+        assert settings.LOCAL_AVATARS_DIR is not None
+
+        attachment_file_path = os.path.join(settings.LOCAL_FILES_DIR, uploaded_file.path_id)
         self.assertTrue(os.path.isfile(attachment_file_path))
 
         # Test emojis
@@ -1338,18 +1407,18 @@ class RealmImportExportTest(ExportFile):
             realm_id=imported_realm.id,
             emoji_file_name=realm_emoji.file_name,
         )
-        emoji_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", emoji_path)
+        emoji_file_path = os.path.join(settings.LOCAL_AVATARS_DIR, emoji_path)
         self.assertTrue(os.path.isfile(emoji_file_path))
 
         # Test avatars
         user_profile = UserProfile.objects.get(full_name=user.full_name, realm=imported_realm)
         avatar_path_id = user_avatar_path(user_profile) + ".original"
-        avatar_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", avatar_path_id)
+        avatar_file_path = os.path.join(settings.LOCAL_AVATARS_DIR, avatar_path_id)
         self.assertTrue(os.path.isfile(avatar_file_path))
 
         # Test realm icon and logo
         upload_path = upload.upload_backend.realm_avatar_and_logo_path(imported_realm)
-        full_upload_path = os.path.join(settings.LOCAL_UPLOADS_DIR, upload_path)
+        full_upload_path = os.path.join(settings.LOCAL_AVATARS_DIR, upload_path)
 
         test_image_data = read_test_image_file("img.png")
         self.assertIsNotNone(test_image_data)
@@ -1488,6 +1557,41 @@ class RealmImportExportTest(ExportFile):
                     realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
                 ).exists()
             )
+
+    def test_system_usergroup_audit_logs(self) -> None:
+        realm = get_realm("zulip")
+        self.export_realm(realm)
+
+        # Simulate an external export where user groups are missing.
+        data = read_json("realm.json")
+        data.pop("zerver_usergroup")
+        data.pop("zerver_realmauditlog")
+
+        # User groups data is missing. So, all the realm group based settings
+        # should be None.
+        for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS:
+            data["zerver_realm"][0][setting_name] = None
+
+        with open(export_fn("realm.json"), "wb") as f:
+            f.write(orjson.dumps(data))
+
+        with self.assertLogs(level="INFO"):
+            imported_realm = do_import_realm(get_output_dir(), "test-zulip-1")
+        user_membership_logs = RealmAuditLog.objects.filter(
+            realm=imported_realm,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+        ).values_list("modified_user_id", "modified_user_group__name")
+        logged_membership_by_user_id = defaultdict(set)
+        for user_id, user_group_name in user_membership_logs:
+            logged_membership_by_user_id[user_id].add(user_group_name)
+
+        # Make sure that all users get logged as a member in their
+        # corresponding system groups.
+        for user in UserProfile.objects.filter(realm=imported_realm):
+            expected_group_names = {UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[user.role]["name"]}
+            if UserGroup.MEMBERS_GROUP_NAME in expected_group_names:
+                expected_group_names.add(UserGroup.FULL_MEMBERS_GROUP_NAME)
+            self.assertSetEqual(logged_membership_by_user_id[user.id], expected_group_names)
 
 
 class SingleUserExportTest(ExportFile):
@@ -1732,14 +1836,13 @@ class SingleUserExportTest(ExportFile):
             self.assertEqual(rec["user_profile"], cordelia.id)
             self.assertEqual(make_datetime(rec["start"]), now)
 
-        do_update_user_presence(cordelia, client, now, UserPresence.ACTIVE)
-        do_update_user_presence(othello, client, now, UserPresence.IDLE)
+        do_update_user_presence(cordelia, client, now, UserPresence.LEGACY_STATUS_ACTIVE_INT)
+        do_update_user_presence(othello, client, now, UserPresence.LEGACY_STATUS_IDLE_INT)
 
         @checker
         def zerver_userpresence(records: List[Record]) -> None:
-            self.assertEqual(records[-1]["status"], UserPresence.ACTIVE)
-            self.assertEqual(records[-1]["client"], client.id)
-            self.assertEqual(make_datetime(records[-1]["timestamp"]), now)
+            self.assertEqual(make_datetime(records[-1]["last_connected_time"]), now)
+            self.assertEqual(make_datetime(records[-1]["last_active_time"]), now)
 
         do_update_user_status(
             user_profile=cordelia,
@@ -1766,14 +1869,21 @@ class SingleUserExportTest(ExportFile):
             rec = records[-1]
             self.assertEqual(rec["status_text"], "on vacation")
 
-        do_mute_topic(cordelia, scotland, "bagpipe music")
-        do_mute_topic(othello, scotland, "nessie")
+        do_set_user_topic_visibility_policy(
+            cordelia,
+            scotland,
+            "bagpipe music",
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+        )
+        do_set_user_topic_visibility_policy(
+            othello, scotland, "nessie", visibility_policy=UserTopic.VisibilityPolicy.MUTED
+        )
 
         @checker
         def zerver_usertopic(records: List[Record]) -> None:
             rec = records[-1]
             self.assertEqual(rec["topic_name"], "bagpipe music")
-            self.assertEqual(rec["visibility_policy"], UserTopic.MUTED)
+            self.assertEqual(rec["visibility_policy"], UserTopic.VisibilityPolicy.MUTED)
 
         """
         For some tables we don't bother with super realistic test data

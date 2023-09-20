@@ -13,6 +13,7 @@ from analytics.views.activity_common import (
     format_date_for_activity_reports,
     get_user_activity_summary,
     make_table,
+    realm_stats_link,
     user_activity_link,
 )
 from zerver.decorator import require_server_admin
@@ -162,12 +163,13 @@ def sent_messages_report(realm: str) -> str:
         "Bots",
     ]
 
+    # Uses index: zerver_message_realm_date_sent
     query = SQL(
         """
         select
             series.day::date,
-            humans.cnt,
-            bots.cnt
+            user_messages.humans,
+            user_messages.bots
         from (
             select generate_series(
                 (now()::date - interval '2 week'),
@@ -178,45 +180,27 @@ def sent_messages_report(realm: str) -> str:
         left join (
             select
                 date_sent::date date_sent,
-                count(*) cnt
+                count(*) filter (where not up.is_bot) as humans,
+                count(*) filter (where up.is_bot) as bots
             from zerver_message m
             join zerver_userprofile up on up.id = m.sender_id
             join zerver_realm r on r.id = up.realm_id
             where
                 r.string_id = %s
             and
-                (not up.is_bot)
-            and
                 date_sent > now() - interval '2 week'
+            and
+                m.realm_id = r.id
             group by
                 date_sent::date
             order by
                 date_sent::date
-        ) humans on
-            series.day = humans.date_sent
-        left join (
-            select
-                date_sent::date date_sent,
-                count(*) cnt
-            from zerver_message m
-            join zerver_userprofile up on up.id = m.sender_id
-            join zerver_realm r on r.id = up.realm_id
-            where
-                r.string_id = %s
-            and
-                up.is_bot
-            and
-                date_sent > now() - interval '2 week'
-            group by
-                date_sent::date
-            order by
-                date_sent::date
-        ) bots on
-            series.day = bots.date_sent
+        ) user_messages on
+            series.day = user_messages.date_sent
     """
     )
     cursor = connection.cursor()
-    cursor.execute(query, [realm, realm])
+    cursor.execute(query, [realm])
     rows = cursor.fetchall()
     cursor.close()
 
@@ -252,8 +236,10 @@ def get_realm_activity(request: HttpRequest, realm_str: str) -> HttpResponse:
     data += [(page_title, content)]
 
     title = realm_str
+    realm_stats = realm_stats_link(realm_str)
+
     return render(
         request,
         "analytics/activity.html",
-        context=dict(data=data, realm_link=None, title=title),
+        context=dict(data=data, realm_stats_link=realm_stats, title=title),
     )

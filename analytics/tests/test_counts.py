@@ -182,7 +182,9 @@ class AnalyticsTestCase(ZulipTestCase):
     ) -> None:
         if property is None:
             property = self.current_property
-        queryset = table.objects.filter(property=property, end_time=end_time).filter(**kwargs)
+        queryset = table._default_manager.filter(property=property, end_time=end_time).filter(
+            **kwargs
+        )
         if table is not InstallationCount:
             if realm is None:
                 realm = self.default_realm
@@ -227,16 +229,15 @@ class AnalyticsTestCase(ZulipTestCase):
                 kwargs[arg_keys[i]] = values[i]
             for key, value in defaults.items():
                 kwargs[key] = kwargs.get(key, value)
-            if table is not InstallationCount:
-                if "realm" not in kwargs:
-                    if "user" in kwargs:
-                        kwargs["realm"] = kwargs["user"].realm
-                    elif "stream" in kwargs:
-                        kwargs["realm"] = kwargs["stream"].realm
-                    else:
-                        kwargs["realm"] = self.default_realm
-            self.assertEqual(table.objects.filter(**kwargs).count(), 1)
-        self.assert_length(arg_values, table.objects.count())
+            if table is not InstallationCount and "realm" not in kwargs:
+                if "user" in kwargs:
+                    kwargs["realm"] = kwargs["user"].realm
+                elif "stream" in kwargs:
+                    kwargs["realm"] = kwargs["stream"].realm
+                else:
+                    kwargs["realm"] = self.default_realm
+            self.assertEqual(table._default_manager.filter(**kwargs).count(), 1)
+        self.assert_length(arg_values, table._default_manager.count())
 
 
 class TestProcessCountStat(AnalyticsTestCase):
@@ -658,7 +659,7 @@ class TestCountStats(AnalyticsTestCase):
         self.create_message(user1, recipient_huddle1)
         self.create_message(user2, recipient_huddle2)
 
-        # private messages
+        # direct messages
         recipient_user1 = Recipient.objects.get(type_id=user1.id, type=Recipient.PERSONAL)
         recipient_user2 = Recipient.objects.get(type_id=user2.id, type=Recipient.PERSONAL)
         recipient_user3 = Recipient.objects.get(type_id=user3.id, type=Recipient.PERSONAL)
@@ -1383,46 +1384,48 @@ class TestLoggingCountStats(AnalyticsTestCase):
         stream, _ = self.create_stream_with_recipient()
 
         invite_expires_in_minutes = 2 * 24 * 60
-        do_invite_users(
-            user,
-            ["user1@domain.tld", "user2@domain.tld"],
-            [stream],
-            invite_expires_in_minutes=invite_expires_in_minutes,
-        )
+        with mock.patch("zerver.actions.invites.too_many_recent_realm_invites", return_value=False):
+            do_invite_users(
+                user,
+                ["user1@domain.tld", "user2@domain.tld"],
+                [stream],
+                invite_expires_in_minutes=invite_expires_in_minutes,
+            )
         assertInviteCountEquals(2)
 
         # We currently send emails when re-inviting users that haven't
         # turned into accounts, so count them towards the total
-        do_invite_users(
-            user,
-            ["user1@domain.tld", "user2@domain.tld"],
-            [stream],
-            invite_expires_in_minutes=invite_expires_in_minutes,
-        )
+        with mock.patch("zerver.actions.invites.too_many_recent_realm_invites", return_value=False):
+            do_invite_users(
+                user,
+                ["user1@domain.tld", "user2@domain.tld"],
+                [stream],
+                invite_expires_in_minutes=invite_expires_in_minutes,
+            )
         assertInviteCountEquals(4)
 
         # Test mix of good and malformed invite emails
-        try:
+        with self.assertRaises(InvitationError), mock.patch(
+            "zerver.actions.invites.too_many_recent_realm_invites", return_value=False
+        ):
             do_invite_users(
                 user,
                 ["user3@domain.tld", "malformed"],
                 [stream],
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
-        except InvitationError:
-            pass
         assertInviteCountEquals(4)
 
         # Test inviting existing users
-        try:
+        with self.assertRaises(InvitationError), mock.patch(
+            "zerver.actions.invites.too_many_recent_realm_invites", return_value=False
+        ):
             do_invite_users(
                 user,
                 ["first@domain.tld", "user4@domain.tld"],
                 [stream],
                 invite_expires_in_minutes=invite_expires_in_minutes,
             )
-        except InvitationError:
-            pass
         assertInviteCountEquals(5)
 
         # Revoking invite should not give you credit
@@ -1432,7 +1435,8 @@ class TestLoggingCountStats(AnalyticsTestCase):
         assertInviteCountEquals(5)
 
         # Resending invite should cost you
-        do_resend_user_invite_email(assert_is_not_none(PreregistrationUser.objects.first()))
+        with mock.patch("zerver.actions.invites.too_many_recent_realm_invites", return_value=False):
+            do_resend_user_invite_email(assert_is_not_none(PreregistrationUser.objects.first()))
         assertInviteCountEquals(6)
 
     def test_messages_read_hour(self) -> None:
@@ -1505,12 +1509,12 @@ class TestDeleteStats(AnalyticsTestCase):
         FillState.objects.create(property="test", end_time=self.TIME_ZERO, state=FillState.DONE)
 
         analytics = apps.get_app_config("analytics")
-        for table in list(analytics.models.values()):
-            self.assertTrue(table.objects.exists())
+        for table in analytics.models.values():
+            self.assertTrue(table._default_manager.exists())
 
         do_drop_all_analytics_tables()
-        for table in list(analytics.models.values()):
-            self.assertFalse(table.objects.exists())
+        for table in analytics.models.values():
+            self.assertFalse(table._default_manager.exists())
 
     def test_do_drop_single_stat(self) -> None:
         user = self.create_user()
@@ -1529,13 +1533,13 @@ class TestDeleteStats(AnalyticsTestCase):
         FillState.objects.create(property="to_save", end_time=self.TIME_ZERO, state=FillState.DONE)
 
         analytics = apps.get_app_config("analytics")
-        for table in list(analytics.models.values()):
-            self.assertTrue(table.objects.exists())
+        for table in analytics.models.values():
+            self.assertTrue(table._default_manager.exists())
 
         do_drop_single_stat("to_delete")
-        for table in list(analytics.models.values()):
-            self.assertFalse(table.objects.filter(property="to_delete").exists())
-            self.assertTrue(table.objects.filter(property="to_save").exists())
+        for table in analytics.models.values():
+            self.assertFalse(table._default_manager.filter(property="to_delete").exists())
+            self.assertTrue(table._default_manager.filter(property="to_save").exists())
 
 
 class TestActiveUsersAudit(AnalyticsTestCase):

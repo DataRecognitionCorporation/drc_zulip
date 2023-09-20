@@ -3,6 +3,8 @@
 from collections import defaultdict
 from typing import Any, Dict, List
 
+from zerver.lib.emoji_utils import emoji_to_hex_codepoint, hex_codepoint_to_emoji, unqualify_emoji
+
 # Emoji sets that we currently support.
 EMOJISETS = ["google", "twitter"]
 
@@ -34,7 +36,7 @@ REMAPPED_EMOJIS = {
 }
 
 # Emoticons and which emoji they should become. Duplicate emoji are allowed.
-# Changes here should be mimicked in `templates/zerver/help/enable-emoticon-translations.md`.
+# Changes here should be mimicked in `help/configure-emoticon-translations.md`.
 EMOTICON_CONVERSIONS = {
     ":)": ":smile:",
     "(:": ":smile:",
@@ -53,7 +55,7 @@ EMOTICON_CONVERSIONS = {
 
 def emoji_names_for_picker(emoji_name_maps: Dict[str, Dict[str, Any]]) -> List[str]:
     emoji_names: List[str] = []
-    for emoji_code, name_info in emoji_name_maps.items():
+    for name_info in emoji_name_maps.values():
         emoji_names.append(name_info["canonical_name"])
         emoji_names.extend(name_info["aliases"])
 
@@ -61,18 +63,12 @@ def emoji_names_for_picker(emoji_name_maps: Dict[str, Dict[str, Any]]) -> List[s
 
 
 def get_emoji_code(emoji_dict: Dict[str, Any]) -> str:
-    # Starting from version 4.0.0, `emoji_datasource` package has started to
-    # add an emoji presentation variation selector for certain emojis which
-    # have defined variation sequences. Since in informal environments(like
-    # texting and chat), it is more appropriate for an emoji to have a colorful
-    # display so until emoji characters have a text presentation selector, it
-    # should have a colorful display. Hence we can continue using emoji characters
-    # without appending emoji presentation selector.
-    # (http://unicode.org/reports/tr51/index.html#Presentation_Style)
-    # If `non_qualified` field is present and not None return it otherwise
-    # return `unified` field.
-    emoji_code = emoji_dict.get("non_qualified") or emoji_dict["unified"]
-    return emoji_code.lower()
+    # There is a `non_qualified` field on `emoji_dict` but it's
+    # inconsistently present, so we'll always use the unqualified
+    # emoji by unqualifying it ourselves. This gives us more consistent
+    # behaviour between emojis, and doesn't rely on the incomplete
+    # upstream package (https://github.com/iamcal/emoji-data/pull/217).
+    return emoji_to_hex_codepoint(unqualify_emoji(hex_codepoint_to_emoji(emoji_dict["unified"])))
 
 
 # Returns a dict from categories to list of codepoints. The list of
@@ -103,10 +99,7 @@ def generate_emoji_catalog(
 # Use only those names for which images are present in all
 # the emoji sets so that we can switch emoji sets seamlessly.
 def emoji_is_universal(emoji_dict: Dict[str, Any]) -> bool:
-    for emoji_set in EMOJISETS:
-        if not emoji_dict["has_img_" + emoji_set]:
-            return False
-    return True
+    return all(emoji_dict["has_img_" + emoji_set] for emoji_set in EMOJISETS)
 
 
 def generate_codepoint_to_name_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
@@ -119,14 +112,11 @@ def generate_codepoint_to_name_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -
 def generate_codepoint_to_names_map(
     emoji_name_maps: Dict[str, Dict[str, Any]]
 ) -> Dict[str, List[str]]:
-    codepoint_to_names: Dict[str, List[str]] = {}
-    for emoji_code, name_info in emoji_name_maps.items():
-        # The first element of the names list is always the canonical name.
-        names = [name_info["canonical_name"]]
-        for alias in name_info["aliases"]:
-            names.append(alias)
-        codepoint_to_names[emoji_code] = names
-    return codepoint_to_names
+    # The first element of the names list is always the canonical name.
+    return {
+        emoji_code: [name_info["canonical_name"], *name_info["aliases"]]
+        for emoji_code, name_info in emoji_name_maps.items()
+    }
 
 
 def generate_name_to_codepoint_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -> Dict[str, str]:

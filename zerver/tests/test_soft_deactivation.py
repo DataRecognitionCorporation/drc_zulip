@@ -62,12 +62,10 @@ class UserSoftDeactivationTests(ZulipTestCase):
         with self.assertLogs(logger_string, level="INFO") as m:
             do_soft_deactivate_users(users)
 
-        log_output = []
-        for user in users:
-            log_output.append(f"INFO:{logger_string}:Soft deactivated user {user.id}")
-        log_output.append(
-            f"INFO:{logger_string}:Soft-deactivated batch of {len(users[:100])} users; {len(users[100:])} remain to process"
-        )
+        log_output = [
+            *(f"INFO:{logger_string}:Soft deactivated user {user.id}" for user in users),
+            f"INFO:{logger_string}:Soft-deactivated batch of {len(users[:100])} users; {len(users[100:])} remain to process",
+        ]
 
         self.assertEqual(m.output, log_output)
 
@@ -118,13 +116,10 @@ class UserSoftDeactivationTests(ZulipTestCase):
         with self.assertLogs(logger_string, level="INFO") as m:
             do_soft_deactivate_users(users)
 
-        log_output = []
-        for user in users:
-            log_output.append(f"INFO:{logger_string}:Soft deactivated user {user.id}")
-        log_output.append(
-            f"INFO:{logger_string}:Soft-deactivated batch of {len(users[:100])} users; {len(users[100:])} remain to process"
-        )
-
+        log_output = [
+            *(f"INFO:{logger_string}:Soft deactivated user {user.id}" for user in users),
+            f"INFO:{logger_string}:Soft-deactivated batch of {len(users[:100])} users; {len(users[100:])} remain to process",
+        ]
         self.assertEqual(m.output, log_output)
 
         for user in users:
@@ -133,10 +128,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
         with self.assertLogs(logger_string, level="INFO") as m:
             do_soft_activate_users(users)
 
-        log_output = []
-        for user in users:
-            log_output.append(f"INFO:{logger_string}:Soft reactivated user {user.id}")
-
+        log_output = [f"INFO:{logger_string}:Soft reactivated user {user.id}" for user in users]
         self.assertEqual(m.output, log_output)
 
         for user in users:
@@ -181,13 +173,10 @@ class UserSoftDeactivationTests(ZulipTestCase):
         with self.assertLogs(logger_string, level="INFO") as m:
             do_soft_deactivate_users(users)
 
-        log_output = []
-        for user in users:
-            log_output.append(f"INFO:{logger_string}:Soft deactivated user {user.id}")
-        log_output.append(
-            f"INFO:{logger_string}:Soft-deactivated batch of {len(users[:100])} users; {len(users[100:])} remain to process"
-        )
-
+        log_output = [
+            *(f"INFO:{logger_string}:Soft deactivated user {user.id}" for user in users),
+            f"INFO:{logger_string}:Soft-deactivated batch of {len(users[:100])} users; {len(users[100:])} remain to process",
+        ]
         self.assertEqual(m.output, log_output)
 
         for user in users:
@@ -243,13 +232,11 @@ class UserSoftDeactivationTests(ZulipTestCase):
         with self.assertLogs(logger_string, level="INFO") as m:
             users_deactivated = do_auto_soft_deactivate_users(-1, realm)
 
-        log_output = []
-        for user in users:
-            log_output.append(f"INFO:{logger_string}:Soft deactivated user {user.id}")
-        log_output.append(
-            f"INFO:{logger_string}:Soft-deactivated batch of {len(users[:100])} users; {len(users[100:])} remain to process"
-        )
-        log_output.append(f"INFO:{logger_string}:Caught up {len(users)} soft-deactivated users")
+        log_output = [
+            *(f"INFO:{logger_string}:Soft deactivated user {user.id}" for user in users),
+            f"INFO:{logger_string}:Soft-deactivated batch of {len(users[:100])} users; {len(users[100:])} remain to process",
+            f"INFO:{logger_string}:Caught up {len(users)} soft-deactivated users",
+        ]
         self.assertEqual(set(m.output), set(log_output))
 
         self.assert_length(users_deactivated, len(users))
@@ -267,8 +254,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
         with self.assertLogs(logger_string, level="INFO") as m:
             users_deactivated = do_auto_soft_deactivate_users(-1, realm)
 
-        log_output = []
-        log_output.append(f"INFO:{logger_string}:Caught up {len(users)} soft-deactivated users")
+        log_output = [f"INFO:{logger_string}:Caught up {len(users)} soft-deactivated users"]
         self.assertEqual(set(m.output), set(log_output))
 
         self.assert_length(users_deactivated, 0)  # all users are already deactivated
@@ -623,7 +609,8 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         def assert_num_possible_users(
             expected_count: int,
             *,
-            possible_wildcard_mention: bool = False,
+            possible_stream_wildcard_mention: bool = False,
+            topic_participant_user_ids: AbstractSet[int] = set(),
             possibly_mentioned_user_ids: AbstractSet[int] = set(),
         ) -> None:
             self.assertEqual(
@@ -631,7 +618,9 @@ class SoftDeactivationMessageTest(ZulipTestCase):
                     get_subscriptions_for_send_message(
                         realm_id=realm_id,
                         stream_id=stream_id,
-                        possible_wildcard_mention=possible_wildcard_mention,
+                        topic_name=topic_name,
+                        possible_stream_wildcard_mention=possible_stream_wildcard_mention,
+                        topic_participant_user_ids=topic_participant_user_ids,
                         possibly_mentioned_user_ids=possibly_mentioned_user_ids,
                     )
                 ),
@@ -641,12 +630,14 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         def assert_stream_message_sent_to_idle_user(
             content: str,
             *,
-            possible_wildcard_mention: bool = False,
+            possible_stream_wildcard_mention: bool = False,
+            topic_participant_user_ids: AbstractSet[int] = set(),
             possibly_mentioned_user_ids: AbstractSet[int] = set(),
         ) -> None:
             assert_num_possible_users(
                 expected_count=3,
-                possible_wildcard_mention=possible_wildcard_mention,
+                possible_stream_wildcard_mention=possible_stream_wildcard_mention,
+                topic_participant_user_ids=topic_participant_user_ids,
                 possibly_mentioned_user_ids=possibly_mentioned_user_ids,
             )
             general_user_msg_count = len(get_user_messages(cordelia))
@@ -729,10 +720,10 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         long_term_idle_user.save()
         assert_stream_message_not_sent_to_idle_user("User no email")
 
-        # Test sending a private message to soft deactivated user creates
+        # Test sending a direct message to soft deactivated user creates
         # UserMessage row.
         soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
-        message = "Test PM"
+        message = "Test direct message"
         send_personal_message(message)
         assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
         assert_last_um_content(long_term_idle_user, message)
@@ -755,17 +746,28 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         assert_stream_message_not_sent_to_idle_user("Test @**Cordelia, Lear's daughter**  mention")
 
         # Test UserMessage row is created while user is deactivated if
-        # there is a wildcard mention such as @all or @everyone
+        # there is a stream wildcard mention such as @all or @everyone
         assert_stream_message_sent_to_idle_user(
-            "Test @**all** mention", possible_wildcard_mention=True
+            "Test @**all** mention", possible_stream_wildcard_mention=True
         )
         assert_stream_message_sent_to_idle_user(
-            "Test @**everyone** mention", possible_wildcard_mention=True
+            "Test @**everyone** mention", possible_stream_wildcard_mention=True
         )
         assert_stream_message_sent_to_idle_user(
-            "Test @**stream** mention", possible_wildcard_mention=True
+            "Test @**stream** mention", possible_stream_wildcard_mention=True
         )
         assert_stream_message_not_sent_to_idle_user("Test @**bogus** mention")
+
+        # Test UserMessage row is created while user is deactivated if
+        # there is a topic wildcard mention i.e. @topic
+        do_soft_activate_users([long_term_idle_user])
+        self.send_stream_message(long_term_idle_user, stream_name, "Hi", topic_name)
+        topic_participant_user_ids = {long_term_idle_user.id}
+
+        do_soft_deactivate_users([long_term_idle_user])
+        assert_stream_message_sent_to_idle_user(
+            "Test @**topic** mention", topic_participant_user_ids=topic_participant_user_ids
+        )
 
         # Test UserMessage row is created while user is deactivated if there
         # is a alert word in message.

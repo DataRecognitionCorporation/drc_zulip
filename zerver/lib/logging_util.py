@@ -3,6 +3,7 @@ import hashlib
 import logging
 import threading
 import traceback
+from contextlib import suppress
 from datetime import datetime, timedelta, timezone
 from logging import Logger
 from typing import Optional, Tuple, Union
@@ -10,6 +11,7 @@ from typing import Optional, Tuple, Union
 import orjson
 from django.conf import settings
 from django.core.cache import cache
+from django.http import HttpRequest
 from django.utils.timezone import now as timezone_now
 
 
@@ -110,11 +112,6 @@ class ReturnTrue(logging.Filter):
         return True
 
 
-class ReturnEnabled(logging.Filter):
-    def filter(self, record: logging.LogRecord) -> bool:
-        return settings.LOGGING_ENABLED
-
-
 class RequireReallyDeployed(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         return settings.PRODUCTION
@@ -150,7 +147,7 @@ def find_log_origin(record: logging.LogRecord) -> str:
 
     if settings.LOGGING_SHOW_MODULE:
         module_name = find_log_caller_module(record)
-        if module_name == logger_name or module_name == record.name:
+        if module_name in (logger_name, record.name):
             # Abbreviate a bit.
             pass
         else:
@@ -221,10 +218,8 @@ class ZulipWebhookFormatter(ZulipFormatter):
         return "\n".join(multiline)
 
     def format(self, record: logging.LogRecord) -> str:
-        from zerver.lib.request import get_current_request
-
-        request = get_current_request()
-        if not request:
+        request: Optional[HttpRequest] = getattr(record, "request", None)
+        if request is None:
             record.user = None
             record.client = None
             record.url = None
@@ -238,10 +233,8 @@ class ZulipWebhookFormatter(ZulipFormatter):
         else:
             payload = request.POST["payload"]
 
-        try:
+        with suppress(orjson.JSONDecodeError):
             payload = orjson.dumps(orjson.loads(payload), option=orjson.OPT_INDENT_2).decode()
-        except orjson.JSONDecodeError:
-            pass
 
         header_text = "".join(
             f"{header}: {value}\n"

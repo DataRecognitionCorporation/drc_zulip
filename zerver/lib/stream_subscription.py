@@ -7,7 +7,7 @@ from typing import AbstractSet, Any, Collection, Dict, List, Optional, Set
 from django.db.models import Q, QuerySet
 from django_stubs_ext import ValuesQuerySet
 
-from zerver.models import AlertWord, Realm, Recipient, Stream, Subscription, UserProfile
+from zerver.models import AlertWord, Realm, Recipient, Stream, Subscription, UserProfile, UserTopic
 
 
 @dataclass
@@ -94,7 +94,7 @@ def get_used_colors_for_user_ids(user_ids: List[int]) -> Dict[int, Set[str]]:
 
     result: Dict[int, Set[str]] = defaultdict(set)
 
-    for row in list(query):
+    for row in query:
         assert row["color"] is not None
         result[row["user_profile_id"]].add(row["color"])
 
@@ -305,7 +305,9 @@ def get_subscriptions_for_send_message(
     *,
     realm_id: int,
     stream_id: int,
-    possible_wildcard_mention: bool,
+    topic_name: str,
+    possible_stream_wildcard_mention: bool,
+    topic_participant_user_ids: AbstractSet[int],
     possibly_mentioned_user_ids: AbstractSet[int],
 ) -> QuerySet[Subscription]:
     """This function optimizes an important use case for large
@@ -341,7 +343,7 @@ def get_subscriptions_for_send_message(
         include_deactivated_users=False,
     )
 
-    if possible_wildcard_mention:
+    if possible_stream_wildcard_mention:
         return query
 
     query = query.filter(
@@ -351,10 +353,18 @@ def get_subscriptions_for_send_message(
         | Q(email_notifications=True)
         | (Q(email_notifications=None) & Q(user_profile__enable_stream_email_notifications=True))
         | Q(user_profile_id__in=possibly_mentioned_user_ids)
+        | Q(user_profile_id__in=topic_participant_user_ids)
         | Q(
             user_profile_id__in=AlertWord.objects.filter(realm_id=realm_id).values_list(
                 "user_profile_id"
             )
+        )
+        | Q(
+            user_profile_id__in=UserTopic.objects.filter(
+                stream_id=stream_id,
+                topic_name__iexact=topic_name,
+                visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+            ).values_list("user_profile_id")
         )
     )
     return query

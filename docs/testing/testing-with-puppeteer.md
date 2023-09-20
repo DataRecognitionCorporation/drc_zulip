@@ -19,9 +19,9 @@ See `tools/test-js-with-puppeteer --help` for useful options,
 especially running specific subsets of the tests to save time when
 debugging.
 
-The test files live in `frontend_tests/puppeteer_tests` and make use
+The test files live in `web/e2e-tests` and make use
 of various useful helper functions defined in
-`frontend_tests/puppeteer_lib/common.js`.
+`web/e2e-tests/lib/common.ts`.
 
 ## How Puppeteer tests work
 
@@ -33,7 +33,7 @@ web app, like "Type this key", "Wait until this HTML element
 appears/disappears", or "Click on this HTML element".
 
 For example, this function might test the `x` keyboard shortcut to
-open the compose box for a new private message:
+open the compose box for a new direct message:
 
 ```js
 async function test_private_message_compose_shortcut(page) {
@@ -112,7 +112,7 @@ These tools/features are often useful when debugging:
   failures.
 - TODO: Document any other techniques/ideas that were helpful when porting
   the Casper suite.
-- The Zulip server powering these tests is just `run-dev.py` with some
+- The Zulip server powering these tests is just `run-dev` with some
   extra [Django settings](../subsystems/settings.md) from
   `zproject/test_extra_settings.py` to configure an isolated database
   so that the tests will not interfere/interact with a normal
@@ -123,7 +123,7 @@ These tools/features are often useful when debugging:
 See also [Puppeteer upstream's debugging
 tips](https://github.com/puppeteer/puppeteer#debugging-tips); some
 tips may require temporary patches to functions like `run_test` or
-`ensure_browser` in `frontend_tests/puppeteer_lib/common.js`.
+`ensure_browser` in `web/e2e-tests/lib/common.ts`.
 
 ## Writing Puppeteer tests
 

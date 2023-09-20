@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, List, Mapping, Set
+from typing import TYPE_CHECKING, Any, List, Set
 from unittest import mock
 
 import orjson
@@ -6,12 +6,13 @@ from django.db import connection, transaction
 
 from zerver.actions.message_flags import do_update_message_flags
 from zerver.actions.streams import do_change_stream_permission
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.fix_unreads import fix, fix_unsubscribed
 from zerver.lib.message import (
     MessageDetailsDict,
     MessageDict,
+    RawUnreadDirectMessageDict,
     RawUnreadMessagesResult,
-    RawUnreadPrivateMessageDict,
     UnreadMessagesResult,
     add_message_to_unread_msgs,
     aggregate_unread_data,
@@ -23,7 +24,10 @@ from zerver.lib.message import (
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription, timeout_mock
 from zerver.lib.timeout import TimeoutExpiredError
+<<<<<<< HEAD
 from zerver.lib.user_topics import add_topic_mute
+=======
+>>>>>>> drc_main
 from zerver.models import (
     Message,
     Recipient,
@@ -31,6 +35,7 @@ from zerver.models import (
     Subscription,
     UserMessage,
     UserProfile,
+    UserTopic,
     get_realm,
     get_stream,
 )
@@ -65,7 +70,8 @@ class FirstUnreadAnchorTests(ZulipTestCase):
         # Mark all existing messages as read
         with timeout_mock("zerver.views.message_flags"):
             result = self.client_post("/json/mark_all_as_read")
-        self.assert_json_success(result)
+        result_dict = self.assert_json_success(result)
+        self.assertTrue(result_dict["complete"])
 
         # Send a new message (this will be unread)
         new_message_id = self.send_stream_message(self.example_user("othello"), "Verona", "test")
@@ -125,7 +131,8 @@ class FirstUnreadAnchorTests(ZulipTestCase):
 
         with timeout_mock("zerver.views.message_flags"):
             result = self.client_post("/json/mark_all_as_read")
-        self.assert_json_success(result)
+        result_dict = self.assert_json_success(result)
+        self.assertTrue(result_dict["complete"])
 
         new_message_id = self.send_stream_message(self.example_user("othello"), "Verona", "test")
 
@@ -321,8 +328,7 @@ class UnreadCountTests(ZulipTestCase):
             self.example_user("hamlet"), "Denmark", "hello"
         )
 
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.client_post(
                 "/json/mark_stream_as_read",
                 {
@@ -391,8 +397,7 @@ class UnreadCountTests(ZulipTestCase):
         unrelated_message_id = self.send_stream_message(
             self.example_user("hamlet"), "Denmark", "hello", "Denmark2"
         )
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.client_post(
                 "/json/mark_topic_as_read",
                 {
@@ -470,14 +475,12 @@ class FixUnreadTests(ZulipTestCase):
 
         def mute_topic(stream_name: str, topic_name: str) -> None:
             stream = get_stream(stream_name, realm)
-            recipient = stream.recipient
-            assert recipient is not None
 
-            add_topic_mute(
-                user_profile=user,
-                stream_id=stream.id,
-                recipient_id=recipient.id,
-                topic_name=topic_name,
+            do_set_user_topic_visibility_policy(
+                user,
+                stream,
+                topic_name,
+                visibility_policy=UserTopic.VisibilityPolicy.MUTED,
             )
 
         def force_unsubscribe(stream_name: str) -> None:
@@ -665,7 +668,7 @@ class MarkAllAsReadEndpointTest(ZulipTestCase):
         othello = self.example_user("othello")
         self.subscribe(hamlet, "Denmark")
 
-        for i in range(0, 4):
+        for i in range(4):
             self.send_stream_message(othello, "Verona", "test")
             self.send_personal_message(othello, hamlet, "test")
 
@@ -677,7 +680,8 @@ class MarkAllAsReadEndpointTest(ZulipTestCase):
         self.assertNotEqual(unread_count, 0)
         with timeout_mock("zerver.views.message_flags"):
             result = self.client_post("/json/mark_all_as_read", {})
-        self.assert_json_success(result)
+        result_dict = self.assert_json_success(result)
+        self.assertTrue(result_dict["complete"])
 
         new_unread_count = (
             UserMessage.objects.filter(user_profile=hamlet)
@@ -690,12 +694,8 @@ class MarkAllAsReadEndpointTest(ZulipTestCase):
         self.login("hamlet")
         with mock.patch("zerver.views.message_flags.timeout", side_effect=TimeoutExpiredError):
             result = self.client_post("/json/mark_all_as_read", {})
-            self.assertEqual(result.status_code, 200)
-
-            result_dict = orjson.loads(result.content)
-            self.assertEqual(
-                result_dict, {"result": "partially_completed", "msg": "", "code": "REQUEST_TIMEOUT"}
-            )
+            result_dict = self.assert_json_success(result)
+            self.assertFalse(result_dict["complete"])
 
 
 class GetUnreadMsgsTest(ZulipTestCase):
@@ -711,14 +711,12 @@ class GetUnreadMsgsTest(ZulipTestCase):
     def mute_topic(self, user_profile: UserProfile, stream_name: str, topic_name: str) -> None:
         realm = user_profile.realm
         stream = get_stream(stream_name, realm)
-        recipient = stream.recipient
-        assert recipient is not None
 
-        add_topic_mute(
-            user_profile=user_profile,
-            stream_id=stream.id,
-            recipient_id=recipient.id,
-            topic_name=topic_name,
+        do_set_user_topic_visibility_policy(
+            user_profile,
+            stream,
+            topic_name,
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
         )
 
     def test_raw_unread_stream(self) -> None:
@@ -1288,7 +1286,7 @@ class MessageAccessTests(ZulipTestCase):
             ),
         ]
 
-        # Starring private messages you didn't receive fails.
+        # Starring direct messages you didn't receive fails.
         self.login("cordelia")
         result = self.change_star(message_ids)
         self.assert_json_error(result, "Invalid message(s)")
@@ -1459,7 +1457,8 @@ class MessageAccessTests(ZulipTestCase):
 
         message_ids = [message_one_id, message_two_id]
         messages = [
-            Message.objects.select_related().get(id=message_id) for message_id in message_ids
+            Message.objects.select_related("recipient").get(id=message_id)
+            for message_id in message_ids
         ]
 
         with self.assert_database_query_count(2):
@@ -1517,7 +1516,8 @@ class MessageAccessTests(ZulipTestCase):
 
         message_ids = [message_one_id, message_two_id]
         messages = [
-            Message.objects.select_related().get(id=message_id) for message_id in message_ids
+            Message.objects.select_related("recipient").get(id=message_id)
+            for message_id in message_ids
         ]
 
         # All public stream messages are always accessible
@@ -1607,7 +1607,7 @@ class MarkUnreadTest(ZulipTestCase):
 
         # send message to self
         pm_dict = {
-            message_id: RawUnreadPrivateMessageDict(other_user_id=user.id),
+            message_id: RawUnreadDirectMessageDict(other_user_id=user.id),
         }
 
         raw_unread_data = RawUnreadMessagesResult(
@@ -1647,7 +1647,7 @@ class MarkUnreadTest(ZulipTestCase):
         add_message_to_unread_msgs(user.id, raw_unread_data, message_id, message_details)
         self.assertEqual(
             raw_unread_data["pm_dict"],
-            {message_id: RawUnreadPrivateMessageDict(other_user_id=user.id)},
+            {message_id: RawUnreadDirectMessageDict(other_user_id=user.id)},
         )
 
     def test_stream_messages_unread(self) -> None:
@@ -1686,11 +1686,8 @@ class MarkUnreadTest(ZulipTestCase):
             "flag": "read",
         }
 
-        events: List[Mapping[str, Any]] = []
-
-        # Use the tornado_redirected_to_list context manager to capture
-        # events.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        # Use the capture_send_event_calls context manager to capture events.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(receiver, "/api/v1/messages/flags", params)
 
         self.assert_json_success(result)
@@ -1759,11 +1756,8 @@ class MarkUnreadTest(ZulipTestCase):
             "flag": "read",
         }
 
-        events: List[Mapping[str, Any]] = []
-
-        # Use the tornado_redirected_to_list context manager to capture
-        # events.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        # Use the capture_send_event_calls context manager to capture events.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(receiver, "/api/v1/messages/flags", params)
 
         self.assert_json_success(result)
@@ -1832,11 +1826,8 @@ class MarkUnreadTest(ZulipTestCase):
             "flag": "read",
         }
 
-        events: List[Mapping[str, Any]] = []
-
-        # Use the tornado_redirected_to_list context manager to capture
-        # events.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        # Use the capture_send_event_calls context manager to capture events.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(receiver, "/api/v1/messages/flags", params)
 
         self.assert_json_success(result)
@@ -1911,7 +1902,8 @@ class MarkUnreadTest(ZulipTestCase):
         ]
         # Unsubscribing generates an event in the deferred_work queue
         # that marks the above messages as read.
-        self.unsubscribe(receiver, stream_name)
+        with self.captureOnCommitCallbacks(execute=True):
+            self.unsubscribe(receiver, stream_name)
         after_unsubscribe_stream_message_ids = [
             self.send_stream_message(
                 sender=sender,
@@ -1961,8 +1953,7 @@ class MarkUnreadTest(ZulipTestCase):
         # ones that already have UserMessage rows are already unread,
         # and the others don't have UserMessage rows and cannot be
         # marked as unread without first subscribing.
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=0):
+        with self.capture_send_event_calls(expected_num_events=0) as events:
             result = self.client_post(
                 "/json/messages/flags",
                 {"messages": orjson.dumps(message_ids).decode(), "op": "remove", "flag": "read"},
@@ -1987,7 +1978,7 @@ class MarkUnreadTest(ZulipTestCase):
         # have UserMessage rows will be ignored.
         message_ids = before_subscribe_stream_message_ids + message_ids
         self.login("hamlet")
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.client_post(
                 "/json/messages/flags",
                 {"messages": orjson.dumps(message_ids).decode(), "op": "add", "flag": "read"},
@@ -2021,7 +2012,7 @@ class MarkUnreadTest(ZulipTestCase):
         # This also create new 'historical' UserMessage rows for the
         # messages in subscribed streams that didn't have them
         # previously.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.client_post(
                 "/json/messages/flags",
                 {"messages": orjson.dumps(message_ids).decode(), "op": "remove", "flag": "read"},
@@ -2093,11 +2084,8 @@ class MarkUnreadTest(ZulipTestCase):
             "flag": "read",
         }
 
-        events: List[Mapping[str, Any]] = []
-
-        # Use the tornado_redirected_to_list context manager to capture
-        # events.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        # Use the capture_send_event_calls context manager to capture events.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(receiver, "/api/v1/messages/flags", params)
 
         self.assert_json_success(result)
@@ -2163,11 +2151,8 @@ class MarkUnreadTest(ZulipTestCase):
             "flag": "read",
         }
 
-        events: List[Mapping[str, Any]] = []
-
-        # Use the tornado_redirected_to_list context manager to capture
-        # events.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        # Use the capture_send_event_calls context manager to capture events.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(receiver, "/api/v1/messages/flags", params)
 
         self.assert_json_success(result)
@@ -2234,11 +2219,8 @@ class MarkUnreadTest(ZulipTestCase):
             "flag": "read",
         }
 
-        events: List[Mapping[str, Any]] = []
-
-        # Use the tornado_redirected_to_list context manager to capture
-        # events.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        # Use the capture_send_event_calls context manager to capture events.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(receiver, "/api/v1/messages/flags", params)
 
         self.assert_json_success(result)
@@ -2300,11 +2282,8 @@ class MarkUnreadTest(ZulipTestCase):
             "flag": "read",
         }
 
-        events: List[Mapping[str, Any]] = []
-
-        # Use the tornado_redirected_to_list context manager to capture
-        # events.
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        # Use the capture_send_event_calls context manager to capture events.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.api_post(receiver, "/api/v1/messages/flags", params)
 
         self.assert_json_success(result)

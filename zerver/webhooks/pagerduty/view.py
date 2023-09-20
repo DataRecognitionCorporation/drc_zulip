@@ -2,16 +2,21 @@ from email.headerregistry import Address
 from typing import Dict, Union
 
 from django.http import HttpRequest, HttpResponse
+from typing_extensions import TypeAlias
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+<<<<<<< HEAD
 from zerver.lib.request import REQ, has_request_variables
+=======
+>>>>>>> drc_main
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_int, check_none_or, check_string, to_wild_value
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_int, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-FormatDictType = Dict[str, Union[str, int]]
+FormatDictType: TypeAlias = Dict[str, Union[str, int]]
 
 PAGER_DUTY_EVENT_NAMES = {
     "incident.trigger": "triggered",
@@ -213,31 +218,29 @@ def send_formatted_pagerduty(
         "incident.unacknowledged",
     ):
         template = INCIDENT_WITH_SERVICE_AND_ASSIGNEE
-    elif (
-        message_type == "incident.resolve" or message_type == "incident.resolved"
-    ) and format_dict.get("agent_info") is not None:
-        template = INCIDENT_RESOLVED_WITH_AGENT
-    elif (
-        message_type == "incident.resolve" or message_type == "incident.resolved"
-    ) and format_dict.get("agent_info") is None:
-        template = INCIDENT_RESOLVED
-    elif message_type == "incident.assign" or message_type == "incident.reassigned":
+    elif message_type in ("incident.resolve", "incident.resolved"):
+        if "agent_info" in format_dict:
+            template = INCIDENT_RESOLVED_WITH_AGENT
+        else:
+            template = INCIDENT_RESOLVED
+    elif message_type in ("incident.assign", "incident.reassigned"):
         template = INCIDENT_ASSIGNED
     else:
         template = INCIDENT_WITH_ASSIGNEE
 
-    subject = "Incident {incident_num_title}".format(**format_dict)
+    topic = "Incident {incident_num_title}".format(**format_dict)
     body = template.format(**format_dict)
     assert isinstance(format_dict["action"], str)
-    check_send_webhook_message(request, user_profile, subject, body, format_dict["action"])
+    check_send_webhook_message(request, user_profile, topic, body, format_dict["action"])
 
 
 @webhook_view("PagerDuty", all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint
 def api_pagerduty_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
+    *,
+    payload: WebhookPayload[WildValue],
 ) -> HttpResponse:
     messages = payload.get("messages")
     if messages:

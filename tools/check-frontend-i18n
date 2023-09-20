@@ -17,11 +17,7 @@ from scripts.lib.zulip_tools import ENDC, FAIL, WARNING
 
 
 def find_handlebars(translatable_strings: List[str]) -> List[str]:
-    errored = []
-    for string in translatable_strings:
-        if "{{" in string:
-            errored.append(string)
-    return errored
+    return [string for string in translatable_strings if "{{" in string]
 
 
 if __name__ == "__main__":
@@ -32,7 +28,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not args.no_generate:
-        subprocess.call(["./manage.py", "makemessages", "--locale", "en"], stderr=subprocess.STDOUT)
+        subprocess.check_call(
+            ["./manage.py", "makemessages", "--locale", "en"], stderr=subprocess.STDOUT
+        )
 
     with open("locale/en/translations.json") as f:
         data = json.load(f)

@@ -21,7 +21,9 @@ upload-backends
 ssl-certificates
 email
 deployment
+multiple-organizations
 email-gateway
 video-calls
 giphy-gif-integration
+scim
 ```

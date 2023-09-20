@@ -1,19 +1,22 @@
+import datetime
 import logging
 import os
+import posixpath
 import random
 import secrets
 import shutil
-import subprocess
 import zipfile
 from collections import defaultdict
 from email.headerregistry import Address
 from typing import Any, Dict, Iterator, List, Optional, Set, Tuple, Type, TypeVar
+from urllib.parse import urlsplit
 
 import orjson
 import requests
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
+from typing_extensions import TypeAlias
 
 from zerver.data_import.import_util import (
     ZerverFieldsT,
@@ -43,7 +46,7 @@ from zerver.data_import.slack_message_conversion import (
 from zerver.lib.emoji import codepoint_to_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.storage import static_path
-from zerver.lib.upload import resize_logo, sanitize_name
+from zerver.lib.upload.base import resize_logo, sanitize_name
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
@@ -54,11 +57,11 @@ from zerver.models import (
     UserProfile,
 )
 
-SlackToZulipUserIDT = Dict[str, int]
-AddedChannelsT = Dict[str, Tuple[str, int]]
-AddedMPIMsT = Dict[str, Tuple[str, int]]
-DMMembersT = Dict[str, Tuple[str, str]]
-SlackToZulipRecipientT = Dict[str, int]
+SlackToZulipUserIDT: TypeAlias = Dict[str, int]
+AddedChannelsT: TypeAlias = Dict[str, Tuple[str, int]]
+AddedMPIMsT: TypeAlias = Dict[str, Tuple[str, int]]
+DMMembersT: TypeAlias = Dict[str, Tuple[str, str]]
+SlackToZulipRecipientT: TypeAlias = Dict[str, int]
 # Generic type for SlackBotEmail class
 SlackBotEmailT = TypeVar("SlackBotEmailT", bound="SlackBotEmail")
 
@@ -211,11 +214,15 @@ def build_realmemoji(
     emoji_url_map = {}
     emoji_id = 0
     for emoji_name, url in custom_emoji_list.items():
-        if "emoji.slack-edge.com" in url:
+        split_url = urlsplit(url)
+        if split_url.hostname == "emoji.slack-edge.com":
             # Some of the emojis we get from the API have invalid links
             # this is to prevent errors related to them
             realmemoji = RealmEmoji(
-                name=emoji_name, id=emoji_id, file_name=os.path.basename(url), deactivated=False
+                name=emoji_name,
+                id=emoji_id,
+                file_name=posixpath.basename(split_url.path),
+                deactivated=False,
             )
 
             realmemoji_dict = model_to_dict(realmemoji, exclude=["realm", "author"])
@@ -359,13 +366,13 @@ def build_customprofile_field(
     # The name of the custom profile field is not provided in the Slack data
     # Hash keys of the fields are provided
     # Reference: https://api.slack.com/methods/users.profile.set
-    for field, value in fields.items():
+    for field in fields:
         if field not in slack_custom_field_name_to_zulip_custom_field_id:
             slack_custom_fields = ["phone", "skype"]
             if field in slack_custom_fields:
                 field_name = field
             else:
-                field_name = f"Slack custom field {str(custom_profile_field_id + 1)}"
+                field_name = f"Slack custom field {custom_profile_field_id + 1}"
             customprofilefield = CustomProfileField(
                 id=custom_profile_field_id,
                 name=field_name,
@@ -698,6 +705,7 @@ def convert_slack_workspace_messages(
     zerver_realmemoji: List[ZerverFieldsT],
     domain_name: str,
     output_dir: str,
+    convert_slack_threads: bool,
     chunk_size: int = MESSAGE_BATCH_CHUNK_SIZE,
 ) -> Tuple[List[ZerverFieldsT], List[ZerverFieldsT], List[ZerverFieldsT]]:
     """
@@ -759,6 +767,7 @@ def convert_slack_workspace_messages(
             dm_members,
             domain_name,
             long_term_idle,
+            convert_slack_threads,
         )
 
         message_json = dict(zerver_message=zerver_message, zerver_usermessage=zerver_usermessage)
@@ -788,7 +797,7 @@ def get_messages_iterator(
     not read all the messages into memory at once, because for
     large imports that can OOM kill."""
 
-    dir_names = list(added_channels.keys()) + list(added_mpims.keys()) + list(dm_members.keys())
+    dir_names = [*added_channels, *added_mpims, *dm_members]
     all_json_names: Dict[str, List[str]] = defaultdict(list)
     for dir_name in dir_names:
         dir_path = os.path.join(slack_data_dir, dir_name)
@@ -839,6 +848,7 @@ def channel_message_to_zerver_message(
     dm_members: DMMembersT,
     domain_name: str,
     long_term_idle: Set[int],
+    convert_slack_threads: bool,
 ) -> Tuple[
     List[ZerverFieldsT],
     List[ZerverFieldsT],
@@ -862,6 +872,8 @@ def channel_message_to_zerver_message(
 
     total_user_messages = 0
     total_skipped_user_messages = 0
+    thread_counter: Dict[str, int] = defaultdict(int)
+    thread_map: Dict[str, str] = {}
     for message in all_messages:
         slack_user_id = get_message_sending_user(message)
         if not slack_user_id:
@@ -910,7 +922,7 @@ def channel_message_to_zerver_message(
 
         message_id = NEXT_ID("message")
 
-        if "reactions" in message.keys():
+        if "reactions" in message:
             build_reactions(
                 reaction_list,
                 message["reactions"],
@@ -950,7 +962,25 @@ def channel_message_to_zerver_message(
         has_attachment = file_info["has_attachment"]
         has_image = file_info["has_image"]
 
+        # Slack's unthreaded messages go into a single topic, while
+        # threads each generate a unique topic labeled by the date and
+        # a counter among topics on that day.
         topic_name = "imported from Slack"
+        if convert_slack_threads and "thread_ts" in message:
+            thread_ts = datetime.datetime.fromtimestamp(
+                float(message["thread_ts"]), tz=datetime.timezone.utc
+            )
+            thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
+            # The topic name is "2015-08-18 Slack thread 2", where the counter at the end is to disambiguate
+            # threads with the same date.
+            if thread_ts_str in thread_map:
+                topic_name = thread_map[thread_ts_str]
+            else:
+                thread_date = thread_ts.strftime(r"%Y-%m-%d")
+                thread_counter[thread_date] += 1
+                count = thread_counter[thread_date]
+                topic_name = f"{thread_date} Slack thread {count}"
+                thread_map[thread_ts_str] = topic_name
 
         zulip_message = build_message(
             topic_name=topic_name,
@@ -1040,12 +1070,13 @@ def process_message_files(
             continue
 
         url = fileinfo["url_private"]
+        split_url = urlsplit(url)
 
-        if "files.slack.com" in url:
+        if split_url.hostname == "files.slack.com":
             # For attachments with Slack download link
             has_attachment = True
             has_link = True
-            has_image = True if "image" in fileinfo["mimetype"] else False
+            has_image = "image" in fileinfo["mimetype"]
 
             file_user = [
                 iterate_user for iterate_user in users if message["user"] == iterate_user["id"]
@@ -1094,7 +1125,7 @@ def process_message_files(
 
 def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> Tuple[str, str]:
     # Should be kept in sync with its equivalent in zerver/lib/uploads in the function
-    # 'upload_message_file'
+    # 'upload_message_attachment'
     s3_path = "/".join(
         [
             str(realm_id),
@@ -1133,7 +1164,7 @@ def build_reactions(
     reactions = [{"name": k, "users": v, "count": len(v)} for k, v in merged_reactions.items()]
 
     # For the Unicode emoji codes, we use equivalent of
-    # function 'emoji_name_to_emoji_code' in 'zerver/lib/emoji' here
+    # function 'get_emoji_data' in 'zerver/lib/emoji' here
     for slack_reaction in reactions:
         emoji_name = slack_reaction["name"]
         if emoji_name in slack_emoji_name_to_codepoint:
@@ -1305,7 +1336,13 @@ def fetch_team_icons(
     return records
 
 
-def do_convert_data(original_path: str, output_dir: str, token: str, threads: int = 6) -> None:
+def do_convert_data(
+    original_path: str,
+    output_dir: str,
+    token: str,
+    threads: int = 6,
+    convert_slack_threads: bool = False,
+) -> None:
     # Subdomain is set by the user while running the import command
     realm_subdomain = ""
     realm_id = 0
@@ -1323,6 +1360,14 @@ def do_convert_data(original_path: str, output_dir: str, token: str, threads: in
             os.makedirs(slack_data_dir)
 
         with zipfile.ZipFile(original_path) as zipObj:
+            # Slack's export doesn't set the UTF-8 flag on each
+            # filename entry, despite encoding them as such, so
+            # zipfile mojibake's the output.  Explicitly re-interpret
+            # it as UTF-8 mis-decoded as cp437, the default.
+            for fileinfo in zipObj.infolist():
+                fileinfo.flag_bits |= 0x800
+                fileinfo.filename = fileinfo.filename.encode("cp437").decode("utf-8")
+                zipObj.NameToInfo[fileinfo.filename] = fileinfo
             zipObj.extractall(slack_data_dir)
     elif os.path.isdir(original_path):
         slack_data_dir = original_path
@@ -1366,6 +1411,7 @@ def do_convert_data(original_path: str, output_dir: str, token: str, threads: in
         realm["zerver_realmemoji"],
         domain_name,
         output_dir,
+        convert_slack_threads,
     )
 
     # Move zerver_reactions to realm.json file
@@ -1403,7 +1449,6 @@ def do_convert_data(original_path: str, output_dir: str, token: str, threads: in
     # Clean up the directory if we unpacked it ourselves.
     if original_path != slack_data_dir:
         rm_tree(slack_data_dir)
-    subprocess.check_call(["tar", "-czf", output_dir + ".tar.gz", output_dir, "-P"])
 
     logging.info("######### DATA CONVERSION FINISHED #########\n")
     logging.info("Zulip data dump created at %s", output_dir)
@@ -1422,16 +1467,20 @@ def check_token_access(token: str) -> None:
         data = requests.get(
             "https://slack.com/api/team.info", headers={"Authorization": f"Bearer {token}"}
         )
-        if data.status_code != 200 or not data.json()["ok"]:
-            raise ValueError(f"Invalid Slack token: {token}")
+        if data.status_code != 200:
+            raise ValueError(
+                f"Failed to fetch data (HTTP status {data.status_code}) for Slack token: {token}"
+            )
+        if not data.json()["ok"]:
+            error = data.json()["error"]
+            if error != "missing_scope":
+                raise ValueError(f"Invalid Slack token: {token}, {error}")
         has_scopes = set(data.headers.get("x-oauth-scopes", "").split(","))
         required_scopes = {"emoji:read", "users:read", "users:read.email", "team:read"}
         missing_scopes = required_scopes - has_scopes
         if missing_scopes:
             raise ValueError(
-                "Slack token is missing the following required scopes: {}".format(
-                    sorted(missing_scopes)
-                )
+                f"Slack token is missing the following required scopes: {sorted(missing_scopes)}"
             )
     else:
         raise Exception("Unknown token type -- must start with xoxb- or xoxp-")

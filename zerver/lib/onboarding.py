@@ -13,7 +13,7 @@ from zerver.actions.message_send import (
     internal_send_private_message,
 )
 from zerver.actions.reactions import do_add_reaction
-from zerver.lib.emoji import emoji_name_to_emoji_code
+from zerver.lib.emoji import get_emoji_data
 from zerver.lib.message import SendMessageRequest
 from zerver.models import Message, Realm, UserProfile, get_system_bot
 
@@ -23,14 +23,10 @@ def missing_any_realm_internal_bots() -> bool:
         bot["email_template"] % (settings.INTERNAL_BOT_DOMAIN,)
         for bot in settings.REALM_INTERNAL_BOTS
     ]
-    bot_counts = {
-        email: count
-        for email, count in UserProfile.objects.filter(email__in=bot_emails)
-        .values_list("email")
-        .annotate(Count("id"))
-    }
     realm_count = Realm.objects.count()
-    return any(bot_counts.get(email, 0) < realm_count for email in bot_emails)
+    return UserProfile.objects.filter(email__in=bot_emails).values("email").annotate(
+        count=Count("id")
+    ).filter(count=realm_count).count() != len(bot_emails)
 
 
 def create_if_missing_realm_internal_bots() -> None:
@@ -43,39 +39,73 @@ def create_if_missing_realm_internal_bots() -> None:
             setup_realm_internal_bots(realm)
 
 
-def send_initial_pms(user: UserProfile) -> None:
-    organization_setup_text = ""
+def send_initial_direct_message(user: UserProfile) -> None:
+    # We adjust the initial Welcome Bot direct message for education organizations.
+    education_organization = user.realm.org_type in (
+        Realm.ORG_TYPES["education_nonprofit"]["id"],
+        Realm.ORG_TYPES["education"]["id"],
+    )
 
     # We need to override the language in this code path, because it's
     # called from account registration, which is a pre-account API
     # request and thus may not have the user's language context yet.
     with override_language(user.default_language):
-        if user.is_realm_admin:
-            help_url = user.realm.uri + "/help/getting-your-organization-started-with-zulip"
-            organization_setup_text = (
-                " " + _("We also have a guide for [Setting up your organization]({help_url}).")
-            ).format(help_url=help_url)
-
-        welcome_msg = _("Hello, and welcome to Zulip!") + "👋"
-        demo_org_warning = ""
-        if user.realm.demo_organization_scheduled_deletion_date is not None:
-            demo_org_warning = (
+        if education_organization:
+            getting_started_help = user.realm.uri + "/help/using-zulip-for-a-class"
+            getting_started_string = (
                 _(
-                    "Note that this is a [demo organization]({demo_org_help_url}) and will be "
+                    "If you are new to Zulip, check out our [Using Zulip for a class guide]({getting_started_url})!"
+                )
+            ).format(getting_started_url=getting_started_help)
+        else:
+            getting_started_help = user.realm.uri + "/help/getting-started-with-zulip"
+            getting_started_string = (
+                _(
+                    "If you are new to Zulip, check out our [Getting started guide]({getting_started_url})!"
+                )
+            ).format(getting_started_url=getting_started_help)
+
+        organization_setup_string = ""
+        # Add extra content on setting up a new organization for administrators.
+        if user.is_realm_admin:
+            if education_organization:
+                organization_setup_help = user.realm.uri + "/help/setting-up-zulip-for-a-class"
+                organization_setup_string = (
+                    " "
+                    + _(
+                        "We also have a guide for [Setting up Zulip for a class]({organization_setup_url})."
+                    )
+                ).format(organization_setup_url=organization_setup_help)
+            else:
+                organization_setup_help = (
+                    user.realm.uri + "/help/getting-your-organization-started-with-zulip"
+                )
+                organization_setup_string = (
+                    " "
+                    + _(
+                        "We also have a guide for [Setting up your organization]({organization_setup_url})."
+                    )
+                ).format(organization_setup_url=organization_setup_help)
+
+        demo_organization_warning_string = ""
+        # Add extra content about automatic deletion for demo organization owners.
+        if user.is_realm_owner and user.realm.demo_organization_scheduled_deletion_date is not None:
+            demo_organization_help = user.realm.uri + "/help/demo-organizations"
+            demo_organization_warning_string = (
+                _(
+                    "Note that this is a [demo organization]({demo_organization_help_url}) and will be "
                     "**automatically deleted** in 30 days."
                 )
                 + "\n\n"
-            )
+            ).format(demo_organization_help_url=demo_organization_help)
 
         content = "".join(
             [
-                welcome_msg + " ",
-                _("This is a private message from me, Welcome Bot.") + "\n\n",
-                _(
-                    "If you are new to Zulip, check out our [Getting started guide]({getting_started_url})!"
-                ),
-                "{organization_setup_text}" + "\n\n",
-                "{demo_org_warning}",
+                _("Hello, and welcome to Zulip!") + "👋" + " ",
+                _("This is a direct message from me, Welcome Bot.") + "\n\n",
+                "{getting_started_text}",
+                "{organization_setup_text}\n\n",
+                "{demo_organization_text}",
                 _(
                     "I can also help you get set up! Just click anywhere on this message or press `r` to reply."
                 )
@@ -86,14 +116,18 @@ def send_initial_pms(user: UserProfile) -> None:
         )
 
     content = content.format(
-        organization_setup_text=organization_setup_text,
-        demo_org_warning=demo_org_warning,
-        demo_org_help_url="/help/demo-organizations",
-        getting_started_url="/help/getting-started-with-zulip",
+        getting_started_text=getting_started_string,
+        organization_setup_text=organization_setup_string,
+        demo_organization_text=demo_organization_warning_string,
     )
 
     internal_send_private_message(
-        get_system_bot(settings.WELCOME_BOT, user.realm_id), user, content
+        get_system_bot(settings.WELCOME_BOT, user.realm_id),
+        user,
+        content,
+        # Note: Welcome bot doesn't trigger email/push notifications,
+        # as this is intended to be seen contextually in the application.
+        disable_external_notifications=True,
     )
 
 
@@ -109,7 +143,7 @@ def bot_commands(no_help_command: bool = False) -> str:
     ]
     if not no_help_command:
         commands.append("help")
-    return ", ".join(["`" + command + "`" for command in commands]) + "."
+    return ", ".join("`" + command + "`" for command in commands) + "."
 
 
 def select_welcome_bot_response(human_response_lower: str) -> str:
@@ -117,7 +151,7 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
     # message from the user to Welcome Bot, select the appropriate reply.
     if human_response_lower in ["app", "apps"]:
         return _(
-            "You can [download](/apps) the [mobile and desktop apps](/apps). "
+            "You can [download](/apps/) the [mobile and desktop apps](/apps/). "
             "Zulip also works great in a browser."
         )
     elif human_response_lower == "profile":
@@ -128,7 +162,7 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
         )
     elif human_response_lower == "theme":
         return _(
-            "Go to [Display settings](#settings/display-settings) "
+            "Go to [Preferences](#settings/preferences) "
             "to [switch between the light and dark themes](/help/dark-theme), "
             "[pick your favorite emoji theme](/help/emoji-and-emoticons#change-your-emoji-set), "
             "[change your language](/help/change-your-language), "
@@ -155,7 +189,7 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
                 + "\n\n",
                 _(
                     "Check out [Recent conversations](#recent) to see what's happening! "
-                    'You can return to this conversation by clicking "Private messages" in the upper left.'
+                    'You can return to this conversation by clicking "Direct messages" in the upper left.'
                 ),
             ]
         )
@@ -209,12 +243,20 @@ def select_welcome_bot_response(human_response_lower: str) -> str:
 
 
 def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
-    """Given the send_request object for a private message from the user
+    """Given the send_request object for a direct message from the user
     to welcome-bot, trigger the welcome-bot reply."""
-    welcome_bot = get_system_bot(settings.WELCOME_BOT, send_request.message.sender.realm_id)
+    welcome_bot = get_system_bot(settings.WELCOME_BOT, send_request.realm.id)
     human_response_lower = send_request.message.content.lower()
     content = select_welcome_bot_response(human_response_lower)
-    internal_send_private_message(welcome_bot, send_request.message.sender, content)
+
+    internal_send_private_message(
+        welcome_bot,
+        send_request.message.sender,
+        content,
+        # Note: Welcome bot doesn't trigger email/push notifications,
+        # as this is intended to be seen contextually in the application.
+        disable_external_notifications=True,
+    )
 
 
 @transaction.atomic
@@ -311,5 +353,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
     turtle_message = Message.objects.select_for_update().get(
         id__in=message_ids, content__icontains="cute/turtle.png"
     )
-    (emoji_code, reaction_type) = emoji_name_to_emoji_code(realm, "turtle")
-    do_add_reaction(welcome_bot, turtle_message, "turtle", emoji_code, reaction_type)
+    emoji_data = get_emoji_data(realm.id, "turtle")
+    do_add_reaction(
+        welcome_bot, turtle_message, "turtle", emoji_data.emoji_code, emoji_data.reaction_type
+    )

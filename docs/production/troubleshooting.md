@@ -1,5 +1,43 @@
 # Troubleshooting and monitoring
 
+This page offers detailed guidance for troubleshooting and monitoring your Zulip
+installation. If you suspect that you have encountered a bug, or are otherwise
+unable to resolve an issue with your Zulip installation, best-effort community
+support is available in the [Zulip development community ][chat-zulip-org]. We
+provide free, interactive support for the vast majority of questions about
+running a Zulip server.
+
+To report a problem or ask a question, please start a new topic in the
+[#production help][production-help] stream in the [Zulip development community
+][chat-zulip-org]:
+
+- Describe what you are trying to do and any problems you've encountered.
+- Provide the relevant logs, such as the full traceback from the bottom
+  of `/var/log/zulip/errors.log`, or the installation script logs at
+  `/var/log/zulip/install.log`. Please post logging output using [code
+  blocks][code-block], not screenshots.
+- Be sure to include what version of Zulip Server you are running, or between
+  which versions you are upgrading.
+
+[chat-zulip-org]: https://zulip.com/development-community/
+[production-help]: https://chat.zulip.org/#narrow/stream/31-production-help
+[code-block]: https://zulip.com/help/code-blocks
+
+Contact [sales@zulip.com](mailto:sales@zulip.com) if you'd like to
+learn about paid support options, including phone support from Zulip's
+core engineering team.
+
+## Overview and resources
+
+If you encounter issues while self-hosting Zulip, the first thing to
+do is look at Zulip's logs, which are located in `/var/log/zulip/`.
+
+That directory contains one log file for each service, plus
+`errors.log` (has all errors and the first place you should check),
+`server.log` (has logs from the Django and Tornado servers), and
+`workers.log` (has combined logs from the queue workers). Zulip also
+provides a [tool to search through `server.log`][log-search].
+
 Zulip uses [Supervisor](http://supervisord.org/index.html) to monitor
 and control its many Python services. Read the next section, [Using
 supervisorctl](#using-supervisorctl), to learn how to use the
@@ -10,23 +48,10 @@ overview](../overview/architecture-overview.md), particularly the
 [Components](../overview/architecture-overview.md#components) section. This will help you
 understand the many services Zulip uses.
 
-If you encounter issues while running Zulip, take a look at Zulip's
-logs, which are located in `/var/log/zulip/`. That directory contains
-one log file for each service, plus `errors.log` (has all errors),
-`server.log` (has logs from the Django and Tornado servers), and
-`workers.log` (has combined logs from the queue workers). Zulip also
-provides a [tool to search through `server.log`][log-search].
-
-[log-search]: ../subsystems/logging.md#searching-backend-log-files
-
 The section [troubleshooting services](#troubleshooting-services)
 on this page includes details about how to fix common issues with Zulip services.
 
-If you run into additional problems, [please report
-them](https://github.com/zulip/zulip/issues) so that we can update
-this page! The Zulip installation scripts logs its full output to
-`/var/log/zulip/install.log`, so please include the context for any
-tracebacks from that log.
+[log-search]: ../subsystems/logging.md#searching-backend-log-files
 
 ## Using supervisorctl
 
@@ -60,7 +85,6 @@ zulip-workers:zulip_events_email_mirror                         RUNNING   pid 10
 zulip-workers:zulip_events_email_senders                        RUNNING   pid 10769, uptime 19:40:49
 zulip-workers:zulip_events_embed_links                          RUNNING   pid 11035, uptime 19:40:46
 zulip-workers:zulip_events_embedded_bots                        RUNNING   pid 11139, uptime 19:40:43
-zulip-workers:zulip_events_error_reports                        RUNNING   pid 11154, uptime 19:40:40
 zulip-workers:zulip_events_invites                              RUNNING   pid 11261, uptime 19:40:36
 zulip-workers:zulip_events_missedmessage_emails                 RUNNING   pid 11346, uptime 19:40:21
 zulip-workers:zulip_events_missedmessage_mobile_notifications   RUNNING   pid 11351, uptime 19:40:19
@@ -83,14 +107,28 @@ isn't running. If you don't see relevant logs in
 
 After you change configuration in `/etc/zulip/settings.py` or fix a
 misconfiguration, you will often want to restart the Zulip
-application. Running `scripts/restart-server` will restart all of
-Zulip's services; if you want to restart just one of them, you can use
+application. In order to restart all of Zulip's services, you can use:
+
+```bash
+/home/zulip/deployments/current/scripts/restart-server
+```
+
+If you want to restart just one of them, you can use
 `supervisorctl`:
 
 ```bash
 # You can use this for any service found in `supervisorctl list`
 supervisorctl restart zulip-django
 ```
+
+:::{warning}
+A configuration file might be used by multiple services, so generally
+`scripts/restart-server` is the correct tool to use for reloading
+purposes. Only use `supervisorctl restart` for an individual service
+if you're confident that this specific service requires restarting.
+In particular, it is not the right tool for applying settings changes
+in `/etc/zulip/settings.py` and may cause inconsistent behavior.
+:::
 
 ### Stopping services with `supervisorctl stop`
 

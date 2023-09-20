@@ -15,6 +15,7 @@ from .settings import (
     EXTERNAL_HOST,
     LOCAL_DATABASE_PASSWORD,
     LOGGING,
+    MIDDLEWARE,
 )
 
 FULL_STACK_ZULIP_TEST = "FULL_STACK_ZULIP_TEST" in os.environ
@@ -48,10 +49,6 @@ else:
     USING_TORNADO = False
     CAMO_URI = "https://external-content.zulipcdn.net/external_content/"
     CAMO_KEY = "dummy"
-
-if PUPPETEER_TESTS:
-    # Disable search pills prototype for production use
-    SEARCH_PILLS_ENABLED = False
 
 if "RUNNING_OPENAPI_CURL_TEST" in os.environ:
     RUNNING_OPENAPI_CURL_TEST = True
@@ -119,13 +116,6 @@ if not PUPPETEER_TESTS:
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
     }
 
-    # This logger is used only for automated tests validating the
-    # error-handling behavior of the zulip_admins handler.
-    LOGGING["loggers"]["zulip.test_zulip_admins_handler"] = {
-        "handlers": ["zulip_admins"],
-        "propagate": False,
-    }
-
     # Here we set various loggers to be less noisy for unit tests.
     def set_loglevel(logger_name: str, level: str) -> None:
         LOGGING["loggers"].setdefault(logger_name, {})["level"] = level
@@ -151,6 +141,9 @@ ENABLE_FILE_LINKS = True
 # frontend/API tests in test_server.py can control this.
 if "LOCAL_UPLOADS_DIR" in os.environ:
     LOCAL_UPLOADS_DIR = os.getenv("LOCAL_UPLOADS_DIR")
+    assert LOCAL_UPLOADS_DIR is not None
+    LOCAL_AVATARS_DIR = os.path.join(LOCAL_UPLOADS_DIR, "avatars")
+    LOCAL_FILES_DIR = os.path.join(LOCAL_UPLOADS_DIR, "files")
 # Otherwise, we use the default value from dev_settings.py
 
 S3_KEY = "test-key"
@@ -209,8 +202,6 @@ BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
 PUSH_NOTIFICATION_BOUNCER_URL: Optional[str] = None
 
-THUMBNAIL_IMAGES = True
-
 # Logging the emails while running the tests adds them
 # to /emails page.
 DEVELOPMENT_LOG_EMAILS = False
@@ -242,6 +233,7 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, SAMLIdPConfigDict] = {
         "entity_id": "https://idp.testshib.org/idp/shibboleth",
         "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",
         "slo_url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/Logout",
+        "sp_initiated_logout_enabled": True,
         "x509cert": get_from_file_if_exists("zerver/tests/fixtures/saml/idp.crt"),
         "attr_user_permanent_id": "email",
         "attr_first_name": "first_name",
@@ -271,3 +263,13 @@ SCIM_CONFIG: Dict[str, SCIMConfigDict] = {
         "name_formatted_included": True,
     }
 }
+
+
+while len(MIDDLEWARE) < 19:
+    # The following middleware serves to skip having exactly 17 or 18
+    # middlewares, which can segfault Python 3.11 when running with
+    # coverage enabled; see
+    # https://github.com/python/cpython/issues/106092
+    MIDDLEWARE += [
+        "zerver.middleware.ZulipNoopMiddleware",
+    ]

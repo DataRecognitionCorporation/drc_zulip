@@ -11,8 +11,8 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
 from zerver.lib.message import get_first_visible_message_id, messages_for_ids
 from zerver.lib.narrow import (
-    NarrowBuilder,
     OptionalNarrowListT,
+    add_narrow_conditions,
     fetch_messages,
     is_spectator_compatible,
     is_web_public_narrow,
@@ -23,9 +23,8 @@ from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.topic import DB_TOPIC_NAME, MATCH_TOPIC, topic_column_sa
-from zerver.lib.utils import statsd
 from zerver.lib.validator import check_bool, check_int, check_list, to_non_negative_int
-from zerver.models import Realm, UserMessage, UserProfile
+from zerver.models import UserMessage, UserProfile
 
 MAX_MESSAGES_PER_FETCH = 5000
 
@@ -97,8 +96,8 @@ def get_messages_backend(
     anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
     if num_before + num_after > MAX_MESSAGES_PER_FETCH:
         raise JsonableError(
-            _("Too many messages requested (maximum {}).").format(
-                MAX_MESSAGES_PER_FETCH,
+            _("Too many messages requested (maximum {max_messages}).").format(
+                max_messages=MAX_MESSAGES_PER_FETCH,
             )
         )
     if num_before > 0 and num_after > 0 and not include_anchor:
@@ -114,15 +113,15 @@ def get_messages_backend(
         # authentication code (where we should return an auth error).
         #
         # GetOldMessagesTest.test_unauthenticated_* tests ensure
-        # that we are not leaking any secure data (private messages and
+        # that we are not leaking any secure data (direct messages and
         # non-web-public stream messages) via this path.
         if not realm.allow_web_public_streams_access():
-            raise MissingAuthenticationError()
+            raise MissingAuthenticationError
         if not is_web_public_narrow(narrow):
-            raise MissingAuthenticationError()
+            raise MissingAuthenticationError
         assert narrow is not None
         if not is_spectator_compatible(narrow):
-            raise MissingAuthenticationError()
+            raise MissingAuthenticationError
 
         # We use None to indicate unauthenticated requests as it's more
         # readable than using AnonymousUser, and the lack of Django
@@ -137,12 +136,10 @@ def get_messages_backend(
 
     assert realm is not None
 
-    if (
-        is_web_public_query
-        or realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
-    ):
-        # If email addresses are only available to administrators,
-        # clients cannot compute gravatars, so we force-set it to false.
+    if is_web_public_query:
+        # client_gravatar here is just the user-requested value. "finalize_payload" function
+        # is responsible for sending avatar_url based on each individual sender's
+        # email_address_visibility setting.
         client_gravatar = False
 
     if narrow is not None:
@@ -224,8 +221,6 @@ def get_messages_backend(
         allow_edit_history=realm.allow_edit_history,
     )
 
-    statsd.incr("loaded_old_messages", len(message_list))
-
     ret = dict(
         messages=message_list,
         result="success",
@@ -251,7 +246,7 @@ def messages_in_narrow_backend(
     # This query is limited to messages the user has access to because they
     # actually received them, as reflected in `zerver_usermessage`.
     query = (
-        select(column("message_id", Integer), topic_column_sa(), column("rendered_content", Text))
+        select(column("message_id", Integer))
         .where(
             and_(
                 column("user_profile_id", Integer) == literal(user_profile.id),
@@ -268,22 +263,28 @@ def messages_in_narrow_backend(
         )
     )
 
-    builder = NarrowBuilder(user_profile, column("message_id", Integer), user_profile.realm)
-    if narrow is not None:
-        for term in narrow:
-            query = builder.add_term(query, term)
+    inner_msg_id_col = column("message_id", Integer)
+    query, is_search = add_narrow_conditions(
+        user_profile=user_profile,
+        inner_msg_id_col=inner_msg_id_col,
+        query=query,
+        narrow=narrow,
+        is_web_public_query=False,
+        realm=user_profile.realm,
+    )
+
+    if not is_search:
+        # `add_narrow_conditions` adds the following columns only if narrow has search operands.
+        query = query.add_columns(topic_column_sa(), column("rendered_content", Text))
 
     search_fields = {}
     with get_sqlalchemy_connection() as sa_conn:
-        for row in sa_conn.execute(query).fetchall():
-            message_id = row._mapping["message_id"]
-            topic_name = row._mapping[DB_TOPIC_NAME]
-            rendered_content = row._mapping["rendered_content"]
-            if "content_matches" in row._mapping:
-                content_matches = row._mapping["content_matches"]
-                topic_matches = row._mapping["topic_matches"]
-            else:
-                content_matches = topic_matches = []
+        for row in sa_conn.execute(query).mappings():
+            message_id = row["message_id"]
+            topic_name: str = row[DB_TOPIC_NAME]
+            rendered_content: str = row["rendered_content"]
+            content_matches = row.get("content_matches", [])
+            topic_matches = row.get("topic_matches", [])
             search_fields[str(message_id)] = get_search_fields(
                 rendered_content,
                 topic_name,

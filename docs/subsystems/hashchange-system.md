@@ -17,7 +17,7 @@ Some examples are:
   stream.)
 
 The main module in the frontend that manages this all is
-`static/js/hashchange.js` (plus `hash_util.js` for all the parsing
+`web/src/hashchange.js` (plus `hash_util.js` for all the parsing
 code), which is unfortunately one of our thorniest modules. Part of
 the reason that it's thorny is that it needs to support a lot of
 different flows:
@@ -54,7 +54,7 @@ all of this (would be a good project to add them to the
 [Puppeteer suite][testing-with-puppeteer]) and there's enough complexity
 that it's easy to accidentally break something.
 
-The main external API lives in `static/js/browser_history.js`:
+The main external API lives in `web/src/browser_history.js`:
 
 - `browser_history.update` is used to update the browser
   history, and it should be called when the app code is taking care
@@ -69,7 +69,7 @@ Internally you have these functions:
   a hash or using the back button) or triggered internally.
 - `hashchange.do_hashchange_normal` handles most cases, like loading the main
   page (but maybe with a specific URL if you are narrowed to a
-  stream or topic or PMs, etc.).
+  stream or topic or direct messages, etc.).
 - `hashchange.do_hashchange_overlay` handles overlay cases. Overlays have
   some minor complexity related to remembering the page from
   which the overlay was launched, as well as optimizing in-page
@@ -97,7 +97,7 @@ reload itself:
   start looking for a good time to reload, based on when the user is
   idle (ideally, we'd reload when they're not looking and restore
   state so that the user never knew it happened!). The logic for
-  doing this is in `static/js/reload.js`; but regardless we'll reload
+  doing this is in `web/src/reload.js`; but regardless we'll reload
   within 30 minutes unconditionally.
 
   An important detail in server-initiated reloads is that we

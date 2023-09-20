@@ -10,8 +10,13 @@ import os
 import re
 from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Union, cast
 
+import openapi_core
 import orjson
+<<<<<<< HEAD
 from openapi_core import Spec, openapi_request_validator, openapi_response_validator
+=======
+from openapi_core import Spec
+>>>>>>> drc_main
 from openapi_core.protocols import Response
 from openapi_core.testing import MockRequest, MockResponse
 from openapi_core.validation.exceptions import ValidationError as OpenAPIValidationError
@@ -23,7 +28,6 @@ OPENAPI_SPEC_PATH = os.path.abspath(
 # A list of endpoint-methods such that the endpoint
 # has documentation but not with this particular method.
 EXCLUDE_UNDOCUMENTED_ENDPOINTS = {
-    ("/realm/emoji/{emoji_name}", "delete"),
     ("/users", "patch"),
 }
 # Consists of endpoints with some documentation remaining.
@@ -103,7 +107,7 @@ class OpenAPISpec:
 
             openapi = yaml.load(f, Loader=yaml.CSafeLoader)
 
-        spec = Spec.create(openapi)
+        spec = Spec.from_dict(openapi)
         self._spec = spec
         self._openapi = naively_merge_allOf_dict(JsonRef.replace_refs(openapi))
         self.create_endpoints_dict()
@@ -332,10 +336,11 @@ def get_openapi_parameters(
 def get_openapi_return_values(endpoint: str, method: str) -> Dict[str, Any]:
     operation = openapi_spec.openapi()["paths"][endpoint][method.lower()]
     schema = operation["responses"]["200"]["content"]["application/json"]["schema"]
-    # In cases where we have used oneOf, the schemas only differ in examples
-    # So we can choose any.
-    if "oneOf" in schema:
-        schema = schema["oneOf"][0]
+    # We do not currently have documented endpoints that have multiple schemas
+    # ("oneOf", "anyOf", "allOf") for success ("200") responses. If this changes,
+    # then the assertion below will need to be removed, and this function updated
+    # so that endpoint responses will be rendered as expected.
+    assert "properties" in schema
     return schema["properties"]
 
 
@@ -347,10 +352,6 @@ def find_openapi_endpoint(path: str) -> Optional[str]:
     return None
 
 
-def get_event_type(event: Dict[str, Any]) -> str:
-    return event["type"] + ":" + event.get("op", "")
-
-
 def fix_events(content: Dict[str, Any]) -> None:
     """Remove undocumented events from events array. This is a makeshift
     function so that further documentation of `/events` can happen with
@@ -360,24 +361,6 @@ def fix_events(content: Dict[str, Any]) -> None:
     # 'user' is deprecated so remove its occurrences from the events array
     for event in content["events"]:
         event.pop("user", None)
-
-
-def prune_type_schema_by_type(schema: Dict[str, Any], type: str) -> bool:
-    return ("enum" in schema and type not in schema["enum"]) or (
-        "allOf" in schema
-        and any(prune_type_schema_by_type(subschema, type) for subschema in schema["allOf"])
-    )
-
-
-def prune_schema_by_type(schema: Dict[str, Any], type: str) -> bool:
-    return (
-        "properties" in schema
-        and "type" in schema["properties"]
-        and prune_type_schema_by_type(schema["properties"]["type"], type)
-    ) or (
-        "allOf" in schema
-        and any(prune_schema_by_type(subschema, type) for subschema in schema["allOf"])
-    )
 
 
 def validate_against_openapi_schema(
@@ -397,7 +380,7 @@ def validate_against_openapi_schema(
     # No 500 responses have been documented, so skip them
     if status_code.startswith("5"):
         return False
-    if path not in openapi_spec.openapi()["paths"].keys():
+    if path not in openapi_spec.openapi()["paths"]:
         endpoint = find_openapi_endpoint(path)
         # If it doesn't match it hasn't been documented yet.
         if endpoint is None:
@@ -408,12 +391,12 @@ def validate_against_openapi_schema(
     if (endpoint, method) in EXCLUDE_UNDOCUMENTED_ENDPOINTS:
         return False
     # Return true for endpoints with only response documentation remaining
-    if (endpoint, method) in EXCLUDE_DOCUMENTED_ENDPOINTS:
+    if (endpoint, method) in EXCLUDE_DOCUMENTED_ENDPOINTS:  # nocoverage
         return True
     # Check if the response matches its code
     if status_code.startswith("2") and (
-        content.get("result", "success").lower() not in ["success", "partially_completed"]
-    ):
+        content.get("result", "success").lower() != "success"
+    ):  # nocoverage
         raise SchemaError("Response is not 200 but is validating against 200 schema")
     # Code is not declared but appears in various 400 responses. If
     # common, it can be added to 400 response schema
@@ -436,6 +419,7 @@ def validate_against_openapi_schema(
         orjson.dumps(content).decode(),
         status_code=int(status_code),
     )
+<<<<<<< HEAD
     result = openapi_response_validator.validate(
         openapi_spec.spec(), mock_request, cast(Response, mock_response)
     )
@@ -444,6 +428,19 @@ def validate_against_openapi_schema(
     except OpenAPIValidationError as error:
         message = f"Response validation error at {method} /api/v1{path} ({status_code}):"
         message += f"\n\n{type(error).__name__}: {error}"
+=======
+    try:
+        openapi_core.validate_response(
+            mock_request, cast(Response, mock_response), spec=openapi_spec.spec()
+        )
+    except OpenAPIValidationError as error:
+        message = f"Response validation error at {method} /api/v1{path} ({status_code}):"
+        message += f"\n\n{type(error).__name__}: {error}"
+        message += (
+            "\n\nFor help debugging these errors see: "
+            "https://zulip.readthedocs.io/en/latest/documentation/api.html#debugging-schema-validation-errors"
+        )
+>>>>>>> drc_main
         raise SchemaError(message) from None
 
     return True
@@ -465,8 +462,8 @@ def validate_schema(schema: Dict[str, Any]) -> None:
     elif schema["type"] == "object":
         if "additionalProperties" not in schema:
             raise SchemaError(
-                "additionalProperties needs to be defined for objects to make "
-                + "sure they have no additional properties left to be documented."
+                "additionalProperties needs to be defined for objects to make sure they have no"
+                " additional properties left to be documented."
             )
         for property_schema in schema.get("properties", {}).values():
             validate_schema(property_schema)
@@ -516,19 +513,6 @@ def validate_request(
     if url == "/user_uploads" or url.startswith("/realm/emoji/"):
         return
 
-    # Now using the openapi_core APIs, validate the request schema
-    # against the OpenAPI documentation.
-    assert isinstance(data, dict)
-    mock_request = MockRequest(
-        "http://localhost:9991/", method, "/api/v1" + url, headers=http_headers, args=data
-    )
-    result = openapi_request_validator.validate(openapi_spec.spec(), mock_request)
-    errors = list(result.errors)
-
-    # If no errors are raised, then validation is successful
-    if not errors:
-        return
-
     # Requests that do not validate against the OpenAPI spec must either:
     # * Have returned a 400 (bad request) error
     # * Have returned a 200 (success) with this request marked as intentionally
@@ -538,8 +522,17 @@ def validate_request(
     if status_code.startswith("2") and intentionally_undocumented:
         return
 
-    # Show a block error message explaining the options for fixing it.
-    msg = f"""
+    # Now using the openapi_core APIs, validate the request schema
+    # against the OpenAPI documentation.
+    assert isinstance(data, dict)
+    mock_request = MockRequest(
+        "http://localhost:9991/", method, "/api/v1" + url, headers=http_headers, args=data
+    )
+    try:
+        openapi_core.validate_request(mock_request, spec=openapi_spec.spec())
+    except OpenAPIValidationError as error:
+        # Show a block error message explaining the options for fixing it.
+        msg = f"""
 
 Error!  The OpenAPI schema for {method} {url} is not consistent
 with the parameters passed in this HTTP request.  Consider:
@@ -552,7 +545,7 @@ with the parameters passed in this HTTP request.  Consider:
 
 See https://zulip.readthedocs.io/en/latest/documentation/api.html for help.
 
-The errors logged by the OpenAPI validator are below:\n"""
-    for error in errors:
-        msg += f"* {str(error)}\n"
-    raise SchemaError(msg)
+The error logged by the OpenAPI validator is below:
+{error}
+"""
+        raise SchemaError(msg)

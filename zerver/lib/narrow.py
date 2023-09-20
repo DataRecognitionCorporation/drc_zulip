@@ -9,9 +9,10 @@ from typing import (
     Generic,
     Iterable,
     List,
-    Mapping,
     Optional,
+    Protocol,
     Sequence,
+    Set,
     Tuple,
     TypeVar,
     Union,
@@ -42,10 +43,12 @@ from sqlalchemy.sql import (
 )
 from sqlalchemy.sql.selectable import SelectBase
 from sqlalchemy.types import ARRAY, Boolean, Integer, Text
+from typing_extensions import TypeAlias
 
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.exceptions import ErrorCode, JsonableError
 from zerver.lib.message import get_first_visible_message_id
+from zerver.lib.narrow_helpers import NarrowTerm
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import (
@@ -99,15 +102,15 @@ def read_stop_words() -> List[str]:
     return stop_words_list
 
 
-def check_supported_events_narrow_filter(narrow: Iterable[Sequence[str]]) -> None:
-    for element in narrow:
-        operator = element[0]
+def check_narrow_for_events(narrow: Collection[NarrowTerm]) -> None:
+    for narrow_term in narrow:
+        operator = narrow_term.operator
         if operator not in ["stream", "topic", "sender", "is"]:
-            raise JsonableError(_("Operator {} not supported.").format(operator))
+            raise JsonableError(_("Operator {operator} not supported.").format(operator=operator))
 
 
 def is_spectator_compatible(narrow: Iterable[Dict[str, Any]]) -> bool:
-    # This implementation should agree with the similar function in static/js/hash_util.js.
+    # This implementation should agree with the similar function in web/src/hash_util.js.
     for element in narrow:
         operator = element["operator"]
         if "operand" not in element:
@@ -121,30 +124,30 @@ def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
     if narrow is None:
         return False
 
-    for term in narrow:
+    return any(
         # Web-public queries are only allowed for limited types of narrows.
         # term == {'operator': 'streams', 'operand': 'web-public', 'negated': False}
-        if (
-            term["operator"] == "streams"
-            and term["operand"] == "web-public"
-            and term["negated"] is False
-        ):
-            return True
-
-    return False
+        term["operator"] == "streams"
+        and term["operand"] == "web-public"
+        and term["negated"] is False
+        for term in narrow
+    )
 
 
-def build_narrow_filter(narrow: Collection[Sequence[str]]) -> Callable[[Mapping[str, Any]], bool]:
+class NarrowPredicate(Protocol):
+    def __call__(self, *, message: Dict[str, Any], flags: List[str]) -> bool:
+        ...
+
+
+def build_narrow_predicate(
+    narrow: Collection[NarrowTerm],
+) -> NarrowPredicate:
     """Changes to this function should come with corresponding changes to
-    BuildNarrowFilterTest."""
-    check_supported_events_narrow_filter(narrow)
+    NarrowLibraryTest."""
+    check_narrow_for_events(narrow)
 
-    def narrow_filter(event: Mapping[str, Any]) -> bool:
-        message = event["message"]
-        flags = event["flags"]
-        for element in narrow:
-            operator = element[0]
-            operand = element[1]
+    def narrow_predicate(*, message: Dict[str, Any], flags: List[str]) -> bool:
+        def satisfies_operator(*, operator: str, operand: str) -> bool:
             if operator == "stream":
                 if message["type"] != "stream":
                     return False
@@ -159,7 +162,8 @@ def build_narrow_filter(narrow: Collection[Sequence[str]]) -> Callable[[Mapping[
             elif operator == "sender":
                 if operand.lower() != message["sender_email"].lower():
                     return False
-            elif operator == "is" and operand == "private":
+            elif operator == "is" and operand in ["dm", "private"]:
+                # "is:private" is a legacy alias for "is:dm"
                 if message["type"] != "private":
                     return False
             elif operator == "is" and operand in ["starred"]:
@@ -177,10 +181,16 @@ def build_narrow_filter(narrow: Collection[Sequence[str]]) -> Callable[[Mapping[
                 topic_name = get_topic_from_message_info(message)
                 if not topic_name.startswith(RESOLVED_TOPIC_PREFIX):
                     return False
+            return True
+
+        for narrow_term in narrow:
+            # TODO: Eventually handle negated narrow terms.
+            if not satisfies_operator(operator=narrow_term.operator, operand=narrow_term.operand):
+                return False
 
         return True
 
-    return narrow_filter
+    return narrow_predicate
 
 
 LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000
@@ -198,9 +208,9 @@ class BadNarrowOperatorError(JsonableError):
         return _("Invalid narrow operator: {desc}")
 
 
-ConditionTransform = Callable[[ClauseElement], ClauseElement]
+ConditionTransform: TypeAlias = Callable[[ClauseElement], ClauseElement]
 
-OptionalNarrowListT = Optional[List[Dict[str, Any]]]
+OptionalNarrowListT: TypeAlias = Optional[List[Dict[str, Any]]]
 
 # These delimiters will not appear in rendered messages or HTML-escaped topics.
 TS_START = "<ts-match>"
@@ -259,6 +269,31 @@ class NarrowBuilder:
         self.msg_id_column = msg_id_column
         self.realm = realm
         self.is_web_public_query = is_web_public_query
+        self.by_method_map = {
+            "has": self.by_has,
+            "in": self.by_in,
+            "is": self.by_is,
+            "stream": self.by_stream,
+            "streams": self.by_streams,
+            "topic": self.by_topic,
+            "sender": self.by_sender,
+            "near": self.by_near,
+            "id": self.by_id,
+            "search": self.by_search,
+            "dm": self.by_dm,
+            # "pm-with:" is a legacy alias for "dm:"
+            "pm-with": self.by_dm,
+            "dm-including": self.by_dm_including,
+            # "group-pm-with:" was deprecated by the addition of "dm-including:"
+            "group-pm-with": self.by_group_pm_with,
+            # TODO/compatibility: Prior to commit a9b3a9c, the server implementation
+            # for documented search operators with dashes, also implicitly supported
+            # clients sending those same operators with underscores. We can remove
+            # support for the below operators when support for the associated dashed
+            # operator is removed.
+            "pm_with": self.by_dm,
+            "group_pm_with": self.by_group_pm_with,
+        }
 
     def add_term(self, query: Select, term: Dict[str, Any]) -> Select:
         """
@@ -281,9 +316,15 @@ class NarrowBuilder:
 
         negated = term.get("negated", False)
 
+<<<<<<< HEAD
         method_name = "by_" + operator.replace("-", "_")
         method = getattr(self, method_name, None)
         if method is None:
+=======
+        if operator in self.by_method_map:
+            method = self.by_method_map[operator]
+        else:
+>>>>>>> drc_main
             raise BadNarrowOperatorError("unknown operator " + operator)
 
         if negated:
@@ -318,7 +359,8 @@ class NarrowBuilder:
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
-        if operand == "private":
+        if operand in ["dm", "private"]:
+            # "is:private" is a legacy alias for "is:dm"
             cond = column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0
             return query.where(maybe_negate(cond))
         elif operand == "starred":
@@ -399,9 +441,9 @@ class NarrowBuilder:
             cond = column("recipient_id", Integer).in_(recipient_ids)
             return query.where(maybe_negate(cond))
 
-        recipient = stream.recipient
-        assert recipient is not None
-        cond = column("recipient_id", Integer) == recipient.id
+        recipient_id = stream.recipient_id
+        assert recipient_id is not None
+        cond = column("recipient_id", Integer) == recipient_id
         return query.where(maybe_negate(cond))
 
     def by_streams(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
@@ -488,7 +530,7 @@ class NarrowBuilder:
         cond = self.msg_id_column == literal(operand)
         return query.where(maybe_negate(cond))
 
-    def by_pm_with(
+    def by_dm(
         self, query: Select, operand: Union[str, Iterable[int]], maybe_negate: ConditionTransform
     ) -> Select:
         # This operator does not support is_web_public_query.
@@ -522,22 +564,22 @@ class NarrowBuilder:
         except (JsonableError, ValidationError):
             raise BadNarrowOperatorError("unknown user in " + str(operand))
 
-        # Group DM
+        # Group direct message
         if recipient.type == Recipient.HUDDLE:
             cond = column("recipient_id", Integer) == recipient.id
             return query.where(maybe_negate(cond))
 
-        # 1:1 PM
+        # 1:1 direct message
         other_participant = None
 
-        # Find if another person is in PM
+        # Find if another person is in direct message
         for user in user_profiles:
             if user.id != self.user_profile.id:
                 other_participant = user
 
-        # PM with another person
+        # Direct message with another person
         if other_participant:
-            # We need bidirectional messages PM with another person.
+            # We need bidirectional direct messages with another person.
             # But Recipient.PERSONAL objects only encode the person who
             # received the message, and not the other participant in
             # the thread (the sender), we need to do a somewhat
@@ -556,10 +598,71 @@ class NarrowBuilder:
             )
             return query.where(maybe_negate(cond))
 
-        # PM with self
+        # Direct message with self
         cond = and_(
             column("sender_id", Integer) == self.user_profile.id,
             column("recipient_id", Integer) == recipient.id,
+        )
+        return query.where(maybe_negate(cond))
+
+    def _get_huddle_recipients(self, other_user: UserProfile) -> Set[int]:
+        self_recipient_ids = [
+            recipient_tuple["recipient_id"]
+            for recipient_tuple in Subscription.objects.filter(
+                user_profile=self.user_profile,
+                recipient__type=Recipient.HUDDLE,
+            ).values("recipient_id")
+        ]
+        narrow_recipient_ids = [
+            recipient_tuple["recipient_id"]
+            for recipient_tuple in Subscription.objects.filter(
+                user_profile=other_user,
+                recipient__type=Recipient.HUDDLE,
+            ).values("recipient_id")
+        ]
+
+        return set(self_recipient_ids) & set(narrow_recipient_ids)
+
+    def by_dm_including(
+        self, query: Select, operand: Union[str, int], maybe_negate: ConditionTransform
+    ) -> Select:
+        # This operator does not support is_web_public_query.
+        assert not self.is_web_public_query
+        assert self.user_profile is not None
+
+        try:
+            if isinstance(operand, str):
+                narrow_user_profile = get_user_including_cross_realm(operand, self.realm)
+            else:
+                narrow_user_profile = get_user_by_id_in_realm_including_cross_realm(
+                    operand, self.realm
+                )
+        except UserProfile.DoesNotExist:
+            raise BadNarrowOperatorError("unknown user " + str(operand))
+
+        # "dm-including" when combined with the user's own ID/email as the operand
+        # should return all group and 1:1 direct messages (including direct messages
+        # with self), so the simplest query to get these messages is the same as "is:dm".
+        if narrow_user_profile.id == self.user_profile.id:
+            cond = column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0
+            return query.where(maybe_negate(cond))
+
+        # all direct messages including another person (group and 1:1)
+        huddle_recipient_ids = self._get_huddle_recipients(narrow_user_profile)
+
+        self_recipient_id = self.user_profile.recipient_id
+        # See note above in `by_dm` about needing bidirectional messages
+        # for direct messages with another person.
+        cond = or_(
+            and_(
+                column("sender_id", Integer) == narrow_user_profile.id,
+                column("recipient_id", Integer) == self_recipient_id,
+            ),
+            and_(
+                column("sender_id", Integer) == self.user_profile.id,
+                column("recipient_id", Integer) == narrow_user_profile.recipient_id,
+            ),
+            column("recipient_id", Integer).in_(huddle_recipient_ids),
         )
         return query.where(maybe_negate(cond))
 
@@ -578,22 +681,7 @@ class NarrowBuilder:
         except UserProfile.DoesNotExist:
             raise BadNarrowOperatorError("unknown user " + str(operand))
 
-        self_recipient_ids = [
-            recipient_tuple["recipient_id"]
-            for recipient_tuple in Subscription.objects.filter(
-                user_profile=self.user_profile,
-                recipient__type=Recipient.HUDDLE,
-            ).values("recipient_id")
-        ]
-        narrow_recipient_ids = [
-            recipient_tuple["recipient_id"]
-            for recipient_tuple in Subscription.objects.filter(
-                user_profile=narrow_profile,
-                recipient__type=Recipient.HUDDLE,
-            ).values("recipient_id")
-        ]
-
-        recipient_ids = set(self_recipient_ids) & set(narrow_recipient_ids)
+        recipient_ids = self._get_huddle_recipients(narrow_profile)
         cond = column("recipient_id", Integer).in_(recipient_ids)
         return query.where(maybe_negate(cond))
 
@@ -670,12 +758,18 @@ def narrow_parameter(var_name: str, json: str) -> OptionalNarrowListT:
             return dict(operator=elem[0], operand=elem[1])
 
         if isinstance(elem, dict):
-            # Make sure to sync this list to frontend also when adding a new operator.
-            # that supports user IDs. Relevant code is located in static/js/message_fetch.js
-            # in handle_operators_supporting_id_based_api function where you will need to update
-            # operators_supporting_id, or operators_supporting_ids array.
-            operators_supporting_id = ["sender", "group-pm-with", "stream"]
-            operators_supporting_ids = ["pm-with"]
+            # Make sure to sync this list to frontend also when adding a new operator that
+            # supports integer IDs. Relevant code is located in web/src/message_fetch.js
+            # in handle_operators_supporting_id_based_api function where you will need to
+            # update operators_supporting_id, or operators_supporting_ids array.
+            operators_supporting_id = [
+                "id",
+                "stream",
+                "sender",
+                "group-pm-with",
+                "dm-including",
+            ]
+            operators_supporting_ids = ["pm-with", "dm"]
             operators_non_empty_operand = {"search"}
 
             operator = elem.get("operator", "")
@@ -813,22 +907,26 @@ def exclude_muting_conditions(
     # muted messages exist where their absence might make conversation
     # difficult to understand. As a result, we do not need to consider
     # muted users in this server-side logic for returning messages to
-    # clients. (We could in theory exclude PMs from muted users, but
-    # they're likely to be sufficiently rare to not be worth extra
-    # logic/testing here).
+    # clients. (We could in theory exclude direct messages from muted
+    # users, but they're likely to be sufficiently rare to not be worth
+    # extra logic/testing here).
 
     return conditions
 
 
 def get_base_query_for_search(
-    user_profile: Optional[UserProfile], need_message: bool, need_user_message: bool
+    realm_id: int, user_profile: Optional[UserProfile], need_message: bool, need_user_message: bool
 ) -> Tuple[Select, ColumnElement[Integer]]:
     # Handle the simple case where user_message isn't involved first.
+    realm_cond = column("realm_id", Integer) == literal(realm_id)
     if not need_user_message:
         assert need_message
-        query = select(column("id", Integer).label("message_id")).select_from(
-            table("zerver_message")
+        query = (
+            select(column("id", Integer).label("message_id"))
+            .select_from(table("zerver_message"))
+            .where(realm_cond)
         )
+
         inner_msg_id_col = literal_column("zerver_message.id", Integer)
         return (query, inner_msg_id_col)
 
@@ -836,6 +934,7 @@ def get_base_query_for_search(
     if need_message:
         query = (
             select(column("message_id", Integer), column("flags", Integer))
+            .where(realm_cond)
             .where(column("user_profile_id", Integer) == literal(user_profile.id))
             .select_from(
                 join(
@@ -916,6 +1015,7 @@ def find_first_unread_anchor(
     need_message = True
 
     query, inner_msg_id_col = get_base_query_for_search(
+        realm_id=user_profile.realm_id,
         user_profile=user_profile,
         need_message=need_message,
         need_user_message=need_user_message,
@@ -1190,6 +1290,7 @@ def fetch_messages(
 
     query: SelectBase
     query, inner_msg_id_col = get_base_query_for_search(
+        realm_id=realm.id,
         user_profile=user_profile,
         need_message=need_message,
         need_user_message=need_user_message,

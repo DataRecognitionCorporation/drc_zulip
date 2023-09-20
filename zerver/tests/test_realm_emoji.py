@@ -8,7 +8,7 @@ from zerver.actions.users import do_change_user_role
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
-from zerver.lib.upload import BadImageError
+from zerver.lib.upload.base import BadImageError
 from zerver.models import Realm, RealmEmoji, UserProfile, get_realm
 
 
@@ -90,7 +90,7 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_post("/json/realm/emoji/laughing", info=emoji_data)
         self.assert_json_error(
             result,
-            "Only administrators can override built-in emoji.",
+            "Only administrators can override default emoji.",
         )
 
         user = self.example_user("iago")
@@ -109,8 +109,8 @@ class RealmEmojiTest(ZulipTestCase):
         realm_emoji = RealmEmoji.objects.get(name="green_tick")
         file_name = str(realm_emoji.id) + ".png"
         self.assertEqual(
-            str(realm_emoji),
-            f"<RealmEmoji(zulip): {realm_emoji.id} green_tick False {file_name}>",
+            repr(realm_emoji),
+            f"<RealmEmoji: zulip: {realm_emoji.id} green_tick False {file_name}>",
         )
 
     def test_upload_exception(self) -> None:
@@ -120,7 +120,7 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_post("/json/realm/emoji/my_em*oji", info=emoji_data)
         self.assert_json_error(
             result,
-            "Emoji names must contain only numbers, lowercase English letters, spaces, dashes, underscores, and periods.",
+            "Emoji names must contain only lowercase English letters, digits, spaces, dashes, and underscores.",
         )
 
     def test_forward_slash_exception(self) -> None:
@@ -132,7 +132,7 @@ class RealmEmojiTest(ZulipTestCase):
             )
         self.assert_json_error(
             result,
-            "Emoji names must contain only numbers, lowercase English letters, spaces, dashes, underscores, and periods.",
+            "Emoji names must contain only lowercase English letters, digits, spaces, dashes, and underscores.",
         )
 
     def test_upload_uppercase_exception(self) -> None:
@@ -142,7 +142,7 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_post("/json/realm/emoji/my_EMoji", info=emoji_data)
         self.assert_json_error(
             result,
-            "Emoji names must contain only numbers, lowercase English letters, spaces, dashes, underscores, and periods.",
+            "Emoji names must contain only lowercase English letters, digits, spaces, dashes, and underscores.",
         )
 
     def test_upload_end_character_exception(self) -> None:
@@ -150,7 +150,7 @@ class RealmEmojiTest(ZulipTestCase):
         with get_test_image_file("img.png") as fp1:
             emoji_data = {"f1": fp1}
             result = self.client_post("/json/realm/emoji/my_emoji_", info=emoji_data)
-        self.assert_json_error(result, "Emoji names must end with either a letter or number.")
+        self.assert_json_error(result, "Emoji names must end with either a letter or digit.")
 
     def test_missing_name_exception(self) -> None:
         self.login("iago")
@@ -161,7 +161,6 @@ class RealmEmojiTest(ZulipTestCase):
 
     def test_can_add_custom_emoji(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
-            user_profile.refresh_from_db()
             return user_profile.can_add_custom_emoji()
 
         self.check_has_permission_policies("add_custom_emoji_policy", validation_func)
@@ -282,7 +281,7 @@ class RealmEmojiTest(ZulipTestCase):
     def test_delete_exception(self) -> None:
         self.login("iago")
         result = self.client_delete("/json/realm/emoji/invalid_emoji")
-        self.assert_json_error(result, "Emoji 'invalid_emoji' does not exist")
+        self.assert_json_error(result, "Emoji 'invalid_emoji' does not exist", status_code=404)
 
     def test_multiple_upload(self) -> None:
         self.login("iago")
@@ -339,7 +338,7 @@ class RealmEmojiTest(ZulipTestCase):
     def test_failed_file_upload(self) -> None:
         self.login("iago")
         with mock.patch(
-            "zerver.lib.upload.write_local_file", side_effect=BadImageError(msg="Broken")
+            "zerver.lib.upload.local.write_local_file", side_effect=BadImageError(msg="Broken")
         ):
             with get_test_image_file("img.png") as fp1:
                 emoji_data = {"f1": fp1}

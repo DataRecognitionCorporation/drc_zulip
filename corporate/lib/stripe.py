@@ -7,7 +7,6 @@ from decimal import Decimal
 from functools import wraps
 from typing import Any, Callable, Dict, Generator, Optional, Tuple, TypeVar, Union
 
-import orjson
 import stripe
 from django.conf import settings
 from django.core.signing import Signer
@@ -95,23 +94,31 @@ def unsign_string(signed_string: str, salt: str) -> str:
     return signer.unsign(signed_string)
 
 
-def validate_licenses(charge_automatically: bool, licenses: Optional[int], seat_count: int) -> None:
+def validate_licenses(
+    charge_automatically: bool,
+    licenses: Optional[int],
+    seat_count: int,
+    exempt_from_license_number_check: bool,
+) -> None:
     min_licenses = seat_count
     max_licenses = None
     if not charge_automatically:
         min_licenses = max(seat_count, MIN_INVOICED_LICENSES)
         max_licenses = MAX_INVOICED_LICENSES
 
-    if licenses is None or licenses < min_licenses:
+    if licenses is None or (not exempt_from_license_number_check and licenses < min_licenses):
         raise BillingError(
-            "not enough licenses", _("You must invoice for at least {} users.").format(min_licenses)
+            "not enough licenses",
+            _("You must invoice for at least {min_licenses} users.").format(
+                min_licenses=min_licenses
+            ),
         )
 
     if max_licenses is not None and licenses > max_licenses:
         message = _(
-            "Invoices with more than {} licenses can't be processed from this page. To complete "
-            "the upgrade, please contact {}."
-        ).format(max_licenses, settings.ZULIP_ADMINISTRATOR)
+            "Invoices with more than {max_licenses} licenses can't be processed from this page. To"
+            " complete the upgrade, please contact {email}."
+        ).format(max_licenses=max_licenses, email=settings.ZULIP_ADMINISTRATOR)
         raise BillingError("too many licenses", message)
 
 
@@ -479,12 +486,10 @@ def make_end_of_cycle_updates_if_needed(
                 realm=realm,
                 event_time=event_time,
                 event_type=RealmAuditLog.CUSTOMER_SWITCHED_FROM_MONTHLY_TO_ANNUAL_PLAN,
-                extra_data=orjson.dumps(
-                    {
-                        "monthly_plan_id": plan.id,
-                        "annual_plan_id": new_plan.id,
-                    }
-                ).decode(),
+                extra_data={
+                    "monthly_plan_id": plan.id,
+                    "annual_plan_id": new_plan.id,
+                },
             )
             return new_plan, new_plan_ledger_entry
 
@@ -617,12 +622,6 @@ def compute_plan_parameters(
     return billing_cycle_anchor, next_invoice_date, period_end, price_per_license
 
 
-def decimal_to_float(obj: object) -> object:
-    if isinstance(obj, Decimal):
-        return float(obj)
-    raise TypeError  # nocoverage
-
-
 def is_free_trial_offer_enabled() -> bool:
     return settings.FREE_TRIAL_DAYS not in (None, 0)
 
@@ -636,7 +635,7 @@ def ensure_realm_does_not_have_active_plan(realm: Realm) -> None:
             "Upgrade of %s failed because of existing active plan.",
             realm.string_id,
         )
-        raise UpgradeWithExistingPlanError()
+        raise UpgradeWithExistingPlanError
 
 
 @transaction.atomic
@@ -648,7 +647,7 @@ def do_change_remote_server_plan_type(remote_server: RemoteZulipServer, plan_typ
         event_type=RealmAuditLog.REMOTE_SERVER_PLAN_TYPE_CHANGED,
         server=remote_server,
         event_time=timezone_now(),
-        extra_data=str({"old_value": old_value, "new_value": plan_type}),
+        extra_data={"old_value": old_value, "new_value": plan_type},
     )
 
 
@@ -656,8 +655,8 @@ def do_change_remote_server_plan_type(remote_server: RemoteZulipServer, plan_typ
 def do_deactivate_remote_server(remote_server: RemoteZulipServer) -> None:
     if remote_server.deactivated:
         billing_logger.warning(
-            f"Cannot deactivate remote server with ID {remote_server.id}, "
-            "server has already been deactivated."
+            "Cannot deactivate remote server with ID %d, server has already been deactivated.",
+            remote_server.id,
         )
         return
 
@@ -732,7 +731,7 @@ def process_initial_upgrade(
             acting_user=user,
             event_time=billing_cycle_anchor,
             event_type=RealmAuditLog.CUSTOMER_PLAN_CREATED,
-            extra_data=orjson.dumps(plan_params, default=decimal_to_float).decode(),
+            extra_data=plan_params,
         )
 
     if not free_trial:
@@ -935,7 +934,9 @@ def invoice_plan(plan: CustomerPlan, event_time: datetime) -> None:
     plan.save(update_fields=["next_invoice_date"])
 
 
-def invoice_plans_as_needed(event_time: datetime = timezone_now()) -> None:
+def invoice_plans_as_needed(event_time: Optional[datetime] = None) -> None:
+    if event_time is None:  # nocoverage
+        event_time = timezone_now()
     for plan in CustomerPlan.objects.filter(next_invoice_date__lte=event_time):
         invoice_plan(plan, event_time)
 
@@ -966,7 +967,7 @@ def attach_discount_to_realm(
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED,
         event_time=timezone_now(),
-        extra_data=str({"old_discount": old_discount, "new_discount": discount}),
+        extra_data={"old_discount": old_discount, "new_discount": discount},
     )
 
 
@@ -981,7 +982,7 @@ def update_sponsorship_status(
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_SPONSORSHIP_PENDING_STATUS_CHANGED,
         event_time=timezone_now(),
-        extra_data=str({"sponsorship_pending": sponsorship_pending}),
+        extra_data={"sponsorship_pending": sponsorship_pending},
     )
 
 
@@ -1004,11 +1005,16 @@ def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
     for user in realm.get_human_billing_admin_and_realm_owner_users():
         with override_language(user.default_language):
             # Using variable to make life easier for translators if these details change.
-            plan_name = "Zulip Cloud Standard"
-            emoji = ":tada:"
             message = _(
-                f"Your organization's request for sponsored hosting has been approved! {emoji}.\n"
-                f"You have been upgraded to {plan_name}, free of charge."
+                "Your organization's request for sponsored hosting has been approved! "
+                "You have been upgraded to {plan_name}, free of charge. {emoji}\n\n"
+                "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, "
+                "we would really appreciate it!"
+            ).format(
+                plan_name="Zulip Cloud Standard",
+                emoji=":tada:",
+                begin_link="[",
+                end_link="](/help/linking-to-zulip-website)",
             )
             internal_send_private_message(notification_bot, user, message)
 
@@ -1185,6 +1191,10 @@ def switch_realm_from_standard_to_plus_plan(realm: Realm) -> None:
     standard_plan.next_invoice_date = plan_switch_time
     standard_plan.save(update_fields=["status", "next_invoice_date"])
 
+    from zerver.actions.realm_settings import do_change_realm_plan_type
+
+    do_change_realm_plan_type(realm, Realm.PLAN_TYPE_PLUS, acting_user=None)
+
     standard_plan_next_renewal_date = start_of_next_billing_cycle(standard_plan, plan_switch_time)
 
     standard_plan_last_renewal_ledger = (
@@ -1226,5 +1236,5 @@ def update_billing_method_of_current_plan(
             acting_user=acting_user,
             event_type=RealmAuditLog.REALM_BILLING_METHOD_CHANGED,
             event_time=timezone_now(),
-            extra_data=str({"charge_automatically": charge_automatically}),
+            extra_data={"charge_automatically": charge_automatically},
         )

@@ -19,7 +19,7 @@ def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
         try:
             user_profile = get_user_including_cross_realm(email, realm)
         except UserProfile.DoesNotExist:
-            raise JsonableError(_("Invalid email '{}'").format(email))
+            raise JsonableError(_("Invalid email '{email}'").format(email=email))
         user_profiles.append(user_profile)
     return user_profiles
 
@@ -30,7 +30,7 @@ def get_user_profiles_by_ids(user_ids: Iterable[int], realm: Realm) -> List[User
         try:
             user_profile = get_user_by_id_in_realm_including_cross_realm(user_id, realm)
         except UserProfile.DoesNotExist:
-            raise JsonableError(_("Invalid user ID {}").format(user_id))
+            raise JsonableError(_("Invalid user ID {user_id}").format(user_id=user_id))
         user_profiles.append(user_profile)
     return user_profiles
 
@@ -40,8 +40,8 @@ class Addressee:
     # around in a non-type-safe way before this class was introduced.
     #
     # It also avoids some nonsense where you have to think about whether
-    # topic should be None or '' for a PM, or you have to make an array
-    # of one stream.
+    # topic should be None or '' for a direct message, or you have to
+    # make an array of one stream.
     #
     # Eventually we can use this to cache Stream and UserProfile objects
     # in memory.
@@ -97,7 +97,7 @@ class Addressee:
     @staticmethod
     def legacy_build(
         sender: UserProfile,
-        message_type_name: str,
+        recipient_type_name: str,
         message_to: Union[Sequence[int], Sequence[str]],
         topic_name: Optional[str],
         realm: Optional[Realm] = None,
@@ -108,7 +108,7 @@ class Addressee:
         if realm is None:
             realm = sender.realm
 
-        if message_type_name == "stream":
+        if recipient_type_name == "stream":
             if len(message_to) > 1:
                 raise JsonableError(_("Cannot send to multiple streams"))
 
@@ -118,9 +118,9 @@ class Addressee:
                 # This is a hack to deal with the fact that we still support
                 # default streams (and the None will be converted later in the
                 # call path).
-                if sender.default_sending_stream:
+                if sender.default_sending_stream_id:
                     # Use the user's default stream
-                    stream_name_or_id = sender.default_sending_stream.id
+                    stream_name_or_id = sender.default_sending_stream_id
                 else:
                     raise JsonableError(_("Missing stream"))
 
@@ -131,7 +131,7 @@ class Addressee:
                 return Addressee.for_stream_id(stream_name_or_id, topic_name)
 
             return Addressee.for_stream_name(stream_name_or_id, topic_name)
-        elif message_type_name == "private":
+        elif recipient_type_name == "private":
             if not message_to:
                 raise JsonableError(_("Message must have recipients"))
 

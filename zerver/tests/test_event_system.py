@@ -1,6 +1,7 @@
 import time
-from typing import Any, Callable, Dict, List, Mapping, Optional
+from typing import Any, Callable, Dict, List, Optional
 from unittest import mock
+from urllib.parse import urlsplit
 
 import orjson
 from django.conf import settings
@@ -12,22 +13,25 @@ from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.custom_profile_fields import try_update_realm_custom_profile_field
 from zerver.actions.message_send import check_send_message
 from zerver.actions.presence import do_update_user_presence
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.event_schema import check_restart_event
 from zerver.lib.events import fetch_initial_state_data
 from zerver.lib.exceptions import AccessDeniedError
 from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import HostRequestMock, dummy_handler, stub_event_queue_user_events
+from zerver.lib.test_helpers import (
+    HostRequestMock,
+    dummy_handler,
+    reset_email_visibility_to_everyone_in_zulip_realm,
+    stub_event_queue_user_events,
+)
 from zerver.lib.users import get_api_key, get_raw_user_data
 from zerver.models import (
     CustomProfileField,
-    Realm,
     UserMessage,
     UserPresence,
     UserProfile,
-    flush_per_request_caches,
     get_client,
     get_realm,
     get_stream,
@@ -54,6 +58,22 @@ class EventsEndpointTest(ZulipTestCase):
         result = self.client_post("/json/register", skip_user_agent=True)
         self.assert_json_success(result)
 
+<<<<<<< HEAD
+=======
+    def test_narrows(self) -> None:
+        user = self.example_user("hamlet")
+        with mock.patch("zerver.lib.events.request_event_queue", return_value=None) as m:
+            munge = lambda obj: orjson.dumps(obj).decode()
+            narrow = [["stream", "devel"], ["is", "mentioned"]]
+            payload = dict(narrow=munge(narrow))
+            result = self.api_post(user, "/api/v1/register", payload)
+
+        # We want the test to abort before actually fetching data.
+        self.assert_json_error(result, "Could not allocate event queue")
+
+        self.assertEqual(m.call_args.kwargs["narrow"], [["stream", "devel"], ["is", "mentioned"]])
+
+>>>>>>> drc_main
     def test_events_register_endpoint(self) -> None:
         # This test is intended to get minimal coverage on the
         # events_register code paths
@@ -72,7 +92,8 @@ class EventsEndpointTest(ZulipTestCase):
         # We choose realm_emoji somewhat randomly--we want
         # a "boring" event type for the purpose of this test.
         event_type = "realm_emoji"
-        test_event = dict(id=6, type=event_type, realm_emoji=[])
+        empty_realm_emoji_dict: Dict[str, Any] = {}
+        test_event = dict(id=6, type=event_type, realm_emoji=empty_realm_emoji_dict)
 
         # Test that call is made to deal with a returning soft deactivated user.
         with mock.patch("zerver.lib.events.reactivate_user_if_soft_deactivated") as fa:
@@ -105,7 +126,7 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(result_dict["queue_id"], "15:12")
 
         # sanity check the data relevant to our event
-        self.assertEqual(result_dict["realm_emoji"], [])
+        self.assertEqual(result_dict["realm_emoji"], {})
 
         # Now test with `fetch_event_types` not matching the event
         return_event_queue = "15:13"
@@ -144,7 +165,7 @@ class EventsEndpointTest(ZulipTestCase):
 
         # Check that the realm_emoji data is in there.
         self.assertIn("realm_emoji", result_dict)
-        self.assertEqual(result_dict["realm_emoji"], [])
+        self.assertEqual(result_dict["realm_emoji"], {})
         self.assertEqual(result_dict["queue_id"], "15:13")
 
     def test_events_register_spectators(self) -> None:
@@ -319,7 +340,7 @@ class GetEventsTest(ZulipTestCase):
         check_send_message(
             sender=user_profile,
             client=get_client("whatever"),
-            message_type_name="private",
+            recipient_type_name="private",
             message_to=[recipient_email],
             topic_name=None,
             message_content="hello",
@@ -352,7 +373,7 @@ class GetEventsTest(ZulipTestCase):
         check_send_message(
             sender=user_profile,
             client=get_client("whatever"),
-            message_type_name="private",
+            recipient_type_name="private",
             message_to=[recipient_email],
             topic_name=None,
             message_content="hello",
@@ -456,12 +477,19 @@ class GetEventsTest(ZulipTestCase):
         message = get_message(apply_markdown=False, client_gravatar=False)
         self.assertEqual(message["display_recipient"], "Denmark")
         self.assertEqual(message["content"], "**hello**")
-        self.assertTrue(message["avatar_url"].startswith("https://secure.gravatar.com"))
+        self.assertEqual(urlsplit(message["avatar_url"]).hostname, "secure.gravatar.com")
 
         message = get_message(apply_markdown=True, client_gravatar=False)
         self.assertEqual(message["display_recipient"], "Denmark")
         self.assertEqual(message["content"], "<p><strong>hello</strong></p>")
         self.assertIn("gravatar.com", message["avatar_url"])
+
+        do_change_user_setting(
+            user_profile,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
+        )
 
         message = get_message(apply_markdown=False, client_gravatar=True)
         self.assertEqual(message["display_recipient"], "Denmark")
@@ -560,9 +588,9 @@ class GetEventsTest(ZulipTestCase):
             self.assert_json_success(result)
             self.assert_length(events, 1)
 
-            pronouns_field = [
+            [pronouns_field] = (
                 field for field in events[0]["fields"] if field["id"] == profile_field.id
-            ][0]
+            )
             if pronouns_field_type_supported:
                 expected_type = CustomProfileField.PRONOUNS
             else:
@@ -602,63 +630,58 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
     def test_delivery_email_presence_for_non_admins(self) -> None:
         user_profile = self.example_user("aaron")
+        hamlet = self.example_user("hamlet")
         self.assertFalse(user_profile.is_realm_admin)
+        hamlet = self.example_user("hamlet")
 
-        do_set_realm_property(
-            user_profile.realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
 
-        for key, value in result["raw_users"].items():
-            if key == user_profile.id:
-                self.assertEqual(value["delivery_email"], user_profile.delivery_email)
-            else:
-                self.assertNotIn("delivery_email", value)
+        (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
+        self.assertEqual(hamlet_obj["delivery_email"], hamlet.delivery_email)
 
-        do_set_realm_property(
-            user_profile.realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
 
-        for key, value in result["raw_users"].items():
-            if key == user_profile.id:
-                self.assertEqual(value["delivery_email"], user_profile.delivery_email)
-            else:
-                self.assertNotIn("delivery_email", value)
+        (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
+        self.assertIsNone(hamlet_obj["delivery_email"])
 
     def test_delivery_email_presence_for_admins(self) -> None:
         user_profile = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
         self.assertTrue(user_profile.is_realm_admin)
+        hamlet = self.example_user("hamlet")
 
-        do_set_realm_property(
-            user_profile.realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
 
-        for key, value in result["raw_users"].items():
-            if key == user_profile.id:
-                self.assertEqual(value["delivery_email"], user_profile.delivery_email)
-            else:
-                self.assertNotIn("delivery_email", value)
+        (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
+        self.assertEqual(hamlet_obj["delivery_email"], hamlet.delivery_email)
 
-        do_set_realm_property(
-            user_profile.realm,
+        do_change_user_setting(
+            hamlet,
             "email_address_visibility",
-            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
-        for key, value in result["raw_users"].items():
-            self.assertIn("delivery_email", value)
+        (hamlet_obj,) = (value for key, value in result["raw_users"].items() if key == hamlet.id)
+        self.assertIn("delivery_email", hamlet_obj)
 
     def test_user_avatar_url_field_optional(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -691,8 +714,11 @@ class FetchInitialStateDataTest(ZulipTestCase):
         gravatar_users_id = [
             user_dict["user_id"]
             for user_dict in raw_users.values()
-            if "avatar_url" in user_dict and "gravatar.com" in user_dict["avatar_url"]
+            if "avatar_url" in user_dict
+            and urlsplit(user_dict["avatar_url"]).hostname == "secure.gravatar.com"
         ]
+
+        reset_email_visibility_to_everyone_in_zulip_realm()
 
         # Test again with client_gravatar = True
         result = fetch_initial_state_data(
@@ -734,6 +760,35 @@ class FetchInitialStateDataTest(ZulipTestCase):
                 self.assertIn(prop, result)
             self.assertIn(prop, result["user_settings"])
 
+    def test_realm_linkifiers_based_on_client_capabilities(self) -> None:
+        user = self.example_user("iago")
+        self.login_user(user)
+
+        data = {
+            "pattern": "#(?P<id>[123])",
+            "url_template": "https://realm.com/my_realm_filter/{id}",
+        }
+        post_result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(post_result)
+
+        result = fetch_initial_state_data(
+            user_profile=user,
+            linkifier_url_template=True,
+        )
+        self.assertEqual(result["realm_filters"], [])
+        self.assertEqual(result["realm_linkifiers"][-1]["pattern"], "#(?P<id>[123])")
+        self.assertEqual(
+            result["realm_linkifiers"][-1]["url_template"],
+            "https://realm.com/my_realm_filter/{id}",
+        )
+
+        # The default behavior should be `linkifier_url_template=False`
+        result = fetch_initial_state_data(
+            user_profile=user,
+        )
+        self.assertEqual(result["realm_filters"], [])
+        self.assertEqual(result["realm_linkifiers"], [])
+
     def test_pronouns_field_type_support(self) -> None:
         hamlet = self.example_user("hamlet")
         result = fetch_initial_state_data(
@@ -742,9 +797,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         )
         self.assertIn("custom_profile_fields", result)
         custom_profile_fields = result["custom_profile_fields"]
-        pronouns_field = [field for field in custom_profile_fields if field["name"] == "Pronouns"][
-            0
-        ]
+        [pronouns_field] = (field for field in custom_profile_fields if field["name"] == "Pronouns")
         self.assertEqual(pronouns_field["type"], CustomProfileField.SHORT_TEXT)
 
         result = fetch_initial_state_data(
@@ -753,9 +806,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         )
         self.assertIn("custom_profile_fields", result)
         custom_profile_fields = result["custom_profile_fields"]
-        pronouns_field = [field for field in custom_profile_fields if field["name"] == "Pronouns"][
-            0
-        ]
+        [pronouns_field] = (field for field in custom_profile_fields if field["name"] == "Pronouns")
         self.assertEqual(pronouns_field["type"], CustomProfileField.PRONOUNS)
 
 
@@ -952,6 +1003,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                 sender_avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
                 sender_avatar_version=1,
                 sender_is_mirror_dummy=None,
+                sender_email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
                 recipient_type=None,
                 recipient_type_id=None,
             ),
@@ -1199,8 +1251,7 @@ class FetchQueriesTest(ZulipTestCase):
 
         self.login_user(user)
 
-        flush_per_request_caches()
-        with self.assert_database_query_count(37):
+        with self.assert_database_query_count(39):
             with mock.patch("zerver.lib.events.always_want") as want_mock:
                 fetch_initial_state_data(user)
 
@@ -1215,21 +1266,22 @@ class FetchQueriesTest(ZulipTestCase):
             muted_topics=1,
             muted_users=1,
             presence=1,
-            realm=0,
+            realm=1,
             realm_bot=1,
             realm_domains=1,
             realm_embedded_bots=0,
             realm_incoming_webhook_bots=0,
             realm_emoji=1,
-            realm_filters=1,
-            realm_linkifiers=1,
+            realm_filters=0,
+            realm_linkifiers=0,
             realm_playgrounds=1,
             realm_user=3,
             realm_user_groups=3,
             realm_user_settings_defaults=1,
             recent_private_conversations=1,
+            scheduled_messages=1,
             starred_messages=1,
-            stream=2,
+            stream=3,
             stop_words=0,
             subscription=4,
             update_display_settings=0,
@@ -1248,7 +1300,6 @@ class FetchQueriesTest(ZulipTestCase):
 
         for event_type in sorted(wanted_event_types):
             count = expected_counts[event_type]
-            flush_per_request_caches()
             with self.assert_database_query_count(count):
                 if event_type == "update_message_flags":
                     event_types = ["update_message_flags", "message"]
@@ -1356,21 +1407,20 @@ class TestUserPresenceUpdatesDisabled(ZulipTestCase):
     # force_send_update is passed.
     @override_settings(USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS=3)
     def test_presence_events_disabled_on_larger_realm(self) -> None:
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1):
             do_update_user_presence(
                 self.example_user("cordelia"),
                 get_client("website"),
                 timezone_now(),
-                UserPresence.ACTIVE,
+                UserPresence.LEGACY_STATUS_ACTIVE_INT,
                 force_send_update=True,
             )
 
-        with self.tornado_redirected_to_list(events, expected_num_events=0):
+        with self.capture_send_event_calls(expected_num_events=0):
             do_update_user_presence(
                 self.example_user("hamlet"),
                 get_client("website"),
                 timezone_now(),
-                UserPresence.ACTIVE,
+                UserPresence.LEGACY_STATUS_ACTIVE_INT,
                 force_send_update=False,
             )

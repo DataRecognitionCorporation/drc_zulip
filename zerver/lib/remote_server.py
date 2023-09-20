@@ -90,7 +90,11 @@ def send_to_push_bouncer(
         if "code" in result_dict and result_dict["code"] == "INVALID_ZULIP_SERVER":
             # Invalid Zulip server credentials should email this server's admins
             raise PushNotificationBouncerError(
+<<<<<<< HEAD
                 _("Push notifications bouncer error: {}").format(msg)
+=======
+                _("Push notifications bouncer error: {error}").format(error=msg)
+>>>>>>> drc_main
             )
         else:
             # But most other errors coming from the push bouncer
@@ -125,6 +129,9 @@ REALMAUDITLOG_PUSHED_FIELDS = [
     "realm",
     "event_time",
     "backfilled",
+    # Note that we don't need to add extra_data_json here because
+    # the view remote_server_post_analytics populates extra_data_json
+    # from the provided extra_data.
     "extra_data",
     "event_type",
 ]

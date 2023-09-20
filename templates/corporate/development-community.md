@@ -23,6 +23,11 @@ developers during daylight hours in North America (roughly between
 15:00 UTC and 1:00 UTC), but the sun never sets on the Zulip
 community. Most questions get a reply within minutes to a few hours.
 
+You can also [read conversations](https://chat.zulip.org/) in the community
+without creating an account. If you are evaluating using Zulip for your
+organization, check out these [tips](/try-zulip/) for exploring the product in
+action in the development community.
+
 <br/>
 # Community norms
 
@@ -60,12 +65,12 @@ feedback.
   you. For example, include the **full traceback** in a [code
   block](/help/code-blocks) (not a screenshot), a link to the code or
   a draft PR you’re having trouble debugging, etc.
-- Ask questions on streams rather than PMing core contributors. You’ll
+- Ask questions on streams rather than DMing core contributors. You’ll
   get answers faster since other people can help, and it makes it
   possible for others to benefit from the discussion.
 - Don’t ask the same question in multiple places. Moderators read
   every public stream, and make sure every question gets a reply.
-- Use @-mentions sparingly. Unlike IRC or Slack, Zulip‘s topics make
+- Use @-mentions sparingly. Unlike IRC or Slack, Zulip’s topics make
   it easy to see what you’re replying to, so you don’t need to mention
   your conversation partner to make sure they will see or understand
   your reply. Core contributors will often @-mention someone who asked
@@ -138,8 +143,8 @@ topic to a different stream](/help/move-content-to-another-stream).
   comment on work posted here, even if you’re new to the Zulip
   project; reviewing other PRs is a great way to develop experience,
   and even just manually testing a proposed new feature and posting
-  feedback is super helpful. Note that GitHub is our primarily system
-  for managing code review.
+  feedback is super helpful. Note that GitHub is our primary system
+  for managing code reviews.
 - [#backend](https://chat.zulip.org/#narrow/stream/3-backend),
   [#frontend](https://chat.zulip.org/#narrow/stream/6-frontend),
   [#documentation](https://chat.zulip.org/#narrow/stream/19-documentation),
@@ -219,19 +224,37 @@ you.
 ## Searching for past conversations
 
 To look for previous threads about something, we recommend using the
-following [search operators](/help/search-for-messages):
+following [search filters](/help/search-for-messages#search-filters):
 `streams:public <your keyword(s)>`.
 
 This will search the full history of all public streams for `<your
 keyword(s)>`, including messages sent before you joined and messages
 on public streams you’re not subscribed to.
 
+## Linking to GitHub issues and pull requests
+
+We've set up [custom linkifiers](/help/add-a-custom-linkifier)
+so that it's easy to link to issues and pull requests in Zulip
+project repositories when composing a message or [starting a new
+topic](/help/starting-a-new-topic). Here are examples for linking
+to issue 1234 in the main Zulip project repositories:
+
+- [Server and web app][server-web-repository]: `#1234`
+- [Mobile client][mobile-repository]: `#M1234`
+- [Terminal client][terminal-repository]: `#T1234`
+- [Desktop client][desktop-repository]: `#D1234`
+
 ## New features are tested here
 
 We [continuously test out new features or ideas][release-lifecycle] on
 chat.zulip.org before rolling them out to Zulip Cloud or including
 them in a Zulip Server release (or deciding not to!). Please report in
-[#issues](https://chat.zulip.org/#narrow/stream/9-issues) anything you notice that seems broken! It’s likely you’ve
-found a bug in an upcoming feature.
+[#issues](https://chat.zulip.org/#narrow/stream/9-issues) anything you
+notice that seems broken! It’s likely you’ve found a bug in an upcoming
+feature.
 
 [release-lifecycle]: https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html
+[server-web-repository]: https://github.com/zulip/zulip
+[mobile-repository]: https://github.com/zulip/zulip-mobile
+[terminal-repository]: https://github.com/zulip/zulip-terminal
+[desktop-repository]: https://github.com/zulip/zulip-desktop

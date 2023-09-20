@@ -1,5 +1,6 @@
 from unittest import mock
 
+import orjson
 import responses
 from django.core.signing import Signer
 from django.http import HttpResponseRedirect
@@ -36,7 +37,7 @@ class TestVideoCall(ZulipTestCase):
         self.assertEqual(response.status_code, 302)
 
     @responses.activate
-    def test_create_video_request_success(self) -> None:
+    def test_create_zoom_video_and_audio_links(self) -> None:
         responses.add(
             responses.POST,
             "https://zoom.us/oauth/token",
@@ -49,6 +50,7 @@ class TestVideoCall(ZulipTestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+        # Test creating a video link
         responses.replace(
             responses.POST,
             "https://zoom.us/oauth/token",
@@ -61,10 +63,19 @@ class TestVideoCall(ZulipTestCase):
             json={"join_url": "example.com"},
         )
 
-        response = self.client_post("/json/calls/zoom/create")
+        response = self.client_post("/json/calls/zoom/create", {"is_video_call": "true"})
         self.assertEqual(
             responses.calls[-1].request.url,
             "https://api.zoom.us/v2/users/me/meetings",
+        )
+        self.assertEqual(
+            orjson.loads(responses.calls[-1].request.body),
+            {
+                "settings": {
+                    "host_video": True,
+                    "participant_video": True,
+                },
+            },
         )
         self.assertEqual(
             responses.calls[-1].request.headers["Authorization"],
@@ -73,6 +84,41 @@ class TestVideoCall(ZulipTestCase):
         json = self.assert_json_success(response)
         self.assertEqual(json["url"], "example.com")
 
+        # Test creating an audio link
+        responses.replace(
+            responses.POST,
+            "https://zoom.us/oauth/token",
+            json={"access_token": "newtoken", "expires_in": 60},
+        )
+
+        responses.add(
+            responses.POST,
+            "https://api.zoom.us/v2/users/me/meetings",
+            json={"join_url": "example.com"},
+        )
+
+        response = self.client_post("/json/calls/zoom/create", {"is_video_call": "false"})
+        self.assertEqual(
+            responses.calls[-1].request.url,
+            "https://api.zoom.us/v2/users/me/meetings",
+        )
+        self.assertEqual(
+            orjson.loads(responses.calls[-1].request.body),
+            {
+                "settings": {
+                    "host_video": False,
+                    "participant_video": False,
+                },
+            },
+        )
+        self.assertEqual(
+            responses.calls[-1].request.headers["Authorization"],
+            "Bearer newtoken",
+        )
+        json = self.assert_json_success(response)
+        self.assertEqual(json["url"], "example.com")
+
+        # Test for authentication error
         self.logout()
         self.login_user(self.user)
 

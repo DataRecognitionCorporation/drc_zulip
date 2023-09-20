@@ -39,6 +39,7 @@ from decorator import decorator
 from django.conf import settings
 from django.contrib.auth import authenticate, get_backends
 from django.contrib.auth.backends import RemoteUserBackend
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.dispatch import Signal, receiver
@@ -48,11 +49,15 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser, ldap_error
 from lxml.etree import XMLSyntaxError
+from onelogin.saml2 import compat as onelogin_saml2_compat
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.errors import OneLogin_Saml2_Error
 from onelogin.saml2.logout_request import OneLogin_Saml2_Logout_Request
+from onelogin.saml2.logout_response import OneLogin_Saml2_Logout_Response
 from onelogin.saml2.response import OneLogin_Saml2_Response
 from onelogin.saml2.settings import OneLogin_Saml2_Settings
+from onelogin.saml2.utils import OneLogin_Saml2_Utils
+from onelogin.saml2.xml_utils import OneLogin_Saml2_XML
 from requests import HTTPError
 from social_core.backends.apple import AppleIdAuth
 from social_core.backends.azuread import AzureADOAuth2
@@ -70,6 +75,7 @@ from social_core.exceptions import (
     SocialAuthBaseException,
 )
 from social_core.pipeline.partial import partial
+from social_django.utils import load_backend, load_strategy
 from zxcvbn import zxcvbn
 
 from zerver.actions.create_user import do_create_user, do_reactivate_user
@@ -96,6 +102,7 @@ from zerver.models import (
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
     PasswordTooWeakError,
+    PreregistrationRealm,
     PreregistrationUser,
     Realm,
     UserProfile,
@@ -111,12 +118,19 @@ from zproject.settings_types import OIDCIdPConfigDict
 redis_client = get_redis_client()
 
 
+<<<<<<< HEAD
+=======
+def all_implemented_backend_names() -> List[str]:
+    return list(AUTH_BACKEND_NAME_MAP.keys())
+
+
+>>>>>>> drc_main
 # This first batch of methods is used by other code in Zulip to check
 # whether a given authentication backend is enabled for a given realm.
 # In each case, we both needs to check at the server level (via
 # `settings.AUTHENTICATION_BACKENDS`, queried via
 # `django.contrib.auth.get_backends`) and at the realm level (via the
-# `Realm.authentication_methods` BitField).
+# `RealmAuthenticationMethod` table).
 def pad_method_dict(method_dict: Dict[str, bool]) -> Dict[str, bool]:
     """Pads an authentication methods dict to contain all auth backends
     supported by the software, regardless of whether they are
@@ -127,11 +141,23 @@ def pad_method_dict(method_dict: Dict[str, bool]) -> Dict[str, bool]:
     return method_dict
 
 
-def auth_enabled_helper(backends_to_check: List[str], realm: Optional[Realm]) -> bool:
+def auth_enabled_helper(
+    backends_to_check: List[str],
+    realm: Optional[Realm],
+    realm_authentication_methods: Optional[Dict[str, bool]] = None,
+) -> bool:
+    """
+    realm_authentication_methods can be passed if already fetched to avoid
+    a database query.
+    """
     if realm is not None:
-        enabled_method_dict = realm.authentication_methods_dict()
+        if realm_authentication_methods is not None:
+            # Copy the dict to avoid mutating the original if it was passed in as argument.
+            enabled_method_dict = realm_authentication_methods.copy()
+        else:
+            enabled_method_dict = realm.authentication_methods_dict()
     else:
-        enabled_method_dict = {method: True for method in Realm.AUTHENTICATION_FLAGS}
+        enabled_method_dict = {method: True for method in AUTH_BACKEND_NAME_MAP}
 
     pad_method_dict(enabled_method_dict)
     for supported_backend in supported_auth_backends():
@@ -142,46 +168,65 @@ def auth_enabled_helper(backends_to_check: List[str], realm: Optional[Realm]) ->
     return False
 
 
-def ldap_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(["LDAP"], realm)
+def ldap_auth_enabled(
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+) -> bool:
+    return auth_enabled_helper(["LDAP"], realm, realm_authentication_methods)
 
 
-def email_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(["Email"], realm)
+def email_auth_enabled(
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+) -> bool:
+    return auth_enabled_helper(["Email"], realm, realm_authentication_methods)
 
 
-def password_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return ldap_auth_enabled(realm) or email_auth_enabled(realm)
+def password_auth_enabled(
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+) -> bool:
+    return ldap_auth_enabled(realm, realm_authentication_methods) or email_auth_enabled(
+        realm, realm_authentication_methods
+    )
 
 
-def dev_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(["Dev"], realm)
+def dev_auth_enabled(
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+) -> bool:
+    return auth_enabled_helper(["Dev"], realm, realm_authentication_methods)
 
 
-def google_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(["Google"], realm)
+def google_auth_enabled(
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+) -> bool:
+    return auth_enabled_helper(["Google"], realm, realm_authentication_methods)
 
 
-def github_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(["GitHub"], realm)
+def github_auth_enabled(
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+) -> bool:
+    return auth_enabled_helper(["GitHub"], realm, realm_authentication_methods)
 
 
-def gitlab_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(["GitLab"], realm)
+def gitlab_auth_enabled(
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+) -> bool:
+    return auth_enabled_helper(["GitLab"], realm, realm_authentication_methods)
 
 
-def apple_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(["Apple"], realm)
+def apple_auth_enabled(
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+) -> bool:
+    return auth_enabled_helper(["Apple"], realm, realm_authentication_methods)
 
 
-def saml_auth_enabled(realm: Optional[Realm] = None) -> bool:
-    return auth_enabled_helper(["SAML"], realm)
+def saml_auth_enabled(
+    realm: Optional[Realm] = None, realm_authentication_methods: Optional[Dict[str, bool]] = None
+) -> bool:
+    return auth_enabled_helper(["SAML"], realm, realm_authentication_methods)
 
 
 def require_email_format_usernames(realm: Optional[Realm] = None) -> bool:
-    if ldap_auth_enabled(realm):
-        if settings.LDAP_EMAIL_ATTR or settings.LDAP_APPEND_DOMAIN:
-            return False
+    if ldap_auth_enabled(realm) and (settings.LDAP_EMAIL_ATTR or settings.LDAP_APPEND_DOMAIN):
+        return False
     return True
 
 
@@ -251,7 +296,6 @@ def is_subdomain_in_allowed_subdomains_list(subdomain: str, allowed_subdomains: 
 
 
 AuthFuncT = TypeVar("AuthFuncT", bound=Callable[..., Optional[UserProfile]])
-rate_limiting_rules = settings.RATE_LIMITING_RULES["authenticate_by_username"]
 
 
 class RateLimitedAuthenticationByUsername(RateLimitedObject):
@@ -263,7 +307,7 @@ class RateLimitedAuthenticationByUsername(RateLimitedObject):
         return f"{type(self).__name__}:{self.username}"
 
     def rules(self) -> List[Tuple[int, int]]:
-        return rate_limiting_rules
+        return settings.RATE_LIMITING_RULES["authenticate_by_username"]
 
 
 def rate_limit_authentication_by_username(request: HttpRequest, username: str) -> None:
@@ -825,7 +869,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         if "full_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
             full_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]
             full_name = ldap_user.attrs[full_name_attr][0]
-        elif all(key in settings.AUTH_LDAP_USER_ATTR_MAP for key in {"first_name", "last_name"}):
+        elif all(key in settings.AUTH_LDAP_USER_ATTR_MAP for key in ["first_name", "last_name"]):
             first_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["first_name"]
             last_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["last_name"]
             first_name = ldap_user.attrs[first_name_attr][0]
@@ -882,11 +926,13 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         username: str,
         password: str,
         realm: Realm,
+        prereg_realm: Optional[PreregistrationRealm] = None,
         prereg_user: Optional[PreregistrationUser] = None,
         return_data: Optional[Dict[str, Any]] = None,
     ) -> Optional[UserProfile]:
         self._realm = realm
         self._prereg_user = prereg_user
+        self._prereg_realm = prereg_realm
         if not ldap_auth_enabled(realm):
             return None
 
@@ -992,21 +1038,29 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         opts: Dict[str, Any] = {}
         if self._prereg_user:
             invited_as = self._prereg_user.invited_as
-            realm_creation = self._prereg_user.realm_creation
             opts["prereg_user"] = self._prereg_user
 
             opts["role"] = invited_as
-            if realm_creation:
-                opts["role"] = UserProfile.ROLE_REALM_OWNER
-
-            opts["realm_creation"] = realm_creation
+            opts["realm_creation"] = False
             # TODO: Ideally, we should add a mechanism for the user
             # entering which default stream groups they've selected in
             # the LDAP flow.
             opts["default_stream_groups"] = []
 
+        if self._prereg_realm:
+            opts["prereg_realm"] = self._prereg_realm
+            opts["realm_creation"] = True
+            opts["role"] = UserProfile.ROLE_REALM_OWNER
+            opts["default_stream_groups"] = []
+
         user_profile = do_create_user(
-            username, None, self._realm, full_name, acting_user=None, **opts
+            username,
+            None,
+            self._realm,
+            full_name,
+            tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
+            acting_user=None,
+            **opts,
         )
         self.sync_avatar_from_ldap(user_profile, ldap_user)
         self.sync_custom_profile_fields_from_ldap(user_profile, ldap_user)
@@ -1165,9 +1219,8 @@ def query_ldap(email: str) -> List[str]:
 
         for django_field, ldap_field in settings.AUTH_LDAP_USER_ATTR_MAP.items():
             value = ldap_attrs.get(ldap_field, ["LDAP field not present"])[0]
-            if django_field == "avatar":
-                if isinstance(value, bytes):
-                    value = "(An avatar image file)"
+            if django_field == "avatar" and isinstance(value, bytes):
+                value = "(An avatar image file)"
             values.append(f"{django_field}: {value}")
         if settings.LDAP_EMAIL_ATTR is not None:
             values.append("{}: {}".format("email", ldap_attrs[settings.LDAP_EMAIL_ATTR][0]))
@@ -1255,6 +1308,9 @@ class ExternalAuthDataDict(TypedDict, total=False):
     desktop_flow_otp: Optional[str]
     multiuse_object_key: str
     full_name_validated: bool
+    # The mobile app doesn't actually use a session, so this
+    # data is not applicable there.
+    params_to_store_in_authenticated_session: Dict[str, str]
 
 
 class ExternalAuthResult:
@@ -1757,6 +1813,7 @@ def social_auth_finish(
         full_name_validated=full_name_validated,
         mobile_flow_otp=mobile_flow_otp,
         desktop_flow_otp=desktop_flow_otp,
+        params_to_store_in_authenticated_session=backend.get_params_to_store_in_authenticated_session(),
     )
     if user_profile is None:
         data_dict.update(dict(full_name=full_name, email=email_address))
@@ -1835,6 +1892,13 @@ class SocialAuthMixin(ZulipAuthMixin, ExternalAuthMethod, BaseAuth):
     def should_auto_signup(self) -> bool:
         return False
 
+    def get_params_to_store_in_authenticated_session(self) -> Dict[str, str]:
+        """
+        Specifies a dict of keys:values to be saved in the user's session
+        after successfully authenticating.
+        """
+        return {"social_auth_backend": self.name}
+
     @classmethod
     def dict_representation(cls, realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
         return [
@@ -1853,7 +1917,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     name = "github"
     auth_backend_name = "GitHub"
     sort_order = 100
-    display_icon = "/static/images/authentication_backends/github-icon.png"
+    display_icon = staticfiles_storage.url("images/authentication_backends/github-icon.png")
 
     def get_all_associated_email_objects(self, *args: Any, **kwargs: Any) -> List[Dict[str, Any]]:
         access_token = kwargs["response"]["access_token"]
@@ -1948,7 +2012,7 @@ class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
     sort_order = 50
     name = "azuread-oauth2"
     auth_backend_name = "AzureAD"
-    display_icon = "/static/images/authentication_backends/azuread-icon.png"
+    display_icon = staticfiles_storage.url("images/authentication_backends/azuread-icon.png")
 
 
 @external_auth_method
@@ -1956,7 +2020,7 @@ class GitLabAuthBackend(SocialAuthMixin, GitLabOAuth2):
     sort_order = 75
     name = "gitlab"
     auth_backend_name = "GitLab"
-    display_icon = "/static/images/authentication_backends/gitlab-icon.png"
+    display_icon = staticfiles_storage.url("images/authentication_backends/gitlab-icon.png")
 
     # Note: GitLab as of early 2020 supports having multiple email
     # addresses connected with a GitLab account, and we could access
@@ -1972,7 +2036,7 @@ class GoogleAuthBackend(SocialAuthMixin, GoogleOAuth2):
     sort_order = 150
     auth_backend_name = "Google"
     name = "google"
-    display_icon = "/static/images/authentication_backends/googl_e-icon.png"
+    display_icon = staticfiles_storage.url("images/authentication_backends/googl_e-icon.png")
 
     def get_verified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
         verified_emails: List[str] = []
@@ -2003,7 +2067,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
     sort_order = 10
     name = "apple"
     auth_backend_name = "Apple"
-    display_icon = "/static/images/authentication_backends/apple-icon.png"
+    display_icon = staticfiles_storage.url("images/authentication_backends/apple-icon.png")
 
     # Apple only sends `name` in its response the first time a user
     # tries to sign up, so we won't have it in consecutive attempts.
@@ -2203,9 +2267,28 @@ class SAMLDocument:
         self.encoded_saml_message = encoded_saml_message
         self.backend = backend
 
+        self._decoded_saml_message: Optional[str] = None
+
     @property
     def logger(self) -> logging.Logger:
         return self.backend.logger
+
+    @property
+    def decoded_saml_message(self) -> str:
+        """
+        Returns the decoded SAMLRequest/SAMLResponse.
+        """
+        if self._decoded_saml_message is None:
+            # This logic is taken from how
+            # python3-saml handles decoding received SAMLRequest
+            # and SAMLResponse params.
+            self._decoded_saml_message = onelogin_saml2_compat.to_string(
+                OneLogin_Saml2_Utils.decode_base64_and_inflate(
+                    self.encoded_saml_message, ignore_zip=True
+                )
+            )
+
+        return self._decoded_saml_message
 
     def document_type(self) -> str:
         """
@@ -2238,7 +2321,6 @@ class SAMLDocument:
         """
         Returns a list of the issuers of the SAML document.
         """
-        pass
 
 
 class SAMLRequest(SAMLDocument):
@@ -2264,13 +2346,47 @@ class SAMLResponse(SAMLDocument):
         saml_settings = OneLogin_Saml2_Settings(config, sp_validation_only=True)
 
         try:
-            resp = OneLogin_Saml2_Response(
-                settings=saml_settings, response=self.encoded_saml_message
-            )
-            return resp.get_issuers()
+            if not self.is_logout_response():
+                resp = OneLogin_Saml2_Response(
+                    settings=saml_settings, response=self.encoded_saml_message
+                )
+                return resp.get_issuers()
+            else:
+                logout_response = OneLogin_Saml2_Logout_Response(
+                    settings=saml_settings, response=self.encoded_saml_message
+                )
+                return logout_response.get_issuer()
         except self.SAML_PARSING_EXCEPTIONS as e:
             self.logger.error("Error parsing SAMLResponse: %s", str(e))
             return []
+
+    def get_session_index(self) -> Optional[str]:
+        """
+        Returns the SessionIndex from the SAMLResponse.
+        """
+        config = self.backend.generate_saml_config()
+        saml_settings = OneLogin_Saml2_Settings(config, sp_validation_only=True)
+
+        try:
+            resp = OneLogin_Saml2_Response(
+                settings=saml_settings, response=self.encoded_saml_message
+            )
+            return resp.get_session_index()
+        except self.SAML_PARSING_EXCEPTIONS as e:
+            self.logger.error("Error parsing SAMLResponse: %s", str(e))
+            return None
+
+    def is_logout_response(self) -> bool:
+        """
+        Checks whether the SAMLResponse is a LogoutResponse based on some
+        basic XML parsing.
+        """
+
+        try:
+            parsed_xml = OneLogin_Saml2_XML.to_etree(self.decoded_saml_message)
+            return bool(OneLogin_Saml2_XML.query(parsed_xml, "/samlp:LogoutResponse"))
+        except self.SAML_PARSING_EXCEPTIONS:
+            return False
 
 
 @external_auth_method
@@ -2301,9 +2417,9 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             ]
             if idps_without_limit_to_subdomains:
                 self.logger.error(
-                    "SAML_REQUIRE_LIMIT_TO_SUBDOMAINS is enabled and the following "
-                    + "IdPs don't have limit_to_subdomains specified and will be ignored: "
-                    + f"{idps_without_limit_to_subdomains}"
+                    "SAML_REQUIRE_LIMIT_TO_SUBDOMAINS is enabled and the following IdPs don't have"
+                    " limit_to_subdomains specified and will be ignored: %r",
+                    idps_without_limit_to_subdomains,
                 )
                 for idp_name in idps_without_limit_to_subdomains:
                     del settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name]
@@ -2439,8 +2555,8 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             return
 
         error_msg = (
-            f"SAML user from IdP {idp.name} rejected due to missing entitlement "
-            + f"for subdomain '{subdomain}'. User entitlements: {entitlements}."
+            f"SAML user from IdP {idp.name} rejected due to missing entitlement for subdomain"
+            f" '{subdomain}'. User entitlements: {entitlements}."
         )
         raise AuthFailed(self, error_msg)
 
@@ -2547,7 +2663,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         subdomain = self.choose_subdomain(relayed_params)
         if subdomain is None:
             error_msg = (
-                "/complete/saml/: Can't figure out subdomain for this %s. " + "relayed_params: %s"
+                "/complete/saml/: Can't figure out subdomain for this %s. relayed_params: %s"
             )
             self.logger.info(error_msg, saml_document.document_type(), relayed_params)
             return None
@@ -2562,14 +2678,39 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         idp_valid = self.validate_idp_for_subdomain(idp_name, subdomain)
         if not idp_valid:
             error_msg = (
-                "/complete/saml/: Authentication request with IdP %s but this provider is not "
-                + "enabled for this subdomain %s."
+                "/complete/saml/: Authentication request with IdP %s but this provider is not"
+                " enabled for this subdomain %s."
             )
             self.logger.info(error_msg, idp_name, subdomain)
             return None
 
+        # We have to branch here to do different things depending on the kind
+        # of SAMLRequest/SAMLResponse we received. We do just basic heuristics here
+        # to choose the right branch, since it's not our intent to do proper validation now.
+        # We end up calling the appropriate process_*() function, which takes care of validation
+        # in the python3-saml library, ensuring it received the correct kind of XML document
+        # and finishes processing it.
+        # (1) We received a SAMLRequest - the only SAMLRequest we accept is a LogoutRequest,
+        #     so we call process_logout().
+        # (2) We received a SAMLResponse and it looks like a LogoutResponse - we call
+        #     process_logout_response()
+        # (3) We received a SAMLResponse that's not a LogoutResponse. We proceed to treat it
+        #     as an authentication response. We don't do anything security-sensitive here, just some setup
+        #     before calling the super().auth_complete() method, which is where the actual validation
+        #     and authentication will happen.
+        #
+        # If for any reason, an XML document that doesn't match the expected type is passed
+        # to these *_process() functions, it will be rejected.
         if isinstance(saml_document, SAMLRequest):
             return self.process_logout(subdomain, idp_name)
+        elif isinstance(saml_document, SAMLResponse) and saml_document.is_logout_response():
+            return SAMLSPInitiatedLogout.process_logout_response(saml_document, idp_name)
+
+        # IMPORTANT: The saml_document has not yet been validated at this point. We are
+        # assuming it is to be treated as an authentication SAMLResponse, but it will only
+        # be validated in the super().auth_complete() call below - and code until then
+        # must not assume trust in the data.
+        assert isinstance(saml_document, SAMLResponse)
 
         result = None
         try:
@@ -2581,6 +2722,14 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
             # We want the IdP name to be accessible from the social pipeline.
             self.strategy.session_set("saml_idp_name", idp_name)
+            session_index = saml_document.get_session_index()
+            if session_index is None:
+                # In general IdPs will always provide a SessionIndex, but we can't know
+                # if some providers might not send it, so we allow it but log the event.
+                self.logger.info(
+                    "/complete/saml/: IdP did not provide SessionIndex in the SAMLResponse."
+                )
+            self.strategy.session_set("saml_session_index", session_index)
 
             # super().auth_complete expects to have RelayState set to the idp_name,
             # so we need to replace this param.
@@ -2595,8 +2744,10 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             self.logger.info("/complete/saml/: error while parsing SAMLResponse:", exc_info=True)
             # Fall through to returning None.
         finally:
+            # We need a finally: block to ensure we don't keep around information in the session
+            # if the authentication failed.
             if result is None:
-                for param in self.standard_relay_params:
+                for param in [*self.standard_relay_params, "saml_idp_name", "saml_session_index"]:
                     # If an attacker managed to eavesdrop on the RelayState token,
                     # they may pass it here to the endpoint with an invalid SAMLResponse.
                     # We remove these potentially sensitive parameters that we have set in the session
@@ -2662,6 +2813,15 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
         assert isinstance(auto_signup, bool)
         return auto_signup
 
+    def get_params_to_store_in_authenticated_session(self) -> Dict[str, str]:
+        idp_name = self.strategy.session_get("saml_idp_name")
+        saml_session_index = self.strategy.session_get("saml_session_index")
+
+        return {
+            "social_auth_backend": f"saml:{idp_name}",
+            "saml_session_index": saml_session_index,
+        }
+
 
 def patch_saml_auth_require_messages_signed(auth: OneLogin_Saml2_Auth) -> None:
     """
@@ -2687,9 +2847,8 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
 
     # Hack: We don't yet support multiple IdPs, but we want this
     # module to import if nothing has been configured yet.
-    settings_dict: OIDCIdPConfigDict = list(
-        settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values() or [OIDCIdPConfigDict()]
-    )[0]
+    settings_dict: OIDCIdPConfigDict
+    [settings_dict] = settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values() or [OIDCIdPConfigDict()]
 
     display_icon: Optional[str] = settings_dict.get("display_icon", None)
     display_name: str = settings_dict.get("display_name", "OIDC")
@@ -2714,7 +2873,7 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
             return False
 
         mandatory_config_keys = ["oidc_url", "client_id", "secret"]
-        idp_config_dict = list(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values())[0]
+        [idp_config_dict] = settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS.values()
         if not all(idp_config_dict.get(key) for key in mandatory_config_keys):
             return False
 
@@ -2747,6 +2906,92 @@ def validate_otp_params(
 
     if mobile_flow_otp and desktop_flow_otp:
         raise JsonableError(_("Can't use both mobile_flow_otp and desktop_flow_otp together."))
+
+
+class SAMLSPInitiatedLogout:
+    @classmethod
+    def get_logged_in_user_idp(cls, request: HttpRequest) -> Optional[str]:
+        """
+        Information about the authentication method which was used for
+        this session is stored in social_auth_backend session attribute.
+        If SAML was used, this extracts the IdP name and returns it.
+        """
+        # Some asserts to ensure this doesn't get called incorrectly:
+        assert hasattr(request, "user")
+        assert isinstance(request.user, UserProfile)
+
+        authentication_method = request.session.get("social_auth_backend", "")
+        if not authentication_method.startswith("saml:"):
+            return None
+
+        return authentication_method.split("saml:")[1]
+
+    @classmethod
+    def get_logged_in_user_session_index(cls, request: HttpRequest) -> Optional[str]:
+        """
+        During SAML authentication, we obtain the SessionIndex value provided
+        by the IdP and save it in the session. This function can be used
+        to retrieve it.
+        """
+        # Some asserts to ensure this doesn't get called incorrectly:
+        assert hasattr(request, "user")
+        assert isinstance(request.user, UserProfile)
+
+        session_index = request.session.get("saml_session_index")
+        return session_index
+
+    @classmethod
+    def slo_request_to_idp(
+        cls, request: HttpRequest, return_to: Optional[str] = None
+    ) -> HttpResponse:
+        """
+        Generates the redirect to the IdP's SLO endpoint with
+        the appropriately generated LogoutRequest. This should only be called
+        on requests with a session that was indeed obtained via SAML.
+        """
+
+        user_profile = request.user
+        assert isinstance(user_profile, UserProfile)
+
+        realm = user_profile.realm
+        assert saml_auth_enabled(realm)
+
+        complete_url = reverse("social:complete", args=("saml",))
+        saml_backend = load_backend(load_strategy(request), "saml", complete_url)
+
+        idp_name = cls.get_logged_in_user_idp(request)
+        if idp_name is None:
+            raise AssertionError("User not logged in via SAML")
+        session_index = cls.get_logged_in_user_session_index(request)
+
+        idp = saml_backend.get_idp(idp_name)
+        auth = saml_backend._create_saml_auth(idp)
+        slo_url = auth.logout(
+            name_id=user_profile.delivery_email, return_to=return_to, session_index=session_index
+        )
+
+        return HttpResponseRedirect(slo_url)
+
+    @classmethod
+    def process_logout_response(cls, logout_response: SAMLResponse, idp_name: str) -> HttpResponse:
+        """
+        Validates the LogoutResponse and logs out the user if successful,
+        finishing the SP-initiated logout flow.
+        """
+        from django.contrib.auth.views import logout_then_login as django_logout_then_login
+
+        idp = logout_response.backend.get_idp(idp_name)
+        auth = logout_response.backend._create_saml_auth(idp)
+        auth.process_slo(keep_local_session=True)
+        errors = auth.get_errors()
+        if errors:
+            # These errors should essentially only happen in case of misconfiguration,
+            # so we give a json error response with the direct error codes from python3-saml.
+            # They're informative but generic enough to not leak any sensitive information.
+            raise JsonableError(f"LogoutResponse error: {errors}")
+
+        # We call Django's version of logout_then_login so that POST isn't required.
+        return django_logout_then_login(logout_response.backend.strategy.request)
 
 
 def get_external_method_dicts(realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:

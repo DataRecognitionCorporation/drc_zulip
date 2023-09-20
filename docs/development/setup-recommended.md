@@ -5,7 +5,7 @@ Zulip development environment on Windows, macOS, and Linux.
 
 The recommended method for installing the Zulip development environment is
 to use WSL 2 on Windows, and Vagrant with Docker on macOS and Linux.
-This methoduses the Windows Subsystem for Linux or creates a Linux container
+This method uses the Windows Subsystem for Linux or creates a Linux container
 (for macOS and Linux) inside which the Zulip server and all related
 services will run.
 
@@ -51,9 +51,9 @@ a proxy to access the internet.)
   [GitHub account](#step-0-set-up-git--github).
 - **macOS**: macOS (10.11 El Capitan or newer recommended)
 - **Ubuntu LTS**: 20.04 or 22.04
-- **Debian**: 11
+- **Debian**: 11 or 12
 - **Fedora**: tested for 36
-- **Windows**: Windows 64-bit (Win 10 recommended), hardware
+- **Windows**: Windows 64-bit (Windows 10 recommended), hardware
   virtualization enabled (VT-x or AMD-V), administrator access.
 
 Other Linux distributions work great too, but we don't maintain
@@ -79,7 +79,7 @@ Jump to:
 - [Ubuntu](#ubuntu)
 - [Debian](#debian)
 - [Fedora](#fedora)
-- [Windows](#windows-10)
+- [Windows](#windows-10-or-11)
 
 #### macOS
 
@@ -157,18 +157,22 @@ official `docker-ce` package (named `docker.io` in the
 docker distribution, you can follow
 [their documentation to install Docker on Fedora](https://docs.docker.com/engine/install/fedora/).
 
-#### Windows 10
+#### Windows 10 or 11
 
 Zulip's development environment is most easily set up on Windows using
 the Windows Subsystem for Linux ([WSL
 2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about))
-installation method described here.
+installation method described here. We require version 0.67.6+ of WSL 2.
 
 1. Enable virtualization through your BIOS settings. This sequence
    depends on your specific hardware and brand, but here are [some
    basic instructions.][windows-bios-virtualization]
 
 1. [Install WSL 2](https://docs.microsoft.com/en-us/windows/wsl/setup/environment).
+
+1. It is required to enable `systemd` for WSL 2 to manage the database, cache and other services.
+   To configure it, please follow [this instruction](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#systemd-support).
+   Then, you will need to restart WSL 2 before continuing.
 
 1. Launch the Ubuntu shell as an administrator and run the following command:
 
@@ -208,8 +212,8 @@ installation method described here.
 1. [Create your fork](../git/cloning.md#step-1a-create-your-fork) of
    the [Zulip server repository](https://github.com/zulip/zulip).
 
-1. [Create a new SSH key][create-ssh-key] for the WSL-2 Virtual
-   Machine and add it to your GitHub account. Note that SSH keys
+1. [Create a new SSH key][create-ssh-key] for the WSL 2 virtual
+   machine and add it to your GitHub account. Note that SSH keys
    linked to your Windows computer will not work within the virtual
    machine.
 
@@ -222,25 +226,19 @@ installation method described here.
    ```
 
 1. Run the following to install the Zulip development environment and
-   start it. (If Windows Firewall creates popups to block services, simply click `Allow Access`.)
+   start it. (If Windows Firewall creates popups to block services,
+   simply click **Allow access**.)
 
    ```bash
-   # Start database, cache, and other services
-   ./tools/wsl/start_services
    # Install/update the Zulip development environment
    ./tools/provision
    # Enter the Zulip Python environment
    source /srv/zulip-py3-venv/bin/activate
    # Start the development server
-   ./tools/run-dev.py
+   ./tools/run-dev
    ```
 
-   :::{note}
-   If you shut down WSL, after starting it again, you will have to manually start
-   the services using `./tools/wsl/start_services`.
-   :::
-
-1. If you are facing problems or you see error messages after running `./tools/run-dev.py`,
+1. If you are facing problems or you see error messages after running `./tools/run-dev`,
    you can try running `./tools/provision` again.
 
 1. The [Visual Studio Code Remote -
@@ -252,7 +250,7 @@ installation method described here.
    code .
    ```
 
-   to open VSCode connected to your WSL environment.
+   to open VS Code connected to your WSL environment.
 
 1. You're done! Now you're ready for [Step 4: Developing](#step-4-developing),
    ignoring the parts about `vagrant` (since you're not using it).
@@ -266,7 +264,7 @@ WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
 ### Step 2: Get Zulip code
 
 1. In your browser, visit <https://github.com/zulip/zulip>
-   and click the `fork` button. You will need to be logged in to GitHub to
+   and click the **Fork** button. You will need to be logged in to GitHub to
    do this.
 2. Open Terminal (macOS/Linux) or Git BASH (Windows; must
    **run as an Administrator**).
@@ -280,13 +278,12 @@ cd zulip
 git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
-This will create a 'zulip' directory and download the Zulip code into it.
+This will create a `zulip` directory and download the Zulip code into it.
 
-Don't forget to replace YOURUSERNAME with your Git username. You will see
+Don't forget to replace `YOURUSERNAME` with your Git username. You will see
 something like:
 
 ```console
-christie@win10 ~
 $ git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
 Cloning into 'zulip'...
 remote: Counting objects: 73571, done.
@@ -295,7 +292,7 @@ remote: Total 73571 (delta 1), reused 0 (delta 0), pack-reused 73569
 Receiving objects: 100% (73571/73571), 105.30 MiB | 6.46 MiB/s, done.
 Resolving deltas: 100% (51448/51448), done.
 Checking connectivity... done.
-Checking out files: 100% (1912/1912), done.`
+Checking out files: 100% (1912/1912), done.
 ```
 
 Now you are ready for [Step 3: Start the development
@@ -303,7 +300,7 @@ environment](#step-3-start-the-development-environment).
 
 ### Step 3: Start the development environment
 
-Change into the zulip directory and tell vagrant to start the Zulip
+Change into the zulip directory and tell Vagrant to start the Zulip
 development environment with `vagrant up`:
 
 ```bash
@@ -317,7 +314,7 @@ cd zulip
 vagrant up --provider=docker
 ```
 
-The first time you run this command it will take some time because vagrant
+The first time you run this command it will take some time because Vagrant
 does the following:
 
 - downloads the base Ubuntu 20.04 virtual machine image (for macOS and Windows)
@@ -373,7 +370,7 @@ Next, start the Zulip server:
 
 ```console
 (zulip-py3-venv) vagrant@vagrant:/srv/zulip
-$ ./tools/run-dev.py
+$ ./tools/run-dev
 ```
 
 You will see several lines of output starting with something like:
@@ -448,13 +445,13 @@ run `tools/lint` often to make sure you're following our coding style
 (or use `tools/setup-git-repo` to run it on just the changed files
 automatically whenever you commit).
 
-#### Understanding run-dev.py debugging output
+#### Understanding run-dev debugging output
 
-It's good to have the terminal running `run-dev.py` up as you work since error
+It's good to have the terminal running `./tools/run-dev` up as you work since error
 messages including tracebacks along with every backend request will be printed
 there.
 
-See [Logging](../subsystems/logging.md) for further details on the run-dev.py console
+See [Logging](../subsystems/logging.md) for further details on the run-dev console
 output.
 
 #### Committing and pushing changes with Git
@@ -474,7 +471,7 @@ probably not because Zulip's `main` branch is broken. Instead, this
 is likely because we've recently merged changes to the development
 environment provisioning process that you need to apply to your
 development environment. To update your environment, you'll need to
-re-provision your vagrant machine using `vagrant provision` (this just
+re-provision your Vagrant machine using `vagrant provision` (this just
 runs `tools/provision` from your Zulip checkout inside the Vagrant
 guest); this should complete in about a minute.
 
@@ -511,10 +508,10 @@ To shut down but preserve the development environment so you can use
 it again later use `vagrant halt` or `vagrant suspend`.
 
 You can do this from the same Terminal/Git BASH window that is running
-run-dev.py by pressing ^C to halt the server and then typing `exit`. Or you
-can halt vagrant from another Terminal/Git BASH window.
+run-dev by pressing ^C to halt the server and then typing `exit`. Or you
+can halt Vagrant from another Terminal/Git BASH window.
 
-From the window where run-dev.py is running:
+From the window where run-dev is running:
 
 ```console
 2016-05-04 18:33:13,330 INFO     127.0.0.1       GET     200  92ms /register/ (unauth@zulip via ?)
@@ -559,7 +556,7 @@ $ vagrant up
 $ vagrant ssh
 
 (zulip-py3-venv) vagrant@vagrant:/srv/zulip
-$ ./tools/run-dev.py
+$ ./tools/run-dev
 ```
 
 ### Next steps
@@ -613,7 +610,7 @@ The `ESC` stuff are the terminal color codes that make it show as a nice
 blue in the terminal, which unfortunately looks ugly in the logs.
 
 If you encounter an incomplete `/var/log/provision.log file`, you need to
-update your environment. Re-provision your vagrant machine; if the problem
+update your environment. Re-provision your Vagrant machine; if the problem
 persists, please come chat with us (see instructions above) for help.
 
 After you provision successfully, you'll need to exit your `vagrant ssh`
@@ -789,7 +786,7 @@ setting called VT-x (Intel) or (AMD-V).
 If this is already enabled in your BIOS, double-check that you are running a
 64-bit operating system.
 
-For further information about troubleshooting vagrant timeout errors [see
+For further information about troubleshooting Vagrant timeout errors [see
 this post](https://stackoverflow.com/questions/22575261/vagrant-stuck-connection-timeout-retrying#22575302).
 
 #### Vagrant was unable to communicate with the guest machine
@@ -868,23 +865,6 @@ Likely causes are:
    [requires](#requirements). If
    not, go to your VM settings and increase the RAM, then restart
    the VM.
-
-##### yarn install warnings
-
-```console
-$ yarn install
-yarn install v0.24.5
-[1/4] Resolving packages...
-[2/4] Fetching packages...
-warning fsevents@1.1.1: The platform "linux" is incompatible with this module.
-info "fsevents@1.1.1" is an optional dependency and failed compatibility check. Excluding it from installation.
-[3/4] Linking dependencies...
-[4/4] Building fresh packages...
-Done in 23.50s.
-```
-
-These are warnings produced by spammy third party JavaScript packages.
-It is okay to proceed and start the Zulip server.
 
 #### VBoxManage errors related to VT-x or WHvSetupPartition
 
@@ -970,7 +950,7 @@ UBUNTU_MIRROR http://us.archive.ubuntu.com/ubuntu/
 ### Specifying a proxy
 
 If you need to use a proxy server to access the Internet, you will
-need to specify the proxy settings before running `Vagrant up`.
+need to specify the proxy settings before running `vagrant up`.
 First, install the Vagrant plugin `vagrant-proxyconf`:
 
 ```bash
@@ -1023,7 +1003,7 @@ http://localhost:9971/ to connect to your development server.
 
 If you'd like to be able to connect to your development environment from other
 machines than the VM host, you can manually set the host IP address in the
-'~/.zulip-vagrant-config' file as well. For example, if you set:
+`~/.zulip-vagrant-config` file as well. For example, if you set:
 
 ```text
 HOST_IP_ADDR 0.0.0.0
@@ -1041,10 +1021,10 @@ the guest system (with Docker and other container-based Vagrant
 providers, explicit allocation is unnecessary and the settings
 described here are ignored).
 
-Our default Vagrant settings allocate 2 cpus with 2GiB of memory for
+Our default Vagrant settings allocate 2 CPUs with 2 GiB of memory for
 the guest, which is sufficient to run everything in the development
 environment. If your host system has more CPUs, or you have enough
-RAM that you'd like to allocate more than 2GiB to the guest, you can
+RAM that you'd like to allocate more than 2 GiB to the guest, you can
 improve performance of the Zulip development environment by allocating
 more resources.
 
@@ -1063,7 +1043,7 @@ GUEST_CPUS 4
 GUEST_MEMORY_MB 8192
 ```
 
-would result in an allocation of 4 cpus and 8 GiB of memory to the
+would result in an allocation of 4 CPUs and 8 GiB of memory to the
 guest VM.
 
 After changing the configuration, run `vagrant reload` to reboot the

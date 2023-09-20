@@ -3,7 +3,7 @@ from typing import Dict, Optional, Sequence
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
-from zerver.models import Recipient, UserProfile, get_huddle_recipient, is_cross_realm_bot_email
+from zerver.models import Recipient, UserProfile, get_or_create_huddle, is_cross_realm_bot_email
 
 
 def get_recipient_from_user_profiles(
@@ -28,7 +28,7 @@ def get_recipient_from_user_profiles(
         if forwarder_user_profile.id not in recipient_profiles_map:
             raise ValidationError(_("User not authorized for this query"))
 
-    # If the private message is just between the sender and
+    # If the direct message is just between the sender and
     # another person, force it to be a personal internally
     if len(recipient_profiles_map) == 2 and sender.id in recipient_profiles_map:
         del recipient_profiles_map[sender.id]
@@ -45,8 +45,13 @@ def get_recipient_from_user_profiles(
     # Otherwise, we need a huddle.  Make sure the sender is included in huddle messages
     recipient_profiles_map[sender.id] = sender
 
-    user_ids = set(recipient_profiles_map)
-    return get_huddle_recipient(user_ids)
+    user_ids = list(recipient_profiles_map)
+    huddle = get_or_create_huddle(user_ids)
+    return Recipient(
+        id=huddle.recipient_id,
+        type=Recipient.HUDDLE,
+        type_id=huddle.id,
+    )
 
 
 def validate_recipient_user_profiles(
@@ -74,7 +79,7 @@ def validate_recipient_user_profiles(
             realms.add(user_profile.realm_id)
 
     if len(realms) > 1:
-        raise ValidationError(_("You can't send private messages outside of your organization."))
+        raise ValidationError(_("You can't send direct messages outside of your organization."))
 
     return list(recipient_profiles_map.values())
 

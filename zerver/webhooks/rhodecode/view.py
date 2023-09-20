@@ -5,25 +5,28 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+<<<<<<< HEAD
 from zerver.lib.request import REQ, has_request_variables
+=======
+>>>>>>> drc_main
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_string, to_wild_value
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.webhooks.git import TOPIC_WITH_BRANCH_TEMPLATE, get_push_commits_event_message
 from zerver.models import UserProfile
 
 
 def get_push_commits_body(payload: WildValue) -> str:
-    commits_data = []
-    for commit in payload["event"]["push"]["commits"]:
-        commits_data.append(
-            {
-                "name": commit["author"].tame(check_string),
-                "sha": commit["raw_id"].tame(check_string),
-                "url": commit["url"].tame(check_string),
-                "message": commit["message"].tame(check_string),
-            }
-        )
+    commits_data = [
+        {
+            "name": commit["author"].tame(check_string),
+            "sha": commit["raw_id"].tame(check_string),
+            "url": commit["url"].tame(check_string),
+            "message": commit["message"].tame(check_string),
+        }
+        for commit in payload["event"]["push"]["commits"]
+    ]
     return get_push_commits_event_message(
         get_user_name(payload),
         None,
@@ -48,11 +51,10 @@ def get_push_branch_name(payload: WildValue) -> str:
 
 def get_event_name(payload: WildValue, branches: Optional[str]) -> Optional[str]:
     event_name = payload["event"]["name"].tame(check_string)
-    if event_name == "repo-push":
-        if branches is not None:
-            branch = get_push_branch_name(payload)
-            if branches.find(branch) == -1:
-                return None
+    if event_name == "repo-push" and branches is not None:
+        branch = get_push_branch_name(payload)
+        if branches.find(branch) == -1:
+            return None
     if event_name in EVENT_FUNCTION_MAPPER:
         return event_name
     raise UnsupportedWebhookEventTypeError(event_name)
@@ -78,12 +80,13 @@ ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
 
 
 @webhook_view("RhodeCode", all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint
 def api_rhodecode_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
-    branches: Optional[str] = REQ(default=None),
+    *,
+    payload: WebhookPayload[WildValue],
+    branches: Optional[str] = None,
 ) -> HttpResponse:
     event = get_event_name(payload, branches)
     if event is None:

@@ -82,11 +82,12 @@ class DraftCreationTests(ZulipTestCase):
                 "timestamp": 1595479019,
             }
         ]
+        # For direct messages, the topic should be ignored.
         expected_draft_dicts = [
             {
                 "type": "private",
                 "to": [zoe.id],
-                "topic": "",  # For private messages the topic should be ignored.
+                "topic": "",
                 "content": "What if we made it possible to sync drafts in Zulip?",
                 "timestamp": 1595479019,
             }
@@ -105,11 +106,12 @@ class DraftCreationTests(ZulipTestCase):
                 "timestamp": 1595479019,
             }
         ]
+        # For direct messages, the topic should be ignored.
         expected_draft_dicts = [
             {
                 "type": "private",
                 "to": [zoe.id, othello.id],
-                "topic": "",  # For private messages the topic should be ignored.
+                "topic": "",
                 "content": "What if we made it possible to sync drafts in Zulip?",
                 "timestamp": 1595479019,
             }
@@ -129,21 +131,21 @@ class DraftCreationTests(ZulipTestCase):
                 "topic": "sync drafts",
                 "content": "Let's add backend support for syncing drafts.",
                 "timestamp": 1595479019,
-            },  # Stream message draft
+            },
             {
                 "type": "private",
                 "to": [zoe.id],
                 "topic": "",
                 "content": "What if we made it possible to sync drafts in Zulip?",
                 "timestamp": 1595479020,
-            },  # Private message draft
+            },
             {
                 "type": "private",
                 "to": [zoe.id, othello.id],
                 "topic": "",
                 "content": "What if we made it possible to sync drafts in Zulip?",
                 "timestamp": 1595479021,
-            },  # Private group message draft
+            },
         ]
         self.create_and_check_drafts_for_success(draft_dicts)
 
@@ -565,7 +567,7 @@ class DraftFetchTest(ZulipTestCase):
 
         first_draft_id = Draft.objects.filter(user_profile=hamlet).order_by("id")[0].id
         expected_draft_contents: List[Dict[str, object]] = [
-            {"id": first_draft_id + i, **draft_dicts[i]} for i in range(0, 3)
+            {"id": first_draft_id + i, **draft_dicts[i]} for i in range(3)
         ]
 
         self.assertEqual(data["drafts"], expected_draft_contents)

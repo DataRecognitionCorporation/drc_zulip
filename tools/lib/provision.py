@@ -14,7 +14,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(ZULIP_PATH)
 
-from scripts.lib.node_cache import NODE_MODULES_CACHE_PATH, setup_node_modules
+from scripts.lib.node_cache import setup_node_modules
 from scripts.lib.setup_venv import get_venv_dependencies
 from scripts.lib.zulip_tools import (
     ENDC,
@@ -78,6 +78,8 @@ vendor = distro_info["ID"]
 os_version = distro_info["VERSION_ID"]
 if vendor == "debian" and os_version == "11":  # bullseye
     POSTGRESQL_VERSION = "13"
+elif vendor == "debian" and os_version == "12":  # bookworm
+    POSTGRESQL_VERSION = "15"
 elif vendor == "ubuntu" and os_version == "20.04":  # focal
     POSTGRESQL_VERSION = "12"
 elif vendor == "ubuntu" and os_version == "21.10":  # impish
@@ -86,10 +88,8 @@ elif vendor == "ubuntu" and os_version == "22.04":  # jammy
     POSTGRESQL_VERSION = "14"
 elif vendor == "neon" and os_version == "20.04":  # KDE Neon
     POSTGRESQL_VERSION = "12"
-elif vendor == "fedora" and os_version == "33":
-    POSTGRESQL_VERSION = "13"
-elif vendor == "fedora" and os_version == "34":
-    POSTGRESQL_VERSION = "13"
+elif vendor == "fedora" and os_version == "38":
+    POSTGRESQL_VERSION = "15"
 elif vendor == "rhel" and os_version.startswith("7."):
     POSTGRESQL_VERSION = "10"
 elif vendor == "centos" and os_version == "7":
@@ -158,8 +158,9 @@ COMMON_YUM_DEPENDENCIES = [
     # Puppeteer dependencies end here.
 ]
 
+BUILD_GROONGA_FROM_SOURCE = False
 BUILD_PGROONGA_FROM_SOURCE = False
-if vendor == "debian" and os_version in [] or vendor == "ubuntu" and os_version in []:
+if vendor == "debian" and os_version in ["12"] or vendor == "ubuntu" and os_version in []:
     # For platforms without a PGroonga release, we need to build it
     # from source.
     BUILD_PGROONGA_FROM_SOURCE = True
@@ -180,7 +181,11 @@ elif "debian" in os_families():
     # additional dependency for postgresql-13-pgdg-pgroonga.
     #
     # See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=895037
+<<<<<<< HEAD
     if vendor == "debian" and os_version == "11":
+=======
+    if vendor == "debian":
+>>>>>>> drc_main
         DEBIAN_DEPENDENCIES.remove("libappindicator1")
         DEBIAN_DEPENDENCIES.append("libgroonga0")
 
@@ -211,10 +216,10 @@ elif "fedora" in os_families():
         f"postgresql{POSTGRESQL_VERSION}",
         f"postgresql{POSTGRESQL_VERSION}-devel",
         # Needed to build PGroonga from source
-        "groonga-devel",
         "msgpack-devel",
         *VENV_DEPENDENCIES,
     ]
+    BUILD_GROONGA_FROM_SOURCE = True
     BUILD_PGROONGA_FROM_SOURCE = True
 
 if "fedora" in os_families():
@@ -244,6 +249,8 @@ def install_system_deps() -> None:
 
     # For some platforms, there aren't published PGroonga
     # packages available, so we build them from source.
+    if BUILD_GROONGA_FROM_SOURCE:
+        run_as_root(["./scripts/lib/build-groonga"])
     if BUILD_PGROONGA_FROM_SOURCE:
         run_as_root(["./scripts/lib/build-pgroonga"])
 
@@ -327,11 +334,16 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
     # Later steps will ensure PostgreSQL is started
 
     # Link in tsearch data files
+    if vendor == "fedora":
+        # Since F36 dictionary files were moved away from /usr/share/myspell
+        tsearch_source_prefix = "/usr/share/hunspell"
+    else:
+        tsearch_source_prefix = "/usr/share/myspell"
     run_as_root(
         [
             "ln",
             "-nsf",
-            "/usr/share/myspell/en_US.dic",
+            os.path.join(tsearch_source_prefix, "en_US.dic"),
             f"/usr/pgsql-{POSTGRESQL_VERSION}/share/tsearch_data/en_us.dict",
         ]
     )
@@ -339,14 +351,18 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
         [
             "ln",
             "-nsf",
-            "/usr/share/myspell/en_US.aff",
+            os.path.join(tsearch_source_prefix, "en_US.aff"),
             f"/usr/pgsql-{POSTGRESQL_VERSION}/share/tsearch_data/en_us.affix",
         ]
     )
 
 
 def main(options: argparse.Namespace) -> NoReturn:
+<<<<<<< HEAD
     # yarn and management commands expect to be run from the root of the
+=======
+    # pnpm and management commands expect to be run from the root of the
+>>>>>>> drc_main
     # project.
     os.chdir(ZULIP_PATH)
 
@@ -361,6 +377,11 @@ def main(options: argparse.Namespace) -> NoReturn:
     else:
         # hash the content of setup-yum-repo*
         with open("scripts/lib/setup-yum-repo", "rb") as fb:
+            sha_sum.update(fb.read())
+
+    # hash the content of build-pgroonga if Groonga is built from source
+    if BUILD_GROONGA_FROM_SOURCE:
+        with open("scripts/lib/build-groonga", "rb") as fb:
             sha_sum.update(fb.read())
 
     # hash the content of build-pgroonga if PGroonga is built from source
@@ -394,29 +415,22 @@ def main(options: argparse.Namespace) -> NoReturn:
     # Here we install node.
     proxy_env = [
         "env",
-        "http_proxy=" + os.environ.get("http_proxy", ""),
-        "https_proxy=" + os.environ.get("https_proxy", ""),
-        "no_proxy=" + os.environ.get("no_proxy", ""),
+        "http_proxy=" + os.environ.get("http_proxy", ""),  # noqa: SIM112
+        "https_proxy=" + os.environ.get("https_proxy", ""),  # noqa: SIM112
+        "no_proxy=" + os.environ.get("no_proxy", ""),  # noqa: SIM112
     ]
     run_as_root([*proxy_env, "scripts/lib/install-node"], sudo_args=["-H"])
-    run_as_root([*proxy_env, "scripts/lib/install-yarn"])
 
-    if not os.access(NODE_MODULES_CACHE_PATH, os.W_OK):
-        run_as_root(["mkdir", "-p", NODE_MODULES_CACHE_PATH])
-        run_as_root(["chown", f"{os.getuid()}:{os.getgid()}", NODE_MODULES_CACHE_PATH])
-
-    # This is a wrapper around `yarn`, which we run last since
-    # it can often fail due to network issues beyond our control.
     try:
-        setup_node_modules(prefer_offline=True)
+        setup_node_modules()
     except subprocess.CalledProcessError:
-        print(WARNING + "`yarn install` failed; retrying..." + ENDC)
+        print(WARNING + "`pnpm install` failed; retrying..." + ENDC)
         try:
             setup_node_modules()
         except subprocess.CalledProcessError:
             print(
                 FAIL
-                + "`yarn install` is failing; check your network connection (and proxy settings)."
+                + "`pnpm install` is failing; check your network connection (and proxy settings)."
                 + ENDC
             )
             sys.exit(1)
@@ -459,7 +473,7 @@ def main(options: argparse.Namespace) -> NoReturn:
     activate_this = "/srv/zulip-py3-venv/bin/activate_this.py"
     provision_inner = os.path.join(ZULIP_PATH, "tools", "lib", "provision_inner.py")
     with open(activate_this) as f:
-        exec(f.read(), dict(__file__=activate_this))
+        exec(f.read(), dict(__file__=activate_this))  # noqa: S102
     os.execvp(
         provision_inner,
         [

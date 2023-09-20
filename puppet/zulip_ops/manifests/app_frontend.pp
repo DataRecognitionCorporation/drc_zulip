@@ -4,6 +4,7 @@ class zulip_ops::app_frontend {
   include zulip::profile::rabbitmq
   include zulip::postfix_localmail
   include zulip::static_asset_compiler
+  include zulip::hooks::sentry
   include zulip_ops::app_frontend_monitoring
   $app_packages = [# Needed for the ssh tunnel to the redis server
     'autossh',
@@ -14,14 +15,6 @@ class zulip_ops::app_frontend {
   zulip_ops::firewall_allow{ 'smtp': }
   zulip_ops::firewall_allow{ 'http': }
   zulip_ops::firewall_allow{ 'https': }
-
-  file { '/etc/logrotate.d/zulip':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-    source => 'puppet:///modules/zulip/logrotate/zulip',
-  }
 
   file { "${zulip::common::supervisor_conf_dir}/redis_tunnel.conf":
     ensure  => file,

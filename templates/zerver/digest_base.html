@@ -16,8 +16,8 @@
                 <h1> Zulip digest </h1>
             </div>
             <div class="digest-email-html">
-                {% include 'zerver/emails/compiled/digest.html' %}
-                <img id="digest-footer" src="/static/images/emails/footer.png"/>
+                {% include 'zerver/emails/digest.html' %}
+                <img id="digest-footer" src="{{ static('images/emails/footer.png') }}"/>
             </div>
             <br />
             <br />

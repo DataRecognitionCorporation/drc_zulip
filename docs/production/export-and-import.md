@@ -13,7 +13,10 @@ service (or back):
     version (most precisely, one where `manage.py showmigrations` has
     the same output).
   - Backups must be restored on a server running the same PostgreSQL
-    version.
+    version. To install Zulip with the same version of PostgreSQL that
+    the backup was taken on, pass the desired version with [the
+    `--postgresql-version` argument][installer-options] when
+    installing.
   - Backups aren't useful for migrating organizations between
     self-hosting and Zulip Cloud (which may require renumbering all
     the users/messages/etc.).
@@ -56,6 +59,8 @@ service (or back):
   backend](upload-backends.md#s3-backend-configuration)
   as part of a high availability environment.
 
+[installer-options]: deployment.md#advanced-installer-options
+
 ## Backups
 
 The Zulip server has a built-in backup tool:
@@ -84,15 +89,25 @@ server's state on another machine perfectly.
 
 ### Restoring backups
 
-First, [install a new Zulip server through Step 3][install-server]
-with the same version of both the base OS and Zulip from your previous
-installation. Then, run as root:
+1. Install the same base OS as the backup was taken on. If you want to [upgrade
+   the OS][upgrade-os], you should do this after restoring the backup.
+
+1. [Install a new Zulip server through Step 3][install-server], with the same
+   version of PostgreSQL that the backup was taken on, by passing the desired
+   version with [the `--postgresql-version` argument][installer-options]. If
+   you want to [upgrade the version of PostgreSQL][upgrade-pg], you should do this after
+   restoring the backup.
+
+1. As root, import the backup:
 
 ```bash
 /home/zulip/deployments/current/scripts/setup/restore-backup /path/to/backup
 ```
 
 When that finishes, your Zulip server should be fully operational again.
+
+[upgrade-os]: upgrade.md#upgrading-the-operating-system
+[upgrade-pg]: upgrade.md#upgrading-postgresql
 
 #### Changing the hostname
 
@@ -235,6 +250,20 @@ with the exception of passwords and API keys.
 We recommend using the [backup tool](#backups) if your primary goal is
 backups.
 
+### Upgrade if exporting for import into Zulip Cloud
+
+If you are exporting data from a self-hosted version of Zulip for purposes of
+importing into Zulip Cloud, you should first [upgrade your server to the
+`zulip-cloud-current` branch][upgrade-zulip-from-git]:
+
+```bash
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git zulip-cloud-current
+```
+
+It is not sufficient to be on the latest stable release, as zulip.com runs
+pre-release versions of Zulip that are often several months of development ahead
+of the latest release.
+
 ### Preventing changes during the export
 
 For best results, you'll want to shut down access to the organization
@@ -288,12 +317,13 @@ archive of all the organization's uploaded files.
    - Ensure that the Zulip server you're importing into is running the same
      version of Zulip as the server you're exporting from.
 
-   - For exports from Zulip Cloud (zulip.com), you need to [upgrade to
-     `main`][upgrade-zulip-from-git], since we run `main` on
-     Zulip Cloud:
+   - For exports created from Zulip Cloud (zulip.com), you need to [upgrade to
+     `zulip-cloud-current`][upgrade-zulip-from-git], which represents the
+     current version that Zulip Cloud is running; this is generally `main`
+     delayed by a week or two. To upgrade to that:
 
      ```bash
-     /home/zulip/deployments/current/scripts/upgrade-zulip-from-git main
+     /home/zulip/deployments/current/scripts/upgrade-zulip-from-git zulip-cloud-current
      ```
 
      It is not sufficient to be on the latest stable release, as
@@ -354,8 +384,7 @@ cd ~
 tar -xf /path/to/export/file/zulip-export-zcmpxfm6.tar.gz
 cd /home/zulip/deployments/current
 ./manage.py import '' ~/zulip-export-zcmpxfm6
-# ./scripts/start-server
-# ./manage.py reactivate_realm -r ''  # Reactivates the organization
+./scripts/start-server
 ```
 
 This could take several minutes to run depending on how much data you're
@@ -368,12 +397,12 @@ importing.
 The commands above create an imported organization on the root domain
 (`EXTERNAL_HOST`) of the Zulip installation. You can also import into a
 custom subdomain, e.g. if you already have an existing organization on the
-root domain. Replace the last three lines above with the following, after replacing
+root domain. Replace the last two lines above with the following, after replacing
 `<subdomain>` with the desired subdomain.
 
 ```bash
 ./manage.py import <subdomain> ~/zulip-export-zcmpxfm6
-./manage.py reactivate_realm -r <subdomain>  # Reactivates the organization
+./scripts/start-server
 ```
 
 ### Logging in
@@ -405,24 +434,11 @@ and then once you're ready, you can email them to everyone using e.g.
 If you did a test import of a Zulip organization, you may want to
 delete the test import data from your Zulip server before doing a
 final import. You can **permanently delete** all data from a Zulip
-organization using the following procedure:
-
-- Start a [Zulip management shell](management-commands.md#managepy-shell)
-- In the management shell, run the following commands, replacing `""`
-  with the subdomain if [you are hosting the organization on a
-  subdomain](multiple-organizations.md):
-
-```python
-realm = Realm.objects.get(string_id="")
-realm.delete()
-```
-
-The output contains details on the objects deleted from the database.
-
-Now, exit the management shell and run this to clear Zulip's cache:
+organization by running (replacing `''` with the subdomain if [you are
+hosting the organization on a subdomain](multiple-organizations.md)):
 
 ```bash
-/home/zulip/deployments/current/scripts/setup/flush-memcached
+./manage.py delete_realm -r ''
 ```
 
 Assuming you're using the
@@ -455,7 +471,7 @@ performing selective data exports. This can be done with the
 following parameters when exporting messages:
 
 - Search keywords in the message text.
-- Message sender.
+- Message sender or recipient.
 - Time range for when messages were sent.
 
 For example, to search for messages containing the word "wonderland"
@@ -469,9 +485,9 @@ $ /home/zulip/deployments/current/manage.py export_search --output compliance-ex
     wonderland
 ```
 
-The results are written to a JSON file. The contents of previous
-versions of edited messages are not searched, nor are deleted
-messages.
+The results are written to a JSON or CSV file. The contents of previous versions
+of edited messages are not searched, nor are deleted messages. Attachments
+associated with the resulting messages can optionally also be exported.
 
 See `/home/zulip/deployments/current/manage.py export_search --help`
 for more details on supported options.

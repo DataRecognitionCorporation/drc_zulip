@@ -427,7 +427,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(
             user_handler.get_user(zerver_attachments[0]["owner"])["email"], "ron@zulip.com"
         )
-        # TODO: Assert this for False after fixing the file permissions in PMs
+        # TODO: Assert this for False after fixing the file permissions in direct messages
         self.assertTrue(zerver_attachments[0]["is_realm_public"])
 
         self.assert_length(uploads_list, 1)
@@ -635,8 +635,8 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(
             warn_log.output,
             [
-                "WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export",
-                "WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing huddles and DMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing huddles and DMs since there are multiple teams in the export",
             ],
         )
 
@@ -715,7 +715,7 @@ class MatterMostImporter(ZulipTestCase):
         self.assertFalse(get_user("ron@zulip.com", realm).is_mirror_dummy)
         self.assertTrue(get_user("snape@zulip.com", realm).is_mirror_dummy)
 
-        messages = Message.objects.filter(sender__realm=realm)
+        messages = Message.objects.filter(realm=realm)
         for message in messages:
             self.assertIsNotNone(message.rendered_content)
 
@@ -813,7 +813,7 @@ class MatterMostImporter(ZulipTestCase):
 
         realm = get_realm("gryffindor")
 
-        messages = Message.objects.filter(sender__realm=realm)
+        messages = Message.objects.filter(realm=realm)
         for message in messages:
             self.assertIsNotNone(message.rendered_content)
         self.assert_length(messages, 11)
@@ -870,8 +870,8 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(
             warn_log.output,
             [
-                "WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export",
-                "WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing huddles and DMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing huddles and DMs since there are multiple teams in the export",
             ],
         )
 
@@ -897,8 +897,8 @@ class MatterMostImporter(ZulipTestCase):
         self.assertEqual(
             warn_log.output,
             [
-                "WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export",
-                "WARNING:root:Skipping importing huddles and PMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing huddles and DMs since there are multiple teams in the export",
+                "WARNING:root:Skipping importing huddles and DMs since there are multiple teams in the export",
             ],
         )
 
@@ -912,8 +912,7 @@ class MatterMostImporter(ZulipTestCase):
 
         realm = get_realm("gryffindor")
 
-        realm_users = UserProfile.objects.filter(realm=realm)
-        messages = Message.objects.filter(sender__in=realm_users)
+        messages = Message.objects.filter(realm=realm)
         for message in messages:
             self.assertIsNotNone(message.rendered_content)
 

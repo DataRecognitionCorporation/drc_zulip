@@ -1,4 +1,5 @@
 {
+    "root": true,
     "env": {
         "es2020": true,
         "node": true
@@ -14,6 +15,7 @@
     ],
     "parser": "@babel/eslint-parser",
     "parserOptions": {
+        "requireConfigFile": false,
         "warnOnUnsupportedTypeScriptVersion": false,
         "sourceType": "unambiguous"
     },
@@ -48,15 +50,11 @@
         "import/extensions": "error",
         "import/first": "error",
         "import/newline-after-import": "error",
+        "import/no-duplicates": "error",
         "import/no-self-import": "error",
+        "import/no-unresolved": "off",
         "import/no-useless-path-segments": "error",
-        "import/order": [
-            "error",
-            {
-                "alphabetize": {"order": "asc"},
-                "newlines-between": "always"
-            }
-        ],
+        "import/order": ["error", {"alphabetize": {"order": "asc"}, "newlines-between": "always"}],
         "import/unambiguous": "error",
         "lines-around-directive": "error",
         "new-cap": "error",
@@ -67,7 +65,6 @@
         "no-catch-shadow": "error",
         "no-constant-condition": ["error", {"checkLoops": false}],
         "no-div-regex": "error",
-        "no-duplicate-imports": "error",
         "no-else-return": "error",
         "no-eq-null": "error",
         "no-eval": "error",
@@ -96,20 +93,18 @@
         "no-undef-init": "error",
         "no-unneeded-ternary": ["error", {"defaultAssignment": false}],
         "no-unused-expressions": "error",
-        "no-unused-vars": ["error", {"ignoreRestSiblings": true}],
+        "no-unused-vars": [
+            "error",
+            {"args": "all", "argsIgnorePattern": "^_", "ignoreRestSiblings": true}
+        ],
         "no-use-before-define": ["error", {"functions": false}],
         "no-useless-concat": "error",
         "no-useless-constructor": "error",
         "no-var": "error",
-        "object-shorthand": "error",
+        "object-shorthand": ["error", "always", {"avoidExplicitReturnArrows": true}],
         "one-var": ["error", "never"],
         "prefer-arrow-callback": "error",
-        "prefer-const": [
-            "error",
-            {
-                "ignoreReadBeforeAssign": true
-            }
-        ],
+        "prefer-const": ["error", {"ignoreReadBeforeAssign": true}],
         "radix": "error",
         "sort-imports": ["error", {"ignoreDeclarationSort": true}],
         "spaced-comment": ["error", "always", {"markers": ["/"]}],
@@ -118,15 +113,13 @@
         "unicorn/explicit-length-check": "off",
         "unicorn/filename-case": "off",
         "unicorn/no-await-expression-member": "off",
-        "unicorn/no-nested-ternary": "off",
+        "unicorn/no-negated-condition": "off",
         "unicorn/no-null": "off",
         "unicorn/no-process-exit": "off",
         "unicorn/no-useless-undefined": "off",
-        "unicorn/number-literal-case": "off",
         "unicorn/numeric-separators-style": "off",
         "unicorn/prefer-module": "off",
         "unicorn/prefer-node-protocol": "off",
-        "unicorn/prefer-spread": "off",
         "unicorn/prefer-ternary": "off",
         "unicorn/prefer-top-level-await": "off",
         "unicorn/prevent-abbreviations": "off",
@@ -136,19 +129,19 @@
     },
     "overrides": [
         {
-            "files": ["frontend_tests/node_tests/**", "frontend_tests/zjsunit/**"],
+            "files": ["web/tests/**"],
             "rules": {
                 "no-jquery/no-selector-prop": "off"
             }
         },
         {
-            "files": ["frontend_tests/puppeteer_lib/**", "frontend_tests/puppeteer_tests/**"],
+            "files": ["web/e2e-tests/**"],
             "globals": {
                 "zulip_test": false
             }
         },
         {
-            "files": ["static/js/**"],
+            "files": ["web/src/**"],
             "globals": {
                 "StripeCheckout": false
             }
@@ -156,7 +149,9 @@
         {
             "files": ["**/*.ts"],
             "extends": [
+                "plugin:@typescript-eslint/recommended",
                 "plugin:@typescript-eslint/recommended-requiring-type-checking",
+                "plugin:@typescript-eslint/strict",
                 "plugin:import/typescript"
             ],
             "parserOptions": {
@@ -174,37 +169,31 @@
             },
             "rules": {
                 // Disable base rule to avoid conflict
-                "no-duplicate-imports": "off",
-                "no-unused-vars": "off",
-                "no-useless-constructor": "off",
                 "no-use-before-define": "off",
 
-                "@typescript-eslint/array-type": "error",
-                "@typescript-eslint/consistent-type-assertions": "error",
+                "@typescript-eslint/consistent-type-definitions": ["error", "type"],
                 "@typescript-eslint/consistent-type-imports": "error",
                 "@typescript-eslint/explicit-function-return-type": [
                     "error",
                     {"allowExpressions": true}
                 ],
                 "@typescript-eslint/member-ordering": "error",
-                "@typescript-eslint/no-duplicate-imports": "off",
-                "@typescript-eslint/no-explicit-any": "off",
-                "@typescript-eslint/no-extraneous-class": "error",
                 "@typescript-eslint/no-non-null-assertion": "off",
-                "@typescript-eslint/no-parameter-properties": "error",
+                "@typescript-eslint/no-unnecessary-condition": "off",
                 "@typescript-eslint/no-unnecessary-qualifier": "error",
-                "@typescript-eslint/no-unused-vars": ["error", {"ignoreRestSiblings": true}],
                 "@typescript-eslint/no-unsafe-argument": "off",
                 "@typescript-eslint/no-unsafe-assignment": "off",
                 "@typescript-eslint/no-unsafe-call": "off",
                 "@typescript-eslint/no-unsafe-member-access": "off",
                 "@typescript-eslint/no-unsafe-return": "off",
-                "@typescript-eslint/no-use-before-define": "error",
-                "@typescript-eslint/no-useless-constructor": "error",
-                "@typescript-eslint/prefer-includes": "error",
-                "@typescript-eslint/prefer-string-starts-ends-with": "error",
+                "@typescript-eslint/no-unused-vars": [
+                    "error",
+                    {"args": "all", "argsIgnorePattern": "^_", "ignoreRestSiblings": true}
+                ],
+                "@typescript-eslint/no-use-before-define": ["error", {"functions": false}],
+                "@typescript-eslint/parameter-properties": "error",
                 "@typescript-eslint/promise-function-async": "error",
-                "@typescript-eslint/unified-signatures": "error",
+                "import/no-cycle": "error",
                 "no-undef": "error"
             }
         },
@@ -215,7 +204,7 @@
             }
         },
         {
-            "files": ["frontend_tests/**"],
+            "files": ["web/e2e-tests/**", "web/tests/**"],
             "globals": {
                 "CSS": false,
                 "document": false,
@@ -230,7 +219,7 @@
             }
         },
         {
-            "files": ["tools/debug-require.js"],
+            "files": ["web/debug-require.js"],
             "env": {
                 "browser": true,
                 "es2020": false
@@ -244,20 +233,27 @@
             }
         },
         {
-            "files": ["static/**"],
+            "files": ["web/shared/**", "web/src/**", "web/third/**"],
             "env": {
                 "browser": true,
                 "node": false
+            },
+            "globals": {
+                "ZULIP_VERSION": false
             },
             "rules": {
                 "no-console": "error"
             },
             "settings": {
-                "import/resolver": "webpack"
+                "import/resolver": {
+                    "webpack": {
+                        "config": "./web/webpack.config.ts"
+                    }
+                }
             }
         },
         {
-            "files": ["static/shared/**"],
+            "files": ["web/shared/**"],
             "env": {
                 "browser": false,
                 "shared-node-browser": true
@@ -268,13 +264,14 @@
                     {
                         "zones": [
                             {
-                                "target": "./static/shared",
+                                "target": "./web/shared",
                                 "from": ".",
-                                "except": ["./node_modules", "./static/shared"]
+                                "except": ["./node_modules", "./web/shared"]
                             }
                         ]
                     }
-                ]
+                ],
+                "unicorn/prefer-string-replace-all": "off"
             }
         }
     ]

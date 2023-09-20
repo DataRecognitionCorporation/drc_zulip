@@ -9,6 +9,7 @@ from zerver.actions.create_realm import do_create_realm
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.scheduled_messages import check_schedule_message, delete_scheduled_message
 from zerver.actions.submessage import do_add_submessage
 from zerver.lib.retention import (
     archive_messages,
@@ -20,7 +21,7 @@ from zerver.lib.retention import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import zulip_reaction_info
-from zerver.lib.upload import create_attachment
+from zerver.lib.upload.base import create_attachment
 from zerver.models import (
     ArchivedAttachment,
     ArchivedMessage,
@@ -35,6 +36,7 @@ from zerver.models import (
     Stream,
     SubMessage,
     UserMessage,
+    get_client,
     get_realm,
     get_stream,
     get_system_bot,
@@ -163,7 +165,7 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
     def _make_expired_zulip_messages(self, message_quantity: int) -> List[int]:
         msg_ids = list(
             Message.objects.order_by("id")
-            .filter(sender__realm=self.zulip_realm)
+            .filter(realm=self.zulip_realm)
             .values_list("id", flat=True)[3 : 3 + message_quantity]
         )
         self._change_messages_date_sent(
@@ -189,9 +191,10 @@ class ArchiveMessagesTestingBase(RetentionTestingBase):
 
         self.subscribe(user_profile, "Denmark")
         body = (
-            "Some files here ... [zulip.txt](http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)"
-            + " http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some more...."
-            + " http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"
+            "Some files here ..."
+            " [zulip.txt](http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)"
+            " http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py.... Some"
+            " more.... http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py"
         ).format(id=realm_id, host=host)
 
         expired_message_id = self.send_stream_message(user_profile, "Denmark", body)
@@ -230,7 +233,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         # Change some Zulip messages to be expired:
         expired_zulip_msg_ids = list(
             Message.objects.order_by("id")
-            .filter(sender__realm=self.zulip_realm)
+            .filter(realm=self.zulip_realm)
             .values_list("id", flat=True)[3:10]
         )
         self._change_messages_date_sent(
@@ -263,7 +266,7 @@ class TestArchiveMessagesGeneral(ArchiveMessagesTestingBase):
         # so they shouldn't get archived
         zulip_msg_ids = list(
             Message.objects.order_by("id")
-            .filter(sender__realm=self.zulip_realm)
+            .filter(realm=self.zulip_realm)
             .values_list("id", flat=True)[3:10]
         )
         self._change_messages_date_sent(
@@ -600,7 +603,7 @@ class MoveMessageToArchiveBase(RetentionTestingBase):
 
 class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
     def test_personal_messages_archiving(self) -> None:
-        msg_ids = [self.send_personal_message(self.sender, self.recipient) for i in range(0, 3)]
+        msg_ids = [self.send_personal_message(self.sender, self.recipient) for i in range(3)]
         usermsg_ids = self._get_usermessage_ids(msg_ids)
 
         self._assert_archive_empty()
@@ -612,7 +615,7 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
 
     def test_move_messages_to_archive_with_realm_argument(self) -> None:
         realm = get_realm("zulip")
-        msg_ids = [self.send_personal_message(self.sender, self.recipient) for i in range(0, 3)]
+        msg_ids = [self.send_personal_message(self.sender, self.recipient) for i in range(3)]
         usermsg_ids = self._get_usermessage_ids(msg_ids)
 
         self._assert_archive_empty()
@@ -624,7 +627,7 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         self.assertEqual(archive_transaction.realm, realm)
 
     def test_stream_messages_archiving(self) -> None:
-        msg_ids = [self.send_stream_message(self.sender, "Verona") for i in range(0, 3)]
+        msg_ids = [self.send_stream_message(self.sender, "Verona") for i in range(3)]
         usermsg_ids = self._get_usermessage_ids(msg_ids)
 
         self._assert_archive_empty()
@@ -635,7 +638,7 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         self._verify_restored_data(msg_ids, usermsg_ids)
 
     def test_archiving_messages_second_time(self) -> None:
-        msg_ids = [self.send_stream_message(self.sender, "Verona") for i in range(0, 3)]
+        msg_ids = [self.send_stream_message(self.sender, "Verona") for i in range(3)]
         usermsg_ids = self._get_usermessage_ids(msg_ids)
 
         self._assert_archive_empty()
@@ -656,8 +659,13 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         cordelia = self.lear_user("cordelia")
         king = self.lear_user("king")
 
+<<<<<<< HEAD
         zulip_msg_ids = [self.send_personal_message(iago, othello) for i in range(0, 3)]
         lear_msg_ids = [self.send_personal_message(cordelia, king) for i in range(0, 3)]
+=======
+        zulip_msg_ids = [self.send_personal_message(iago, othello) for i in range(3)]
+        lear_msg_ids = [self.send_personal_message(cordelia, king) for i in range(3)]
+>>>>>>> drc_main
         msg_ids = zulip_msg_ids + lear_msg_ids
         usermsg_ids = self._get_usermessage_ids(msg_ids)
 
@@ -672,20 +680,16 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         self._create_attachments()
         realm_id = get_realm("zulip").id
         host = get_realm("zulip").host
-        body1 = """Some files here ...[zulip.txt](
-            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
-            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
-            Some more.... http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py
-        """.format(
-            id=realm_id, host=host
-        )
-        body2 = """Some files here
-            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt ...
-            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
-            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
-        """.format(
-            id=realm_id, host=host
-        )
+        body1 = f"""Some files here ...[zulip.txt](
+            http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
+            http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
+            Some more.... http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py
+        """
+        body2 = f"""Some files here
+            http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt ...
+            http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
+            http://{host}/user_uploads/{realm_id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
+        """
 
         msg_ids = [
             self.send_personal_message(self.sender, self.recipient, body1),
@@ -698,7 +702,9 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         )
         for attachment_id in attachment_ids:
             attachment_id_to_message_ids[attachment_id] = list(
-                Message.objects.filter(attachment__id=attachment_id).values_list("id", flat=True),
+                Message.objects.filter(realm_id=realm_id, attachment__id=attachment_id).values_list(
+                    "id", flat=True
+                ),
             )
 
         usermsg_ids = self._get_usermessage_ids(msg_ids)
@@ -737,9 +743,9 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
             self.assertEqual(
                 set(attachment_id_to_message_ids[attachment_id]),
                 set(
-                    Message.objects.filter(attachment__id=attachment_id).values_list(
-                        "id", flat=True
-                    )
+                    Message.objects.filter(
+                        realm_id=realm_id, attachment__id=attachment_id
+                    ).values_list("id", flat=True)
                 ),
             )
 
@@ -801,6 +807,70 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         restore_all_data_from_archive()
         self.assertEqual(
             set(Attachment.objects.filter(messages__id=msg_id).values_list("id", flat=True)),
+            set(attachment_ids),
+        )
+
+    def test_archiving_message_with_scheduled_message(self) -> None:
+        # Make sure that attachments referenced by scheduledmessages do't get deleted
+        self._create_attachments()
+        realm_id = get_realm("zulip").id
+        host = get_realm("zulip").host
+        body = """Some files here ...[zulip.txt](
+            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt)
+            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py ....
+            Some more.... http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py ...
+            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/new.py ....
+            http://{host}/user_uploads/{id}/31/4CBjtTLYZhk66pZrF8hnYGwc/hello.txt ....
+        """.format(
+            id=realm_id, host=host
+        )
+
+        msg_id = self.send_personal_message(self.sender, self.recipient, body)
+
+        # Schedule a message with the same contents
+        scheduled_msg_id = check_schedule_message(
+            sender=self.sender,
+            client=get_client("website"),
+            recipient_type_name="private",
+            message_to=[self.recipient.id],
+            topic_name=None,
+            message_content=body,
+            deliver_at=timezone_now() + timedelta(hours=1),
+        )
+
+        usermsg_ids = self._get_usermessage_ids([msg_id])
+        attachment_ids = list(
+            Attachment.objects.filter(messages__id=msg_id).values_list("id", flat=True),
+        )
+
+        self._assert_archive_empty()
+        # Archive one of the messages:
+        move_messages_to_archive(message_ids=[msg_id])
+        self._verify_archive_data([msg_id], usermsg_ids)
+        # Attachments shouldn't have been deleted, as the scheduled message links to them:
+        self.assertEqual(Attachment.objects.count(), 5)
+
+        self.assertEqual(
+            set(
+                ArchivedAttachment.objects.filter(messages__id=msg_id).values_list("id", flat=True)
+            ),
+            set(attachment_ids),
+        )
+
+        # Delete the ScheduledMessage
+        delete_scheduled_message(self.sender, scheduled_msg_id)
+
+        # The Attachment object exists, with no message or scheduledmessage attached
+        self.assertEqual(Attachment.objects.count(), 5)
+        self.assertEqual(
+            Attachment.objects.filter(messages=None, scheduled_messages=None).count(), 5
+        )
+
+        # There is also the ArchivedAttachment for each of them
+        self.assertEqual(
+            set(
+                ArchivedAttachment.objects.filter(messages__id=msg_id).values_list("id", flat=True)
+            ),
             set(attachment_ids),
         )
 
@@ -1025,13 +1095,13 @@ class TestRestoreStreamMessages(ArchiveMessagesTestingBase):
         stream = get_stream(stream_name, realm)
 
         message_ids_to_archive_manually = [
-            self.send_stream_message(cordelia, stream_name, str(i)) for i in range(0, 2)
+            self.send_stream_message(cordelia, stream_name, str(i)) for i in range(2)
         ]
         usermessage_ids_to_archive_manually = self._get_usermessage_ids(
             message_ids_to_archive_manually
         )
         message_ids_to_archive_by_policy = [
-            self.send_stream_message(hamlet, stream_name, str(i)) for i in range(0, 2)
+            self.send_stream_message(hamlet, stream_name, str(i)) for i in range(2)
         ]
         usermessage_ids_to_archive_by_policy = self._get_usermessage_ids(
             message_ids_to_archive_by_policy
@@ -1069,10 +1139,10 @@ class TestDoDeleteMessages(ZulipTestCase):
     def test_do_delete_messages_multiple(self) -> None:
         realm = get_realm("zulip")
         cordelia = self.example_user("cordelia")
-        message_ids = [self.send_stream_message(cordelia, "Verona", str(i)) for i in range(0, 10)]
+        message_ids = [self.send_stream_message(cordelia, "Verona", str(i)) for i in range(10)]
         messages = Message.objects.filter(id__in=message_ids)
 
-        with self.assert_database_query_count(19):
+        with self.assert_database_query_count(20):
             do_delete_messages(realm, messages)
         self.assertFalse(Message.objects.filter(id__in=message_ids).exists())
 

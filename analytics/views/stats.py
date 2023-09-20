@@ -10,6 +10,7 @@ from django.shortcuts import render
 from django.utils import translation
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from typing_extensions import TypeAlias
 
 from analytics.lib.counts import COUNT_STATS, CountStat
 from analytics.lib.time_utils import time_range
@@ -49,23 +50,35 @@ def is_analytics_ready(realm: Realm) -> bool:
 def render_stats(
     request: HttpRequest,
     data_url_suffix: str,
-    target_name: str,
+    realm: Optional[Realm],
+    *,
+    title: Optional[str] = None,
     for_installation: bool = False,
     remote: bool = False,
     analytics_ready: bool = True,
 ) -> HttpResponse:
     assert request.user.is_authenticated
 
-    # Same query to get guest user count as in get_seat_count in corporate/lib/stripe.py.
-    guest_users = UserProfile.objects.filter(
-        realm=request.user.realm, is_active=True, is_bot=False, role=UserProfile.ROLE_GUEST
-    ).count()
+    if realm is not None:
+        # Same query to get guest user count as in get_seat_count in corporate/lib/stripe.py.
+        guest_users = UserProfile.objects.filter(
+            realm=realm, is_active=True, is_bot=False, role=UserProfile.ROLE_GUEST
+        ).count()
+        space_used = realm.currently_used_upload_space_bytes()
+        if title:
+            pass
+        else:
+            title = realm.name or realm.string_id
+    else:
+        assert title
+        guest_users = None
+        space_used = None
 
     page_params = dict(
         data_url_suffix=data_url_suffix,
         for_installation=for_installation,
         remote=remote,
-        upload_space_used=request.user.realm.currently_used_upload_space_bytes(),
+        upload_space_used=space_used,
         guest_users=guest_users,
     )
 
@@ -81,7 +94,9 @@ def render_stats(
         request,
         "analytics/stats.html",
         context=dict(
-            target_name=target_name, page_params=page_params, analytics_ready=analytics_ready
+            target_name=title,
+            page_params=page_params,
+            analytics_ready=analytics_ready,
         ),
     )
 
@@ -94,9 +109,7 @@ def stats(request: HttpRequest) -> HttpResponse:
         # TODO: Make @zulip_login_required pass the UserProfile so we
         # can use @require_member_or_admin
         raise JsonableError(_("Not allowed for guest users"))
-    return render_stats(
-        request, "", realm.name or realm.string_id, analytics_ready=is_analytics_ready(realm)
-    )
+    return render_stats(request, "", realm, analytics_ready=is_analytics_ready(realm))
 
 
 @require_server_admin
@@ -110,7 +123,7 @@ def stats_for_realm(request: HttpRequest, realm_str: str) -> HttpResponse:
     return render_stats(
         request,
         f"/realm/{realm_str}",
-        realm.name or realm.string_id,
+        realm,
         analytics_ready=is_analytics_ready(realm),
     )
 
@@ -125,7 +138,8 @@ def stats_for_remote_realm(
     return render_stats(
         request,
         f"/remote/{server.id}/realm/{remote_realm_id}",
-        f"Realm {remote_realm_id} on server {server.hostname}",
+        None,
+        title=f"Realm {remote_realm_id} on server {server.hostname}",
     )
 
 
@@ -166,7 +180,8 @@ def get_chart_data_for_remote_realm(
 
 @require_server_admin
 def stats_for_installation(request: HttpRequest) -> HttpResponse:
-    return render_stats(request, "/installation", "installation", True)
+    assert request.user.is_authenticated
+    return render_stats(request, "/installation", None, title="installation", for_installation=True)
 
 
 @require_server_admin
@@ -176,9 +191,10 @@ def stats_for_remote_installation(request: HttpRequest, remote_server_id: int) -
     return render_stats(
         request,
         f"/remote/{server.id}/installation",
-        f"remote installation {server.hostname}",
-        True,
-        True,
+        None,
+        title=f"remote installation {server.hostname}",
+        for_installation=True,
+        remote=True,
     )
 
 
@@ -227,7 +243,7 @@ def get_chart_data(
     remote_realm_id: Optional[int] = None,
     server: Optional["RemoteZulipServer"] = None,
 ) -> HttpResponse:
-    TableType = Union[
+    TableType: TypeAlias = Union[
         Type["RemoteInstallationCount"],
         Type[InstallationCount],
         Type["RemoteRealmCount"],
@@ -278,8 +294,8 @@ def get_chart_data(
             stats[0]: {
                 "public_stream": _("Public streams"),
                 "private_stream": _("Private streams"),
-                "private_message": _("Private messages"),
-                "huddle_message": _("Group private messages"),
+                "private_message": _("Direct messages"),
+                "huddle_message": _("Group direct messages"),
             }
         }
         labels_sort_function = lambda data: sort_by_totals(data["everyone"])
@@ -300,7 +316,7 @@ def get_chart_data(
         labels_sort_function = None
         include_empty_subgroups = True
     else:
-        raise JsonableError(_("Unknown chart name: {}").format(chart_name))
+        raise JsonableError(_("Unknown chart name: {chart_name}").format(chart_name=chart_name))
 
     # Most likely someone using our API endpoint. The /stats page does not
     # pass a start or end in its requests.
@@ -422,8 +438,7 @@ def get_chart_data(
 
 
 def sort_by_totals(value_arrays: Dict[str, List[int]]) -> List[str]:
-    totals = [(sum(values), label) for label, values in value_arrays.items()]
-    totals.sort(reverse=True)
+    totals = sorted(((sum(values), label) for label, values in value_arrays.items()), reverse=True)
     return [label for total, label in totals]
 
 
@@ -449,17 +464,17 @@ CountT = TypeVar("CountT", bound=BaseCount)
 
 def table_filtered_to_id(table: Type[CountT], key_id: int) -> QuerySet[CountT]:
     if table == RealmCount:
-        return table.objects.filter(realm_id=key_id)
+        return table._default_manager.filter(realm_id=key_id)
     elif table == UserCount:
-        return table.objects.filter(user_id=key_id)
+        return table._default_manager.filter(user_id=key_id)
     elif table == StreamCount:
-        return table.objects.filter(stream_id=key_id)
+        return table._default_manager.filter(stream_id=key_id)
     elif table == InstallationCount:
-        return table.objects.all()
+        return table._default_manager.all()
     elif settings.ZILENCER_ENABLED and table == RemoteInstallationCount:
-        return table.objects.filter(server_id=key_id)
+        return table._default_manager.filter(server_id=key_id)
     elif settings.ZILENCER_ENABLED and table == RemoteRealmCount:
-        return table.objects.filter(realm_id=key_id)
+        return table._default_manager.filter(realm_id=key_id)
     else:
         raise AssertionError(f"Unknown table: {table}")
 
@@ -491,10 +506,10 @@ def rewrite_client_arrays(value_arrays: Dict[str, List[int]]) -> Dict[str, List[
     for label, array in value_arrays.items():
         mapped_label = client_label_map(label)
         if mapped_label in mapped_arrays:
-            for i in range(0, len(array)):
+            for i in range(len(array)):
                 mapped_arrays[mapped_label][i] += value_arrays[label][i]
         else:
-            mapped_arrays[mapped_label] = [value_arrays[label][i] for i in range(0, len(array))]
+            mapped_arrays[mapped_label] = [value_arrays[label][i] for i in range(len(array))]
     return mapped_arrays
 
 

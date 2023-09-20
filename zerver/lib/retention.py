@@ -189,12 +189,14 @@ def move_expired_messages_to_archive_by_recipient(
 ) -> int:
     assert message_retention_days != -1
 
+    # Uses index: zerver_message_realm_recipient_date_sent
     query = SQL(
         """
     INSERT INTO zerver_archivedmessage ({dst_fields}, archive_transaction_id)
         SELECT {src_fields}, {archive_transaction_id}
         FROM zerver_message
-        WHERE zerver_message.recipient_id = {recipient_id}
+        WHERE zerver_message.realm_id = {realm_id}
+            AND zerver_message.recipient_id = {recipient_id}
             AND zerver_message.date_sent < {check_date}
         LIMIT {chunk_size}
     ON CONFLICT (id) DO UPDATE SET archive_transaction_id = {archive_transaction_id}
@@ -207,6 +209,7 @@ def move_expired_messages_to_archive_by_recipient(
         query,
         type=ArchiveTransaction.RETENTION_POLICY_BASED,
         realm=realm,
+        realm_id=Literal(realm.id),
         recipient_id=Literal(recipient.id),
         check_date=Literal(check_date.isoformat()),
         chunk_size=chunk_size,
@@ -224,6 +227,7 @@ def move_expired_personal_and_huddle_messages_to_archive(
     recipient_types = (Recipient.PERSONAL, Recipient.HUDDLE)
 
     # Archive expired personal and huddle Messages in the realm, including cross-realm messages.
+    # Uses index: zerver_message_realm_recipient_date_sent
     query = SQL(
         """
     INSERT INTO zerver_archivedmessage ({dst_fields}, archive_transaction_id)
@@ -318,18 +322,21 @@ def delete_messages(msg_ids: List[int]) -> None:
     # key to Message (due to `on_delete=CASCADE` in our models
     # configuration), so we need to be sure we've taken care of
     # archiving the messages before doing this step.
+    #
+    # Uses index: zerver_message_pkey
     Message.objects.filter(id__in=msg_ids).delete()
 
 
 def delete_expired_attachments(realm: Realm) -> None:
-    attachments_deleted, _ = Attachment.objects.filter(
+    (num_deleted, ignored) = Attachment.objects.filter(
         messages__isnull=True,
+        scheduled_messages__isnull=True,
         realm_id=realm.id,
         id__in=ArchivedAttachment.objects.filter(realm_id=realm.id),
     ).delete()
 
-    if attachments_deleted > 0:
-        logger.info("Cleaned up %s attachments for realm %s", attachments_deleted, realm.string_id)
+    if num_deleted > 0:
+        logger.info("Cleaned up %s attachments for realm %s", num_deleted, realm.string_id)
 
 
 def move_related_objects_to_archive(msg_ids: List[int]) -> None:
@@ -452,6 +459,7 @@ def get_realms_and_streams_for_archiving() -> List[Tuple[Realm, List[Stream]]]:
 def move_messages_to_archive(
     message_ids: List[int], realm: Optional[Realm] = None, chunk_size: int = MESSAGE_BATCH_SIZE
 ) -> None:
+    # Uses index: zerver_message_pkey
     query = SQL(
         """
     INSERT INTO zerver_archivedmessage ({dst_fields}, archive_transaction_id)
@@ -477,7 +485,9 @@ def move_messages_to_archive(
     archived_attachments = ArchivedAttachment.objects.filter(
         messages__id__in=message_ids
     ).distinct()
-    Attachment.objects.filter(messages__isnull=True, id__in=archived_attachments).delete()
+    Attachment.objects.filter(
+        messages__isnull=True, scheduled_messages__isnull=True, id__in=archived_attachments
+    ).delete()
 
 
 def restore_messages_from_archive(archive_transaction_id: int) -> List[int]:
@@ -668,7 +678,7 @@ def parse_message_retention_days(
     value: Union[int, str],
     special_values_map: Mapping[str, Optional[int]],
 ) -> Optional[int]:
-    if isinstance(value, str) and value in special_values_map.keys():
+    if isinstance(value, str) and value in special_values_map:
         return special_values_map[value]
     if isinstance(value, str) or value <= 0:
         raise RequestVariableConversionError("message_retention_days", value)

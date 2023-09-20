@@ -50,7 +50,6 @@ def run() -> None:
                 "pp",
                 "py",
                 "pyi",
-                "rst",
                 "sh",
                 "text",
                 "txt",
@@ -72,14 +71,14 @@ def run() -> None:
 
     linter_config.external_linter(
         "css",
-        ["node", "node_modules/.bin/stylelint"],
+        ["node_modules/.bin/stylelint"],
         ["css"],
         fix_arg="--fix",
         description="Standard CSS style and formatting linter (config: stylelint.config.js)",
     )
     linter_config.external_linter(
         "eslint",
-        ["node", "node_modules/.bin/eslint", "--max-warnings=0", "--cache", "--ext", ".js,.ts"],
+        ["node_modules/.bin/eslint", "--max-warnings=0", "--cache", "--ext", ".js,.ts"],
         ["js", "ts"],
         fix_arg="--fix",
         description="Standard JavaScript style and formatting linter (config: .eslintrc).",
@@ -158,13 +157,6 @@ def run() -> None:
         description="TypeScript compiler (config: tsconfig.json)",
     )
     linter_config.external_linter(
-        "yarn-deduplicate",
-        ["tools/run-yarn-deduplicate"],
-        ["lock"],
-        pass_targets=False,
-        description="Shares duplicate packages in yarn.lock",
-    )
-    linter_config.external_linter(
         "gitlint",
         ["tools/commit-message-lint"],
         description="Checks commit messages for common formatting errors (config: .gitlint)",
@@ -201,6 +193,11 @@ def run() -> None:
         description="Syntactic grep (semgrep) code search tool (config: ./tools/semgrep.yml)",
     )
 
+    linter_config.external_linter(
+        "mailmap",
+        ["sh", "-c", "grep '^[^#]' .mailmap | LC_ALL=C.UTF-8 sort -cf"],
+        description="Check that .mailmap is sorted",
+    )
     linter_config.external_linter(
         "thirdparty",
         ["tools/check-thirdparty"],

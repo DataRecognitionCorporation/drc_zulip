@@ -3,7 +3,6 @@ import os
 import random
 import shutil
 import unittest
-from functools import partial
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
 from unittest import TestSuite, runner
 from unittest.result import TestResult
@@ -14,6 +13,8 @@ from django.db import ProgrammingError, connections
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
 from django.test.signals import template_rendered
+from returns.curry import partial
+from typing_extensions import TypeAlias
 
 from scripts.lib.zulip_tools import (
     TEMPLATE_DATABASE_DIR,
@@ -103,8 +104,8 @@ def process_instrumented_calls(func: Callable[[Dict[str, Any]], None]) -> None:
         func(call)
 
 
-SerializedSubsuite = Tuple[Type[TestSuite], List[str]]
-SubsuiteArgs = Tuple[Type["RemoteTestRunner"], int, SerializedSubsuite, bool, bool]
+SerializedSubsuite: TypeAlias = Tuple[Type[TestSuite], List[str]]
+SubsuiteArgs: TypeAlias = Tuple[Type["RemoteTestRunner"], int, SerializedSubsuite, bool, bool]
 
 
 def run_subsuite(args: SubsuiteArgs) -> Tuple[int, Any]:
@@ -208,14 +209,6 @@ def init_worker(
     create_test_databases(_worker_id)
     initialize_worker_path(_worker_id)
 
-    # We manually update the upload directory path in the URL regex.
-    from zproject.dev_urls import avatars_url
-
-    assert settings.LOCAL_UPLOADS_DIR is not None
-    assert avatars_url.default_args is not None
-    new_root = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")
-    avatars_url.default_args["document_root"] = new_root
-
 
 class ParallelTestSuite(django_runner.ParallelTestSuite):
     run_subsuite = run_subsuite
@@ -248,7 +241,8 @@ def initialize_worker_path(worker_id: int) -> None:
             "test_uploads",
         )
     )
-    settings.SENDFILE_ROOT = os.path.join(settings.LOCAL_UPLOADS_DIR, "files")
+    settings.LOCAL_AVATARS_DIR = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")
+    settings.LOCAL_FILES_DIR = os.path.join(settings.LOCAL_UPLOADS_DIR, "files")
 
 
 class Runner(DiscoverRunner):
@@ -333,28 +327,25 @@ class Runner(DiscoverRunner):
     def test_imports(
         self, test_labels: List[str], suite: Union[TestSuite, ParallelTestSuite]
     ) -> None:
-        prefix_old = "unittest.loader.ModuleImportFailure."  # Python <= 3.4
-        prefix_new = "unittest.loader._FailedTest."  # Python > 3.4
-        error_prefixes = [prefix_old, prefix_new]
+        prefix = "unittest.loader._FailedTest."
         for test_name in get_test_names(suite):
-            for prefix in error_prefixes:
-                if test_name.startswith(prefix):
-                    test_name = test_name[len(prefix) :]
-                    for label in test_labels:
-                        # This code block is for Python 3.5 when test label is
-                        # directly provided, for example:
-                        # ./tools/test-backend zerver.tests.test_alert_words.py
-                        #
-                        # In this case, the test name is of this form:
-                        # 'unittest.loader._FailedTest.test_alert_words'
-                        #
-                        # Whereas check_import_error requires test names of
-                        # this form:
-                        # 'unittest.loader._FailedTest.zerver.tests.test_alert_words'.
-                        if test_name in label:
-                            test_name = label
-                            break
-                    check_import_error(test_name)
+            if test_name.startswith(prefix):
+                test_name = test_name[len(prefix) :]
+                for label in test_labels:
+                    # This code block is for when a test label is
+                    # directly provided, for example:
+                    # ./tools/test-backend zerver.tests.test_alert_words.py
+                    #
+                    # In this case, the test name is of this form:
+                    # 'unittest.loader._FailedTest.test_alert_words'
+                    #
+                    # Whereas check_import_error requires test names of
+                    # this form:
+                    # 'unittest.loader._FailedTest.zerver.tests.test_alert_words'.
+                    if test_name in label:
+                        test_name = label
+                        break
+                check_import_error(test_name)
 
     def run_tests(
         self,
@@ -366,23 +357,7 @@ class Runner(DiscoverRunner):
         **kwargs: Any,
     ) -> int:
         self.setup_test_environment()
-        try:
-            suite = self.build_suite(test_labels, extra_tests)
-        except AttributeError:
-            # We are likely to get here only when running tests in serial
-            # mode on Python 3.4 or lower.
-            # test_labels are always normalized to include the correct prefix.
-            # If we run the command with ./tools/test-backend test_alert_words,
-            # test_labels will be equal to ['zerver.tests.test_alert_words'].
-            for test_label in test_labels:
-                check_import_error(test_label)
-
-            # I think we won't reach this line under normal circumstances, but
-            # for some unforeseen scenario in which the AttributeError was not
-            # caused by an import error, let's re-raise the exception for
-            # debugging purposes.
-            raise
-
+        suite = self.build_suite(test_labels, extra_tests)
         self.test_imports(test_labels, suite)
         if self.parallel == 1:
             # We are running in serial mode so create the databases here.

@@ -4,9 +4,9 @@ from typing import Optional
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.validator import WildValue, check_bool, check_int, check_string, to_wild_value
-from zerver.lib.webhooks.common import get_http_headers_from_filename
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_bool, check_int, check_string
+from zerver.lib.webhooks.common import OptionalUserSpecifiedTopicStr, get_http_headers_from_filename
 from zerver.lib.webhooks.git import get_pull_request_event_message
 from zerver.models import UserProfile
 
@@ -28,8 +28,13 @@ def format_pull_request_event(payload: WildValue, include_title: bool = False) -
 
     url = payload["pull_request"]["html_url"].tame(check_string)
     number = payload["pull_request"]["number"].tame(check_int)
-    target_branch = payload["pull_request"]["head"]["ref"].tame(check_string)
-    base_branch = payload["pull_request"]["base"]["ref"].tame(check_string)
+    target_branch = None
+    base_branch = None
+    if action != "edited":
+        if "head" in payload["pull_request"]:
+            target_branch = payload["pull_request"]["head"]["ref"].tame(check_string)
+        if "base" in payload["pull_request"]:
+            base_branch = payload["pull_request"]["base"]["ref"].tame(check_string)
     title = payload["pull_request"]["title"].tame(check_string) if include_title else None
     stringified_assignee = assignee["login"].tame(check_string) if assignee else None
 
@@ -46,13 +51,14 @@ def format_pull_request_event(payload: WildValue, include_title: bool = False) -
 
 
 @webhook_view("Gitea")
-@has_request_variables
+@typed_endpoint
 def api_gitea_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
-    branches: Optional[str] = REQ(default=None),
-    user_specified_topic: Optional[str] = REQ("topic", default=None),
+    *,
+    payload: WebhookPayload[WildValue],
+    branches: Optional[str] = None,
+    user_specified_topic: OptionalUserSpecifiedTopicStr = None,
 ) -> HttpResponse:
     return gogs_webhook_main(
         "Gitea",

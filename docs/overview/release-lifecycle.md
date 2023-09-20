@@ -43,6 +43,8 @@ server repository][zulip-server].
   upgrading to a new major release series, We recommend always
   upgrading to the latest maintenance release in that series, so that
   you use the latest version of the upgrade code.
+- For the dates of past stable releases,
+  [see the Zulip blog][blog-releases].
 
 Starting with Zulip 4.0, the Zulip web app displays the current server
 version in the gear menu. With older releases, the server version is
@@ -55,17 +57,20 @@ documentation](https://zulip.com/api/), and [Integrations
 documentation](https://zulip.com/integrations/), are distributed with
 the Zulip server itself (E.g. `https://zulip.example.com/help/`).
 
+[blog-major-releases]: https://blog.zulip.com/tag/major-releases/
+[blog-releases]: https://blog.zulip.com/tag/release-announcements/
+
 ### Git versions
 
 Many Zulip servers run versions from Git that have not been published
 in a stable release.
 
-- [Zulip Cloud](https://zulip.com) essentially runs the `main`
-  branch. It is usually a few days behind `main` (with some
-  cherry-picked bug fixes), but can fall up to 2 weeks behind when
-  major UI or internals changes mean we'd like to bake changes longer
-  on chat.zulip.org before exposing them to the full Zulip Cloud
-  userbase.
+- [Zulip Cloud](https://zulip.com) runs the `zulip-cloud-current`
+  branch; this the `main` branch, with some cherry-picked bug fixes,
+  but delayed somewhat. It is usually one to two weeks behind `main`,
+  depending on the complexity of recent major UI or internals changes
+  that we'd like to bake longer on chat.zulip.org before exposing them
+  to the full Zulip Cloud userbase.
 - [chat.zulip.org][chat-zulip-org], the bleeding-edge server for the
   Zulip development community, is upgraded to `main` several times
   every week. We also often "test deploy" changes not yet in `main`
@@ -88,12 +93,16 @@ version of Zulip. We work extremely hard to make sure Zulip is stable
 for self-hosters, has no regressions, and that the [Zulip upgrade
 process](../production/upgrade.md) Just Works.
 
-The Zulip server and clients apps are all carefully engineered to
+The Zulip server and client apps are all carefully engineered to
 ensure compatibility with old versions. In particular:
 
 - The Zulip mobile and desktop apps maintain backwards-compatibility
+<<<<<<< HEAD
   code to support any Zulip server since 4.0. (They may also work
   with older versions, with a degraded experience).
+=======
+  code to support any Zulip server version from the last 18 months.
+>>>>>>> drc_main
 - Zulip maintains an [API changelog](https://zulip.com/api/changelog)
   detailing all changes to the API to make it easy for client
   developers to do this correctly.
@@ -107,7 +116,10 @@ As a result, we generally do not backport changes to previous stable
 release series except in rare cases involving a security issue or
 critical bug just after publishing a major release.
 
+<<<<<<< HEAD
 [blog-major-releases]: https://blog.zulip.com/tag/major-releases/
+=======
+>>>>>>> drc_main
 [upgrade-from-git]: ../production/upgrade.md#upgrading-from-a-git-repository
 
 ### Security releases
@@ -176,15 +188,15 @@ The Zulip community feels strongly that all the little issues are, in
 aggregate, just as important as the big things. Most resolved issues
 do not have any of these priority labels.
 
-We welcome participation from our user community in influencing the
-Zulip roadmap. If a bug or missing feature is causing significant
-pain for you, we'd love to hear from you, either in
+We welcome participation from our user community in influencing the Zulip
+roadmap. If a bug or missing feature is causing significant pain for you, we'd
+love to hear from you, either in
 [chat.zulip.org](https://zulip.com/development-community/) or on the relevant
-GitHub issue. Please an include an explanation of your use case: such
-details can be extremely helpful in designing appropriately general
-solutions, and also helps us identify cases where an existing solution
-can solve your problem. See [Reporting
-issues](../contributing/contributing.md#reporting-issues) for more details.
+GitHub issue. Please an include an explanation of your use case: such details
+can be extremely helpful in designing appropriately general solutions, and also
+helps us identify cases where an existing solution can solve your problem. See
+our guides for [reporting bugs](../contributing/reporting-bugs.md) and [giving
+feedback](../contributing/contributing.md#user-feedback) for more details.
 
 ## Client apps
 

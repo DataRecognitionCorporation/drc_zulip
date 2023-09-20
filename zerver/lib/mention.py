@@ -18,7 +18,8 @@ USER_GROUP_MENTIONS_RE = re.compile(
     rf"{BEFORE_MENTION_ALLOWED_REGEX}@(?P<silent>_?)(\*(?P<match>[^\*]+)\*)"
 )
 
-wildcards = ["all", "everyone", "stream"]
+topic_wildcards = frozenset(["topic"])
+stream_wildcards = frozenset(["all", "everyone", "stream"])
 
 
 @dataclass
@@ -41,6 +42,20 @@ class UserFilter:
             return Q(full_name__iexact=self.full_name)
         else:
             raise AssertionError("totally empty filter makes no sense")
+
+
+@dataclass
+class MentionText:
+    text: Optional[str]
+    is_topic_wildcard: bool
+    is_stream_wildcard: bool
+
+
+@dataclass
+class PossibleMentions:
+    mention_texts: Set[str]
+    message_has_topic_wildcards: bool
+    message_has_stream_wildcards: bool
 
 
 class MentionBackend:
@@ -135,28 +150,42 @@ class MentionBackend:
         return result
 
 
-def user_mention_matches_wildcard(mention: str) -> bool:
-    return mention in wildcards
+def user_mention_matches_topic_wildcard(mention: str) -> bool:
+    return mention in topic_wildcards
 
 
-def extract_mention_text(m: Match[str]) -> Tuple[Optional[str], bool]:
+def user_mention_matches_stream_wildcard(mention: str) -> bool:
+    return mention in stream_wildcards
+
+
+def extract_mention_text(m: Match[str]) -> MentionText:
     text = m.group("match")
-    if text in wildcards:
-        return None, True
-    return text, False
+    if text in topic_wildcards:
+        return MentionText(text=None, is_topic_wildcard=True, is_stream_wildcard=False)
+    if text in stream_wildcards:
+        return MentionText(text=None, is_topic_wildcard=False, is_stream_wildcard=True)
+    return MentionText(text=text, is_topic_wildcard=False, is_stream_wildcard=False)
 
 
-def possible_mentions(content: str) -> Tuple[Set[str], bool]:
+def possible_mentions(content: str) -> PossibleMentions:
     # mention texts can either be names, or an extended name|id syntax.
     texts = set()
-    message_has_wildcards = False
+    message_has_topic_wildcards = False
+    message_has_stream_wildcards = False
     for m in MENTIONS_RE.finditer(content):
-        text, is_wildcard = extract_mention_text(m)
+        mention_text = extract_mention_text(m)
+        text = mention_text.text
         if text:
             texts.add(text)
-        if is_wildcard:
-            message_has_wildcards = True
-    return texts, message_has_wildcards
+        if mention_text.is_topic_wildcard:
+            message_has_topic_wildcards = True
+        if mention_text.is_stream_wildcard:
+            message_has_stream_wildcards = True
+    return PossibleMentions(
+        mention_texts=texts,
+        message_has_topic_wildcards=message_has_topic_wildcards,
+        message_has_stream_wildcards=message_has_stream_wildcards,
+    )
 
 
 def possible_user_group_mentions(content: str) -> Set[str]:
@@ -195,15 +224,19 @@ class MentionData:
     def __init__(self, mention_backend: MentionBackend, content: str) -> None:
         self.mention_backend = mention_backend
         realm_id = mention_backend.realm_id
-        mention_texts, has_wildcards = possible_mentions(content)
-        possible_mentions_info = get_possible_mentions_info(mention_backend, mention_texts)
+        mentions = possible_mentions(content)
+        possible_mentions_info = get_possible_mentions_info(mention_backend, mentions.mention_texts)
         self.full_name_info = {row.full_name.lower(): row for row in possible_mentions_info}
         self.user_id_info = {row.id: row for row in possible_mentions_info}
         self.init_user_group_data(realm_id=realm_id, content=content)
-        self.has_wildcards = has_wildcards
+        self.has_stream_wildcards = mentions.message_has_stream_wildcards
+        self.has_topic_wildcards = mentions.message_has_topic_wildcards
 
-    def message_has_wildcards(self) -> bool:
-        return self.has_wildcards
+    def message_has_stream_wildcards(self) -> bool:
+        return self.has_stream_wildcards
+
+    def message_has_topic_wildcards(self) -> bool:
+        return self.has_topic_wildcards
 
     def init_user_group_data(self, realm_id: int, content: str) -> None:
         self.user_group_name_info: Dict[str, UserGroup] = {}

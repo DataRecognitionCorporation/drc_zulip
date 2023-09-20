@@ -1,6 +1,6 @@
 import os
-import subprocess
 import urllib
+from contextlib import suppress
 from typing import Optional
 
 import orjson
@@ -13,7 +13,7 @@ from confirmation.models import Confirmation, confirmation_url
 from zerver.actions.realm_settings import do_send_realm_reactivation_email
 from zerver.actions.user_settings import do_change_user_delivery_email
 from zerver.actions.users import change_user_is_active
-from zerver.lib.email_notifications import enqueue_welcome_emails
+from zerver.lib.email_notifications import enqueue_welcome_emails, send_account_registered_email
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.models import Realm, get_realm, get_realm_stream, get_user_by_delivery_email
@@ -44,22 +44,13 @@ def email_page(
 
 
 def clear_emails(request: HttpRequest) -> HttpResponse:
-    try:
+    with suppress(FileNotFoundError):
         os.remove(settings.EMAIL_CONTENT_LOG_PATH)
-    except FileNotFoundError:  # nocoverage
-        pass
     return redirect(email_page)
 
 
 @require_safe
 def generate_all_emails(request: HttpRequest) -> HttpResponse:
-    if not settings.TEST_SUITE:  # nocoverage
-        # It's really convenient to automatically inline the email CSS
-        # here, since that saves a step when testing out changes to
-        # the email CSS.  But we don't run this inside the test suite,
-        # because by role, the tests shouldn't be doing a provision-like thing.
-        subprocess.check_call(["./scripts/setup/inline_email_css.py"])
-
     # We import the Django test client inside the view function,
     # because it isn't needed in production elsewhere, and not
     # importing it saves ~50ms of unnecessary manage.py startup time.
@@ -146,11 +137,17 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     # Reset the email value so we can run this again
     do_change_user_delivery_email(user_profile, registered_email)
 
-    # Follow up day1 day2 emails for normal user
+    # Initial email with new account information for normal user.
+    send_account_registered_email(user_profile)
+
+    # Follow up day2 and onboarding zulip guide emails for normal user
     enqueue_welcome_emails(user_profile)
 
-    # Follow up day1 day2 emails for admin user
-    enqueue_welcome_emails(get_user_by_delivery_email("iago@zulip.com", realm), realm_creation=True)
+    # Initial email with new account information for admin user
+    send_account_registered_email(get_user_by_delivery_email("iago@zulip.com", realm))
+
+    # Follow up day2 and onboarding zulip guide emails for admin user
+    enqueue_welcome_emails(get_user_by_delivery_email("iago@zulip.com", realm))
 
     # Realm reactivation email
     do_send_realm_reactivation_email(realm, acting_user=None)

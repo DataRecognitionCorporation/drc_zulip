@@ -7,8 +7,10 @@ priority.
 - All Zulip clients (web, mobile, desktop, terminal, and integrations)
   require TLS encryption and authentication over HTTPS for all data
   transmission between clients and the server, both on LAN and the Internet.
-  Encryption-at-rest is available with Zulip on-premise, via hardware and
-  software disk encryption of the database and other data storage media.
+- All Zulip Cloud customer data is encrypted at rest. Self-hosted Zulip can be
+  configured for encryption at rest via your hosting provider, or by setting up
+  hardware and software disk encryption of the database and other data storage
+  media.
 - Zulip’s on-premise offerings can be hosted entirely behind your firewall,
   or even on an air-gapped network (disconnected from the Internet).
 - Every Zulip authenticated API endpoint has built in rate limiting to
@@ -32,7 +34,7 @@ priority.
 
 ## Configurable access control policies
 
-- Zulip supports private messages (to one or more individuals), private
+- Zulip supports direct messages (to one or more individuals), private
   streams with any number of subscribers, as well as public streams
   available to all organization members.  We also support guest accounts,
   which only have access to a fixed set of streams, and announcement
@@ -55,7 +57,7 @@ priority.
   [invite to streams](/help/configure-who-can-invite-to-streams),
   [add custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji),
   [add integrations and bots](/help/restrict-bot-creation),
-  [edit or delete messages](/help/configure-message-editing-and-deletion),
+  [edit or delete messages](/help/restrict-message-editing-and-deletion),
   and more.
 
 [waiting_period]: /help/restrict-permissions-of-new-members
@@ -91,8 +93,8 @@ priority.
 
 ## Integrity and auditing
 
-- Zulip owners and administrators can configure users’
-  [ability to edit or delete messages](/help/configure-message-editing-and-deletion),
+- Zulip owners and administrators can restrict users’
+  [ability to edit or delete messages](/help/restrict-message-editing-and-deletion),
   and whether deleted messages are retained in the database or deleted
   permanently. Zulip by default stores the complete history of all message
   content on the platform, including edits and deletions, and all uploaded

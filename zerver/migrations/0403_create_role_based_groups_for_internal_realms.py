@@ -7,7 +7,7 @@ from django.db.migrations.state import StateApps
 from django.utils.timezone import now as timezone_now
 
 # This migration is a copy of
-# zerver/migrations/0402_alter_usertopic_visibility_policy.py" run
+# zerver/migrations/0382_create_role_based_system_groups.py" run
 # for the internal realm only.
 
 
@@ -65,7 +65,7 @@ def create_role_based_system_groups_for_internal_realms(
             return
 
         role_system_groups_dict = {}
-        for role in SYSTEM_USER_GROUP_ROLE_MAP.keys():
+        for role in SYSTEM_USER_GROUP_ROLE_MAP:
             user_group_params = SYSTEM_USER_GROUP_ROLE_MAP[role]
             user_group = UserGroup(
                 name=user_group_params["name"],

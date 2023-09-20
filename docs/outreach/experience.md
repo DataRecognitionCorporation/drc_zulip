@@ -135,7 +135,7 @@ You can find many examples in the
     elsewhere, please link to it. Please post each question/problem in a
     separate message to make it convenient to quote-and-reply to address it.
     Note that discussions about your work will happen in all the usual places
-    (#**frontend** , #**backend** , #**design** , etc.), and those are the
+    (#**frontend**, #**backend**, #**design**, etc.), and those are the
     streams where you should be _starting_ conversations. Your check-ins are a
     place to point out where you're feeling stuck, e.g., there was some
     discussion in a stream or on GitHub, but it seems to have petered out
@@ -171,7 +171,7 @@ system at the start of the program:
    review request
    feature](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/requesting-a-pull-request-review)
    to send your request. This makes the PR's status clear to project maintainers.
-   You may also want to send a quick private message to let your buddies know
+   You may also want to send a quick direct message to let your buddies know
    their attention is needed.
 
 4. Please respond to code review requests promptly (within one workday), and
@@ -213,8 +213,9 @@ expertise in the subsystem you're working on.
 
 Always keep the following order of priorities in mind:
 
-1. Your top priority should be **fixing any regressions you introduced** with
-   recently merged work.
+1. Your top priorities should be **fixing any regressions you introduced** with
+   recently merged work, and **fixing any important bugs or regressions** that
+   you pick up or are assigned.
 
 2. **Review others' pull requests** promptly. As you'll experience yourself, getting quick
    feedback on your PR helps immensely. As such, if you are asked to review a

@@ -3,10 +3,13 @@
 # and requirements/prod.txt.
 # See requirements/README.md for more detail.
 # Django itself
-Django[argon2]==4.1.*
+Django[argon2]==4.2.*
 
 # needed for NotRequired, ParamSpec
 typing-extensions
+
+# For type-safe returns.curry.partial
+returns
 
 # Needed for rendering backend templates
 Jinja2
@@ -16,6 +19,8 @@ Markdown
 importlib-metadata ; python_version < "3.10"  # for Markdown
 Pygments
 jsx-lexer
+uri-template
+regex
 
 # Needed for manage.py
 ipython
@@ -25,6 +30,12 @@ Pillow
 
 # Needed for building complex DB queries
 SQLAlchemy==1.4.*
+# A requirement of SQLAlchemy that we don't use
+# (https://github.com/sqlalchemy/sqlalchemy/issues/6136) but that can
+# lead to segfaults when restarting
+# (https://github.com/python-greenlet/greenlet/issues/330), so bump to
+# the fixed version
+greenlet>=3.0.0a1
 
 # Needed for S3 file uploads and other AWS tools
 boto3
@@ -39,13 +50,11 @@ mypy-boto3-sqs
 defusedxml
 
 # Needed for LDAP support
+python-ldap
 django-auth-ldap
 
 # Django extension providing bitfield support
 django-bitfield
-
-# Django extension for sending data to statsd
-django-statsd-mozilla
 
 # Needed for Android push notifications
 python-gcm
@@ -53,10 +62,11 @@ python-gcm
 # Needed for the email mirror
 html2text
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
-https://github.com/zulip/talon/archive/137ea31ca506069f9a8bbddde0d0174f395a6893.zip#egg=talon-core==1.6.0.zulip1&subdirectory=talon-core
+# and to use a maintained cchardet fork: https://github.com/mailgun/talon/pull/233
+https://github.com/zulip/talon/archive/5529af43ff5172ff30c1a7b99111a68dcd997810.zip#egg=talon-core==1.6.0+git&subdirectory=talon-core
 
 # Needed for inlining the CSS in emails
-premailer
+css-inline
 
 # Needed for JWT-based auth
 PyJWT
@@ -81,9 +91,6 @@ https://github.com/andersk/zoneinfo/archive/f9687abaea8453be1c8d0e21544bd557d65a
 
 # Needed for Redis
 redis
-
-# Needed to parse source maps for error reporting
-sourcemap
 
 # Tornado used for server->client push system
 tornado
@@ -110,7 +117,7 @@ python-magic
 # The Zulip API bindings, from its own repository.  We integrate with
 # these tightly, including fetching content not included in the official
 # PyPI release tarballs, such as logos, assets and documentation files
-# that we render on our /integrations page. Therefore, we need to pin
+# that we render on our /integrations/ page. Therefore, we need to pin
 # the version from Git rather than a PyPI release. Keeping everything in
 # one repository simplifies the process of implementing and documenting
 # new bots for new contributors.
@@ -132,13 +139,14 @@ cryptography
 lxml
 
 # Needed for 2-factor authentication
+<<<<<<< HEAD
 django-two-factor-auth[call,phonenumberslite,sms]<1.15.1  # https://github.com/jazzband/django-two-factor-auth/issues/587
+=======
+https://github.com/andersk/django-two-factor-auth/archive/b0ae80051d45ac360595ed327b044c766f57d32f.zip#egg=django-two-factor-auth[call,phonenumberslite,sms]==1.15.4+git  # https://github.com/jazzband/django-two-factor-auth/pull/649
+>>>>>>> drc_main
 
 # Needed for processing payments (in corporate)
 stripe
-
-# Needed for serving uploaded files from nginx but perform auth checks in django.
-django-sendfile2
 
 # For checking whether email of the user is from a disposable email provider.
 disposable-email-domains
@@ -196,3 +204,7 @@ circuitbreaker
 
 # Runtime monkeypatching of django-stubs generics
 django-stubs-ext
+
+# Structured data representation with parsing.
+pydantic
+annotated_types

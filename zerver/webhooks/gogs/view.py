@@ -5,10 +5,15 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+<<<<<<< HEAD
 from zerver.lib.request import REQ, has_request_variables
+=======
+>>>>>>> drc_main
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_bool, check_int, check_string, to_wild_value
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_bool, check_int, check_string
 from zerver.lib.webhooks.common import (
+    OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
     get_http_headers_from_filename,
     validate_extract_webhook_http_header,
@@ -46,18 +51,16 @@ def format_push_event(payload: WildValue) -> str:
 
 
 def _transform_commits_list_to_common_format(commits: WildValue) -> List[Dict[str, str]]:
-    new_commits_list = []
-    for commit in commits:
-        new_commits_list.append(
-            {
-                "name": commit["author"]["username"].tame(check_string)
-                or commit["author"]["name"].tame(check_string).split()[0],
-                "sha": commit["id"].tame(check_string),
-                "url": commit["url"].tame(check_string),
-                "message": commit["message"].tame(check_string),
-            }
-        )
-    return new_commits_list
+    return [
+        {
+            "name": commit["author"]["username"].tame(check_string)
+            or commit["author"]["name"].tame(check_string).split()[0],
+            "sha": commit["id"].tame(check_string),
+            "url": commit["url"].tame(check_string),
+            "message": commit["message"].tame(check_string),
+        }
+        for commit in commits
+    ]
 
 
 def format_new_branch_event(payload: WildValue) -> str:
@@ -81,8 +84,11 @@ def format_pull_request_event(payload: WildValue, include_title: bool = False) -
         action = payload["action"].tame(check_string)
     url = payload["pull_request"]["html_url"].tame(check_string)
     number = payload["pull_request"]["number"].tame(check_int)
-    target_branch = payload["pull_request"]["head_branch"].tame(check_string)
-    base_branch = payload["pull_request"]["base_branch"].tame(check_string)
+    target_branch = None
+    base_branch = None
+    if action != "edited":
+        target_branch = payload["pull_request"]["head_branch"].tame(check_string)
+        base_branch = payload["pull_request"]["base_branch"].tame(check_string)
     title = payload["pull_request"]["title"].tame(check_string) if include_title else None
 
     return get_pull_request_event_message(
@@ -100,11 +106,11 @@ def format_issues_event(payload: WildValue, include_title: bool = False) -> str:
     issue_nr = payload["issue"]["number"].tame(check_int)
     assignee = payload["issue"]["assignee"]
     return get_issue_event_message(
-        payload["sender"]["login"].tame(check_string),
-        payload["action"].tame(check_string),
-        get_issue_url(payload["repository"]["html_url"].tame(check_string), issue_nr),
-        issue_nr,
-        payload["issue"]["body"].tame(check_string),
+        user_name=payload["sender"]["login"].tame(check_string),
+        action=payload["action"].tame(check_string),
+        url=get_issue_url(payload["repository"]["html_url"].tame(check_string), issue_nr),
+        number=issue_nr,
+        message=payload["issue"]["body"].tame(check_string),
         assignee=assignee["login"].tame(check_string) if assignee else None,
         title=payload["issue"]["title"].tame(check_string) if include_title else None,
     )
@@ -122,13 +128,13 @@ def format_issue_comment_event(payload: WildValue, include_title: bool = False) 
     action += "({}) on".format(comment["html_url"].tame(check_string))
 
     return get_issue_event_message(
-        payload["sender"]["login"].tame(check_string),
-        action,
-        get_issue_url(
+        user_name=payload["sender"]["login"].tame(check_string),
+        action=action,
+        url=get_issue_url(
             payload["repository"]["html_url"].tame(check_string), issue["number"].tame(check_int)
         ),
-        issue["number"].tame(check_int),
-        comment["body"].tame(check_string),
+        number=issue["number"].tame(check_int),
+        message=comment["body"].tame(check_string),
         title=issue["title"].tame(check_string) if include_title else None,
     )
 
@@ -149,13 +155,14 @@ ALL_EVENT_TYPES = ["issue_comment", "issues", "create", "pull_request", "push", 
 
 
 @webhook_view("Gogs", all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint
 def api_gogs_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
-    branches: Optional[str] = REQ(default=None),
-    user_specified_topic: Optional[str] = REQ("topic", default=None),
+    *,
+    payload: WebhookPayload[WildValue],
+    branches: Optional[str] = None,
+    user_specified_topic: OptionalUserSpecifiedTopicStr = None,
 ) -> HttpResponse:
     return gogs_webhook_main(
         "Gogs",

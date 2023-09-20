@@ -450,6 +450,9 @@ SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, Any] = {
         ## default, Zulip asks the user whether they want to create an
         ## account or try to log in again using another method.
         # "auto_signup": False,
+        ## Determines whether Service Provider initiated SAML Single Logout should be enabled.
+        ## Note that IdP-initiated Single Logout must be configured before enabling this.
+        # "sp_initiated_logout_enabled": False,
     },
 }
 
@@ -535,6 +538,27 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## email address is "username@example.com", set SSO_APPEND_DOMAIN =
 ## "example.com"), otherwise leave this as None.
 # SSO_APPEND_DOMAIN = None
+
+## JWT authentication.
+##
+## JWT authentication is supported both to transparently log users
+## into Zulip or to fetch users' API keys. The JWT secret key and
+## algorithm must be configured here.
+##
+## See https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#jwt
+# JWT_AUTH_KEYS: Dict[str, Any] = {
+#     # Subdomain for which this JWT configuration will apply.
+#     "zulip": {
+#         # Shared secret key used to validate jwt tokens, which should be stored
+#         # in zulip-secrets.conf and is read by the get_secret call below.
+#         # The key needs to be securely, randomly generated. Note that if you're
+#         # using the default HS256 algorithm, per RFC 7518, the key needs
+#         # to have at least 256 bits of entropy.
+#         "key": get_secret("jwt_auth_key"),
+#         # Algorithm with which the JWT token are signed.
+#         "algorithms": ["HS256"],
+#     }
+# }
 
 ################
 ## Service configuration
@@ -631,11 +655,13 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## Controls whether or not error reports (tracebacks) are emailed to the
 ## server administrators.
 # ERROR_REPORTING = True
-## For frontend (JavaScript) tracebacks
-# BROWSER_ERROR_REPORTING = False
 
 ## Controls the DSN used to report errors to Sentry.io
-# SENTRY_DSN = "https://bbb@bbb.ingest.sentry.io/1235"
+# SENTRY_DSN = "https://aaa@bbb.ingest.sentry.io/1234"
+# SENTRY_FRONTEND_DSN = "https://aaa@bbb.ingest.sentry.io/1234"
+## What portion of events are sampled (https://docs.sentry.io/platforms/javascript/configuration/sampling/):
+# SENTRY_FRONTEND_SAMPLE_RATE = 1.0
+# SENTRY_FRONTEND_TRACE_RATE = 0.1
 
 ## If True, each log message in the server logs will identify the
 ## Python module where it came from.  Useful for tracking down a
@@ -672,6 +698,15 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 
 ################
 ## Miscellaneous settings.
+
+## If you host multiple organizations on the same Zulip server, you
+## can customize the hostname that one of them uses by adding it here.
+## See https://zulip.readthedocs.io/en/latest/production/multiple-organizations.html#other-hostnames
+## Note that you still need SSL certificates for this other custom hostname:
+## https://zulip.readthedocs.io/en/latest/production/multiple-organizations.html#ssl-certificates
+# REALM_HOSTS = {
+#     "example": "hostname.example.com",
+# }
 
 ## How long outgoing webhook requests time out after
 # OUTGOING_WEBHOOK_TIMEOUT_SECONDS = 10
@@ -733,6 +768,7 @@ LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 # S3_REGION = None
 # S3_ENDPOINT_URL = None
 # S3_SKIP_PROXY = True
+# S3_UPLOADS_STORAGE_CLASS = "STANDARD"
 
 ## Maximum allowed size of uploaded files, in megabytes.  This value is
 ## capped at 80MB in the nginx configuration, because the file upload

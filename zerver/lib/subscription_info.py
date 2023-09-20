@@ -72,7 +72,7 @@ def get_web_public_subs(realm: Realm) -> SubscriptionInfo:
 
         sub = SubscriptionStreamDict(
             audible_notifications=audible_notifications,
-            can_remove_subscribers_group_id=can_remove_subscribers_group_id,
+            can_remove_subscribers_group=can_remove_subscribers_group_id,
             color=color,
             date_created=date_created,
             description=description,
@@ -109,7 +109,7 @@ def build_stream_dict_for_sub(
     user: UserProfile,
     sub_dict: RawSubscriptionDict,
     raw_stream_dict: RawStreamDict,
-    recent_traffic: Dict[int, int],
+    recent_traffic: Optional[Dict[int, int]],
 ) -> SubscriptionStreamDict:
     # Handle Stream.API_FIELDS
     can_remove_subscribers_group_id = raw_stream_dict["can_remove_subscribers_group_id"]
@@ -145,9 +145,12 @@ def build_stream_dict_for_sub(
     is_announcement_only = raw_stream_dict["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
 
     # Add a few computed fields not directly from the data models.
-    stream_weekly_traffic = get_average_weekly_stream_traffic(
-        raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
-    )
+    if recent_traffic is not None:
+        stream_weekly_traffic = get_average_weekly_stream_traffic(
+            raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
+        )
+    else:
+        stream_weekly_traffic = None
 
     email_address = encode_email_address_helper(
         raw_stream_dict["name"], raw_stream_dict["email_token"], show_sender=True
@@ -156,7 +159,7 @@ def build_stream_dict_for_sub(
     # Our caller may add a subscribers field.
     return SubscriptionStreamDict(
         audible_notifications=audible_notifications,
-        can_remove_subscribers_group_id=can_remove_subscribers_group_id,
+        can_remove_subscribers_group=can_remove_subscribers_group_id,
         color=color,
         date_created=date_created,
         description=description,
@@ -184,7 +187,7 @@ def build_stream_dict_for_sub(
 
 def build_stream_dict_for_never_sub(
     raw_stream_dict: RawStreamDict,
-    recent_traffic: Dict[int, int],
+    recent_traffic: Optional[Dict[int, int]],
 ) -> NeverSubscribedStreamDict:
     can_remove_subscribers_group_id = raw_stream_dict["can_remove_subscribers_group_id"]
     date_created = datetime_to_timestamp(raw_stream_dict["date_created"])
@@ -198,16 +201,20 @@ def build_stream_dict_for_never_sub(
     rendered_description = raw_stream_dict["rendered_description"]
     stream_id = raw_stream_dict["id"]
     stream_post_policy = raw_stream_dict["stream_post_policy"]
-    stream_weekly_traffic = get_average_weekly_stream_traffic(
-        raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
-    )
+
+    if recent_traffic is not None:
+        stream_weekly_traffic = get_average_weekly_stream_traffic(
+            raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
+        )
+    else:
+        stream_weekly_traffic = None
 
     # Backwards-compatibility addition of removed field.
     is_announcement_only = raw_stream_dict["stream_post_policy"] == Stream.STREAM_POST_POLICY_ADMINS
 
     # Our caller may add a subscribers field.
     return NeverSubscribedStreamDict(
-        can_remove_subscribers_group_id=can_remove_subscribers_group_id,
+        can_remove_subscribers_group=can_remove_subscribers_group_id,
         date_created=date_created,
         description=description,
         first_message_id=first_message_id,
@@ -284,9 +291,8 @@ def validate_user_access_to_subscribers_helper(
     # With the exception of web-public streams, a guest must
     # be subscribed to a stream (even a public one) in order
     # to see subscribers.
-    if user_profile.is_guest:
-        if check_user_subscribed(user_profile):
-            return
+    if user_profile.is_guest and check_user_subscribed(user_profile):
+        return
         # We could explicitly handle the case where guests aren't
         # subscribed here in an `else` statement or we can fall
         # through to the subsequent logic.  Tim prefers the latter.
@@ -310,6 +316,9 @@ def bulk_get_subscriber_user_ids(
 ) -> Dict[int, List[int]]:
     """sub_dict maps stream_id => whether the user is subscribed to that stream."""
     target_stream_dicts = []
+    is_subscribed: bool
+    check_user_subscribed = lambda user_profile: is_subscribed
+
     for stream_dict in stream_dicts:
         stream_id = stream_dict["id"]
         is_subscribed = stream_id in subscribed_stream_ids
@@ -318,7 +327,7 @@ def bulk_get_subscriber_user_ids(
             validate_user_access_to_subscribers_helper(
                 user_profile,
                 stream_dict,
-                lambda user_profile: is_subscribed,
+                check_user_subscribed,
             )
         except JsonableError:
             continue
@@ -431,7 +440,7 @@ def gather_subscriptions_helper(
         return recip_id_to_stream_id[sub_dict["recipient_id"]]
 
     traffic_stream_ids = {get_stream_id(sub_dict) for sub_dict in sub_dicts}
-    recent_traffic = get_streams_traffic(stream_ids=traffic_stream_ids)
+    recent_traffic = get_streams_traffic(stream_ids=traffic_stream_ids, realm=realm)
 
     # Okay, now we finally get to populating our main results, which
     # will be these three lists.
@@ -444,7 +453,6 @@ def gather_subscriptions_helper(
         stream_id = get_stream_id(sub_dict)
         sub_unsub_stream_ids.add(stream_id)
         raw_stream_dict = all_streams_map[stream_id]
-
         stream_dict = build_stream_dict_for_sub(
             user=user_profile,
             sub_dict=sub_dict,

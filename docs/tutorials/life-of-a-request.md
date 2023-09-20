@@ -15,15 +15,14 @@ it isn't working. nginx does the first level of routing--deciding which
 application will serve the request (or deciding to serve the request
 itself for static content).
 
-In development, `tools/run-dev.py` fills the role of nginx. Static files
+In development, `tools/run-dev` fills the role of nginx. Static files
 are in your Git checkout under `static`, and are served unminified.
 
 ## Static files are [served directly][served-directly] by nginx
 
 [served-directly]: https://github.com/zulip/zulip/blob/main/puppet/zulip/files/nginx/zulip-include-frontend/app
 
-Static files include JavaScript, css, static assets (like emoji, avatars),
-and user uploads (if stored locally and not on S3).
+Static files include JavaScript, CSS, and static assets (like emoji, avatars).
 
 File not found errors (404) are served using a Django URL, so that we
 can use configuration variables (like whether the user is logged in)

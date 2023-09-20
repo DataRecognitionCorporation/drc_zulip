@@ -87,11 +87,11 @@ def add_subscriptions(client: Client) -> None:
 
     validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "200")
 
-    ensure_users([26], ["newbie"])
+    ensure_users([25], ["newbie"])
     # {code_example|start}
     # To subscribe other users to a stream, you may pass
     # the `principals` argument, like so:
-    user_id = 26
+    user_id = 25
     result = client.add_subscriptions(
         streams=[
             {"name": "new stream", "description": "New stream for testing"},
@@ -392,6 +392,18 @@ def get_realm_linkifiers(client: Client) -> None:
     validate_against_openapi_schema(result, "/realm/linkifiers", "get", "200")
 
 
+@openapi_test_function("/realm/linkifiers:patch")
+def reorder_realm_linkifiers(client: Client) -> None:
+    # {code_example|start}
+    # Reorder the linkifiers in the user's organization.
+    order = [4, 3, 2, 1]
+    request = {"ordered_linkifier_ids": json.dumps(order)}
+
+    result = client.call_endpoint(url="/realm/linkifiers", method="PATCH", request=request)
+    # {code_example|end}
+    validate_against_openapi_schema(result, "/realm/linkifiers", "patch", "200")
+
+
 @openapi_test_function("/realm/profile_fields:get")
 def get_realm_profile_fields(client: Client) -> None:
     # {code_example|start}
@@ -430,12 +442,20 @@ def create_realm_profile_field(client: Client) -> None:
 
 @openapi_test_function("/realm/filters:post")
 def add_realm_filter(client: Client) -> None:
+<<<<<<< HEAD
+=======
+    # TODO: Switch back to using client.add_realm_filter when python-zulip-api
+    # begins to support url_template.
+
+>>>>>>> drc_main
     # {code_example|start}
     # Add a filter to automatically linkify #<number> to the corresponding
     # issue in Zulip's server repo
-    result = client.add_realm_filter(
-        "#(?P<id>[0-9]+)", "https://github.com/zulip/zulip/issues/%(id)s"
-    )
+    request = {
+        "pattern": "#(?P<id>[0-9]+)",
+        "url_template": "https://github.com/zulip/zulip/issues/{id}",
+    }
+    result = client.call_endpoint("/realm/filters", method="POST", request=request)
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/realm/filters", "post", "200")
@@ -444,11 +464,11 @@ def add_realm_filter(client: Client) -> None:
 @openapi_test_function("/realm/filters/{filter_id}:patch")
 def update_realm_filter(client: Client) -> None:
     # {code_example|start}
-    # Update the linkifier (realm_filter) with ID 1
-    filter_id = 1
+    # Update the linkifier (realm_filter) with ID 4
+    filter_id = 4
     request = {
         "pattern": "#(?P<id>[0-9]+)",
-        "url_format_string": "https://github.com/zulip/zulip/issues/%(id)s",
+        "url_template": "https://github.com/zulip/zulip/issues/{id}",
     }
 
     result = client.call_endpoint(
@@ -462,8 +482,8 @@ def update_realm_filter(client: Client) -> None:
 @openapi_test_function("/realm/filters/{filter_id}:delete")
 def remove_realm_filter(client: Client) -> None:
     # {code_example|start}
-    # Remove the linkifier (realm_filter) with ID 1
-    result = client.remove_realm_filter(1)
+    # Remove the linkifier (realm_filter) with ID 4
+    result = client.remove_realm_filter(4)
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/realm/filters/{filter_id}", "delete", "200")
@@ -476,7 +496,7 @@ def add_realm_playground(client: Client) -> None:
     request = {
         "name": "Python playground",
         "pygments_language": "Python",
-        "url_prefix": "https://python.example.com",
+        "url_template": "https://python.example.com?code={code}",
     }
     result = client.call_endpoint(url="/realm/playgrounds", method="POST", request=request)
     # {code_example|end}
@@ -618,10 +638,10 @@ def get_user_groups(client: Client) -> int:
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/user_groups", "get", "200")
-    hamlet_user_group = [u for u in result["user_groups"] if u["name"] == "hamletcharacters"][0]
+    [hamlet_user_group] = (u for u in result["user_groups"] if u["name"] == "hamletcharacters")
     assert hamlet_user_group["description"] == "Characters of Hamlet"
 
-    marketing_user_group = [u for u in result["user_groups"] if u["name"] == "marketing"][0]
+    [marketing_user_group] = (u for u in result["user_groups"] if u["name"] == "marketing")
     return marketing_user_group["id"]
 
 
@@ -633,13 +653,13 @@ def test_user_not_authorized_error(nonadmin_client: Client) -> None:
 
 @openapi_test_function("/streams/{stream_id}/members:get")
 def get_subscribers(client: Client) -> None:
-    ensure_users([11, 26], ["iago", "newbie"])
+    ensure_users([11, 25], ["iago", "newbie"])
 
     # {code_example|start}
     # Get the subscribers to a stream
     result = client.get_subscribers(stream="new stream")
     # {code_example|end}
-    assert result["subscribers"] == [11, 26]
+    assert result["subscribers"] == [11, 25]
 
 
 def get_user_agent(client: Client) -> None:
@@ -726,6 +746,44 @@ def toggle_mute_topic(client: Client) -> None:
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/users/me/subscriptions/muted_topics", "patch", "200")
+
+
+@openapi_test_function("/user_topics:post")
+def update_user_topic(client: Client) -> None:
+    stream_id = client.get_stream_id("Denmark")["stream_id"]
+
+    # {code_example|start}
+    # Mute the topic "dinner" in the stream having id 'stream_id'.
+    request = {
+        "stream_id": stream_id,
+        "topic": "dinner",
+        "visibility_policy": 1,
+    }
+    result = client.call_endpoint(
+        url="user_topics",
+        method="POST",
+        request=request,
+    )
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/user_topics", "post", "200")
+
+    # {code_example|start}
+    # Remove mute from the topic "dinner" in the stream having id 'stream_id'.
+    request = {
+        "stream_id": stream_id,
+        "topic": "dinner",
+        "visibility_policy": 0,
+    }
+
+    result = client.call_endpoint(
+        url="user_topics",
+        method="POST",
+        request=request,
+    )
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/user_topics", "post", "200")
 
 
 @openapi_test_function("/users/me/muted_users/{muted_user_id}:post")
@@ -916,6 +974,7 @@ def send_message(client: Client) -> int:
         "content": "I come not, friends, to steal away your hearts.",
     }
     result = client.send_message(request)
+
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/messages", "post", "200")
@@ -933,7 +992,7 @@ def send_message(client: Client) -> int:
     ensure_users([10], ["hamlet"])
 
     # {code_example|start}
-    # Send a private message
+    # Send a direct message
     user_id = 10
     request = {
         "type": "private",
@@ -941,6 +1000,7 @@ def send_message(client: Client) -> int:
         "content": "With mirth and laughter let old wrinkles come.",
     }
     result = client.send_message(request)
+
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/messages", "post", "200")
@@ -1117,9 +1177,7 @@ def update_message_flags(client: Client) -> None:
         "topic": "Castle",
         "content": "I come not, friends, to steal away your hearts.",
     }
-    message_ids = []
-    for i in range(0, 3):
-        message_ids.append(client.send_message(request)["id"])
+    message_ids = [client.send_message(request)["id"] for i in range(3)]
 
     # {code_example|start}
     # Add the "read" flag to the messages with IDs in "message_ids"
@@ -1256,7 +1314,8 @@ def set_typing_status(client: Client) -> None:
     ensure_users([10, 11], ["hamlet", "iago"])
 
     # {code_example|start}
-    # The user has started to type in the group PM with Iago and Polonius
+    # The user has started typing in the group direct message
+    # with Iago and Polonius
     user_id1 = 10
     user_id2 = 11
 
@@ -1271,7 +1330,8 @@ def set_typing_status(client: Client) -> None:
     validate_against_openapi_schema(result, "/typing", "post", "200")
 
     # {code_example|start}
-    # The user has finished typing in the group PM with Iago and Polonius
+    # The user has finished typing in the group direct message
+    # with Iago and Polonius
     user_id1 = 10
     user_id2 = 11
 
@@ -1286,7 +1346,8 @@ def set_typing_status(client: Client) -> None:
     validate_against_openapi_schema(result, "/typing", "post", "200")
 
     # {code_example|start}
-    # The user has started to type in topic "typing status" of stream "Denmark"
+    # The user has started to type in topic "typing status"
+    # of stream "Denmark"
     stream_id = client.get_stream_id("Denmark")["stream_id"]
     topic = "typing status"
 
@@ -1303,7 +1364,8 @@ def set_typing_status(client: Client) -> None:
     validate_against_openapi_schema(result, "/typing", "post", "200")
 
     # {code_example|start}
-    # The user has finished typing in topic "typing status" of stream "Denmark"
+    # The user has finished typing in topic "typing status"
+    # of stream "Denmark"
     stream_id = client.get_stream_id("Denmark")["stream_id"]
     topic = "typing status"
 
@@ -1336,6 +1398,17 @@ def upload_custom_emoji(client: Client) -> None:
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/realm/emoji/{emoji_name}", "post", "200")
+
+
+@openapi_test_function("/realm/emoji/{emoji_name}:delete")
+def delete_custom_emoji(client: Client) -> None:
+    # {code_example|start}
+    # Delete a custom emoji.
+    emoji_name = "my_custom_emoji"
+    result = client.call_endpoint(f"realm/emoji/{emoji_name}", method="DELETE")
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/realm/emoji/{emoji_name}", "delete", "200")
 
 
 @openapi_test_function("/users/me/alert_words:get")
@@ -1537,6 +1610,7 @@ def test_streams(client: Client, nonadmin_client: Client) -> None:
     get_subscribers(client)
     remove_subscriptions(client)
     toggle_mute_topic(client)
+    update_user_topic(client)
     update_subscription_settings(client)
     get_stream_topics(client, 1)
     delete_topic(client, 1, "test")
@@ -1549,11 +1623,15 @@ def test_streams(client: Client, nonadmin_client: Client) -> None:
 
 
 def test_queues(client: Client) -> None:
-    # Note that the example for api/get-events is not tested.
+    # Note that the example for api/get-events is not tested here.
+    #
     # Since, methods such as client.get_events() or client.call_on_each_message
     # are blocking calls and since the event queue backend is already
     # thoroughly tested in zerver/tests/test_event_queue.py, it is not worth
     # the effort to come up with asynchronous logic for testing those here.
+    #
+    # We do validate endpoint example responses in zerver/tests/test_openapi.py,
+    # as well as the example events returned by api/get-events.
     queue_id = register_queue(client)
     get_queue(client, queue_id)
     deregister_queue(client, queue_id)
@@ -1566,10 +1644,12 @@ def test_server_organizations(client: Client) -> None:
     update_realm_filter(client)
     add_realm_playground(client)
     get_server_settings(client)
+    reorder_realm_linkifiers(client)
     remove_realm_filter(client)
     remove_realm_playground(client)
     get_realm_emoji(client)
     upload_custom_emoji(client)
+    delete_custom_emoji(client)
     get_realm_profile_fields(client)
     reorder_realm_profile_fields(client)
     create_realm_profile_field(client)

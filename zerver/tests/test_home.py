@@ -2,7 +2,7 @@ import calendar
 import datetime
 import urllib
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Dict
 from unittest.mock import patch
 
 import orjson
@@ -29,7 +29,6 @@ from zerver.models import (
     Realm,
     UserActivity,
     UserProfile,
-    flush_per_request_caches,
     get_realm,
     get_stream,
     get_system_bot,
@@ -116,10 +115,11 @@ class HomeTest(ZulipTestCase):
         "realm_bot_creation_policy",
         "realm_bot_domain",
         "realm_bots",
-        "realm_community_topic_editing_limit_seconds",
+        "realm_create_multiuse_invite_group",
         "realm_create_private_stream_policy",
         "realm_create_public_stream_policy",
         "realm_create_web_public_stream_policy",
+        "realm_date_created",
         "realm_default_code_block_language",
         "realm_default_external_accounts",
         "realm_default_language",
@@ -132,7 +132,6 @@ class HomeTest(ZulipTestCase):
         "realm_disallow_disposable_email_addresses",
         "realm_domains",
         "realm_edit_topic_policy",
-        "realm_email_address_visibility",
         "realm_email_auth_enabled",
         "realm_email_changes_disabled",
         "realm_emails_restricted_to_domains",
@@ -159,7 +158,9 @@ class HomeTest(ZulipTestCase):
         "realm_message_content_delete_limit_seconds",
         "realm_message_content_edit_limit_seconds",
         "realm_message_retention_days",
+        "realm_move_messages_between_streams_limit_seconds",
         "realm_move_messages_between_streams_policy",
+        "realm_move_messages_within_stream_limit_seconds",
         "realm_name",
         "realm_name_changes_disabled",
         "realm_night_logo_source",
@@ -187,7 +188,7 @@ class HomeTest(ZulipTestCase):
         "realm_wildcard_mention_policy",
         "recent_private_conversations",
         "request_language",
-        "search_pills_enabled",
+        "scheduled_messages",
         "server_avatar_changes_disabled",
         "server_emoji_data_url",
         "server_generation",
@@ -195,7 +196,13 @@ class HomeTest(ZulipTestCase):
         "server_inline_url_embed_preview",
         "server_name_changes_disabled",
         "server_needs_upgrade",
+        "server_presence_offline_threshold_seconds",
+        "server_presence_ping_interval_seconds",
+        "server_sentry_dsn",
         "server_timestamp",
+        "server_typing_started_expiry_period_milliseconds",
+        "server_typing_started_wait_period_milliseconds",
+        "server_typing_stopped_wait_period_milliseconds",
         "server_web_public_streams_enabled",
         "settings_send_digest_emails",
         "show_billing",
@@ -227,7 +234,7 @@ class HomeTest(ZulipTestCase):
         # Keep this list sorted!!!
         html_bits = [
             "message_feed_errors_container",
-            "Loading...",
+            "app-loading-logo",
             # Verify that the app styles get included
             "app-stubentry.js",
             "data-params",
@@ -243,8 +250,7 @@ class HomeTest(ZulipTestCase):
         self.client_post("/json/bots", bot_info)
 
         # Verify succeeds once logged-in
-        flush_per_request_caches()
-        with self.assert_database_query_count(47):
+        with self.assert_database_query_count(49):
             with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page(stream="Denmark")
                 self.check_rendered_logged_in_app(result)
@@ -262,7 +268,7 @@ class HomeTest(ZulipTestCase):
 
         page_params = self._get_page_params(result)
 
-        actual_keys = sorted(str(k) for k in page_params.keys())
+        actual_keys = sorted(str(k) for k in page_params)
 
         self.assertEqual(actual_keys, self.expected_page_params_keys)
 
@@ -283,7 +289,7 @@ class HomeTest(ZulipTestCase):
             "user_id",
         ]
 
-        realm_bots_actual_keys = sorted(str(key) for key in page_params["realm_bots"][0].keys())
+        realm_bots_actual_keys = sorted(str(key) for key in page_params["realm_bots"][0])
         self.assertEqual(realm_bots_actual_keys, realm_bots_expected_keys)
 
     def test_home_demo_organization(self) -> None:
@@ -299,16 +305,16 @@ class HomeTest(ZulipTestCase):
         self.login("hamlet")
 
         # Verify succeeds once logged-in
-        flush_per_request_caches()
         with queries_captured():
             with patch("zerver.lib.cache.cache_set"):
                 result = self._get_home_page(stream="Denmark")
                 self.check_rendered_logged_in_app(result)
 
         page_params = self._get_page_params(result)
-        actual_keys = sorted(str(k) for k in page_params.keys())
-        expected_keys = self.expected_page_params_keys + [
-            "demo_organization_scheduled_deletion_date"
+        actual_keys = sorted(str(k) for k in page_params)
+        expected_keys = [
+            *self.expected_page_params_keys,
+            "demo_organization_scheduled_deletion_date",
         ]
 
         self.assertEqual(set(actual_keys), set(expected_keys))
@@ -330,7 +336,7 @@ class HomeTest(ZulipTestCase):
         # Check no unnecessary params are passed to spectators.
         page_params = self._get_page_params(result)
         self.assertEqual(page_params["is_spectator"], True)
-        actual_keys = sorted(str(k) for k in page_params.keys())
+        actual_keys = sorted(str(k) for k in page_params)
         expected_keys = [
             "apps_page_url",
             "bot_types",
@@ -350,7 +356,7 @@ class HomeTest(ZulipTestCase):
             "queue_id",
             "realm_rendered_description",
             "request_language",
-            "search_pills_enabled",
+            "server_sentry_dsn",
             "show_billing",
             "show_plans",
             "show_webathena",
@@ -362,6 +368,49 @@ class HomeTest(ZulipTestCase):
             "webpack_public_path",
         ]
         self.assertEqual(actual_keys, expected_keys)
+
+    def test_sentry_keys(self) -> None:
+        def home_params() -> Dict[str, Any]:
+            result = self._get_home_page()
+            self.assertEqual(result.status_code, 200)
+            return self._get_page_params(result)
+
+        self.login("hamlet")
+        page_params = home_params()
+        self.assertEqual(page_params["server_sentry_dsn"], None)
+        self.assertEqual(
+            [], [key for key in page_params if key != "server_sentry_dsn" and "sentry" in key]
+        )
+
+        with self.settings(SENTRY_FRONTEND_DSN="https://aaa@bbb.ingest.sentry.io/1234"):
+            page_params = home_params()
+            self.assertEqual(
+                page_params["server_sentry_dsn"], "https://aaa@bbb.ingest.sentry.io/1234"
+            )
+            self.assertEqual(page_params["realm_sentry_key"], "zulip")
+            self.assertEqual(page_params["server_sentry_environment"], "development")
+            self.assertEqual(page_params["server_sentry_sample_rate"], 1.0)
+            self.assertEqual(page_params["server_sentry_trace_rate"], 0.1)
+
+        # Make sure these still exist for logged-out users as well
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "enable_spectator_access", True, acting_user=None)
+        self.logout()
+        page_params = home_params()
+        self.assertEqual(page_params["server_sentry_dsn"], None)
+        self.assertEqual(
+            [], [key for key in page_params if key != "server_sentry_dsn" and "sentry" in key]
+        )
+
+        with self.settings(SENTRY_FRONTEND_DSN="https://aaa@bbb.ingest.sentry.io/1234"):
+            page_params = home_params()
+            self.assertEqual(
+                page_params["server_sentry_dsn"], "https://aaa@bbb.ingest.sentry.io/1234"
+            )
+            self.assertEqual(page_params["realm_sentry_key"], "zulip")
+            self.assertEqual(page_params["server_sentry_environment"], "development")
+            self.assertEqual(page_params["server_sentry_sample_rate"], 1.0)
+            self.assertEqual(page_params["server_sentry_trace_rate"], 0.1)
 
     def test_home_under_2fa_without_otp_device(self) -> None:
         with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
@@ -389,12 +438,11 @@ class HomeTest(ZulipTestCase):
     def test_num_queries_for_realm_admin(self) -> None:
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
-        flush_per_request_caches()
-        with self.assert_database_query_count(44):
+        with self.assert_database_query_count(50):
             with patch("zerver.lib.cache.cache_set") as cache_mock:
                 result = self._get_home_page()
                 self.check_rendered_logged_in_app(result)
-                self.assert_length(cache_mock.call_args_list, 6)
+                self.assert_length(cache_mock.call_args_list, 7)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user("hamlet")
@@ -421,8 +469,7 @@ class HomeTest(ZulipTestCase):
         self._get_home_page()
 
         # Then for the second page load, measure the number of queries.
-        flush_per_request_caches()
-        with self.assert_database_query_count(42):
+        with self.assert_database_query_count(44):
             result = self._get_home_page()
 
         # Do a sanity check that our new streams were in the payload.
@@ -449,7 +496,7 @@ class HomeTest(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
 
-        for user_tos_version in [None, "1.1", "2.0.3.4"]:
+        for user_tos_version in [None, "-1", "1.1", "2.0.3.4"]:
             user.tos_version = user_tos_version
             user.save()
 
@@ -486,7 +533,7 @@ class HomeTest(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
 
-        user.tos_version = None
+        user.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
         user.save()
 
         with self.settings(
@@ -507,6 +554,61 @@ class HomeTest(ZulipTestCase):
         result = self.client_post("/accounts/accept_terms/", {"terms": True})
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/")
+
+        user = self.example_user("hamlet")
+        user.tos_version = "-1"
+        user.save()
+
+        result = self.client_post("/accounts/accept_terms/")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("I agree to the", result)
+        self.assert_in_response(
+            "Administrators of this Zulip organization will be able to see this email address.",
+            result,
+        )
+
+        result = self.client_post(
+            "/accounts/accept_terms/",
+            {
+                "terms": True,
+                "email_address_visibility": UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+            },
+        )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/")
+
+        user = self.example_user("hamlet")
+        self.assertEqual(
+            user.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS
+        )
+
+    def test_set_email_address_visibility_without_terms_of_service(self) -> None:
+        self.login("hamlet")
+        user = self.example_user("hamlet")
+        user.tos_version = "-1"
+        user.save()
+
+        with self.settings(TERMS_OF_SERVICE_VERSION=None):
+            result = self.client_get("/", dict(stream="Denmark"))
+            self.assertEqual(result.status_code, 200)
+            self.assert_in_response(
+                "Administrators of this Zulip organization will be able to see this email address.",
+                result,
+            )
+
+            result = self.client_post(
+                "/accounts/accept_terms/",
+                {
+                    "email_address_visibility": UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+                },
+            )
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result["Location"], "/")
+
+            user = self.example_user("hamlet")
+            self.assertEqual(
+                user.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS
+            )
 
     def test_bad_narrow(self) -> None:
         self.login("hamlet")
@@ -1100,7 +1202,6 @@ class HomeTest(ZulipTestCase):
     # performance cost of fetching /.
     @override_settings(MAX_DRAFTS_IN_REGISTER_RESPONSE=5)
     def test_limit_drafts(self) -> None:
-        draft_objects = []
         hamlet = self.example_user("hamlet")
         base_time = timezone_now()
         initial_count = Draft.objects.count()
@@ -1108,16 +1209,16 @@ class HomeTest(ZulipTestCase):
         step_value = timedelta(seconds=1)
         # Create 11 drafts.
         # TODO: This would be better done as an API request.
-        for i in range(0, settings.MAX_DRAFTS_IN_REGISTER_RESPONSE + 1):
-            draft_objects.append(
-                Draft(
-                    user_profile=hamlet,
-                    recipient=None,
-                    topic="",
-                    content="sample draft",
-                    last_edit_time=base_time + i * step_value,
-                )
+        draft_objects = [
+            Draft(
+                user_profile=hamlet,
+                recipient=None,
+                topic="",
+                content="sample draft",
+                last_edit_time=base_time + i * step_value,
             )
+            for i in range(settings.MAX_DRAFTS_IN_REGISTER_RESPONSE + 1)
+        ]
         Draft.objects.bulk_create(draft_objects)
 
         # Now fetch the drafts part of the initial state and make sure

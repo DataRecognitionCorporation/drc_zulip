@@ -1,6 +1,7 @@
 import itertools
 import time
 from collections import defaultdict
+from contextlib import suppress
 from datetime import datetime, timedelta
 from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 
@@ -20,13 +21,15 @@ from analytics.views.activity_common import (
     make_table,
     realm_activity_link,
     realm_stats_link,
+    realm_support_link,
+    realm_url_link,
     remote_installation_stats_link,
 )
 from analytics.views.support import get_plan_name
 from zerver.decorator import require_server_admin
 from zerver.lib.request import has_request_variables
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.models import Realm, UserActivityInterval, UserProfile, get_org_type_display_name
+from zerver.models import Realm, UserActivityInterval, get_org_type_display_name
 
 if settings.BILLING_ENABLED:
     from corporate.lib.stripe import (
@@ -35,7 +38,8 @@ if settings.BILLING_ENABLED:
     )
 
 
-def get_realm_day_counts() -> Dict[str, Dict[str, str]]:
+def get_realm_day_counts() -> Dict[str, Dict[str, Markup]]:
+    # Uses index: zerver_message_date_sent_3b5b05d8
     query = SQL(
         """
         select
@@ -69,25 +73,25 @@ def get_realm_day_counts() -> Dict[str, Dict[str, str]]:
     for row in rows:
         counts[row["string_id"]][row["age"]] = row["cnt"]
 
+    def format_count(cnt: int, style: Optional[str] = None) -> Markup:
+        if style is not None:
+            good_bad = style
+        elif cnt == min_cnt:
+            good_bad = "bad"
+        elif cnt == max_cnt:
+            good_bad = "good"
+        else:
+            good_bad = "neutral"
+
+        return Markup('<td class="number {good_bad}">{cnt}</td>').format(good_bad=good_bad, cnt=cnt)
+
     result = {}
     for string_id in counts:
         raw_cnts = [counts[string_id].get(age, 0) for age in range(8)]
         min_cnt = min(raw_cnts[1:])
         max_cnt = max(raw_cnts[1:])
 
-        def format_count(cnt: int, style: Optional[str] = None) -> str:
-            if style is not None:
-                good_bad = style
-            elif cnt == min_cnt:
-                good_bad = "bad"
-            elif cnt == max_cnt:
-                good_bad = "good"
-            else:
-                good_bad = "neutral"
-
-            return f'<td class="number {good_bad}">{cnt}</td>'
-
-        cnts = format_count(raw_cnts[0], "neutral") + "".join(map(format_count, raw_cnts[1:]))
+        cnts = format_count(raw_cnts[0], "neutral") + Markup().join(map(format_count, raw_cnts[1:]))
         result[string_id] = dict(cnts=cnts)
 
     return result
@@ -187,19 +191,10 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     rows = dictfetchall(cursor)
     cursor.close()
 
-    # Fetch all the realm administrator users
-    realm_owners: Dict[str, List[str]] = defaultdict(list)
-    for up in UserProfile.objects.select_related("realm").filter(
-        role=UserProfile.ROLE_REALM_OWNER,
-        is_active=True,
-    ):
-        realm_owners[up.realm.string_id].append(up.delivery_email)
-
     for row in rows:
         row["date_created_day"] = row["date_created"].strftime("%Y-%m-%d")
         row["age_days"] = int((now - row["date_created"]).total_seconds() / 86400)
         row["is_new"] = row["age_days"] < 12 * 7
-        row["realm_owner_emails"] = ", ".join(realm_owners[row["string_id"]])
 
     # get messages sent per day
     counts = get_realm_day_counts()
@@ -248,21 +243,18 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         hours = minutes / 60.0
         total_hours += hours
         row["hours"] = str(int(hours))
-        try:
+        with suppress(Exception):
             row["hours_per_user"] = "{:.1f}".format(hours / row["dau_count"])
-        except Exception:
-            pass
 
     # formatting
     for row in rows:
+        row["realm_url"] = realm_url_link(row["string_id"])
         row["stats_link"] = realm_stats_link(row["string_id"])
+        row["support_link"] = realm_support_link(row["string_id"])
         row["string_id"] = realm_activity_link(row["string_id"])
 
     # Count active sites
-    def meets_goal(row: Dict[str, int]) -> bool:
-        return row["dau_count"] >= 5
-
-    num_active_sites = len(list(filter(meets_goal, rows)))
+    num_active_sites = sum(row["dau_count"] >= 5 for row in rows)
 
     # create totals
     total_dau_count = 0
@@ -281,9 +273,10 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         org_type_string="",
         effective_rate="",
         arr=total_arr,
+        realm_url="",
         stats_link="",
+        support_link="",
         date_created_day="",
-        realm_owner_emails="",
         dau_count=total_dau_count,
         user_profile_count=total_user_profile_count,
         bot_count=total_bot_count,
@@ -298,7 +291,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         dict(
             rows=rows,
             num_active_sites=num_active_sites,
-            utctime=now.strftime("%Y-%m-%d %H:%MZ"),
+            utctime=now.strftime("%Y-%m-%d %H:%M %Z"),
             billing_enabled=settings.BILLING_ENABLED,
         ),
     )
@@ -309,7 +302,8 @@ def user_activity_intervals() -> Tuple[Markup, Dict[str, float]]:
     day_end = timestamp_to_datetime(time.time())
     day_start = day_end - timedelta(hours=24)
 
-    output = "Per-user online duration for the last 24 hours:\n"
+    output = Markup()
+    output += "Per-user online duration for the last 24 hours:\n"
     total_duration = timedelta(0)
 
     all_intervals = (
@@ -340,7 +334,7 @@ def user_activity_intervals() -> Tuple[Markup, Dict[str, float]]:
 
     for string_id, realm_intervals in itertools.groupby(all_intervals, by_string_id):
         realm_duration = timedelta(0)
-        output += f"<hr>{string_id}\n"
+        output += Markup("<hr>") + f"{string_id}\n"
         for email, intervals in itertools.groupby(realm_intervals, by_email):
             duration = timedelta(0)
             for interval in intervals:
@@ -357,7 +351,7 @@ def user_activity_intervals() -> Tuple[Markup, Dict[str, float]]:
     output += f"\nTotal duration:                      {total_duration}\n"
     output += f"\nTotal duration in minutes:           {total_duration.total_seconds() / 60.}\n"
     output += f"Total duration amortized to a month: {total_duration.total_seconds() * 30. / 60.}"
-    content = Markup("<pre>" + output + "</pre>")
+    content = Markup("<pre>{}</pre>").format(output)
     return content, realm_minutes
 
 
@@ -609,9 +603,8 @@ def get_installation_activity(request: HttpRequest) -> HttpResponse:
     data = [
         ("Counts", counts_content),
         ("Durations", duration_content),
+        *((page["title"], page["content"]) for page in ad_hoc_queries()),
     ]
-    for page in ad_hoc_queries():
-        data.append((page["title"], page["content"]))
 
     title = "Activity"
 

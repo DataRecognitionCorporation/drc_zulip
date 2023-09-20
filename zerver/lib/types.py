@@ -3,17 +3,17 @@ from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Tuple, TypedDict, TypeVar, Union
 
 from django_stubs_ext import StrPromise
-from typing_extensions import NotRequired
+from typing_extensions import NotRequired, TypeAlias
 
 # See zerver/lib/validator.py for more details of Validators,
 # including many examples
 ResultT = TypeVar("ResultT")
-Validator = Callable[[str, object], ResultT]
-ExtendedValidator = Callable[[str, str, object], str]
-RealmUserValidator = Callable[[int, object, bool], List[int]]
+Validator: TypeAlias = Callable[[str, object], ResultT]
+ExtendedValidator: TypeAlias = Callable[[str, str, object], str]
+RealmUserValidator: TypeAlias = Callable[[int, object, bool], List[int]]
 
 
-ProfileDataElementValue = Union[str, List[int]]
+ProfileDataElementValue: TypeAlias = Union[str, List[int]]
 
 
 class ProfileDataElementBase(TypedDict, total=False):
@@ -36,13 +36,17 @@ class ProfileDataElementUpdateDict(TypedDict):
     value: ProfileDataElementValue
 
 
-ProfileData = List[ProfileDataElement]
+ProfileData: TypeAlias = List[ProfileDataElement]
 
-FieldElement = Tuple[int, StrPromise, Validator[ProfileDataElementValue], Callable[[Any], Any], str]
-ExtendedFieldElement = Tuple[int, StrPromise, ExtendedValidator, Callable[[Any], Any], str]
-UserFieldElement = Tuple[int, StrPromise, RealmUserValidator, Callable[[Any], Any], str]
+FieldElement: TypeAlias = Tuple[
+    int, StrPromise, Validator[ProfileDataElementValue], Callable[[Any], Any], str
+]
+ExtendedFieldElement: TypeAlias = Tuple[
+    int, StrPromise, ExtendedValidator, Callable[[Any], Any], str
+]
+UserFieldElement: TypeAlias = Tuple[int, StrPromise, RealmUserValidator, Callable[[Any], Any], str]
 
-ProfileFieldData = Dict[str, Union[Dict[str, str], str]]
+ProfileFieldData: TypeAlias = Dict[str, Union[Dict[str, str], str]]
 
 
 class UserDisplayRecipient(TypedDict):
@@ -52,12 +56,12 @@ class UserDisplayRecipient(TypedDict):
     is_mirror_dummy: bool
 
 
-DisplayRecipientT = Union[str, List[UserDisplayRecipient]]
+DisplayRecipientT: TypeAlias = Union[str, List[UserDisplayRecipient]]
 
 
 class LinkifierDict(TypedDict):
     pattern: str
-    url_format: str
+    url_template: str
     id: int
 
 
@@ -74,8 +78,6 @@ class UnspecifiedValue:
     TODO: Can this be merged with the _NotSpecified class, which is
     currently an internal implementation detail of the REQ class?
     """
-
-    pass
 
 
 class EditHistoryEvent(TypedDict, total=False):
@@ -175,7 +177,7 @@ class SubscriptionStreamDict(TypedDict):
     """
 
     audible_notifications: Optional[bool]
-    can_remove_subscribers_group_id: int
+    can_remove_subscribers_group: int
     color: str
     date_created: int
     description: str
@@ -202,7 +204,7 @@ class SubscriptionStreamDict(TypedDict):
 
 
 class NeverSubscribedStreamDict(TypedDict):
-    can_remove_subscribers_group_id: int
+    can_remove_subscribers_group: int
     date_created: int
     description: str
     first_message_id: Optional[int]
@@ -219,13 +221,13 @@ class NeverSubscribedStreamDict(TypedDict):
     subscribers: NotRequired[List[int]]
 
 
-class APIStreamDict(TypedDict):
+class DefaultStreamDict(TypedDict):
     """Stream information provided to Zulip clients as a dictionary via API.
     It should contain all the fields specified in `zerver.models.Stream.API_FIELDS`
     with few exceptions and possible additional fields.
     """
 
-    can_remove_subscribers_group_id: int
+    can_remove_subscribers_group: int
     date_created: int
     description: str
     first_message_id: Optional[int]
@@ -240,6 +242,10 @@ class APIStreamDict(TypedDict):
     # Computed fields not specified in `Stream.API_FIELDS`
     is_announcement_only: bool
     is_default: NotRequired[bool]
+
+
+class APIStreamDict(DefaultStreamDict):
+    stream_weekly_traffic: Optional[int]
 
 
 class APISubscriptionDict(APIStreamDict):
@@ -258,7 +264,6 @@ class APISubscriptionDict(APIStreamDict):
     # Computed fields not specified in `Subscription.API_FIELDS`
     email_address: str
     in_home_view: bool
-    stream_weekly_traffic: Optional[int]
     subscribers: List[int]
 
 
@@ -273,4 +278,16 @@ class RealmPlaygroundDict(TypedDict):
     id: int
     name: str
     pygments_language: str
-    url_prefix: str
+    url_template: str
+
+
+@dataclass
+class GroupPermissionSetting:
+    require_system_group: bool
+    allow_internet_group: bool
+    allow_owners_group: bool
+    allow_nobody_group: bool
+    allow_everyone_group: bool
+    default_group_name: str
+    id_field_name: str
+    default_for_system_groups: Optional[str] = None

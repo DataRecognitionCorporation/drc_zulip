@@ -18,7 +18,6 @@ from zerver.lib.message import (
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.stream_subscription import get_subscribed_stream_recipient_ids_for_user
 from zerver.lib.topic import filter_by_topic_name_via_message
-from zerver.lib.utils import log_statsd_event
 from zerver.models import Message, Recipient, UserMessage, UserProfile
 from zerver.tornado.django_api import send_event
 
@@ -34,8 +33,6 @@ class ReadMessagesEvent:
 
 
 def do_mark_all_as_read(user_profile: UserProfile) -> int:
-    log_statsd_event("bankruptcy")
-
     # First, we clear mobile push notifications.  This is safer in the
     # event that the below logic times out and we're killed.
     all_push_message_ids = (
@@ -101,8 +98,6 @@ def do_mark_all_as_read(user_profile: UserProfile) -> int:
 def do_mark_stream_messages_as_read(
     user_profile: UserProfile, stream_recipient_id: int, topic_name: Optional[str] = None
 ) -> int:
-    log_statsd_event("mark_stream_as_read")
-
     with transaction.atomic(savepoint=False):
         query = (
             UserMessage.select_for_update_query()
@@ -229,7 +224,7 @@ def do_clear_mobile_push_notifications_for_ids(
     assert len(user_profile_ids) == 1 or len(message_ids) == 1
 
     messages_by_user = defaultdict(list)
-    notifications_to_update = list(
+    notifications_to_update = (
         UserMessage.objects.filter(
             message_id__in=message_ids,
             user_profile_id__in=user_profile_ids,
@@ -259,11 +254,13 @@ def do_update_message_flags(
 ) -> int:
     valid_flags = [item for item in UserMessage.flags if item not in UserMessage.NON_API_FLAGS]
     if flag not in valid_flags:
-        raise JsonableError(_("Invalid flag: '{}'").format(flag))
+        raise JsonableError(_("Invalid flag: '{flag}'").format(flag=flag))
     if flag in UserMessage.NON_EDITABLE_FLAGS:
-        raise JsonableError(_("Flag not editable: '{}'").format(flag))
+        raise JsonableError(_("Flag not editable: '{flag}'").format(flag=flag))
     if operation not in ("add", "remove"):
-        raise JsonableError(_("Invalid message flag operation: '{}'").format(operation))
+        raise JsonableError(
+            _("Invalid message flag operation: '{operation}'").format(operation=operation)
+        )
     is_adding = operation == "add"
     flagattr = getattr(UserMessage.flags, flag)
     flag_target = flagattr if is_adding else 0
@@ -279,6 +276,7 @@ def do_update_message_flags(
             subscribed_recipient_ids = get_subscribed_stream_recipient_ids_for_user(user_profile)
 
             message_ids_in_unsubscribed_streams = set(
+                # Uses index: zerver_message_pkey
                 Message.objects.select_related("recipient")
                 .filter(id__in=messages, recipient__type=Recipient.STREAM)
                 .exclude(recipient_id__in=subscribed_recipient_ids)
@@ -329,6 +327,7 @@ def do_update_message_flags(
             historical_messages = bulk_access_messages(
                 user_profile,
                 list(
+                    # Uses index: zerver_message_pkey
                     Message.objects.filter(id__in=historical_message_ids).prefetch_related(
                         "recipient"
                     )

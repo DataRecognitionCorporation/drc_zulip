@@ -141,7 +141,7 @@ def render_python_code_example(
     endpoint, endpoint_method = function.split(":")
     extra_imports = check_additional_imports(endpoint, endpoint_method)
     if extra_imports:
-        extra_imports = sorted(extra_imports + ["zulip"])
+        extra_imports = sorted([*extra_imports, "zulip"])
         extra_imports = [f"import {each_import}" for each_import in extra_imports]
         config_string = config_string.replace("import zulip", "\n".join(extra_imports))
 
@@ -149,20 +149,16 @@ def render_python_code_example(
 
     snippets = extract_code_example(function_source_lines, [], PYTHON_EXAMPLE_REGEX)
 
-    code_example = ["{tab|python}\n"]
-    code_example.append("```python")
-    code_example.extend(config)
-
-    for snippet in snippets:
-        for line in snippet:
-            # Remove one level of indentation and strip newlines
-            code_example.append(line[4:].rstrip())
-
-    code_example.append("print(result)")
-    code_example.append("\n")
-    code_example.append("```")
-
-    return code_example
+    return [
+        "{tab|python}\n",
+        "```python",
+        *config,
+        # Remove one level of indentation and strip newlines
+        *(line[4:].rstrip() for snippet in snippets for line in snippet),
+        "print(result)",
+        "\n",
+        "```",
+    ]
 
 
 def render_javascript_code_example(
@@ -193,9 +189,8 @@ def render_javascript_code_example(
     code_example.append("    const client = await zulipInit(config);")
     for snippet in snippets:
         code_example.append("")
-        for line in snippet:
-            # Strip newlines
-            code_example.append("    " + line.rstrip())
+        # Strip newlines
+        code_example.extend("    " + line.rstrip() for line in snippet)
     code_example.append("})();")
 
     code_example.append("```")
@@ -306,16 +301,14 @@ def generate_curl_example(
             authentication_required = True
         else:
             raise AssertionError(
-                "Unhandled global securityScheme."
-                + " Please update the code to handle this scheme."
+                "Unhandled global securityScheme. Please update the code to handle this scheme."
             )
     elif operation_security == []:
         if operation in insecure_operations:
             authentication_required = False
         else:
             raise AssertionError(
-                "Unknown operation without a securityScheme. "
-                + "Please update insecure_operations."
+                "Unknown operation without a securityScheme. Please update insecure_operations."
             )
     else:
         raise AssertionError(

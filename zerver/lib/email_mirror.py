@@ -21,12 +21,16 @@ from zerver.lib.email_mirror_helpers import (
 )
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.exceptions import JsonableError, RateLimitedError
+<<<<<<< HEAD
 from zerver.lib.message import normalize_body, truncate_topic
+=======
+from zerver.lib.message import normalize_body, truncate_content, truncate_topic
+>>>>>>> drc_main
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
 from zerver.lib.string_validation import is_character_printable
-from zerver.lib.upload import upload_message_file
+from zerver.lib.upload import upload_message_attachment
 from zerver.models import (
     Message,
     MissedMessageEmailAddress,
@@ -36,10 +40,9 @@ from zerver.models import (
     UserProfile,
     get_client,
     get_display_recipient,
-    get_realm,
     get_stream_by_id_in_realm,
     get_system_bot,
-    get_user,
+    get_user_profile_by_id,
 )
 from zproject.backends import is_user_active
 
@@ -71,21 +74,7 @@ def redact_email_address(error_message: str) -> str:
     return re.sub(rf"\b(\S*?)(@{re.escape(domain)})", redact, error_message)
 
 
-def report_to_zulip(error_message: str) -> None:
-    if settings.ERROR_BOT is None:
-        return
-    error_bot_realm = get_realm(settings.STAFF_SUBDOMAIN)
-    error_bot = get_system_bot(settings.ERROR_BOT, error_bot_realm.id)
-    error_stream = Stream.objects.get(name="errors", realm=error_bot_realm)
-    send_zulip(
-        error_bot,
-        error_stream,
-        "email mirror error",
-        f"""~~~\n{error_message}\n~~~""",
-    )
-
-
-def log_and_report(email_message: EmailMessage, error_message: str, to: Optional[str]) -> None:
+def log_error(email_message: EmailMessage, error_message: str, to: Optional[str]) -> None:
     recipient = to or "No recipient found"
     error_message = "Sender: {}\nTo: {}\n{}".format(
         email_message.get("From"), recipient, error_message
@@ -93,7 +82,6 @@ def log_and_report(email_message: EmailMessage, error_message: str, to: Optional
 
     error_message = redact_email_address(error_message)
     logger.error(error_message)
-    report_to_zulip(error_message)
 
 
 # Temporary missed message addresses
@@ -132,7 +120,14 @@ def get_missed_message_token_from_address(address: str) -> str:
 def get_usable_missed_message_address(address: str) -> MissedMessageEmailAddress:
     token = get_missed_message_token_from_address(address)
     try:
-        mm_address = MissedMessageEmailAddress.objects.select_related().get(email_token=token)
+        mm_address = MissedMessageEmailAddress.objects.select_related(
+            "user_profile",
+            "user_profile__realm",
+            "message",
+            "message__sender",
+            "message__recipient",
+            "message__sender__recipient",
+        ).get(email_token=token)
     except MissedMessageEmailAddress.DoesNotExist:
         raise ZulipEmailForwardError("Zulip notification reply address is invalid.")
 
@@ -147,7 +142,9 @@ def create_missed_message_address(user_profile: UserProfile, message: Message) -
         return FromAddress.NOREPLY
 
     mm_address = MissedMessageEmailAddress.objects.create(
-        message=message, user_profile=user_profile, email_token=generate_missed_message_token()
+        message=message,
+        user_profile=user_profile,
+        email_token=generate_missed_message_token(),
     )
     return str(mm_address)
 
@@ -170,15 +167,34 @@ def construct_zulip_body(
 
     if not body.endswith("\n"):
         body += "\n"
+<<<<<<< HEAD
     body += extract_and_upload_attachments(message, realm, sender)
+=======
+>>>>>>> drc_main
     if not body.rstrip():
         body = "(No email body)"
 
+    preamble = ""
     if show_sender:
         from_address = str(message.get("From", ""))
+<<<<<<< HEAD
         body = f"From: {from_address}\n{body}"
+=======
+        preamble = f"From: {from_address}\n"
+>>>>>>> drc_main
 
-    return body
+    postamble = extract_and_upload_attachments(message, realm, sender)
+    if postamble != "":
+        postamble = "\n" + postamble
+
+    # Truncate the content ourselves, to ensure that the attachments
+    # all make it into the body-as-posted
+    body = truncate_content(
+        body,
+        settings.MAX_MESSAGE_LENGTH - len(preamble) - len(postamble),
+        "\n[message truncated]",
+    )
+    return preamble + body + postamble
 
 
 ## Sending the Zulip ##
@@ -201,7 +217,7 @@ def send_mm_reply_to_stream(
         check_send_message(
             sender=user_profile,
             client=get_client("Internal"),
-            message_type_name="stream",
+            recipient_type_name="stream",
             message_to=[stream.id],
             topic_name=topic,
             message_content=body,
@@ -314,7 +330,7 @@ def filter_footer(text: str) -> str:
         # isn't a trivial footer structure.
         return text
 
-    return re.split(r"^\s*--\s*$", text, 1, flags=re.MULTILINE)[0].strip()
+    return re.split(r"^\s*--\s*$", text, maxsplit=1, flags=re.MULTILINE)[0].strip()
 
 
 def extract_and_upload_attachments(message: EmailMessage, realm: Realm, sender: UserProfile) -> str:
@@ -325,7 +341,7 @@ def extract_and_upload_attachments(message: EmailMessage, realm: Realm, sender: 
         if filename:
             attachment = part.get_payload(decode=True)
             if isinstance(attachment, bytes):
-                s3_url = upload_message_file(
+                s3_url = upload_message_attachment(
                     filename,
                     len(attachment),
                     content_type,
@@ -450,14 +466,12 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         send_mm_reply_to_stream(user_profile, stream, topic, body)
         recipient_str = stream.name
     elif recipient.type == Recipient.PERSONAL:
-        display_recipient = get_display_recipient(recipient)
-        assert not isinstance(display_recipient, str)
-        recipient_str = display_recipient[0]["email"]
-        recipient_user = get_user(recipient_str, user_profile.realm)
+        recipient_user_id = recipient.type_id
+        recipient_user = get_user_profile_by_id(recipient_user_id)
+        recipient_str = recipient_user.email
         internal_send_private_message(user_profile, recipient_user, body)
     elif recipient.type == Recipient.HUDDLE:
         display_recipient = get_display_recipient(recipient)
-        assert not isinstance(display_recipient, str)
         emails = [user_dict["email"] for user_dict in display_recipient]
         recipient_str = ", ".join(emails)
         internal_send_huddle_message(user_profile.realm, user_profile, emails, body)
@@ -488,7 +502,7 @@ def process_message(message: EmailMessage, rcpt_to: Optional[str] = None) -> Non
         # TODO: notify sender of error, retry if appropriate.
         logger.info(e.args[0])
     except ZulipEmailForwardError as e:
-        log_and_report(message, e.args[0], to)
+        log_error(message, e.args[0], to)
 
 
 def validate_to_address(rcpt_to: str) -> None:

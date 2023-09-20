@@ -1,6 +1,7 @@
 from typing import Any, Collection, Dict, Iterable, List, Optional, Set, Tuple, Type, Union
 
 from django.db.models import Model
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.create_user import create_user_profile, get_display_email_address
 from zerver.lib.initial_password import initial_password
@@ -34,7 +35,14 @@ def bulk_create_users(
         UserProfile.objects.filter(realm=realm).values_list("email", flat=True)
     )
     users = sorted(user_raw for user_raw in users_raw if user_raw[0] not in existing_users)
+
     realm_user_default = RealmUserDefault.objects.get(realm=realm)
+    if bot_type is None:
+        email_address_visibility = realm_user_default.email_address_visibility
+    else:
+        # There is no privacy motivation for limiting access to bot email addresses,
+        # so we hardcode them to EMAIL_ADDRESS_VISIBILITY_EVERYONE.
+        email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE
 
     # Now create user_profiles
     profiles_to_create: List[UserProfile] = []
@@ -51,6 +59,7 @@ def bulk_create_users(
             tos_version,
             timezone,
             tutorial_status=UserProfile.TUTORIAL_FINISHED,
+            email_address_visibility=email_address_visibility,
         )
 
         if bot_type is None:
@@ -67,7 +76,7 @@ def bulk_create_users(
                 setattr(profile, settings_name, value)
         profiles_to_create.append(profile)
 
-    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+    if email_address_visibility == UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
         UserProfile.objects.bulk_create(profiles_to_create)
     else:
         for user_profile in profiles_to_create:
@@ -91,10 +100,9 @@ def bulk_create_users(
         for profile_ in profiles_to_create
     )
 
-    recipients_to_create: List[Recipient] = []
-    for user_id in user_ids:
-        recipient = Recipient(type_id=user_id, type=Recipient.PERSONAL)
-        recipients_to_create.append(recipient)
+    recipients_to_create = [
+        Recipient(type_id=user_id, type=Recipient.PERSONAL) for user_id in user_ids
+    ]
 
     Recipient.objects.bulk_create(recipients_to_create)
 
@@ -106,15 +114,14 @@ def bulk_create_users(
     for recipient in recipients_to_create:
         recipients_by_user_id[recipient.type_id] = recipient
 
-    subscriptions_to_create: List[Subscription] = []
-    for user_profile in profiles_to_create:
-        recipient = recipients_by_user_id[user_profile.id]
-        subscription = Subscription(
+    subscriptions_to_create = [
+        Subscription(
             user_profile_id=user_profile.id,
-            recipient=recipient,
+            recipient=recipients_by_user_id[user_profile.id],
             is_user_active=user_profile.is_active,
         )
-        subscriptions_to_create.append(subscription)
+        for user_profile in profiles_to_create
+    ]
 
     Subscription.objects.bulk_create(subscriptions_to_create)
 
@@ -138,6 +145,18 @@ def bulk_create_users(
             )
 
     UserGroupMembership.objects.bulk_create(group_memberships_to_create)
+    now = timezone_now()
+    RealmAuditLog.objects.bulk_create(
+        RealmAuditLog(
+            realm=realm,
+            modified_user=membership.user_profile,
+            modified_user_group=membership.user_group,
+            event_type=RealmAuditLog.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+            event_time=now,
+            acting_user=None,
+        )
+        for membership in group_memberships_to_create
+    )
 
 
 def bulk_set_users_or_streams_recipient_fields(
@@ -167,7 +186,7 @@ def bulk_set_users_or_streams_recipient_fields(
         if result is not None:
             result.recipient = recipient
             objects_to_update.add(result)
-    model.objects.bulk_update(objects_to_update, ["recipient"])
+    model._default_manager.bulk_update(objects_to_update, ["recipient"])
 
 
 # This is only sed in populate_db, so doesn't really need tests
@@ -212,10 +231,11 @@ def bulk_create_streams(realm: Realm, stream_dict: Dict[str, Dict[str, Any]]) ->
     streams_to_create.sort(key=lambda x: x.name)
     Stream.objects.bulk_create(streams_to_create)
 
-    recipients_to_create: List[Recipient] = []
-    for stream in Stream.objects.filter(realm=realm).values("id", "name"):
-        if stream["name"].lower() not in existing_streams:
-            recipients_to_create.append(Recipient(type_id=stream["id"], type=Recipient.STREAM))
+    recipients_to_create = [
+        Recipient(type_id=stream["id"], type=Recipient.STREAM)
+        for stream in Stream.objects.filter(realm=realm).values("id", "name")
+        if stream["name"].lower() not in existing_streams
+    ]
     Recipient.objects.bulk_create(recipients_to_create)
 
     bulk_set_users_or_streams_recipient_fields(Stream, streams_to_create, recipients_to_create)

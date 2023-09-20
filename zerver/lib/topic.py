@@ -1,15 +1,19 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import orjson
 from django.db import connection
+<<<<<<< HEAD
 from django.db.models import Q, QuerySet
+=======
+from django.db.models import Q, QuerySet, Subquery
+>>>>>>> drc_main
 from sqlalchemy.sql import ColumnElement, column, func, literal
 from sqlalchemy.types import Boolean, Text
 
 from zerver.lib.request import REQ
 from zerver.lib.types import EditHistoryEvent
-from zerver.models import Message, Stream, UserMessage, UserProfile
+from zerver.models import Message, Reaction, Stream, UserMessage, UserProfile
 
 # Only use these constants for events.
 ORIG_TOPIC = "orig_subject"
@@ -86,19 +90,18 @@ def topic_column_sa() -> ColumnElement[Text]:
     return column("subject", Text)
 
 
-def filter_by_exact_message_topic(query: QuerySet[Message], message: Message) -> QuerySet[Message]:
-    topic_name = message.topic_name()
-    return query.filter(subject=topic_name)
-
-
 def filter_by_topic_name_via_message(
     query: QuerySet[UserMessage], topic_name: str
 ) -> QuerySet[UserMessage]:
     return query.filter(message__subject__iexact=topic_name)
 
 
-def messages_for_topic(stream_recipient_id: int, topic_name: str) -> QuerySet[Message]:
+def messages_for_topic(
+    realm_id: int, stream_recipient_id: int, topic_name: str
+) -> QuerySet[Message]:
     return Message.objects.filter(
+        # Uses index: zerver_message_realm_recipient_upper_subject
+        realm_id=realm_id,
         recipient_id=stream_recipient_id,
         subject__iexact=topic_name,
     )
@@ -154,13 +157,19 @@ def update_messages_for_topic_edit(
     edit_history_event: EditHistoryEvent,
     last_edit_time: datetime,
 ) -> List[Message]:
-    propagate_query = Q(recipient_id=old_stream.recipient_id, subject__iexact=orig_topic_name)
+    propagate_query = Q(
+        recipient_id=old_stream.recipient_id,
+        subject__iexact=orig_topic_name,
+    )
     if propagate_mode == "change_all":
         propagate_query = propagate_query & ~Q(id=edited_message.id)
     if propagate_mode == "change_later":
         propagate_query = propagate_query & Q(id__gt=edited_message.id)
 
-    messages = Message.objects.filter(propagate_query).select_related()
+    # Uses index: zerver_message_realm_recipient_upper_subject
+    messages = Message.objects.filter(propagate_query, realm_id=old_stream.realm_id).select_related(
+        *Message.DEFAULT_SELECT_RELATED
+    )
 
     update_fields = ["edit_history", "last_edit_time"]
 
@@ -194,7 +203,7 @@ def update_messages_for_topic_edit(
     for message in messages_list:
         update_edit_history(message, last_edit_time, edit_history_event)
 
-    Message.objects.bulk_update(messages_list, update_fields)
+    Message.objects.bulk_update(messages_list, update_fields, batch_size=100)
 
     return messages_list
 
@@ -270,3 +279,41 @@ def get_topic_history_for_stream(
     cursor.close()
 
     return generate_topic_history_from_db_rows(rows)
+
+
+def get_topic_resolution_and_bare_name(stored_name: str) -> Tuple[bool, str]:
+    """
+    Resolved topics are denoted only by a title change, not by a boolean toggle in a database column. This
+    method inspects the topic name and returns a tuple of:
+
+    - Whether the topic has been resolved
+    - The topic name with the resolution prefix, if present in stored_name, removed
+    """
+    if stored_name.startswith(RESOLVED_TOPIC_PREFIX):
+        return (True, stored_name[len(RESOLVED_TOPIC_PREFIX) :])
+
+    return (False, stored_name)
+
+
+def participants_for_topic(realm_id: int, recipient_id: int, topic_name: str) -> Set[int]:
+    """
+    Users who either sent or reacted to the messages in the topic.
+    The function is expensive for large numbers of messages in the topic.
+    """
+    messages = Message.objects.filter(
+        # Uses index: zerver_message_realm_recipient_upper_subject
+        realm_id=realm_id,
+        recipient_id=recipient_id,
+        subject__iexact=topic_name,
+    )
+    participants = set(
+        UserProfile.objects.filter(
+            Q(id__in=Subquery(messages.values("sender_id")))
+            | Q(
+                id__in=Subquery(
+                    Reaction.objects.filter(message__in=messages).values("user_profile_id")
+                )
+            )
+        ).values_list("id", flat=True)
+    )
+    return participants

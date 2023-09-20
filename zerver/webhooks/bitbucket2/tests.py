@@ -1,7 +1,10 @@
 from unittest.mock import MagicMock, patch
 
+from zerver.lib.request import RequestNotes
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.validator import wrap_wild_value
+from zerver.models import get_client
 from zerver.webhooks.bitbucket2.view import get_user_info
 
 TOPIC = "Repository name"
@@ -116,7 +119,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         self.check_webhook("issue_commented", expected_topic, expected_message)
 
     def test_bitbucket2_on_pull_request_created_event(self) -> None:
-        expected_message = "Tomasz created [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) (assigned to Tomasz Kolek) from `new-branch` to `master`:\n\n~~~ quote\ndescription\n~~~"
+        expected_message = "Tomasz created [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) from `new-branch` to `master` (assigned to Tomasz Kolek):\n\n~~~ quote\ndescription\n~~~"
         self.check_webhook(
             "pull_request_created_or_updated",
             TOPIC_PR_EVENTS,
@@ -125,7 +128,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         )
 
     def test_bitbucket2_on_pull_request_created_without_reviewer_username_event(self) -> None:
-        expected_message = "Tomasz created [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) (assigned to Tomasz Kolek) from `new-branch` to `master`:\n\n~~~ quote\ndescription\n~~~"
+        expected_message = "Tomasz created [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) from `new-branch` to `master` (assigned to Tomasz Kolek):\n\n~~~ quote\ndescription\n~~~"
         self.check_webhook(
             "pull_request_created_or_updated_without_username",
             TOPIC_PR_EVENTS,
@@ -136,7 +139,7 @@ class Bitbucket2HookTests(WebhookTestCase):
     def test_bitbucket2_on_pull_request_created_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
-        expected_message = "Tomasz created [PR #1 new commit](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) (assigned to Tomasz Kolek) from `new-branch` to `master`:\n\n~~~ quote\ndescription\n~~~"
+        expected_message = "Tomasz created [PR #1 new commit](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) from `new-branch` to `master` (assigned to Tomasz Kolek):\n\n~~~ quote\ndescription\n~~~"
         self.check_webhook(
             "pull_request_created_or_updated",
             expected_topic,
@@ -145,7 +148,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         )
 
     def test_bitbucket2_on_pull_request_updated_event(self) -> None:
-        expected_message = "Tomasz updated [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) (assigned to Tomasz Kolek) from `new-branch` to `master`:\n\n~~~ quote\ndescription\n~~~"
+        expected_message = "Tomasz updated [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) (assigned to Tomasz Kolek):\n\n~~~ quote\ndescription\n~~~"
         self.check_webhook(
             "pull_request_created_or_updated",
             TOPIC_PR_EVENTS,
@@ -192,9 +195,7 @@ class Bitbucket2HookTests(WebhookTestCase):
         )
 
     def test_bitbucket2_on_pull_request_fulfilled_event(self) -> None:
-        expected_message = (
-            "Tomasz merged [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1)."
-        )
+        expected_message = "Tomasz merged [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1) from `new-branch` to `master`."
         self.check_webhook(
             "pull_request_fulfilled_or_rejected",
             TOPIC_PR_EVENTS,
@@ -431,7 +432,12 @@ class Bitbucket2HookTests(WebhookTestCase):
         self.assert_json_success(result)
 
     def test_get_user_info(self) -> None:
-        self.assertEqual(get_user_info(wrap_wild_value("request", {})), "Unknown user")
+        request = HostRequestMock()
+        request.content_type = "application/json"
+        request.user = self.test_user
+        RequestNotes.get_notes(request).client = get_client("test")
+
+        self.assertEqual(get_user_info(request, wrap_wild_value("request", {})), "Unknown user")
 
         dct = dict(
             nickname="alice",
@@ -439,10 +445,10 @@ class Bitbucket2HookTests(WebhookTestCase):
             display_name="Alice Smith",
         )
 
-        self.assertEqual(get_user_info(wrap_wild_value("request", dct)), "Alice Smith")
+        self.assertEqual(get_user_info(request, wrap_wild_value("request", dct)), "Alice Smith")
         del dct["display_name"]
 
-        self.assertEqual(get_user_info(wrap_wild_value("request", dct)), "alice")
+        self.assertEqual(get_user_info(request, wrap_wild_value("request", dct)), "alice")
         del dct["nickname"]
 
-        self.assertEqual(get_user_info(wrap_wild_value("request", dct)), "Unknown user")
+        self.assertEqual(get_user_info(request, wrap_wild_value("request", dct)), "Unknown user")

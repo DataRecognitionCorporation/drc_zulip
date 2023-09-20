@@ -75,6 +75,9 @@ def tokenize(text: str) -> List[Token]:
     def looking_at_handlebars_partial() -> bool:
         return looking_at("{{>")
 
+    def looking_at_handlebars_partial_block() -> bool:
+        return looking_at("{{#>")
+
     def looking_at_html_start() -> bool:
         return looking_at("<") and not looking_at("</")
 
@@ -139,7 +142,11 @@ def tokenize(text: str) -> List[Token]:
             elif looking_at_handlebars_partial():
                 s = get_handlebars_partial(text, state.i)
                 tag = s[9:-2]
-                kind = "handlebars_singleton"
+                kind = "handlebars_partial"
+            elif looking_at_handlebars_partial_block():
+                s = get_handlebars_partial(text, state.i)
+                tag = s[5:-2]
+                kind = "handlebars_partial_block"
             elif looking_at_html_start():
                 s = get_html_tag(text, state.i)
                 if s.endswith("/>"):
@@ -299,7 +306,7 @@ def tag_flavor(token: Token) -> Optional[str]:
         "code",
         "django_comment",
         "handlebars_comment",
-        "handlebars_singleton",
+        "handlebars_partial",
         "html_comment",
         "html_doctype",
         "html_singleton",
@@ -311,7 +318,7 @@ def tag_flavor(token: Token) -> Optional[str]:
     ):
         return None
 
-    if kind in ("handlebars_start", "html_start"):
+    if kind in ("handlebars_start", "handlebars_partial_block", "html_start"):
         return "start"
     elif kind in (
         "django_else",
@@ -458,6 +465,7 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> List[Token
         tag = token.tag
 
         if not state.foreign:
+<<<<<<< HEAD
             if kind == "html_start":
                 if tag in HTML_VOID_TAGS:
                     raise TemplateParserError(
@@ -468,6 +476,16 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> List[Token
                     raise TemplateParserError(
                         f"Tag must not be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
                     )
+=======
+            if kind == "html_start" and tag in HTML_VOID_TAGS:
+                raise TemplateParserError(
+                    f"Tag must be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
+                )
+            elif kind == "html_singleton" and tag not in HTML_VOID_TAGS:
+                raise TemplateParserError(
+                    f"Tag must not be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
+                )
+>>>>>>> drc_main
 
         flavor = tag_flavor(token)
         if flavor == "start":
@@ -484,6 +502,20 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> List[Token
 
 
 def ensure_matching_indentation(fn: str, tokens: List[Token], lines: List[str]) -> None:
+    def has_bad_indentation() -> bool:
+        is_inline_tag = start_tag in HTML_INLINE_TAGS and start_token.kind == "html_start"
+
+        if end_line > start_line + 1:
+            if is_inline_tag:
+                end_row_text = lines[end_line - 1]
+                if end_row_text.lstrip().startswith(end_token.s) and end_col != start_col:
+                    return True
+            else:
+                if end_col != start_col:
+                    return True
+
+        return False
+
     for token in tokens:
         if token.start_token is None:
             continue
@@ -497,21 +529,6 @@ def ensure_matching_indentation(fn: str, tokens: List[Token], lines: List[str]) 
         end_tag = end_token.tag.strip("~")
         end_line = end_token.line
         end_col = end_token.col
-
-        def has_bad_indentation() -> bool:
-            is_inline_tag = start_tag in HTML_INLINE_TAGS and start_token.kind == "html_start"
-
-            if end_line > start_line + 1:
-                if is_inline_tag:
-                    end_row_text = lines[end_line - 1]
-                    if end_row_text.lstrip().startswith(end_token.s):
-                        if end_col != start_col:
-                            return True
-                else:
-                    if end_col != start_col:
-                        return True
-
-            return False
 
         if has_bad_indentation():
             raise TemplateParserError(
@@ -726,6 +743,7 @@ def get_django_comment(text: str, i: int) -> str:
 
 
 def get_handlebars_partial(text: str, i: int) -> str:
+    """Works for both partials and partial blocks."""
     end = i + 10
     unclosed_end = 0
     while end <= len(text):

@@ -1,5 +1,6 @@
 import logging
 import urllib
+from contextlib import suppress
 from typing import Any, Dict, List, Optional
 
 import tornado.web
@@ -148,12 +149,10 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         self.write(response.content)
 
         # Close the connection.
-        try:
+        # While writing the response, we might realize that the
+        # user already closed the connection; that is fine.
+        with suppress(StreamClosedError):
             await self.finish()
-        except StreamClosedError:
-            # While writing the response, we might realize that the
-            # user already closed the connection; that is fine.
-            pass
 
     async def get(self, *args: Any, **kwargs: Any) -> None:
         request = await self.convert_tornado_request_to_django_request()
@@ -244,8 +243,8 @@ class AsyncDjangoHandler(tornado.web.RequestHandler):
         request_notes.log_data = old_request_notes.log_data
         if request_notes.rate_limit is not None:
             request_notes.rate_limit = old_request_notes.rate_limit
-        if request_notes.requestor_for_logs is not None:
-            request_notes.requestor_for_logs = old_request_notes.requestor_for_logs
+        if request_notes.requester_for_logs is not None:
+            request_notes.requester_for_logs = old_request_notes.requester_for_logs
         request.user = old_request.user
         request_notes.client = old_request_notes.client
         request_notes.client_name = old_request_notes.client_name

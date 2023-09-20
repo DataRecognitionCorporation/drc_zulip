@@ -19,14 +19,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.url_encoding import near_message_url
 from zerver.lib.users import add_service
-from zerver.models import (
-    Recipient,
-    Service,
-    UserProfile,
-    get_display_recipient,
-    get_realm,
-    get_stream,
-)
+from zerver.models import Recipient, Service, UserProfile, get_realm, get_stream
 
 
 class ResponseMock:
@@ -45,7 +38,7 @@ def timeout_error(final_url: Any, **request_kwargs: Any) -> Any:
 
 
 def connection_error(final_url: Any, **request_kwargs: Any) -> Any:
-    raise requests.exceptions.ConnectionError()
+    raise requests.exceptions.ConnectionError
 
 
 class DoRestCallTests(ZulipTestCase):
@@ -66,6 +59,7 @@ class DoRestCallTests(ZulipTestCase):
                 "sender_full_name": bot_user.full_name,
                 "sender_avatar_source": UserProfile.AVATAR_FROM_GRAVATAR,
                 "sender_avatar_version": 1,
+                "sender_email_address_visibility": UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
                 "recipient_type": "stream",
                 "recipient_type_id": 999,
                 "sender_is_mirror_dummy": False,
@@ -553,8 +547,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         self.assertEqual(last_message.content, "Hidley ho, I'm a webhook responding!")
         self.assertEqual(last_message.sender_id, bot.id)
         self.assertEqual(last_message.topic_name(), "bar")
-        display_recipient = get_display_recipient(last_message.recipient)
-        self.assertEqual(display_recipient, "Denmark")
+        self.assert_message_stream_name(last_message, "Denmark")
 
     @responses.activate
     def test_stream_message_failure_to_outgoing_webhook_bot(self) -> None:
@@ -608,8 +601,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         self.assertEqual(stream_message.content, "Failure! Bot is unavailable")
         self.assertEqual(stream_message.sender_id, bot.id)
         self.assertEqual(stream_message.topic_name(), "bar")
-        display_recipient = get_display_recipient(stream_message.recipient)
-        self.assertEqual(display_recipient, "Denmark")
+        self.assert_message_stream_name(stream_message, "Denmark")
 
     @responses.activate
     def test_stream_message_failure_deactivated_to_outgoing_webhook_bot(self) -> None:

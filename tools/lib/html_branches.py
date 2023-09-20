@@ -63,19 +63,23 @@ def split_for_id_and_class(element: str) -> List[str]:
         if ch == "}":
             outside_braces = True
         if ch == " " and outside_braces:
-            if not s == "":
+            if s != "":
                 lst.append(s)
             s = ""
         else:
             s += ch
-    if not s == "":
+    if s != "":
         lst.append(s)
 
     return lst
 
 
 def build_id_dict(templates: List[str]) -> Dict[str, List[str]]:
+<<<<<<< HEAD
     template_id_dict: (Dict[str, List[str]]) = defaultdict(list)
+=======
+    template_id_dict: Dict[str, List[str]] = defaultdict(list)
+>>>>>>> drc_main
 
     for fn in templates:
         with open(fn) as f:

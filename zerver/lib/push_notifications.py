@@ -6,7 +6,19 @@ import logging
 import re
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Sequence, Tuple, Type, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    Union,
+)
 
 import gcm
 import lxml.html
@@ -17,9 +29,10 @@ from django.db.models import F, Q
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
+from typing_extensions import TypeAlias
 
-from zerver.decorator import statsd_increment
 from zerver.lib.avatar import absolute_avatar_url
+from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message, huddle_users
 from zerver.lib.outgoing_http import OutgoingSession
@@ -33,6 +46,7 @@ from zerver.models import (
     NotificationTriggers,
     PushDeviceToken,
     Recipient,
+    Stream,
     UserGroup,
     UserMessage,
     UserProfile,
@@ -48,7 +62,8 @@ logger = logging.getLogger(__name__)
 if settings.ZILENCER_ENABLED:
     from zilencer.models import RemotePushDeviceToken, RemoteZulipServer
 
-DeviceToken = Union[PushDeviceToken, "RemotePushDeviceToken"]
+DeviceToken: TypeAlias = Union[PushDeviceToken, "RemotePushDeviceToken"]
+
 
 
 # We store the token as b64, but apns-client wants hex strings
@@ -60,6 +75,19 @@ def hex_to_b64(data: str) -> str:
     return base64.b64encode(bytes.fromhex(data)).decode()
 
 
+<<<<<<< HEAD
+=======
+def get_message_stream_name_from_database(message: Message) -> str:
+    """
+    Never use this function outside of the push-notifications
+    codepath. Most of our code knows how to get streams
+    up front in a more efficient manner.
+    """
+    stream_id = message.recipient.type_id
+    return Stream.objects.get(id=stream_id).name
+
+
+>>>>>>> drc_main
 class UserPushIdentityCompat:
     """Compatibility class for supporting the transition from remote servers
     sending their UserProfile ids to the bouncer to sending UserProfile uuids instead.
@@ -100,7 +128,11 @@ class UserPushIdentityCompat:
 
         return result
 
+<<<<<<< HEAD
     def __eq__(self, other: Any) -> bool:
+=======
+    def __eq__(self, other: object) -> bool:
+>>>>>>> drc_main
         if isinstance(other, UserPushIdentityCompat):
             return self.user_id == other.user_id and self.user_uuid == other.user_uuid
         return False
@@ -123,10 +155,6 @@ def get_apns_context() -> Optional[APNsContext]:
     # import time.
     import aioapns
 
-    # aioapns logs at "error" level for every non-successful request,
-    # which fills the logs; see https://github.com/Fatal1ty/aioapns/issues/15
-    logging.getLogger("aioapns").setLevel(logging.CRITICAL)
-
     if settings.APNS_CERT_FILE is None:  # nocoverage
         return None
 
@@ -135,12 +163,22 @@ def get_apns_context() -> Optional[APNsContext]:
     # hammered with a ton of these all at once after startup.
     loop = asyncio.new_event_loop()
 
+    # Defining a no-op error-handling function overrides the default
+    # behaviour of logging at ERROR level whenever delivery fails; we
+    # handle those errors by checking the result in
+    # send_apple_push_notification.
+    async def err_func(
+        request: aioapns.NotificationRequest, result: aioapns.common.NotificationResult
+    ) -> None:
+        pass  # nocoverage
+
     async def make_apns() -> aioapns.APNs:
         return aioapns.APNs(
             client_cert=settings.APNS_CERT_FILE,
             topic=settings.APNS_TOPIC,
             max_connection_attempts=APNS_MAX_RETRIES,
             use_sandbox=settings.APNS_SANDBOX,
+            err_func=err_func,
         )
 
     apns = loop.run_until_complete(make_apns())
@@ -158,7 +196,7 @@ def modernize_apns_payload(data: Mapping[str, Any]) -> Mapping[str, Any]:
     if "message_ids" in data:
         # The format sent by 1.6.0, from the earliest pre-1.6.0
         # version with bouncer support up until 613d093d7 pre-1.7.0:
-        #   'alert': str,              # just sender, and text about PM/group-PM/mention
+        #   'alert': str,              # just sender, and text about direct message/mention
         #   'message_ids': List[int],  # always just one
         return {
             "alert": data["alert"],
@@ -180,7 +218,6 @@ def modernize_apns_payload(data: Mapping[str, Any]) -> Mapping[str, Any]:
 APNS_MAX_RETRIES = 3
 
 
-@statsd_increment("apple_push_notification")
 def send_apple_push_notification(
     user_identity: UserPushIdentityCompat,
     devices: Sequence[DeviceToken],
@@ -225,25 +262,39 @@ def send_apple_push_notification(
         )
     payload_data = dict(modernize_apns_payload(payload_data))
     message = {**payload_data.pop("custom", {}), "aps": payload_data}
-    for device in devices:
-        # TODO obviously this should be made to actually use the async
-        request = aioapns.NotificationRequest(
-            device_token=device.token, message=message, time_to_live=24 * 3600
-        )
 
-        try:
-            result = apns_context.loop.run_until_complete(
-                apns_context.apns.send_notification(request)
+    async def send_all_notifications() -> Iterable[
+        Tuple[DeviceToken, Union[aioapns.common.NotificationResult, BaseException]]
+    ]:
+        requests = [
+            aioapns.NotificationRequest(
+                device_token=device.token, message=message, time_to_live=24 * 3600
             )
-        except aioapns.exceptions.ConnectionError:
+            for device in devices
+        ]
+        results = await asyncio.gather(
+            *(apns_context.apns.send_notification(request) for request in requests),
+            return_exceptions=True,
+        )
+        return zip(devices, results)
+
+    results = apns_context.loop.run_until_complete(send_all_notifications())
+
+    for device, result in results:
+        if isinstance(result, aioapns.exceptions.ConnectionError):
             logger.error(
                 "APNs: ConnectionError sending for user %s to device %s; check certificate expiration",
                 user_identity,
                 device.token,
             )
-            continue
-
-        if result.is_successful:
+        elif isinstance(result, BaseException):
+            logger.error(
+                "APNs: Error sending for user %s to device %s",
+                user_identity,
+                device.token,
+                exc_info=result,
+            )
+        elif result.is_successful:
             logger.info(
                 "APNs: Success sending for user %s to device %s", user_identity, device.token
             )
@@ -253,7 +304,9 @@ def send_apple_push_notification(
             )
             # We remove all entries for this token (There
             # could be multiple for different Zulip servers).
-            DeviceTokenClass.objects.filter(token=device.token, kind=DeviceTokenClass.APNS).delete()
+            DeviceTokenClass._default_manager.filter(
+                token=device.token, kind=DeviceTokenClass.APNS
+            ).delete()
         else:
             logger.warning(
                 "APNs: Failed to send for user %s to device %s: %s",
@@ -340,8 +393,8 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
     if priority not in ("normal", "high"):
         raise JsonableError(
             _(
-                "Invalid GCM option to bouncer: priority {!r}",
-            ).format(priority)
+                "Invalid GCM option to bouncer: priority {priority!r}",
+            ).format(priority=priority)
         )
 
     if options:
@@ -350,14 +403,13 @@ def parse_gcm_options(options: Dict[str, Any], data: Dict[str, Any]) -> str:
         # one-way compatibility.
         raise JsonableError(
             _(
-                "Invalid GCM options to bouncer: {}",
-            ).format(orjson.dumps(options).decode())
+                "Invalid GCM options to bouncer: {options}",
+            ).format(options=orjson.dumps(options).decode())
         )
 
     return priority  # when this grows a second option, can make it a tuple
 
 
-@statsd_increment("android_push_notification")
 def send_android_push_notification(
     user_identity: UserPushIdentityCompat,
     devices: Sequence[DeviceToken],
@@ -436,9 +488,9 @@ def send_android_push_notification(
             if reg_id == new_reg_id:
                 # I'm not sure if this should happen. In any case, not really actionable.
                 logger.warning("GCM: Got canonical ref but it already matches our ID %s!", reg_id)
-            elif not DeviceTokenClass.objects.filter(
+            elif not DeviceTokenClass._default_manager.filter(
                 token=new_reg_id, kind=DeviceTokenClass.GCM
-            ).count():
+            ).exists():
                 # This case shouldn't happen; any time we get a canonical ref it should have been
                 # previously registered in our system.
                 #
@@ -448,14 +500,16 @@ def send_android_push_notification(
                     new_reg_id,
                     reg_id,
                 )
-                DeviceTokenClass.objects.filter(token=reg_id, kind=DeviceTokenClass.GCM).update(
-                    token=new_reg_id
-                )
+                DeviceTokenClass._default_manager.filter(
+                    token=reg_id, kind=DeviceTokenClass.GCM
+                ).update(token=new_reg_id)
             else:
                 # Since we know the new ID is registered in our system we can just drop the old one.
                 logger.info("GCM: Got canonical ref %s, dropping %s", new_reg_id, reg_id)
 
-                DeviceTokenClass.objects.filter(token=reg_id, kind=DeviceTokenClass.GCM).delete()
+                DeviceTokenClass._default_manager.filter(
+                    token=reg_id, kind=DeviceTokenClass.GCM
+                ).delete()
 
     if "errors" in res:
         for error, reg_ids in res["errors"].items():
@@ -464,7 +518,7 @@ def send_android_push_notification(
                     logger.info("GCM: Removing %s", reg_id)
                     # We remove all entries for this token (There
                     # could be multiple for different Zulip servers).
-                    DeviceTokenClass.objects.filter(
+                    DeviceTokenClass._default_manager.filter(
                         token=reg_id, kind=DeviceTokenClass.GCM
                     ).delete()
             else:
@@ -652,36 +706,6 @@ def initialize_push_notifications() -> None:
         )
 
 
-def get_gcm_alert(
-    message: Message, trigger: str, mentioned_user_group_name: Optional[str] = None
-) -> str:
-    """
-    Determine what alert string to display based on the missed messages.
-    """
-    sender_str = message.sender.full_name
-    display_recipient = get_display_recipient(message.recipient)
-    if (
-        message.recipient.type == Recipient.HUDDLE
-        and trigger == NotificationTriggers.PRIVATE_MESSAGE
-    ):
-        return f"New private group message from {sender_str}"
-    elif (
-        message.recipient.type == Recipient.PERSONAL
-        and trigger == NotificationTriggers.PRIVATE_MESSAGE
-    ):
-        return f"New private message from {sender_str}"
-    elif message.is_stream_message() and trigger == NotificationTriggers.MENTION:
-        if mentioned_user_group_name is None:
-            return f"{sender_str} mentioned you in #{display_recipient}"
-        else:
-            return f"{sender_str} mentioned @{mentioned_user_group_name} in #{display_recipient}"
-    elif message.is_stream_message() and trigger == NotificationTriggers.WILDCARD_MENTION:
-        return f"{sender_str} mentioned everyone in #{display_recipient}"
-    else:
-        assert message.is_stream_message() and trigger == NotificationTriggers.STREAM_PUSH
-        return f"New stream message from {sender_str} in #{display_recipient}"
-
-
 def get_mobile_push_content(rendered_content: str) -> str:
     def get_text(elem: lxml.html.HtmlElement) -> str:
         # Convert default emojis to their Unicode equivalent.
@@ -690,10 +714,7 @@ def get_mobile_push_content(rendered_content: str) -> str:
             match = re.search(r"emoji-(?P<emoji_code>\S+)", classes)
             if match:
                 emoji_code = match.group("emoji_code")
-                char_repr = ""
-                for codepoint in emoji_code.split("-"):
-                    char_repr += chr(int(codepoint, 16))
-                return char_repr
+                return hex_codepoint_to_emoji(emoji_code)
         # Handles realm emojis, avatars etc.
         if elem.tag == "img":
             return elem.get("alt", "")
@@ -709,7 +730,7 @@ def get_mobile_push_content(rendered_content: str) -> str:
     def render_olist(ol: lxml.html.HtmlElement) -> str:
         items = []
         counter = int(ol.get("start")) if ol.get("start") else 1
-        nested_levels = len(list(ol.iterancestors("ol")))
+        nested_levels = sum(1 for ancestor in ol.iterancestors("ol"))
         indent = ("\n" + "  " * nested_levels) if nested_levels else ""
 
         for li in ol:
@@ -798,7 +819,7 @@ def get_message_payload(
 
     if message.recipient.type == Recipient.STREAM:
         data["recipient_type"] = "stream"
-        data["stream"] = get_display_recipient(message.recipient)
+        data["stream"] = get_message_stream_name_from_database(message)
         data["stream_id"] = message.recipient.type_id
         data["topic"] = message.topic_name()
     elif message.recipient.type == Recipient.HUDDLE:
@@ -819,13 +840,13 @@ def get_apns_alert_title(message: Message) -> str:
         assert isinstance(recipients, list)
         return ", ".join(sorted(r["full_name"] for r in recipients))
     elif message.is_stream_message():
-        return f"#{get_display_recipient(message.recipient)} > {message.topic_name()}"
-    # For personal PMs, we just show the sender name.
+        stream_name = get_message_stream_name_from_database(message)
+        return f"#{stream_name} > {message.topic_name()}"
+    # For 1:1 direct messages, we just show the sender name.
     return message.sender.full_name
 
 
 def get_apns_alert_subtitle(
-    user_profile: UserProfile,
     message: Message,
     trigger: str,
     mentioned_user_group_name: Optional[str] = None,
@@ -840,11 +861,17 @@ def get_apns_alert_subtitle(
             )
         else:
             return _("{full_name} mentioned you:").format(full_name=message.sender.full_name)
-    elif trigger == NotificationTriggers.WILDCARD_MENTION:
+    elif trigger in (
+        NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+        NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+        NotificationTriggers.TOPIC_WILDCARD_MENTION,
+        NotificationTriggers.STREAM_WILDCARD_MENTION,
+    ):
         return _("{full_name} mentioned everyone:").format(full_name=message.sender.full_name)
     elif message.recipient.type == Recipient.PERSONAL:
         return ""
-    # For group PMs, or regular messages to a stream, just use a colon to indicate this is the sender.
+    # For group direct messages, or regular messages to a stream,
+    # just use a colon to indicate this is the sender.
     return message.sender.full_name + ":"
 
 
@@ -897,9 +924,7 @@ def get_message_payload_apns(
         apns_data = {
             "alert": {
                 "title": get_apns_alert_title(message),
-                "subtitle": get_apns_alert_subtitle(
-                    user_profile, message, trigger, mentioned_user_group_name
-                ),
+                "subtitle": get_apns_alert_subtitle(message, trigger, mentioned_user_group_name),
                 "body": content,
             },
             "sound": "default",
@@ -912,7 +937,6 @@ def get_message_payload_apns(
 def get_message_payload_gcm(
     user_profile: UserProfile,
     message: Message,
-    trigger: str,
     mentioned_user_group_id: Optional[int] = None,
     mentioned_user_group_name: Optional[str] = None,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -925,7 +949,6 @@ def get_message_payload_gcm(
         content, truncated = truncate_content(get_mobile_push_content(message.rendered_content))
         data.update(
             event="message",
-            alert=get_gcm_alert(message, trigger, mentioned_user_group_name),
             zulip_message_id=message.id,  # message_id is reserved for CCS
             time=datetime_to_timestamp(message.date_sent),
             content=content,
@@ -983,8 +1006,8 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
     # and then (3) it was deleted.  When trying to send the push
     # notification for (2), after (3) has happened, there is no
     # message to fetch -- but we nonetheless want to remove the mobile
-    # notification.  Because of this, the usual access control of
-    # `bulk_access_messages_expect_usermessage` is skipped here.
+    # notification.  Because of this, verification of access to
+    # the messages is skipped here.
     # Because of this, no access to the Message objects should be
     # done; they are treated as a list of opaque ints.
 
@@ -1036,7 +1059,6 @@ def handle_remove_push_notification(user_profile_id: int, message_ids: List[int]
         ).update(flags=F("flags").bitand(~UserMessage.flags.active_mobile_push_notification))
 
 
-@statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
     """
     missed_message is the event received by the
@@ -1064,44 +1086,66 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         # BUG: Investigate why it's possible to get here.
         return  # nocoverage
 
-    try:
-        (message, user_message) = access_message(user_profile, missed_message["message_id"])
-    except JsonableError:
-        if ArchivedMessage.objects.filter(id=missed_message["message_id"]).exists():
-            # If the cause is a race with the message being deleted,
-            # that's normal and we have no need to log an error.
-            return
-        logging.info(
-            "Unexpected message access failure handling push notifications: %s %s",
-            user_profile.id,
-            missed_message["message_id"],
-        )
-        return
-
-    if user_message is not None:
-        # If the user has read the message already, don't push-notify.
-        if user_message.flags.read or user_message.flags.active_mobile_push_notification:
-            return
-
-        # Otherwise, we mark the message as having an active mobile
-        # push notification, so that we can send revocation messages
-        # later.
-        user_message.flags.active_mobile_push_notification = True
-        user_message.save(update_fields=["flags"])
-    else:
-        # Users should only be getting push notifications into this
-        # queue for messages they haven't received if they're
-        # long-term idle; anything else is likely a bug.
-        if not user_profile.long_term_idle:
-            logger.error(
-                "Could not find UserMessage with message_id %s and user_id %s",
+    with transaction.atomic(savepoint=False):
+        try:
+            (message, user_message) = access_message(
+                user_profile, missed_message["message_id"], lock_message=True
+            )
+        except JsonableError:
+            if ArchivedMessage.objects.filter(id=missed_message["message_id"]).exists():
+                # If the cause is a race with the message being deleted,
+                # that's normal and we have no need to log an error.
+                return
+            logging.info(
+                "Unexpected message access failure handling push notifications: %s %s",
+                user_profile.id,
                 missed_message["message_id"],
-                user_profile_id,
-                exc_info=True,
             )
             return
 
+        if user_message is not None:
+            # If the user has read the message already, don't push-notify.
+            if user_message.flags.read or user_message.flags.active_mobile_push_notification:
+                return
+
+            # Otherwise, we mark the message as having an active mobile
+            # push notification, so that we can send revocation messages
+            # later.
+            user_message.flags.active_mobile_push_notification = True
+            user_message.save(update_fields=["flags"])
+        else:
+            # Users should only be getting push notifications into this
+            # queue for messages they haven't received if they're
+            # long-term idle; anything else is likely a bug.
+            if not user_profile.long_term_idle:
+                logger.error(
+                    "Could not find UserMessage with message_id %s and user_id %s",
+                    missed_message["message_id"],
+                    user_profile_id,
+                    exc_info=True,
+                )
+                return
+
     trigger = missed_message["trigger"]
+
+    # TODO/compatibility: Translation code for the rename of
+    # `wildcard_mentioned` to `stream_wildcard_mentioned`.
+    # Remove this when one can no longer directly upgrade from 7.x to main.
+    if trigger == "wildcard_mentioned":
+        trigger = NotificationTriggers.STREAM_WILDCARD_MENTION  # nocoverage
+
+    # TODO/compatibility: Translation code for the rename of
+    # `followed_topic_wildcard_mentioned` to `stream_wildcard_mentioned_in_followed_topic`.
+    # Remove this when one can no longer directly upgrade from 7.x to main.
+    if trigger == "followed_topic_wildcard_mentioned":
+        trigger = NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC  # nocoverage
+
+    # TODO/compatibility: Translation code for the rename of
+    # `private_message` to `direct_message`. Remove this when
+    # one can no longer directly upgrade from 7.x to main.
+    if trigger == "private_message":
+        trigger = NotificationTriggers.DIRECT_MESSAGE  # nocoverage
+
     mentioned_user_group_name = None
     # mentioned_user_group_id will be None if the user is personally mentioned
     # regardless whether they are a member of the mentioned user group in the
@@ -1119,7 +1163,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         user_profile, message, trigger, mentioned_user_group_id, mentioned_user_group_name
     )
     gcm_payload, gcm_options = get_message_payload_gcm(
-        user_profile, message, trigger, mentioned_user_group_id, mentioned_user_group_name
+        user_profile, message, mentioned_user_group_id, mentioned_user_group_name
     )
     logger.info("Sending push notifications to mobile clients for user %s", user_profile_id)
 

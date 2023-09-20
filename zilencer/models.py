@@ -14,7 +14,7 @@ def get_remote_server_by_uuid(uuid: str) -> "RemoteZulipServer":
     try:
         return RemoteZulipServer.objects.get(uuid=uuid)
     except ValidationError:
-        raise RemoteZulipServer.DoesNotExist()
+        raise RemoteZulipServer.DoesNotExist
 
 
 class RemoteZulipServer(models.Model):
@@ -50,9 +50,9 @@ class RemoteZulipServer(models.Model):
     plan_type = models.PositiveSmallIntegerField(default=PLAN_TYPE_SELF_HOSTED)
 
     def __str__(self) -> str:
-        return f"<RemoteZulipServer {self.hostname} {str(self.uuid)[0:12]}>"
+        return f"{self.hostname} {str(self.uuid)[0:12]}"
 
-    def format_requestor_for_logs(self) -> str:
+    def format_requester_for_logs(self) -> str:
         return "zulip-server:" + str(self.uuid)
 
 
@@ -75,7 +75,7 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
         ]
 
     def __str__(self) -> str:
-        return f"<RemotePushDeviceToken {self.server} {self.user_id}>"
+        return f"{self.server!r} {self.user_id}"
 
 
 class RemoteZulipServerAuditLog(AbstractRealmAuditLog):
@@ -91,7 +91,7 @@ class RemoteZulipServerAuditLog(AbstractRealmAuditLog):
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
-        return f"<RemoteZulipServerAuditLog: {self.server} {self.event_type} {self.event_time} {self.id}>"
+        return f"{self.server!r} {self.event_type} {self.event_time} {self.id}"
 
 
 class RemoteRealmAuditLog(AbstractRealmAuditLog):
@@ -100,12 +100,26 @@ class RemoteRealmAuditLog(AbstractRealmAuditLog):
     """
 
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
-    realm_id = models.IntegerField(db_index=True)
+    realm_id = models.IntegerField()
     # The remote_id field lets us deduplicate data from the remote server
-    remote_id = models.IntegerField(db_index=True)
+    remote_id = models.IntegerField()
 
     def __str__(self) -> str:
-        return f"<RemoteRealmAuditLog: {self.server} {self.event_type} {self.event_time} {self.id}>"
+        return f"{self.server!r} {self.event_type} {self.event_time} {self.id}"
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["server", "remote_id"],
+                name="zilencer_remoterealmauditlog_server_remote",
+            ),
+        ]
+        indexes = [
+            models.Index(
+                fields=["server", "realm_id", "remote_id"],
+                name="zilencer_remoterealmauditlog_server_realm_remote",
+            ),
+        ]
 
 
 class RemoteInstallationCount(BaseCount):
@@ -115,30 +129,39 @@ class RemoteInstallationCount(BaseCount):
 
     class Meta:
         unique_together = ("server", "property", "subgroup", "end_time")
-        index_together = [
-            ["server", "remote_id"],
+        indexes = [
+            models.Index(
+                fields=["server", "remote_id"],
+                name="zilencer_remoteinstallat_server_id_remote_id_f72e4c30_idx",
+            ),
         ]
 
     def __str__(self) -> str:
-        return f"<InstallationCount: {self.property} {self.subgroup} {self.value}>"
+        return f"{self.property} {self.subgroup} {self.value}"
 
 
 # We can't subclass RealmCount because we only have a realm_id here, not a foreign key.
 class RemoteRealmCount(BaseCount):
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
-    realm_id = models.IntegerField(db_index=True)
+    realm_id = models.IntegerField()
     # The remote_id field lets us deduplicate data from the remote server
-    remote_id = models.IntegerField(db_index=True)
+    remote_id = models.IntegerField()
 
     class Meta:
         unique_together = ("server", "realm_id", "property", "subgroup", "end_time")
-        index_together = [
-            ["property", "end_time"],
-            ["server", "remote_id"],
+        indexes = [
+            models.Index(
+                fields=["property", "end_time"],
+                name="zilencer_remoterealmcount_property_end_time_506a0b38_idx",
+            ),
+            models.Index(
+                fields=["server", "remote_id"],
+                name="zilencer_remoterealmcount_server_id_remote_id_de1573d8_idx",
+            ),
         ]
 
     def __str__(self) -> str:
-        return f"{self.server} {self.realm_id} {self.property} {self.subgroup} {self.value}"
+        return f"{self.server!r} {self.realm_id} {self.property} {self.subgroup} {self.value}"
 
 
 class RateLimitedRemoteZulipServer(RateLimitedObject):

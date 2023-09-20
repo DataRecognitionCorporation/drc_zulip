@@ -11,7 +11,6 @@ from corporate.lib.stripe import get_latest_seat_count
 from zerver.actions.create_user import notify_new_user
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.initial_password import initial_password
-from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, Realm, Recipient, Stream, UserProfile, get_realm
 from zerver.signals import JUST_CREATED_THRESHOLD, get_device_browser, get_device_os
@@ -132,14 +131,19 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
         super().setUp()
         self.user_agents = [
             (
-                "mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                + "Chrome/54.0.2840.59 Safari/537.36",
+                (
+                    "mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)"
+                    " Chrome/54.0.2840.59 Safari/537.36"
+                ),
                 "Chrome",
                 "Linux",
             ),
             (
-                "mozilla/5.0 (windows nt 6.1; win64; x64) applewebkit/537.36 (khtml, like gecko) "
-                + "chrome/56.0.2924.87 safari/537.36",
+                (
+                    "mozilla/5.0 (windows nt 6.1; win64; x64) "
+                    " applewebkit/537.36 (khtml, like gecko)"
+                    " chrome/56.0.2924.87 safari/537.36"
+                ),
                 "Chrome",
                 "Windows",
             ),
@@ -159,36 +163,46 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
                 "Android",
             ),
             (
-                "Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X) "
-                "AppleWebKit/602.1.50 (KHTML, like Gecko) "
-                "CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1",
+                (
+                    "Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X)"
+                    " AppleWebKit/602.1.50 (KHTML, like Gecko)"
+                    " CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1"
+                ),
                 "Chrome",
                 "iOS",
             ),
             (
-                "Mozilla/5.0 (iPad; CPU OS 6_1_3 like Mac OS X) "
-                + "AppleWebKit/536.26 (KHTML, like Gecko) "
-                + "Version/6.0 Mobile/10B329 Safari/8536.25",
+                (
+                    "Mozilla/5.0 (iPad; CPU OS 6_1_3 like Mac OS X)"
+                    " AppleWebKit/536.26 (KHTML, like Gecko)"
+                    " Version/6.0 Mobile/10B329 Safari/8536.25"
+                ),
                 "Safari",
                 "iOS",
             ),
             (
-                "Mozilla/5.0 (iPhone; CPU iPhone OS 6_1_4 like Mac OS X) "
-                + "AppleWebKit/536.26 (KHTML, like Gecko) Mobile/10B350",
+                (
+                    "Mozilla/5.0 (iPhone; CPU iPhone OS 6_1_4 like Mac OS X)"
+                    " AppleWebKit/536.26 (KHTML, like Gecko) Mobile/10B350"
+                ),
                 None,
                 "iOS",
             ),
             (
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) "
-                + "AppleWebKit/537.36 (KHTML, like Gecko) "
-                + "Chrome/56.0.2924.87 Safari/537.36",
+                (
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6)"
+                    " AppleWebKit/537.36 (KHTML, like Gecko)"
+                    " Chrome/56.0.2924.87 Safari/537.36"
+                ),
                 "Chrome",
                 "macOS",
             ),
             (
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) "
-                + "AppleWebKit/602.3.12 (KHTML, like Gecko) "
-                + "Version/10.0.2 Safari/602.3.12",
+                (
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6)"
+                    " AppleWebKit/602.3.12 (KHTML, like Gecko)"
+                    " Version/10.0.2 Safari/602.3.12"
+                ),
                 "Safari",
                 "macOS",
             ),
@@ -196,37 +210,46 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
             ("ZulipMobile/1.0.12 (Android 7.1.1)", "Zulip", "Android"),
             ("ZulipMobile/0.7.1.1 (iOS 10.3.1)", "Zulip", "iOS"),
             (
-                "ZulipElectron/1.1.0-beta Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                + "AppleWebKit/537.36 (KHTML, like Gecko) Zulip/1.1.0-beta "
-                + "Chrome/56.0.2924.87 Electron/1.6.8 Safari/537.36",
+                (
+                    "ZulipElectron/1.1.0-beta Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+                    " AppleWebKit/537.36 (KHTML, like Gecko) Zulip/1.1.0-beta"
+                    " Chrome/56.0.2924.87 Electron/1.6.8 Safari/537.36"
+                ),
                 "Zulip",
                 "Windows",
             ),
             (
-                "Mozilla/5.0 (X11; Linux i686) AppleWebKit/535.7 (KHTML, "
-                "like Gecko) Ubuntu/11.10 Chromium/16.0.912.77 "
-                "Chrome/16.0.912.77 Safari/535.7",
+                (
+                    "Mozilla/5.0 (X11; Linux i686) AppleWebKit/535.7 (KHTML, like Gecko)"
+                    " Ubuntu/11.10 Chromium/16.0.912.77 Chrome/16.0.912.77 Safari/535.7"
+                ),
                 "Chromium",
                 "Linux",
             ),
             (
-                "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 "
-                "(KHTML, like Gecko) Chrome/28.0.1500.52 Safari/537.36 "
-                "OPR/15.0.1147.100",
+                (
+                    "Mozilla/5.0 (Windows NT 6.1; WOW64)"
+                    " AppleWebKit/537.36 (KHTML, like Gecko)"
+                    " Chrome/28.0.1500.52 Safari/537.36 OPR/15.0.1147.100"
+                ),
                 "Opera",
                 "Windows",
             ),
             (
-                "Mozilla/5.0 (Windows NT 10.0; <64-bit tags>) AppleWebKit/"
-                "<WebKit Rev> (KHTML, like Gecko) Chrome/<Chrome Rev> Safari"
-                "/<WebKit Rev> Edge/<EdgeHTML Rev>."
-                "<Windows Build>",
+                (
+                    "Mozilla/5.0 (Windows NT 10.0; <64-bit tags>)"
+                    " AppleWebKit/<WebKit Rev> (KHTML, like Gecko)"
+                    " Chrome/<Chrome Rev> Safari/<WebKit Rev>"
+                    " Edge/<EdgeHTML Rev>.<Windows Build>"
+                ),
                 "Edge",
                 "Windows",
             ),
             (
-                "Mozilla/5.0 (X11; CrOS x86_64 10895.56.0) AppleWebKit/537.36 "
-                "(KHTML, like Gecko) Chrome/69.0.3497.95 Safari/537.36",
+                (
+                    "Mozilla/5.0 (X11; CrOS x86_64 10895.56.0) AppleWebKit/537.36"
+                    " (KHTML, like Gecko) Chrome/69.0.3497.95 Safari/537.36"
+                ),
                 "Chrome",
                 "ChromeOS",
             ),
@@ -251,45 +274,24 @@ class TestNotifyNewUser(ZulipTestCase):
     def test_notify_realm_of_new_user(self) -> None:
         realm = get_realm("zulip")
         new_user = self.example_user("cordelia")
-        admin_realm = get_realm("zulipinternal")
-        admin_realm_signups_stream, created = create_stream_if_needed(admin_realm, "signups")
         message_count = self.get_message_count()
 
         notify_new_user(new_user)
-        self.assertEqual(self.get_message_count(), message_count + 2)
-        message = self.get_second_to_last_message()
+        self.assertEqual(self.get_message_count(), message_count + 1)
+        message = self.get_last_message()
         self.assertEqual(message.recipient.type, Recipient.STREAM)
         actual_stream = Stream.objects.get(id=message.recipient.type_id)
         self.assertEqual(actual_stream.name, Realm.INITIAL_PRIVATE_STREAM_NAME)
         self.assertIn(
             f"@_**Cordelia, Lear's daughter|{new_user.id}** just signed up for Zulip.",
-            message.content,
-        )
-        message = self.get_last_message()
-        self.assertEqual(message.recipient.type, Recipient.STREAM)
-        actual_stream = Stream.objects.get(id=message.recipient.type_id)
-        self.assertEqual(actual_stream.name, "signups")
-        self.assertIn(
-            f"Cordelia, Lear's daughter <`{new_user.email}`> just signed up for Zulip. (total:",
             message.content,
         )
 
-        admin_realm_signups_stream.delete()
-        notify_new_user(new_user)
-        self.assertEqual(self.get_message_count(), message_count + 3)
-        message = self.get_last_message()
-        self.assertEqual(message.recipient.type, Recipient.STREAM)
-        actual_stream = Stream.objects.get(id=message.recipient.type_id)
-        self.assertEqual(actual_stream.name, Realm.INITIAL_PRIVATE_STREAM_NAME)
-        self.assertIn(
-            f"@_**Cordelia, Lear's daughter|{new_user.id}** just signed up for Zulip.",
-            message.content,
-        )
         realm.signup_notifications_stream = None
         realm.save(update_fields=["signup_notifications_stream"])
         new_user.refresh_from_db()
         notify_new_user(new_user)
-        self.assertEqual(self.get_message_count(), message_count + 3)
+        self.assertEqual(self.get_message_count(), message_count + 1)
 
     def test_notify_realm_of_new_user_in_manual_license_management(self) -> None:
         realm = get_realm("zulip")

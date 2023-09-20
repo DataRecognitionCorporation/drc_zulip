@@ -36,8 +36,7 @@ from django.db.migrations.executor import MigrationExecutor
 from django.db.migrations.state import StateApps
 from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponse
-from django.http.response import StreamingHttpResponse
-from django.test import TestCase
+from django.test import SimpleTestCase, TestCase, TransactionTestCase
 from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.test.testcases import SerializeMixin
 from django.urls import resolve
@@ -54,11 +53,13 @@ from zerver.actions.streams import bulk_add_subscriptions, bulk_remove_subscript
 from zerver.decorator import do_two_factor_login
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.initial_password import initial_password
+from zerver.lib.message import access_message
 from zerver.lib.notification_data import UserMessageNotificationsData
+from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
-from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
+from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
 from zerver.lib.streams import (
     create_stream_if_needed,
     get_default_value_for_history_public_to_subscribers,
@@ -70,11 +71,15 @@ from zerver.lib.test_console_output import (
     tee_stderr_and_find_extra_console_output,
     tee_stdout_and_find_extra_console_output,
 )
-from zerver.lib.test_helpers import find_key_by_email, instrument_url, queries_captured
-from zerver.lib.topic import filter_by_topic_name_via_message
+from zerver.lib.test_helpers import (
+    cache_tries_captured,
+    find_key_by_email,
+    instrument_url,
+    queries_captured,
+)
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, filter_by_topic_name_via_message
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import get_api_key
-from zerver.lib.validator import check_string
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     get_fixture_http_headers,
@@ -95,8 +100,6 @@ from zerver.models import (
     UserProfile,
     UserStatus,
     clear_supported_auth_backends_cache,
-    flush_per_request_caches,
-    get_display_recipient,
     get_realm,
     get_realm_stream,
     get_stream,
@@ -138,9 +141,13 @@ class UploadSerializeMixin(SerializeMixin):
         super().setUpClass()
 
 
-class ZulipTestCase(TestCase):
+class ZulipTestCaseMixin(SimpleTestCase):
     # Ensure that the test system just shows us diffs
-    maxDiff: Optional[int] = None  # noqa: N815
+    maxDiff: Optional[int] = None
+    # This bypasses BAN_CONSOLE_OUTPUT for the test case when set.
+    # Override this to verify if the given extra console output matches the
+    # expectation.
+    expected_console_output: Optional[str] = None
 
     def setUp(self) -> None:
         super().setUp()
@@ -158,21 +165,36 @@ class ZulipTestCase(TestCase):
         flush_per_request_caches()
         translation.activate(settings.LANGUAGE_CODE)
 
+        # Clean up local uploads directory after tests:
+        assert settings.LOCAL_UPLOADS_DIR is not None
+        if os.path.exists(settings.LOCAL_UPLOADS_DIR):
+            shutil.rmtree(settings.LOCAL_UPLOADS_DIR)
+
         # Clean up after using fakeldap in LDAP tests:
         if hasattr(self, "mock_ldap") and hasattr(self, "mock_initialize"):
             if self.mock_ldap is not None:
                 self.mock_ldap.reset()
             self.mock_initialize.stop()
 
+    def get_user_from_email(self, email: str, realm: Realm) -> UserProfile:
+        return get_user(email, realm)
+
     def run(self, result: Optional[TestResult] = None) -> Optional[TestResult]:  # nocoverage
-        if not settings.BAN_CONSOLE_OUTPUT:
+        if not settings.BAN_CONSOLE_OUTPUT and self.expected_console_output is None:
             return super().run(result)
         extra_output_finder = ExtraConsoleOutputFinder()
         with tee_stderr_and_find_extra_console_output(
             extra_output_finder
         ), tee_stdout_and_find_extra_console_output(extra_output_finder):
             test_result = super().run(result)
-        if extra_output_finder.full_extra_output:
+        if extra_output_finder.full_extra_output and (
+            test_result is None or test_result.wasSuccessful()
+        ):
+            extra_output = extra_output_finder.full_extra_output.decode(errors="replace")
+            if self.expected_console_output is not None:
+                self.assertEqual(extra_output, self.expected_console_output)
+                return test_result
+
             exception_message = f"""
 ---- UNEXPECTED CONSOLE OUTPUT DETECTED ----
 
@@ -186,10 +208,10 @@ use `git grep assertLogs` to see dozens of correct examples.
 
 You should be able to quickly reproduce this failure with:
 
-test-backend --ban-console-output {self.id()}
+./tools/test-backend --ban-console-output {self.id()}
 
 Output:
-{extra_output_finder.full_extra_output.decode(errors="replace")}
+{extra_output}
 --------------------------------------------
 """
             raise ExtraConsoleOutputInTestError(exception_message)
@@ -225,9 +247,9 @@ Output:
         else:
             # A web app request; use a browser User-Agent string.
             default_user_agent = (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                + "AppleWebKit/537.36 (KHTML, like Gecko) "
-                + "Chrome/79.0.3945.130 Safari/537.36"
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+                " AppleWebKit/537.36 (KHTML, like Gecko)"
+                " Chrome/79.0.3945.130 Safari/537.36"
             )
         if skip_user_agent:
             # Provide a way to disable setting User-Agent if desired.
@@ -263,7 +285,7 @@ Output:
         extensive test coverage of corner cases in the API to ensure that we've properly
         documented those corner cases.
         """
-        if not (url.startswith("/json") or url.startswith("/api/v1")):
+        if not url.startswith(("/json", "/api/v1")):
             return
         try:
             content = orjson.loads(result.content)
@@ -301,6 +323,7 @@ Output:
         follow: bool = False,
         secure: bool = False,
         intentionally_undocumented: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         **extra: str,
     ) -> "TestHttpResponse":
         """
@@ -310,7 +333,9 @@ Output:
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.patch(url, encoded, follow=follow, secure=secure, **extra)
+        result = django_client.patch(
+            url, encoded, follow=follow, secure=secure, headers=headers, **extra
+        )
         self.validate_api_response_openapi(
             url,
             "patch",
@@ -329,6 +354,7 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -344,7 +370,13 @@ Output:
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
         result = django_client.patch(
-            url, encoded, content_type=MULTIPART_CONTENT, follow=follow, secure=secure, **extra
+            url,
+            encoded,
+            content_type=MULTIPART_CONTENT,
+            follow=follow,
+            secure=secure,
+            headers=headers,
+            **extra,
         )
         self.validate_api_response_openapi(
             url,
@@ -369,7 +401,13 @@ Output:
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
         return django_client.patch(
-            url, data=data, content_type="application/json", follow=follow, secure=secure, **extra
+            url,
+            data=data,
+            content_type="application/json",
+            follow=follow,
+            secure=secure,
+            headers=None,
+            **extra,
         )
 
     @instrument_url
@@ -380,13 +418,16 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         **extra: str,
     ) -> "TestHttpResponse":
         encoded = urllib.parse.urlencode(info)
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        return django_client.put(url, encoded, follow=follow, secure=secure, **extra)
+        return django_client.put(
+            url, encoded, follow=follow, secure=secure, headers=headers, **extra
+        )
 
     def json_put(
         self,
@@ -395,13 +436,20 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         **extra: str,
     ) -> "TestHttpResponse":
         data = orjson.dumps(payload)
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
         return django_client.put(
-            url, data=data, content_type="application/json", follow=follow, secure=secure, **extra
+            url,
+            data=data,
+            content_type="application/json",
+            follow=follow,
+            secure=secure,
+            headers=headers,
+            **extra,
         )
 
     @instrument_url
@@ -412,6 +460,7 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -419,7 +468,9 @@ Output:
         extra["content_type"] = "application/x-www-form-urlencoded"
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.delete(url, encoded, follow=follow, secure=secure, **extra)
+        result = django_client.delete(
+            url, encoded, follow=follow, secure=secure, headers=headers, **extra
+        )
         self.validate_api_response_openapi(
             url,
             "delete",
@@ -438,11 +489,14 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        return django_client.options(url, dict(info), follow=follow, secure=secure, **extra)
+        return django_client.options(
+            url, dict(info), follow=follow, secure=secure, headers=headers, **extra
+        )
 
     @instrument_url
     def client_head(
@@ -452,11 +506,12 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        return django_client.head(url, info, follow=follow, secure=secure, **extra)
+        return django_client.head(url, info, follow=follow, secure=secure, headers=headers, **extra)
 
     @instrument_url
     def client_post(
@@ -466,12 +521,15 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.post(url, info, follow=follow, secure=secure, **extra)
+        result = django_client.post(
+            url, info, follow=follow, secure=secure, headers=headers, **extra
+        )
         self.validate_api_response_openapi(
             url,
             "post",
@@ -504,12 +562,15 @@ Output:
         skip_user_agent: bool = False,
         follow: bool = False,
         secure: bool = False,
+        headers: Optional[Mapping[str, Any]] = None,
         intentionally_undocumented: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
         self.set_http_headers(extra, skip_user_agent)
-        result = django_client.get(url, info, follow=follow, secure=secure, **extra)
+        result = django_client.get(
+            url, info, follow=follow, secure=secure, headers=headers, **extra
+        )
         self.validate_api_response_openapi(
             url, "get", result, info, extra, intentionally_undocumented=intentionally_undocumented
         )
@@ -573,11 +634,11 @@ Output:
 
     def mit_user(self, name: str) -> UserProfile:
         email = self.mit_user_map[name]
-        return get_user(email, get_realm("zephyr"))
+        return self.get_user_from_email(email, get_realm("zephyr"))
 
     def lear_user(self, name: str) -> UserProfile:
         email = self.lear_user_map[name]
-        return get_user(email, get_realm("lear"))
+        return self.get_user_from_email(email, get_realm("lear"))
 
     def nonreg_email(self, name: str) -> str:
         return self.nonreg_user_map[name]
@@ -603,7 +664,7 @@ Output:
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
         bot_email = f"{short_name}-bot@zulip.testserver"
-        bot_profile = get_user(bot_email, user_profile.realm)
+        bot_profile = self.get_user_from_email(bot_email, user_profile.realm)
         return bot_profile
 
     def fail_to_create_test_bot(
@@ -655,6 +716,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -732,7 +794,9 @@ Output:
     def register(self, email: str, password: str, subdomain: str = DEFAULT_SUBDOMAIN) -> None:
         response = self.client_post("/accounts/home/", {"email": email}, subdomain=subdomain)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response["Location"], f"/accounts/send_confirm/{email}")
+        self.assertEqual(
+            response["Location"], f"/accounts/send_confirm/?email={urllib.parse.quote(email)}"
+        )
         response = self.submit_reg_form_for_user(email, password, subdomain=subdomain)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], f"http://{Realm.host_for_subdomain(subdomain)}/")
@@ -752,6 +816,7 @@ Output:
         key: Optional[str] = None,
         realm_type: int = Realm.ORG_TYPES["business"]["id"],
         enable_marketing_emails: Optional[bool] = None,
+        email_address_visibility: Optional[int] = None,
         is_demo_organization: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -780,6 +845,8 @@ Output:
         }
         if enable_marketing_emails is not None:
             payload["enable_marketing_emails"] = enable_marketing_emails
+        if email_address_visibility is not None:
+            payload["email_address_visibility"] = email_address_visibility
         if password is not None:
             payload["password"] = password
         if realm_in_root_domain is not None:
@@ -790,8 +857,31 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
+        )
+
+    def submit_realm_creation_form(
+        self,
+        email: str,
+        *,
+        realm_subdomain: str,
+        realm_name: str,
+        realm_type: int = Realm.ORG_TYPES["business"]["id"],
+        realm_in_root_domain: Optional[str] = None,
+    ) -> "TestHttpResponse":
+        payload = {
+            "email": email,
+            "realm_name": realm_name,
+            "realm_type": realm_type,
+            "realm_subdomain": realm_subdomain,
+        }
+        if realm_in_root_domain is not None:
+            payload["realm_in_root_domain"] = realm_in_root_domain
+        return self.client_post(
+            "/new/",
+            payload,
         )
 
     def get_confirmation_url_from_outbox(
@@ -822,8 +912,7 @@ Output:
 
                 [confirmation_url] = match.groups()
                 return confirmation_url
-        else:
-            raise AssertionError("Couldn't find a confirmation email.")
+        raise AssertionError("Couldn't find a confirmation email.")
 
     def encode_uuid(self, uuid: str) -> str:
         """
@@ -867,6 +956,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -885,6 +975,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -899,6 +990,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -918,6 +1010,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=intentionally_undocumented,
             **extra,
         )
@@ -932,6 +1025,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -946,18 +1040,21 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
 
     def get_streams(self, user_profile: UserProfile) -> List[str]:
         """
-        Helper function to get the stream names for a user
+        Helper function to get the active stream names for a user
         """
-        subs = get_stream_subscriptions_for_user(user_profile).filter(
-            active=True,
+
+        return list(
+            Stream.objects.filter(
+                id__in=get_subscribed_stream_ids_for_user(user_profile)
+            ).values_list("name", flat=True)
         )
-        return [check_string("recipient", get_display_recipient(sub.recipient)) for sub in subs]
 
     def send_personal_message(
         self,
@@ -1019,22 +1116,25 @@ Output:
             body=content,
             realm=recipient_realm,
         )
-        if not UserMessage.objects.filter(user_profile=sender, message_id=message_id).exists():
-            if not sender.is_bot and not allow_unsubscribed_sender:
-                raise AssertionError(
-                    f"""
+        if (
+            not UserMessage.objects.filter(user_profile=sender, message_id=message_id).exists()
+            and not sender.is_bot
+            and not allow_unsubscribed_sender
+        ):
+            raise AssertionError(
+                f"""
     It appears that the sender did not get a UserMessage row, which is
     almost certainly an artificial symptom that in your test setup you
     have decided to send a message to a stream without the sender being
     subscribed.
 
-    Please do self.subscribe(<user for {sender.full_name}>, {repr(stream_name)}) first.
+    Please do self.subscribe(<user for {sender.full_name}>, {stream_name!r}) first.
 
     Or choose a stream that the user is already subscribed to:
 
 {self.subscribed_stream_name_list(sender)}
         """
-                )
+            )
 
         return message_id
 
@@ -1074,13 +1174,11 @@ Output:
 
         return [subscription.user_profile for subscription in subscriptions]
 
-    def assert_streaming_content(self, response: "TestHttpResponse", result: bytes) -> None:
-        assert isinstance(response, StreamingHttpResponse)
-        data = b"".join(response.streaming_content)
-        self.assertEqual(result, data)
-
     def assert_json_success(
-        self, result: Union["TestHttpResponse", HttpResponse]
+        self,
+        result: Union["TestHttpResponse", HttpResponse],
+        *,
+        ignored_parameters: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """
         Successful POSTs return a 200 and JSON of the form {"result": "success",
@@ -1096,6 +1194,14 @@ Output:
         # empty value.
         self.assertIn("msg", json)
         self.assertNotEqual(json["msg"], "Error parsing JSON in response!")
+        # Check ignored parameters.
+        if ignored_parameters is None:
+            self.assertNotIn("ignored_parameters_unsupported", json)
+        else:
+            self.assertIn("ignored_parameters_unsupported", json)
+            self.assert_length(json["ignored_parameters_unsupported"], len(ignored_parameters))
+            for param in ignored_parameters:
+                self.assertTrue(param in json["ignored_parameters_unsupported"])
         return json
 
     def get_json_error(self, result: "TestHttpResponse", status_code: int = 400) -> str:
@@ -1123,7 +1229,13 @@ Output:
             for item in items:
                 print(item)
             print(f"\nexpected length: {count}\nactual length: {actual_count}")
-            raise AssertionError(f"{str(type(items))} is of unexpected size!")
+            raise AssertionError(f"{type(items)} is of unexpected size!")
+
+    @contextmanager
+    def assert_memcached_count(self, count: int) -> Iterator[None]:
+        with cache_tries_captured() as cache_tries:
+            yield
+        self.assert_length(cache_tries, count)
 
     @contextmanager
     def assert_database_query_count(
@@ -1141,7 +1253,7 @@ Output:
         if actual_count != count:  # nocoverage
             print("\nITEMS:\n")
             for index, query in enumerate(queries):
-                print(f"#{index + 1}\nsql: {str(query['sql'])}\ntime: {query['time']}\n")
+                print(f"#{index + 1}\nsql: {query.sql}\ntime: {query.time}\n")
             print(f"expected count: {count}\nactual count: {actual_count}")
             raise AssertionError(
                 f"""
@@ -1185,6 +1297,13 @@ Output:
         Pass None to verify no user is logged in.
         """
         self.assertEqual(get_session_dict_user(self.client.session), user_id)
+
+    def assert_message_stream_name(self, message: Message, stream_name: str) -> None:
+        self.assertEqual(message.recipient.type, Recipient.STREAM)
+        stream_id = message.recipient.type_id
+        stream = Stream.objects.get(id=stream_id)
+        self.assertEqual(stream.recipient_id, message.recipient_id)
+        self.assertEqual(stream.name, stream_name)
 
     def webhook_fixture_data(self, type: str, action: str, file_type: str = "json") -> str:
         fn = os.path.join(
@@ -1258,12 +1377,16 @@ Output:
         return stream.id
 
     # Subscribe to a stream directly
-    def subscribe(self, user_profile: UserProfile, stream_name: str) -> Stream:
+    def subscribe(
+        self, user_profile: UserProfile, stream_name: str, invite_only: bool = False
+    ) -> Stream:
         realm = user_profile.realm
         try:
             stream = get_stream(stream_name, user_profile.realm)
         except Stream.DoesNotExist:
-            stream, from_stream_creation = create_stream_if_needed(realm, stream_name)
+            stream, from_stream_creation = create_stream_if_needed(
+                realm, stream_name, invite_only=invite_only
+            )
         bulk_add_subscriptions(realm, [stream], [user_profile], acting_user=None)
         return stream
 
@@ -1315,6 +1438,26 @@ Output:
         for x, y in zip(subscribed_streams, streams):
             self.assertEqual(x["name"], y.name)
 
+    def resolve_topic_containing_message(
+        self,
+        acting_user: UserProfile,
+        target_message_id: int,
+        **extra: str,
+    ) -> "TestHttpResponse":
+        """
+        Mark all messages within the topic associated with message `target_message_id` as resolved.
+        """
+        message, _ = access_message(acting_user, target_message_id)
+        return self.api_patch(
+            acting_user,
+            f"/api/v1/messages/{target_message_id}",
+            {
+                "topic": RESOLVED_TOPIC_PREFIX + message.topic_name(),
+                "propagate_mode": "change_all",
+            },
+            **extra,
+        )
+
     def send_webhook_payload(
         self,
         user_profile: UserProfile,
@@ -1349,6 +1492,7 @@ Output:
             skip_user_agent=False,
             follow=False,
             secure=False,
+            headers=None,
             intentionally_undocumented=False,
             **extra,
         )
@@ -1387,7 +1531,7 @@ Output:
         This raises a failure inside of the try/except block of
         markdown.__init__.do_convert.
         """
-        with self.settings(ERROR_BOT=None), mock.patch(
+        with mock.patch(
             "zerver.lib.markdown.timeout", side_effect=subprocess.CalledProcessError(1, [])
         ), self.assertLogs(
             level="ERROR"
@@ -1423,7 +1567,8 @@ Output:
         return values
 
     def find_by_id(self, data: List[Dict[str, Any]], db_id: int) -> Dict[str, Any]:
-        return [r for r in data if r["id"] == db_id][0]
+        [r] = (r for r in data if r["id"] == db_id)
+        return r
 
     def init_default_ldap_database(self) -> None:
         """
@@ -1438,7 +1583,7 @@ Output:
         """
         directory = orjson.loads(self.fixture_data("directory.json", type="ldap"))
 
-        for dn, attrs in directory.items():
+        for attrs in directory.values():
             if "uid" in attrs:
                 # Generate a password for the LDAP account:
                 attrs["userPassword"] = [self.ldap_password(attrs["uid"][0])]
@@ -1520,79 +1665,93 @@ Output:
         self, policy: str, validation_func: Callable[[UserProfile], bool]
     ) -> None:
         realm = get_realm("zulip")
-        owner_user = self.example_user("desdemona")
-        admin_user = self.example_user("iago")
-        moderator_user = self.example_user("shiva")
-        member_user = self.example_user("hamlet")
-        new_member_user = self.example_user("othello")
-        guest_user = self.example_user("polonius")
+
+        owner = "desdemona"
+        admin = "iago"
+        moderator = "shiva"
+        member = "hamlet"
+        new_member = "othello"
+        guest = "polonius"
+
+        def set_age(user_name: str, age: int) -> None:
+            user = self.example_user(user_name)
+            user.date_joined = timezone_now() - timedelta(age)
+            user.save()
 
         do_set_realm_property(realm, "waiting_period_threshold", 1000, acting_user=None)
-        new_member_user.date_joined = timezone_now() - timedelta(
-            days=(realm.waiting_period_threshold - 1)
-        )
-        new_member_user.save()
+        set_age(member, age=realm.waiting_period_threshold + 1)
+        set_age(new_member, age=realm.waiting_period_threshold - 1)
 
-        member_user.date_joined = timezone_now() - timedelta(
-            days=(realm.waiting_period_threshold + 1)
-        )
-        member_user.save()
+        def allow(user_name: str) -> None:
+            # Fetch a clean object for the user.
+            user = self.example_user(user_name)
+            with self.assert_database_query_count(0):
+                self.assertTrue(validation_func(user))
 
-        do_set_realm_property(realm, policy, Realm.POLICY_NOBODY, acting_user=None)
-        self.assertFalse(validation_func(owner_user))
-        self.assertFalse(validation_func(admin_user))
-        self.assertFalse(validation_func(moderator_user))
-        self.assertFalse(validation_func(member_user))
-        self.assertFalse(validation_func(new_member_user))
-        self.assertFalse(validation_func(guest_user))
+        def prevent(user_name: str) -> None:
+            # Fetch a clean object for the user.
+            user = self.example_user(user_name)
+            with self.assert_database_query_count(0):
+                self.assertFalse(validation_func(user))
 
-        do_set_realm_property(realm, policy, Realm.POLICY_OWNERS_ONLY, acting_user=None)
-        self.assertTrue(validation_func(owner_user))
-        self.assertFalse(validation_func(admin_user))
-        self.assertFalse(validation_func(moderator_user))
-        self.assertFalse(validation_func(member_user))
-        self.assertFalse(validation_func(new_member_user))
-        self.assertFalse(validation_func(guest_user))
+        def set_policy(level: int) -> None:
+            do_set_realm_property(realm, policy, level, acting_user=None)
 
-        do_set_realm_property(realm, policy, Realm.POLICY_ADMINS_ONLY, acting_user=None)
-        self.assertTrue(validation_func(owner_user))
-        self.assertTrue(validation_func(admin_user))
-        self.assertFalse(validation_func(moderator_user))
-        self.assertFalse(validation_func(member_user))
-        self.assertFalse(validation_func(new_member_user))
-        self.assertFalse(validation_func(guest_user))
+        set_policy(Realm.POLICY_NOBODY)
+        prevent(owner)
+        prevent(admin)
+        prevent(moderator)
+        prevent(member)
+        prevent(new_member)
+        prevent(guest)
 
-        do_set_realm_property(realm, policy, Realm.POLICY_MODERATORS_ONLY, acting_user=None)
-        self.assertTrue(validation_func(owner_user))
-        self.assertTrue(validation_func(admin_user))
-        self.assertTrue(validation_func(moderator_user))
-        self.assertFalse(validation_func(member_user))
-        self.assertFalse(validation_func(new_member_user))
-        self.assertFalse(validation_func(guest_user))
+        set_policy(Realm.POLICY_OWNERS_ONLY)
+        allow(owner)
+        prevent(admin)
+        prevent(moderator)
+        prevent(member)
+        prevent(new_member)
+        prevent(guest)
 
-        do_set_realm_property(realm, policy, Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None)
-        self.assertTrue(validation_func(owner_user))
-        self.assertTrue(validation_func(admin_user))
-        self.assertTrue(validation_func(moderator_user))
-        self.assertTrue(validation_func(member_user))
-        self.assertFalse(validation_func(new_member_user))
-        self.assertFalse(validation_func(guest_user))
+        set_policy(Realm.POLICY_ADMINS_ONLY)
+        allow(owner)
+        allow(admin)
+        prevent(moderator)
+        prevent(member)
+        prevent(new_member)
+        prevent(guest)
 
-        do_set_realm_property(realm, policy, Realm.POLICY_MEMBERS_ONLY, acting_user=None)
-        self.assertTrue(validation_func(owner_user))
-        self.assertTrue(validation_func(admin_user))
-        self.assertTrue(validation_func(moderator_user))
-        self.assertTrue(validation_func(member_user))
-        self.assertTrue(validation_func(new_member_user))
-        self.assertFalse(validation_func(guest_user))
+        set_policy(Realm.POLICY_MODERATORS_ONLY)
+        allow(owner)
+        allow(admin)
+        allow(moderator)
+        prevent(member)
+        prevent(new_member)
+        prevent(guest)
 
-        do_set_realm_property(realm, policy, Realm.POLICY_EVERYONE, acting_user=None)
-        self.assertTrue(validation_func(owner_user))
-        self.assertTrue(validation_func(admin_user))
-        self.assertTrue(validation_func(moderator_user))
-        self.assertTrue(validation_func(member_user))
-        self.assertTrue(validation_func(new_member_user))
-        self.assertTrue(validation_func(guest_user))
+        set_policy(Realm.POLICY_FULL_MEMBERS_ONLY)
+        allow(owner)
+        allow(admin)
+        allow(moderator)
+        allow(member)
+        prevent(new_member)
+        prevent(guest)
+
+        set_policy(Realm.POLICY_MEMBERS_ONLY)
+        allow(owner)
+        allow(admin)
+        allow(moderator)
+        allow(member)
+        allow(new_member)
+        prevent(guest)
+
+        set_policy(Realm.POLICY_EVERYONE)
+        allow(owner)
+        allow(admin)
+        allow(moderator)
+        allow(member)
+        allow(new_member)
+        allow(guest)
 
     def subscribe_realm_to_manual_license_management_plan(
         self, realm: Realm, licenses: int, licenses_at_next_renewal: int, billing_schedule: int
@@ -1623,45 +1782,46 @@ Output:
             realm, licenses, licenses_at_next_renewal, CustomerPlan.MONTHLY
         )
 
-    @contextmanager
-    def tornado_redirected_to_list(
-        self, lst: List[Mapping[str, Any]], expected_num_events: int
-    ) -> Iterator[None]:
-        lst.clear()
-
-        # process_notification takes a single parameter called 'notice'.
-        # lst.append takes a single argument called 'object'.
-        # Some code might call process_notification using keyword arguments,
-        # so mypy doesn't allow assigning lst.append to process_notification
-        # So explicitly change parameter name to 'notice' to work around this problem
-        with mock.patch(
-            "zerver.tornado.event_queue.process_notification", lambda notice: lst.append(notice)
-        ):
-            # Some `send_event` calls need to be executed only after the current transaction
-            # commits (using `on_commit` hooks). Because the transaction in Django tests never
-            # commits (rather, gets rolled back after the test completes), such events would
-            # never be sent in tests, and we would be unable to verify them. Hence, we use
-            # this helper to make sure the `send_event` calls actually run.
-            with self.captureOnCommitCallbacks(execute=True):
-                yield
-
-        self.assert_length(lst, expected_num_events)
-
     def create_user_notifications_data_object(
         self, *, user_id: int, **kwargs: Any
     ) -> UserMessageNotificationsData:
         return UserMessageNotificationsData(
             user_id=user_id,
             online_push_enabled=kwargs.get("online_push_enabled", False),
-            pm_email_notify=kwargs.get("pm_email_notify", False),
-            pm_push_notify=kwargs.get("pm_push_notify", False),
+            dm_email_notify=kwargs.get("dm_email_notify", False),
+            dm_push_notify=kwargs.get("dm_push_notify", False),
             mention_email_notify=kwargs.get("mention_email_notify", False),
             mention_push_notify=kwargs.get("mention_push_notify", False),
-            wildcard_mention_email_notify=kwargs.get("wildcard_mention_email_notify", False),
-            wildcard_mention_push_notify=kwargs.get("wildcard_mention_push_notify", False),
+            topic_wildcard_mention_email_notify=kwargs.get(
+                "topic_wildcard_mention_email_notify", False
+            ),
+            topic_wildcard_mention_push_notify=kwargs.get(
+                "topic_wildcard_mention_push_notify", False
+            ),
+            stream_wildcard_mention_email_notify=kwargs.get(
+                "stream_wildcard_mention_email_notify", False
+            ),
+            stream_wildcard_mention_push_notify=kwargs.get(
+                "stream_wildcard_mention_push_notify", False
+            ),
             stream_email_notify=kwargs.get("stream_email_notify", False),
             stream_push_notify=kwargs.get("stream_push_notify", False),
+            followed_topic_email_notify=kwargs.get("followed_topic_email_notify", False),
+            followed_topic_push_notify=kwargs.get("followed_topic_push_notify", False),
+            topic_wildcard_mention_in_followed_topic_email_notify=kwargs.get(
+                "topic_wildcard_mention_in_followed_topic_email_notify", False
+            ),
+            topic_wildcard_mention_in_followed_topic_push_notify=kwargs.get(
+                "topic_wildcard_mention_in_followed_topic_push_notify", False
+            ),
+            stream_wildcard_mention_in_followed_topic_email_notify=kwargs.get(
+                "stream_wildcard_mention_in_followed_topic_email_notify", False
+            ),
+            stream_wildcard_mention_in_followed_topic_push_notify=kwargs.get(
+                "stream_wildcard_mention_in_followed_topic_push_notify", False
+            ),
             sender_is_muted=kwargs.get("sender_is_muted", False),
+            disable_external_notifications=kwargs.get("disable_external_notifications", False),
         )
 
     def get_maybe_enqueue_notifications_parameters(
@@ -1727,23 +1887,117 @@ Output:
             UserGroupMembership.objects.filter(user_profile=user, user_group=user_group).exists()
         )
 
-    @contextmanager
-    def soft_deactivate_and_check_long_term_idle(
-        self, user: UserProfile, expected: bool
-    ) -> Iterator[None]:
-        """
-        Ensure that the user is soft deactivated (long term idle), and check if the user
-        has been reactivated when exiting the context with an assertion
-        """
+    def _assert_long_term_idle(self, user: UserProfile) -> None:
         if not user.long_term_idle:
-            do_soft_deactivate_users([user])
-            self.assertTrue(user.long_term_idle)
-        try:
-            yield
-        finally:
-            # Prevent from using the old user object
-            user.refresh_from_db()
-            self.assertEqual(user.long_term_idle, expected)
+            raise AssertionError(
+                """
+                We expect you to explicitly call self.soft_deactivate_user
+                if your user is not already soft-deactivated.
+            """
+            )
+
+    def expect_soft_reactivation(self, user: UserProfile, action: Callable[[], None]) -> None:
+        self._assert_long_term_idle(user)
+        action()
+        # Prevent from using the old user object
+        user.refresh_from_db()
+        self.assertEqual(user.long_term_idle, False)
+
+    def expect_to_stay_long_term_idle(self, user: UserProfile, action: Callable[[], None]) -> None:
+        self._assert_long_term_idle(user)
+        action()
+        # Prevent from using the old user object
+        user.refresh_from_db()
+        self.assertEqual(user.long_term_idle, True)
+
+    def soft_deactivate_user(self, user: UserProfile) -> None:
+        do_soft_deactivate_users([user])
+        assert user.long_term_idle
+
+
+class ZulipTestCase(ZulipTestCaseMixin, TestCase):
+    @contextmanager
+    def capture_send_event_calls(
+        self, expected_num_events: int
+    ) -> Iterator[List[Mapping[str, Any]]]:
+        lst: List[Mapping[str, Any]] = []
+
+        # process_notification takes a single parameter called 'notice'.
+        # lst.append takes a single argument called 'object'.
+        # Some code might call process_notification using keyword arguments,
+        # so mypy doesn't allow assigning lst.append to process_notification
+        # So explicitly change parameter name to 'notice' to work around this problem
+        with mock.patch(
+            "zerver.tornado.event_queue.process_notification", lambda notice: lst.append(notice)
+        ):
+            # Some `send_event` calls need to be executed only after the current transaction
+            # commits (using `on_commit` hooks). Because the transaction in Django tests never
+            # commits (rather, gets rolled back after the test completes), such events would
+            # never be sent in tests, and we would be unable to verify them. Hence, we use
+            # this helper to make sure the `send_event` calls actually run.
+            with self.captureOnCommitCallbacks(execute=True):
+                yield lst
+
+        self.assert_length(lst, expected_num_events)
+
+
+def get_row_ids_in_all_tables() -> Iterator[Tuple[str, Set[int]]]:
+    all_models = apps.get_models(include_auto_created=True)
+    ignored_tables = {"django_session"}
+
+    for model in all_models:
+        table_name = model._meta.db_table
+        if table_name in ignored_tables:
+            continue
+        ids = model._default_manager.all().values_list("id", flat=True)
+        yield table_name, set(ids)
+
+
+class ZulipTransactionTestCase(ZulipTestCaseMixin, TransactionTestCase):
+    """The default Django TestCase wraps each test in a transaction. This
+    is invaluable for being able to rollback the transaction and thus
+    efficiently do many tests containing database changes, but it
+    prevents testing certain transaction-related races and locking
+    bugs.
+
+    This test class is intended to be used (sparingly!) for tests that
+    need to verify transaction related behavior, like locking with
+    select_for_update or transaction.atomic(durable=True).
+
+    Unlike ZulipTestCase, ZulipTransactionTestCase has the following traits:
+    1. Does not offer isolation between tests by wrapping them inside an atomic transaction.
+    2. Changes are committed to the current worker's test database, so side effects carry on.
+
+    All ZulipTransactionTestCase tests must be carefully written to
+    avoid side effects on the database; while Django runs
+    TransactionTestCase after all normal TestCase tests on a given
+    test worker to avoid pollution, they can break other
+    ZulipTransactionTestCase tests if they leak state.
+    """
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.models_ids_set = dict(get_row_ids_in_all_tables())
+
+    def tearDown(self) -> None:
+        """Verifies that the test did not adjust the set of rows in the test
+        database. This is a sanity check to help ensure that tests
+        using this class do not have unintended side effects on the
+        test database.
+        """
+        super().tearDown()
+        for table_name, ids in get_row_ids_in_all_tables():
+            self.assertSetEqual(
+                self.models_ids_set[table_name],
+                ids,
+                f"{table_name} got a different set of ids after this test",
+            )
+
+    def _fixture_teardown(self) -> None:
+        """We override the default _fixture_teardown method defined on
+        TransactionTestCase, so that the test database does not get
+        flushed/deleted after each test using this class.
+        """
 
 
 class WebhookTestCase(ZulipTestCase):
@@ -1773,7 +2027,7 @@ class WebhookTestCase(ZulipTestCase):
 
     @property
     def test_user(self) -> UserProfile:
-        return get_user(self.TEST_USER_EMAIL, get_realm("zulip"))
+        return self.get_user_from_email(self.TEST_USER_EMAIL, get_realm("zulip"))
 
     def setUp(self) -> None:
         super().setUp()
@@ -1874,7 +2128,7 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         We simulate the delivery of the payload with `content_type`,
         and you can pass other headers via `extra`.
 
-        For the rare cases of webhooks actually sending private messages,
+        For the rare cases of webhooks actually sending direct messages,
         see send_and_test_private_message.
 
         When no message is expected to be sent, set `expect_noop` to True.
@@ -1928,7 +2182,7 @@ one or more new messages.
         topic_name: str,
         content: str,
     ) -> None:
-        self.assertEqual(get_display_recipient(message.recipient), stream_name)
+        self.assert_message_stream_name(message, stream_name)
         self.assertEqual(message.topic_name(), topic_name)
         self.assertEqual(message.content, content)
 
@@ -1943,7 +2197,7 @@ one or more new messages.
     ) -> Message:
         """
         For the rare cases that you are testing a webhook that sends
-        private messages, use this function.
+        direct messages, use this function.
 
         Most webhooks send to streams, and you will want to look at
         check_webhook.

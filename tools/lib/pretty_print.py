@@ -58,9 +58,12 @@ def adjust_block_indentation(tokens: List[Token], fn: str) -> None:
             continue
 
         if start_token and token.indent is not None:
-            if not start_token.indent_is_final and token.indent == start_token.orig_indent:
-                if token_allows_children_to_skip_indents(start_token):
-                    start_token.child_indent = start_token.indent
+            if (
+                not start_token.indent_is_final
+                and token.indent == start_token.orig_indent
+                and token_allows_children_to_skip_indents(start_token)
+            ):
+                start_token.child_indent = start_token.indent
             start_token.indent_is_final = True
 
         # Detect start token by its having a end token
@@ -104,6 +107,10 @@ def adjust_block_indentation(tokens: List[Token], fn: str) -> None:
 
 
 def fix_indents_for_multi_line_tags(tokens: List[Token]) -> None:
+    def fix(frag: str) -> str:
+        frag = frag.strip()
+        return continue_indent + frag if frag else ""
+
     for token in tokens:
         if token.kind == "code":
             continue
@@ -117,10 +124,6 @@ def fix_indents_for_multi_line_tags(tokens: List[Token]) -> None:
             continue_indent = token.indent + "  "
 
         frags = token.new_s.split("\n")
-
-        def fix(frag: str) -> str:
-            frag = frag.strip()
-            return continue_indent + frag if frag else ""
 
         token.new_s = frags[0] + "\n" + "\n".join(fix(frag) for frag in frags[1:])
 
@@ -151,7 +154,7 @@ def validate_indent_html(fn: str, tokens: List[Token], fix: bool) -> bool:
     with open(fn) as f:
         html = f.read()
     phtml = pretty_print_html(tokens, fn)
-    if not html.split("\n") == phtml.split("\n"):
+    if html.split("\n") != phtml.split("\n"):
         if fix:
             print(GREEN + f"Automatically fixing indentation for {fn}" + ENDC)
             with open(fn, "w") as f:
@@ -177,7 +180,7 @@ Proposed {BOLDRED}diff{ENDC} for {CYAN}{fn}{ENDC}:
             """,
             flush=True,
         )
-        subprocess.run(["diff", fn, "-"], input=phtml, text=True)
+        subprocess.run(["diff", fn, "-"], input=phtml, text=True, check=False)
         print(
             f"""
 ---

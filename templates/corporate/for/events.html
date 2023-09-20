@@ -22,7 +22,7 @@
         <div class="content">
             <h1 class="center">Zulip for conferences and events</h1>
             <p>Conferences, workshops, hackathons. In-person, online, and anything in between.
-                <br/><a href="/plans">Zulip Cloud Standard</a> is free for
+                <br/><a href="/plans/">Zulip Cloud Standard</a> is free for
                 academic conferences and most other non-profit events!
             </p>
         </div>
@@ -33,7 +33,7 @@
             <a href="/new/" class="button">
                 {{ _('Create organization') }}
             </a>
-            <a href="/accounts/go/?next=/upgrade%23sponsorship" class="button">
+            <a href="/accounts/go/?next=/upgrade/%23sponsorship" class="button">
                 {{ _('Request sponsorship') }}
             </a>
             <a href="/self-hosting/" class="button">
@@ -45,7 +45,7 @@
     <div class="feature-intro">
         <h1 class="center"> Make Zulip the communication hub for your event. </h1>
         <p>
-            <a href="/hello">Zulip</a> is the only <a href="/features">modern team chat app</a> that is <a href="/why-zulip">ideal</a> for both live and asynchronous conversations. Post presentations and announcements, host Q&A sessions, and coordinate among organizers.
+            <a href="/hello/">Zulip</a> is the only <a href="/features/">modern team chat app</a> that is <a href="/why-zulip/">ideal</a> for both live and asynchronous conversations. Post presentations and announcements, host Q&A sessions, and coordinate among organizers.
         </p>
     </div>
 
@@ -98,7 +98,7 @@
         </div>
         <div class="feature-half">
             <div class="feature-image topics-image">
-                <img alt="" src="/static/images/landing-page/events/streams_and_topics_day.png" />
+                <img alt="" src="{{ static('images/landing-page/events/streams_and_topics_day.png') }}" />
             </div>
         </div>
     </div>
@@ -106,7 +106,7 @@
     <div class="feature-container alternate-grid">
         <div class="feature-half md-hide">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/events/your_communication_hub_day.png" />
+                <img alt="" src="{{ static('images/landing-page/events/your_communication_hub_day.png') }}" />
             </div>
         </div>
         <div class="feature-half">
@@ -131,7 +131,7 @@
                         <div class="list-content">Make a <a href="/help/start-a-call">video call</a> with the click of a button.</div>
                     </li>
                     <li>
-                        <div class="list-content">Use Zulip in your language of choice, with translations into <a href="https://www.transifex.com/zulip/zulip/">23 languages</a>.</div>
+                        <div class="list-content">Use Zulip in your language of choice, with translations into <a href="https://explore.transifex.com/zulip/zulip/">23 languages</a>.</div>
                     </li>
                 </ul>
             </div>
@@ -149,7 +149,7 @@
         </div>
         <div class="feature-half md-display">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/events/your_communication_hub_day.png" />
+                <img alt="" src="{{ static('images/landing-page/events/your_communication_hub_day.png') }}" />
             </div>
         </div>
     </div>
@@ -183,7 +183,7 @@
         </div>
         <div class="feature-half">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/education/knowledge-repository.svg" />
+                <img alt="" src="{{ static('images/landing-page/education/knowledge-repository.svg') }}" />
             </div>
         </div>
     </div>
@@ -191,7 +191,7 @@
     <div class="feature-container alternate-grid">
         <div class="feature-half md-hide">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/events/message_formatting_day.png" />
+                <img alt="" src="{{ static('images/landing-page/events/message_formatting_day.png') }}" />
             </div>
         </div>
         <div class="feature-half">
@@ -203,13 +203,13 @@
                     <li><div class="list-content"><a href="/help/format-your-message-using-markdown#latex">Type LaTeX</a> directly into your Zulip message, and see it beautifully rendered.</div></li>
                     <li><div class="list-content"><a href="/help/code-blocks">Zulip code blocks</a> come with syntax highlighting for over 250 languages, and integrated <a href="/help/code-blocks#code-playgrounds">code playgrounds.</a></div></li>
                     <li><div class="list-content">Structure your ideas with bulleted and numbered <a href="/help/format-your-message-using-markdown#lists">lists</a>.</div></li>
-                    <li><div class="list-content">If you made a mistake, no worries! You can <a href="/help/edit-or-delete-a-message">edit your message</a>, or move it to a different <a href="/help/move-content-to-another-topic">topic</a> or <a href="/help/move-content-to-another-stream">stream</a>.</div></li>
+                    <li><div class="list-content">If you made a mistake, no worries! You can <a href="/help/edit-a-message">edit your message</a>, or move it to a different <a href="/help/move-content-to-another-topic">topic</a> or <a href="/help/move-content-to-another-stream">stream</a>.</div></li>
                 </ul>
             </div>
         </div>
         <div class="feature-half md-display">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/events/message_formatting_day.png" />
+                <img alt="" src="{{ static('images/landing-page/events/message_formatting_day.png') }}" />
             </div>
         </div>
     </div>
@@ -234,7 +234,7 @@
         </div>
         <div class="feature-half">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/education/flexible-administration.svg" />
+                <img alt="" src="{{ static('images/landing-page/education/flexible-administration.svg') }}" />
             </div>
         </div>
     </div>
@@ -242,7 +242,7 @@
     <div class="feature-container alternate-grid">
         <div class="feature-half md-hide">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/education/mobile.svg" />
+                <img alt="" src="{{ static('images/landing-page/education/mobile.svg') }}" />
             </div>
         </div>
         <div class="feature-half">
@@ -253,7 +253,7 @@
                 <ul>
                     <li>
                         <div class="list-content">
-                            With <a href="/apps">apps for every
+                            With <a href="/apps/">apps for every
                             platform</a>, check Zulip at your computer or on your
                             phone. Zulip works great in a browser, so no download is
                             required.
@@ -272,7 +272,7 @@
         </div>
         <div class="feature-half md-display">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/education/mobile.svg" />
+                <img alt="" src="{{ static('images/landing-page/education/mobile.svg') }}" />
             </div>
         </div>
     </div>
@@ -280,14 +280,14 @@
     <div class="feature-end">
         <div class="bottom-register-buttons">
             <h1>
-                <a href="/plans">Zulip Cloud Standard</a> is free for academic conferences and
+                <a href="/plans/">Zulip Cloud Standard</a> is free for academic conferences and
                 most other non-profit events!
             </h1>
             <div class="hero-buttons center">
                 <a href="/new/" class="button">
                     {{ _('Create organization') }}
                 </a>
-                <a href="/accounts/go/?next=/upgrade%23sponsorship" class="button">
+                <a href="/accounts/go/?next=/upgrade/%23sponsorship" class="button">
                     {{ _('Request sponsorship') }}
                 </a>
                 <a href="/self-hosting/" class="button">

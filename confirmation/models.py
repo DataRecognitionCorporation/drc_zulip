@@ -13,15 +13,17 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import CASCADE
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
+from typing_extensions import TypeAlias
 
 from confirmation import settings as confirmation_settings
 from zerver.lib.types import UnspecifiedValue
 from zerver.models import (
     EmailChangeStatus,
     MultiuseInvite,
+    PreregistrationRealm,
     PreregistrationUser,
     Realm,
     RealmReactivationStatus,
@@ -43,10 +45,17 @@ def render_confirmation_key_error(
     request: HttpRequest, exception: ConfirmationKeyError
 ) -> HttpResponse:
     if exception.error_type == ConfirmationKeyError.WRONG_LENGTH:
+<<<<<<< HEAD
         return render(request, "confirmation/link_malformed.html", status=404)
     if exception.error_type == ConfirmationKeyError.EXPIRED:
         return render(request, "confirmation/link_expired.html", status=404)
     return render(request, "confirmation/link_does_not_exist.html", status=404)
+=======
+        return TemplateResponse(request, "confirmation/link_malformed.html", status=404)
+    if exception.error_type == ConfirmationKeyError.EXPIRED:
+        return TemplateResponse(request, "confirmation/link_expired.html", status=404)
+    return TemplateResponse(request, "confirmation/link_does_not_exist.html", status=404)
+>>>>>>> drc_main
 
 
 def generate_key() -> str:
@@ -54,8 +63,9 @@ def generate_key() -> str:
     return b32encode(secrets.token_bytes(15)).decode().lower()
 
 
-ConfirmationObjT = Union[
+ConfirmationObjT: TypeAlias = Union[
     MultiuseInvite,
+    PreregistrationRealm,
     PreregistrationUser,
     EmailChangeStatus,
     UserProfile,
@@ -114,12 +124,17 @@ def create_confirmation_link(
     *,
     validity_in_minutes: Union[Optional[int], UnspecifiedValue] = UnspecifiedValue(),
     url_args: Mapping[str, str] = {},
+    realm_creation: bool = False,
 ) -> str:
     # validity_in_minutes is an override for the default values which are
     # determined by the confirmation_type - its main purpose is for use
     # in tests which may want to have control over the exact expiration time.
     key = generate_key()
-    realm = obj.realm
+    if realm_creation:
+        realm = None
+    else:
+        assert not isinstance(obj, PreregistrationRealm)
+        realm = obj.realm
 
     current_time = timezone_now()
     expiry_date = None
@@ -179,11 +194,11 @@ class Confirmation(models.Model):
     REALM_REACTIVATION = 8
     type = models.PositiveSmallIntegerField()
 
-    def __str__(self) -> str:
-        return f"<Confirmation: {self.content_object}>"
-
     class Meta:
         unique_together = ("type", "confirmation_key")
+
+    def __str__(self) -> str:
+        return f"{self.content_object!r}"
 
 
 class ConfirmationType:
@@ -240,10 +255,17 @@ def validate_key(creation_key: Optional[str]) -> Optional["RealmCreationKey"]:
     try:
         key_record = RealmCreationKey.objects.get(creation_key=creation_key)
     except RealmCreationKey.DoesNotExist:
+<<<<<<< HEAD
         raise RealmCreationKey.InvalidError()
     time_elapsed = timezone_now() - key_record.date_created
     if time_elapsed.total_seconds() > settings.REALM_CREATION_LINK_VALIDITY_DAYS * 24 * 3600:
         raise RealmCreationKey.InvalidError()
+=======
+        raise RealmCreationKey.InvalidError
+    time_elapsed = timezone_now() - key_record.date_created
+    if time_elapsed.total_seconds() > settings.REALM_CREATION_LINK_VALIDITY_DAYS * 24 * 3600:
+        raise RealmCreationKey.InvalidError
+>>>>>>> drc_main
     return key_record
 
 

@@ -97,8 +97,8 @@ def assert_droplet_does_not_exist(my_token: str, droplet_name: str, recreate: bo
         if droplet.name.lower() == droplet_name:
             if not recreate:
                 print(
-                    "Droplet {} already exists. Pass --recreate if you "
-                    "need to recreate the droplet.".format(droplet_name)
+                    f"Droplet {droplet_name} already exists. Pass --recreate if you "
+                    "need to recreate the droplet."
                 )
                 sys.exit(1)
             else:
@@ -109,7 +109,7 @@ def assert_droplet_does_not_exist(my_token: str, droplet_name: str, recreate: bo
 
 
 def get_ssh_keys_string_from_github_ssh_key_dicts(userkey_dicts: List[Dict[str, Any]]) -> str:
-    return "\n".join([userkey_dict["key"] for userkey_dict in userkey_dicts])
+    return "\n".join(userkey_dict["key"] for userkey_dict in userkey_dicts)
 
 
 def generate_dev_droplet_user_data(
@@ -251,8 +251,8 @@ def create_dns_record(my_token: str, record_name: str, ipv4: str, ipv6: str) -> 
 
 def print_dev_droplet_instructions(username: str, droplet_domain_name: str) -> None:
     print(
-        """
-COMPLETE! Droplet for GitHub user {0} is available at {1}.
+        f"""
+COMPLETE! Droplet for GitHub user {username} is available at {droplet_domain_name}.
 
 Instructions for use are below. (copy and paste to the user)
 
@@ -260,16 +260,14 @@ Instructions for use are below. (copy and paste to the user)
 Your remote Zulip dev server has been created!
 
 - Connect to your server by running
-  `ssh zulipdev@{1}` on the command line
+  `ssh zulipdev@{droplet_domain_name}` on the command line
   (Terminal for macOS and Linux, Bash for Git on Windows).
 - There is no password; your account is configured to use your SSH keys.
 - Once you log in, you should see `(zulip-py3-venv) ~$`.
-- To start the dev server, `cd zulip` and then run `./tools/run-dev.py`.
+- To start the dev server, `cd zulip` and then run `./tools/run-dev`.
 - While the dev server is running, you can see the Zulip server in your browser at
-  http://{1}:9991.
-""".format(
-            username, droplet_domain_name
-        )
+  http://{droplet_domain_name}:9991.
+"""
     )
 
     print(
@@ -288,19 +286,17 @@ Your remote Zulip dev server has been created!
 
 def print_production_droplet_instructions(droplet_domain_name: str) -> None:
     print(
-        """
+        f"""
 -----
 
 Production droplet created successfully!
 
 Connect to the server by running
 
-ssh root@{}
+ssh root@{droplet_domain_name}
 
 -----
-""".format(
-            droplet_domain_name
-        )
+"""
     )
 
 
@@ -361,7 +357,7 @@ if __name__ == "__main__":
         my_token=api_token,
         template_id=template_id,
         name=droplet_domain_name,
-        tags=args.tags + ["dev"],
+        tags=[*args.tags, "dev"],
         user_data=user_data,
         region=args.region,
     )

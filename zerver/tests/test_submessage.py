@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Mapping
+from typing import Any, Dict, List
 from unittest import mock
 
 from zerver.actions.submessage import do_add_submessage
@@ -151,8 +151,7 @@ class TestBasics(ZulipTestCase):
             msg_type="whatever",
             content='{"name": "alice", "salary": 20}',
         )
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events, expected_num_events=1):
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             result = self.client_post("/json/submessage", payload)
         self.assert_json_success(result)
 
@@ -195,9 +194,39 @@ class TestBasics(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         message_id = self.send_stream_message(hamlet, "Denmark")
 
-        with self.tornado_redirected_to_list([], expected_num_events=1):
-            with mock.patch("zerver.actions.submessage.send_event") as m:
+        with self.capture_send_event_calls(expected_num_events=1):
+            with mock.patch("zerver.tornado.django_api.queue_json_publish") as m:
                 m.side_effect = AssertionError(
                     "Events should be sent only after the transaction commits."
                 )
                 do_add_submessage(hamlet.realm, hamlet.id, message_id, "whatever", "whatever")
+
+    def test_fetch_message_containing_submessages(self) -> None:
+        cordelia = self.example_user("cordelia")
+        stream_name = "Verona"
+        message_id = self.send_stream_message(
+            sender=cordelia,
+            stream_name=stream_name,
+        )
+        self.login_user(cordelia)
+
+        payload = dict(
+            message_id=message_id,
+            msg_type="whatever",
+            content='{"name": "alice", "salary": 20}',
+        )
+        self.assert_json_success(self.client_post("/json/submessage", payload))
+
+        result = self.client_get(f"/json/messages/{message_id}")
+        response_dict = self.assert_json_success(result)
+        self.assert_length(response_dict["message"]["submessages"], 1)
+
+        submessage = response_dict["message"]["submessages"][0]
+        expected_data = dict(
+            id=submessage["id"],
+            message_id=message_id,
+            content='{"name": "alice", "salary": 20}',
+            msg_type="whatever",
+            sender_id=cordelia.id,
+        )
+        self.assertEqual(submessage, expected_data)

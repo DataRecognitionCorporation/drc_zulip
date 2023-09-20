@@ -30,17 +30,19 @@ def get_dev_users(realm: Optional[Realm] = None, extra_users_count: int = 10) ->
     # it still makes sense to limit how many extra users we render to
     # support performance testing with DevAuthBackend.
     if realm is not None:
-        users_query = UserProfile.objects.select_related().filter(
+        users_query = UserProfile.objects.select_related("realm").filter(
             is_bot=False, is_active=True, realm=realm
         )
     else:
-        users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
+        users_query = UserProfile.objects.select_related("realm").filter(
+            is_bot=False, is_active=True
+        )
 
     shakespearian_users = users_query.exclude(email__startswith="extrauser").order_by("email")
     extra_users = users_query.filter(email__startswith="extrauser").order_by("email")
     # Limit the number of extra users we offer by default
     extra_users = extra_users[0:extra_users_count]
-    users = list(shakespearian_users) + list(extra_users)
+    users = [*shakespearian_users, *extra_users]
     return users
 
 
@@ -117,25 +119,28 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str = REQ()) -> HttpRe
     validate_login_email(username)
     realm = get_realm_from_request(request)
     if realm is None:
-        raise InvalidSubdomainError()
+        raise InvalidSubdomainError
     return_data: Dict[str, bool] = {}
     user_profile = authenticate(dev_auth_username=username, realm=realm, return_data=return_data)
     if return_data.get("inactive_realm"):
-        raise RealmDeactivatedError()
+        raise RealmDeactivatedError
     if return_data.get("inactive_user"):
-        raise UserDeactivatedError()
-    if return_data.get("invalid_subdomain"):
-        raise InvalidSubdomainError()
+        raise UserDeactivatedError
+    if return_data.get("invalid_subdomain"):  # nocoverage
+        raise InvalidSubdomainError
     if user_profile is None:
         # Since we're not actually checking passwords, this condition
         # is when one's attempting to send an email address that
         # doesn't have an account, i.e. it's definitely invalid username.
-        raise AuthenticationFailedError()
+        raise AuthenticationFailedError
     assert isinstance(user_profile, UserProfile)
 
     do_login(request, user_profile)
     api_key = get_api_key(user_profile)
-    return json_success(request, data={"api_key": api_key, "email": user_profile.delivery_email})
+    return json_success(
+        request,
+        data={"api_key": api_key, "email": user_profile.delivery_email, "user_id": user_profile.id},
+    )
 
 
 @csrf_exempt

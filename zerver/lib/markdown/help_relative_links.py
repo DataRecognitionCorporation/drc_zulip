@@ -18,14 +18,25 @@ gear_info = {
     # key is from REGEXP: `{relative|gear|key}`
     # name is what the item is called in the gear menu: `Select **name**.`
     # link is used for relative links: `Select [name](link).`
-    "manage-streams": ["Manage streams", "/#streams/subscribed"],
-    "settings": ["Personal Settings", "/#settings/profile"],
-    "manage-organization": ["Manage organization", "/#organization/organization-profile"],
-    "integrations": ["Integrations", "/integrations"],
-    "stats": ["Usage statistics", "/stats"],
-    "plans": ["Plans and pricing", "/plans"],
-    "billing": ["Billing", "/billing"],
-    "invite": ["Invite users", "/#invite"],
+    "manage-streams": ['<i class="fa fa-exchange"></i> Manage streams', "/#streams/subscribed"],
+    "settings": ['<i class="fa fa-wrench"></i> Personal Settings', "/#settings/profile"],
+    "organization-settings": [
+        '<i class="fa fa-bolt"></i> Organization settings',
+        "/#organization/organization-profile",
+    ],
+    "integrations": ['<i class="fa fa-github"></i> Integrations', "/integrations/"],
+    "stats": ['<i class="fa fa-bar-chart"></i> Usage statistics', "/stats"],
+    "plans": ['<i class="fa fa-rocket"></i> Plans and pricing', "/plans/"],
+    "billing": ['<i class="fa fa-credit-card"></i> Billing', "/billing/"],
+    "keyboard-shortcuts": [
+        '<i class="fa fa-keyboard-o"></i> Keyboard shortcuts (?)',
+        "/#keyboard-shortcuts",
+    ],
+    "message-formatting": [
+        '<i class="fa fa-pencil"></i> Message formatting',
+        "/#message-formatting",
+    ],
+    "search-filters": ['<i class="fa fa-search"></i> Search filters', "/#search-operators"],
     "about-zulip": ["About Zulip", "/#about-zulip"],
 }
 
@@ -66,9 +77,58 @@ def stream_handle_match(key: str) -> str:
     return stream_instructions_no_link
 
 
+draft_instructions = """
+1. Click on <i class="fa fa-pencil"></i> **Drafts** in the left sidebar.
+"""
+
+scheduled_instructions = """
+1. Click on <i class="fa fa-calendar"></i> **Scheduled messages** in the left
+   sidebar. If you do not see this link, you have no scheduled messages.
+"""
+
+recent_instructions = """
+1. Click on <i class="fa fa-clock-o"></i> **Recent conversations** in the left
+   sidebar.
+"""
+
+all_instructions = """
+1. Click on <i class="fa fa-align-left"></i> **All messages** in the left
+   sidebar or use the <kbd>A</kbd> keyboard shortcut.
+"""
+
+starred_instructions = """
+1. Click on <i class="fa fa-star"></i> **Starred messages** in the left
+   sidebar, or by [searching](/help/search-for-messages) for `is:starred`.
+"""
+
+direct_instructions = """
+1. In the left sidebar, click the **All direct messages**
+   (<i class="fa fa-align-right"></i>) icon to the right of the
+   **Direct messages** label, or use the <kbd>Shift</kbd> + <kbd>P</kbd>
+   keyboard shortcut.
+"""
+
+message_info = {
+    "drafts": ["Drafts", "/#drafts", draft_instructions],
+    "scheduled": ["Scheduled messages", "/#scheduled", scheduled_instructions],
+    "recent": ["Recent conversations", "/#recent", recent_instructions],
+    "all": ["All messages", "/#all_messages", all_instructions],
+    "starred": ["Starred messages", "/#narrow/is/starred", starred_instructions],
+    "direct": ["All direct messages", "/#narrow/is/dm", direct_instructions],
+}
+
+
+def message_handle_match(key: str) -> str:
+    if relative_help_links:
+        return f"1. Go to [{message_info[key][0]}]({message_info[key][1]})."
+    else:
+        return message_info[key][2]
+
+
 LINK_TYPE_HANDLERS = {
     "gear": gear_handle_match,
     "stream": stream_handle_match,
+    "message": message_handle_match,
 }
 
 

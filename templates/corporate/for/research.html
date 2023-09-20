@@ -23,7 +23,7 @@
             <h1 class="center">Zulip for research</h1>
             <p>
                 Chat for your project, research group, department or scientific
-                field. <br/><a href="/plans">Zulip Cloud Standard</a> is free for academic
+                field. <br/><a href="/plans/">Zulip Cloud Standard</a> is free for academic
                 research!
             </p>
         </div>
@@ -35,7 +35,7 @@
             <a href="/new/" class="button">
                 {{ _('Create organization') }}
             </a>
-            <a href="/accounts/go/?next=/upgrade%23sponsorship" class="button">
+            <a href="/accounts/go/?next=/upgrade/%23sponsorship" class="button">
                 {{ _('Request sponsorship') }}
             </a>
             <a href="/self-hosting/" class="button">
@@ -47,7 +47,7 @@
     <div class="feature-intro">
         <h1 class="center"> Make Zulip the communication hub for your research community. </h1>
         <p>
-            <a href="/hello">Zulip</a> is the only <a href="/features">modern team chat app</a> that is <a href="/why-zulip">ideal</a> for both live and asynchronous conversations. Coordinate with collaborators, post questions and ideas, and learn from others in your field.
+            <a href="/hello/">Zulip</a> is the only <a href="/features/">modern team chat app</a> that is <a href="/why-zulip/">ideal</a> for both live and asynchronous conversations. Coordinate with collaborators, post questions and ideas, and learn from others in your field.
         </p>
     </div>
 
@@ -81,7 +81,7 @@
                     </li>
                     <li>
                         <div class="list-content">
-                            Check out <a href="/for/communities">Zulip for communities</a>
+                            Check out <a href="/for/communities/">Zulip for communities</a>
                             to learn how Zulip empowers welcoming communities by making it
                             easy to participate on your own time.
                         </div>
@@ -108,7 +108,7 @@
         </div>
         <div class="feature-half">
             <div class="feature-image topics-image">
-                <img alt="" src="/static/images/landing-page/research/streams_and_topics_day.png" />
+                <img alt="" src="{{ static('images/landing-page/research/streams_and_topics_day.png') }}" />
             </div>
         </div>
     </div>
@@ -116,7 +116,7 @@
     <div class="feature-container alternate-grid">
         <div class="feature-half md-hide">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/education/knowledge-repository.svg" />
+                <img alt="" src="{{ static('images/landing-page/education/knowledge-repository.svg') }}" />
             </div>
         </div>
         <div class="feature-half">
@@ -128,7 +128,7 @@
                     <li>
                         <div class="list-content">
                             Maintain access to your organization's entire
-                            message history with free <a href="/plans">Zulip
+                            message history with free <a href="/plans/">Zulip
                             Cloud Standard</a> hosting. Information is at your
                             fingertips with Zulip's <a
                             href="/help/search-for-messages">powerful full-text
@@ -168,7 +168,7 @@
         </div>
         <div class="feature-half md-display">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/education/knowledge-repository.svg" />
+                <img alt="" src="{{ static('images/landing-page/education/knowledge-repository.svg') }}" />
             </div>
         </div>
     </div>
@@ -197,7 +197,7 @@
                     <li>
                         <div class="list-content">
                             If you made a mistake, no worries! You
-                            can <a href="/help/edit-or-delete-a-message">edit your
+                            can <a href="/help/edit-a-message">edit your
                             message</a>, or move it to a
                             different <a href="/help/move-content-to-another-topic">topic</a>
                             or <a href="/help/move-content-to-another-stream">stream</a>.
@@ -209,7 +209,7 @@
         </div>
         <div class="feature-half">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/events/message_formatting_day.png" />
+                <img alt="" src="{{ static('images/landing-page/events/message_formatting_day.png') }}" />
             </div>
         </div>
     </div>
@@ -217,7 +217,7 @@
     <div class="feature-container alternate-grid">
         <div class="feature-half md-hide">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/research/interactive_messaging_day.png" />
+                <img alt="" src="{{ static('images/landing-page/research/interactive_messaging_day.png') }}" />
             </div>
         </div>
         <div class="feature-half">
@@ -248,7 +248,7 @@
                     </li>
                     <li><div class="list-content">Share papers, presentations or images with <a href="/help/share-and-upload-files">drag-and-drop file uploads</a>.</div></li>
                 </ul>
-                <figure class="quote">
+                <div class="quote">
                     <blockquote>
                         For more than a year, Zulip has been the cornerstone of our online
                         Category Theory community. We greatly appreciate the seamless
@@ -268,13 +268,13 @@
                     <div class="author">
                         &mdash; Stelios Tsampas, PhD in Theoretical Computer Science
                     </div>
-                </figure>
+                </div>
 
             </div>
         </div>
         <div class="feature-half md-display">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/research/interactive_messaging_day.png" />
+                <img alt="" src="{{ static('images/landing-page/research/interactive_messaging_day.png') }}" />
             </div>
         </div>
     </div>
@@ -309,7 +309,7 @@
         </div>
         <div class="feature-half">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/education/flexible-administration.svg" />
+                <img alt="" src="{{ static('images/landing-page/education/flexible-administration.svg') }}" />
             </div>
         </div>
     </div>
@@ -317,7 +317,7 @@
     <div class="feature-container alternate-grid">
         <div class="feature-half md-hide">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/education/mobile.svg" />
+                <img alt="" src="{{ static('images/landing-page/education/mobile.svg') }}" />
             </div>
         </div>
         <div class="feature-half">
@@ -328,7 +328,7 @@
                 <ul>
                     <li>
                         <div class="list-content">
-                            With <a href="/apps">apps for every
+                            With <a href="/apps/">apps for every
                             platform</a>, you can check Zulip at your computer or on your
                             phone. Zulip works great in a browser, so no download is
                             required.
@@ -343,13 +343,13 @@
                             when you need their attention.
                         </div>
                     </li>
-                    <li><div class="list-content">Use Zulip in your language of choice, with translations into <a href="https://www.transifex.com/zulip/zulip/">23 languages</a>.</div></li>
+                    <li><div class="list-content">Use Zulip in your language of choice, with translations into <a href="https://explore.transifex.com/zulip/zulip/">23 languages</a>.</div></li>
                 </ul>
             </div>
         </div>
         <div class="feature-half md-display">
             <div class="feature-image">
-                <img alt="" src="/static/images/landing-page/education/mobile.svg" />
+                <img alt="" src="{{ static('images/landing-page/education/mobile.svg') }}" />
             </div>
         </div>
     </div>
@@ -392,16 +392,16 @@
     </div>
 
     <div class="feature-end">
-        <div class="bottom-register-buttons">
+        <div class="bottom-register-buttons extra_margin_before_footer">
             <h1>
-                <a href="/plans">Zulip Cloud Standard</a> is free for
+                <a href="/plans/">Zulip Cloud Standard</a> is free for
                 academic research!
             </h1>
             <div class="hero-buttons center">
                 <a href="/new/" class="button">
                     {{ _('Create organization') }}
                 </a>
-                <a href="/accounts/go/?next=/upgrade%23sponsorship" class="button">
+                <a href="/accounts/go/?next=/upgrade/%23sponsorship" class="button">
                     {{ _('Request sponsorship') }}
                 </a>
                 <a href="/self-hosting/" class="button">

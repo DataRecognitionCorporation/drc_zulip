@@ -1,12 +1,16 @@
-from functools import partial
 from typing import Callable, Dict, Iterable, Iterator, List, Optional
 
 from django.http import HttpRequest, HttpResponse
+from returns.curry import partial
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+<<<<<<< HEAD
 from zerver.lib.request import REQ, has_request_variables
+=======
+>>>>>>> drc_main
 from zerver.lib.response import json_success
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
 from zerver.lib.validator import (
     WildValue,
     check_bool,
@@ -15,7 +19,6 @@ from zerver.lib.validator import (
     check_none_or,
     check_string,
     check_string_or_int,
-    to_wild_value,
 )
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
@@ -400,7 +403,7 @@ def get_story_create_github_entity_body(payload: WildValue, action: WildValue, e
             app_url=action["app_url"].tame(check_string),
         ),
         "name": pull_request_action["number"].tame(check_int)
-        if entity == "pull-request" or entity == "pull-request-comment"
+        if entity in ("pull-request", "pull-request-comment")
         else pull_request_action["name"].tame(check_string),
         "url": pull_request_action["url"].tame(check_string),
         "workflow_state_template": "",
@@ -767,11 +770,12 @@ EVENTS_SECONDARY_ACTIONS_FUNCTION_MAPPER: Dict[str, Callable[[WildValue], Iterat
 
 
 @webhook_view("Clubhouse", all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint
 def api_clubhouse_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
+    *,
+    payload: WebhookPayload[WildValue],
 ) -> HttpResponse:
     # Clubhouse has a tendency to send empty POST requests to
     # third-party endpoints. It is unclear as to which event type

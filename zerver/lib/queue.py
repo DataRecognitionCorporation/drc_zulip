@@ -13,16 +13,19 @@ import pika.adapters.tornado_connection
 import pika.connection
 import pika.exceptions
 from django.conf import settings
+from django.db import transaction
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.channel import Channel
 from pika.spec import Basic
 from tornado import ioloop
+from typing_extensions import TypeAlias
 
-from zerver.lib.utils import assert_is_not_none, statsd
+from zerver.lib.utils import assert_is_not_none
 
 MAX_REQUEST_RETRIES = 3
 ChannelT = TypeVar("ChannelT", Channel, BlockingChannel)
-Consumer = Callable[[ChannelT, Basic.Deliver, pika.BasicProperties, bytes], None]
+Consumer: TypeAlias = Callable[[ChannelT, Basic.Deliver, pika.BasicProperties, bytes], None]
+
 
 
 # This simple queuing library doesn't expose much of the power of
@@ -94,10 +97,10 @@ class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
         )
 
     def _generate_ctag(self, queue_name: str) -> str:
-        return f"{queue_name}_{str(random.getrandbits(16))}"
+        return f"{queue_name}_{random.getrandbits(16)}"
 
     def _reconnect_consumer_callback(self, queue: str, consumer: Consumer[ChannelT]) -> None:
-        self.log.info(f"Queue reconnecting saved consumer {consumer} to queue {queue}")
+        self.log.info("Queue reconnecting saved consumer %r to queue %s", consumer, queue)
         self.ensure_queue(
             queue,
             lambda channel: channel.basic_consume(
@@ -128,8 +131,6 @@ class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
                 body=body,
             )
 
-            statsd.incr(f"rabbitmq.publish.{queue_name}")
-
         self.ensure_queue(queue_name, do_publish)
 
     def json_publish(self, queue_name: str, body: Mapping[str, Any]) -> None:
@@ -151,7 +152,8 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
         start = time.time()
         self.connection = pika.BlockingConnection(self._get_parameters())
         self.channel = self.connection.channel()
-        self.log.info(f"SimpleQueueClient connected (connecting took {time.time() - start:.3f}s)")
+        self.channel.basic_qos(prefetch_count=self.prefetch)
+        self.log.info("SimpleQueueClient connected (connecting took %.3fs)", time.time() - start)
 
     def _reconnect(self) -> None:
         self.connection = None
@@ -168,9 +170,9 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
         the callback with no arguments."""
         if self.connection is None or not self.connection.is_open:
             self._connect()
-
-        assert self.channel is not None
-        self.channel.basic_qos(prefetch_count=self.prefetch)
+            assert self.channel is not None
+        else:
+            assert self.channel is not None
 
         if queue_name not in self.queues:
             self.channel.queue_declare(queue=queue_name, durable=True)
@@ -432,10 +434,15 @@ def queue_json_publish(
     elif processor:
         processor(event)
     else:
+        # The else branch is only hit during tests, where rabbitmq is not enabled.
         # Must be imported here: A top section import leads to circular imports
         from zerver.worker.queue_processors import get_worker
 
-        get_worker(queue_name).consume_single_event(event)
+        get_worker(queue_name, disable_timeout=True).consume_single_event(event)
+
+
+def queue_event_on_commit(queue_name: str, event: Dict[str, Any]) -> None:
+    transaction.on_commit(lambda: queue_json_publish(queue_name, event))
 
 
 def retry_event(

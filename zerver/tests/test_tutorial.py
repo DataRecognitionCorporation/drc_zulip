@@ -15,7 +15,15 @@ class TutorialTests(ZulipTestCase):
         user = self.example_user("hamlet")
         welcome_bot = get_system_bot(settings.WELCOME_BOT, user.realm_id)
         content = "Shortened welcome message."
-        internal_send_private_message(welcome_bot, user, content)
+        internal_send_private_message(
+            welcome_bot,
+            user,
+            content,
+            # disable_external_notifications set to False will still lead
+            # the tests to pass. Setting this to True, because we contextually
+            # set this to true for welcome_bot in the codebase.
+            disable_external_notifications=True,
+        )
 
     def test_tutorial_status(self) -> None:
         user = self.example_user("hamlet")
@@ -40,7 +48,7 @@ class TutorialTests(ZulipTestCase):
         for content in messages:
             self.send_personal_message(user, bot, content)
             expected_response = (
-                "You can [download](/apps) the [mobile and desktop apps](/apps). "
+                "You can [download](/apps/) the [mobile and desktop apps](/apps/). "
                 "Zulip also works great in a browser."
             )
             self.assertEqual(most_recent_message(user).content, expected_response)
@@ -67,7 +75,7 @@ class TutorialTests(ZulipTestCase):
         for content in messages:
             self.send_personal_message(user, bot, content)
             expected_response = (
-                "Go to [Display settings](#settings/display-settings) "
+                "Go to [Preferences](#settings/preferences) "
                 "to [switch between the light and dark themes](/help/dark-theme), "
                 "[pick your favorite emoji theme](/help/emoji-and-emoticons#change-your-emoji-set), "
                 "[change your language](/help/change-your-language), and make other tweaks to your Zulip experience."
@@ -99,7 +107,7 @@ class TutorialTests(ZulipTestCase):
                 "In Zulip, topics [tell you what a message is about](/help/streams-and-topics). "
                 "They are light-weight subjects, very similar to the subject line of an email.\n\n"
                 "Check out [Recent conversations](#recent) to see what's happening! "
-                'You can return to this conversation by clicking "Private messages" in the upper left.'
+                'You can return to this conversation by clicking "Direct messages" in the upper left.'
             )
             self.assertEqual(most_recent_message(user).content, expected_response)
 
@@ -172,6 +180,7 @@ class TutorialTests(ZulipTestCase):
         self.send_huddle_message(user1, [bot, user2], content)
         user1_messages = message_stream_count(user1)
         self.assertEqual(most_recent_message(user1).content, content)
-        # Welcome bot should still respond to initial PM after group PM.
+        # Welcome bot should still respond to initial direct message
+        # after group direct message.
         self.send_personal_message(user1, bot, content)
         self.assertEqual(message_stream_count(user1), user1_messages + 2)

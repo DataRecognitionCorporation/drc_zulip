@@ -2,9 +2,13 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+<<<<<<< HEAD
 from zerver.lib.request import REQ, has_request_variables
+=======
+>>>>>>> drc_main
 from zerver.lib.response import json_success
-from zerver.lib.validator import WildValue, check_bool, check_int, check_string, to_wild_value
+from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_bool, check_int, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
 from zerver.models import UserProfile
 
@@ -39,31 +43,32 @@ ALL_EVENT_TYPES = [
 
 
 @webhook_view("Sonarr", all_event_types=ALL_EVENT_TYPES)
-@has_request_variables
+@typed_endpoint
 def api_sonarr_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: WildValue = REQ(argument_type="body", converter=to_wild_value),
+    *,
+    payload: WebhookPayload[WildValue],
 ) -> HttpResponse:
     body = get_body_for_http_request(payload)
-    subject = get_subject_for_http_request(payload)
+    topic = get_topic_for_http_request(payload)
 
     check_send_webhook_message(
-        request, user_profile, subject, body, payload["eventType"].tame(check_string)
+        request, user_profile, topic, body, payload["eventType"].tame(check_string)
     )
     return json_success(request)
 
 
-def get_subject_for_http_request(payload: WildValue) -> str:
+def get_topic_for_http_request(payload: WildValue) -> str:
     event_type = payload["eventType"].tame(check_string)
-    if event_type != "Test" and event_type != "Health":
-        topic = SONARR_TOPIC_TEMPLATE.format(
-            series_title=payload["series"]["title"].tame(check_string)
-        )
-    elif event_type == "Test":
+    if event_type == "Test":
         topic = SONARR_TOPIC_TEMPLATE_TEST
     elif event_type == "Health":
         topic = SONARR_TOPIC_TEMPLATE_HEALTH_CHECK.format(level=payload["level"].tame(check_string))
+    else:
+        topic = SONARR_TOPIC_TEMPLATE.format(
+            series_title=payload["series"]["title"].tame(check_string)
+        )
 
     return topic
 

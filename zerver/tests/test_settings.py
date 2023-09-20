@@ -8,9 +8,8 @@ from django.http import HttpRequest
 from django.test import override_settings
 
 from zerver.lib.initial_password import initial_password
-from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import get_test_image_file
+from zerver.lib.test_helpers import get_test_image_file, ratelimit_rule
 from zerver.lib.users import get_all_api_keys
 from zerver.models import (
     Draft,
@@ -239,53 +238,51 @@ class ChangeSettingsTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Wrong password!")
 
+    @override_settings(RATE_LIMITING_AUTHENTICATE=True)
+    @ratelimit_rule(10, 2, domain="authenticate_by_username")
     def test_wrong_old_password_rate_limiter(self) -> None:
         self.login("hamlet")
-        with self.settings(RATE_LIMITING_AUTHENTICATE=True):
-            add_ratelimit_rule(10, 2, domain="authenticate_by_username")
-            start_time = time.time()
-            with mock.patch("time.time", return_value=start_time):
-                result = self.client_patch(
-                    "/json/settings",
-                    dict(
-                        old_password="bad_password",
-                        new_password="ignored",
-                    ),
-                )
-                self.assert_json_error(result, "Wrong password!")
-                result = self.client_patch(
-                    "/json/settings",
-                    dict(
-                        old_password="bad_password",
-                        new_password="ignored",
-                    ),
-                )
-                self.assert_json_error(result, "Wrong password!")
+        start_time = time.time()
+        with mock.patch("time.time", return_value=start_time):
+            result = self.client_patch(
+                "/json/settings",
+                dict(
+                    old_password="bad_password",
+                    new_password="ignored",
+                ),
+            )
+            self.assert_json_error(result, "Wrong password!")
+            result = self.client_patch(
+                "/json/settings",
+                dict(
+                    old_password="bad_password",
+                    new_password="ignored",
+                ),
+            )
+            self.assert_json_error(result, "Wrong password!")
 
-                # We're over the limit, so we'll get blocked even with the correct password.
-                result = self.client_patch(
-                    "/json/settings",
-                    dict(
-                        old_password=initial_password(self.example_email("hamlet")),
-                        new_password="ignored",
-                    ),
-                )
-                self.assert_json_error(
-                    result, "You're making too many attempts! Try again in 10 seconds."
-                )
+            # We're over the limit, so we'll get blocked even with the correct password.
+            result = self.client_patch(
+                "/json/settings",
+                dict(
+                    old_password=initial_password(self.example_email("hamlet")),
+                    new_password="ignored",
+                ),
+            )
+            self.assert_json_error(
+                result, "You're making too many attempts! Try again in 10 seconds."
+            )
 
-            # After time passes, we should be able to succeed if we give the correct password.
-            with mock.patch("time.time", return_value=start_time + 11):
-                json_result = self.client_patch(
-                    "/json/settings",
-                    dict(
-                        old_password=initial_password(self.example_email("hamlet")),
-                        new_password="foobar1",
-                    ),
-                )
-                self.assert_json_success(json_result)
-
-            remove_ratelimit_rule(10, 2, domain="authenticate_by_username")
+        # After time passes, we should be able to succeed if we give the correct password.
+        with mock.patch("time.time", return_value=start_time + 11):
+            json_result = self.client_patch(
+                "/json/settings",
+                dict(
+                    old_password=initial_password(self.example_email("hamlet")),
+                    new_password="foobar1",
+                ),
+            )
+            self.assert_json_success(json_result)
 
     @override_settings(
         AUTHENTICATION_BACKENDS=(
@@ -356,11 +353,15 @@ class ChangeSettingsTest(ZulipTestCase):
             emojiset="google",
             timezone="America/Denver",
             demote_inactive_streams=2,
+            web_mark_read_on_scroll_policy=2,
             user_list_style=2,
+            web_stream_unreads_count_display_policy=2,
             color_scheme=2,
             email_notifications_batching_period_seconds=100,
             notification_sound="ding",
             desktop_icon_count_display=2,
+            email_address_visibility=3,
+            realm_name_in_email_notifications_policy=2,
         )
 
         self.login("hamlet")
@@ -369,7 +370,13 @@ class ChangeSettingsTest(ZulipTestCase):
         if test_value is None:
             raise AssertionError(f"No test created for {setting_name}")
 
-        if setting_name not in ["demote_inactive_streams", "user_list_style", "color_scheme"]:
+        if setting_name not in [
+            "demote_inactive_streams",
+            "user_list_style",
+            "color_scheme",
+            "web_mark_read_on_scroll_policy",
+            "web_stream_unreads_count_display_policy",
+        ]:
             data = {setting_name: test_value}
         else:
             data = {setting_name: orjson.dumps(test_value).decode()}
@@ -395,14 +402,16 @@ class ChangeSettingsTest(ZulipTestCase):
             emojiset="apple",
             timezone="invalid_US/Mountain",
             demote_inactive_streams=10,
+            web_mark_read_on_scroll_policy=10,
             user_list_style=10,
+            web_stream_unreads_count_display_policy=10,
             color_scheme=10,
             notification_sound="invalid_sound",
             desktop_icon_count_display=10,
         )
 
         self.login("hamlet")
-        for setting_name in invalid_values_dict.keys():
+        for setting_name in invalid_values_dict:
             invalid_value = invalid_values_dict.get(setting_name)
             if isinstance(invalid_value, str):
                 invalid_value = orjson.dumps(invalid_value).decode()
@@ -454,12 +463,8 @@ class ChangeSettingsTest(ZulipTestCase):
         self.login("hamlet")
 
         # Now try an invalid setting name
-        json_result = self.client_patch("/json/settings", dict(invalid_setting="value"))
-        self.assert_json_success(json_result)
-
-        result = orjson.loads(json_result.content)
-        self.assertIn("ignored_parameters_unsupported", result)
-        self.assertEqual(result["ignored_parameters_unsupported"], ["invalid_setting"])
+        result = self.client_patch("/json/settings", dict(invalid_setting="value"))
+        self.assert_json_success(result, ignored_parameters=["invalid_setting"])
 
     def test_changing_setting_using_display_setting_endpoint(self) -> None:
         """

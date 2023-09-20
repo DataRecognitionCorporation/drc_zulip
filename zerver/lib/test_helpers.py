@@ -4,6 +4,7 @@ import re
 import sys
 import time
 from contextlib import contextmanager
+from dataclasses import dataclass
 from typing import (
     IO,
     TYPE_CHECKING,
@@ -16,12 +17,12 @@ from typing import (
     Mapping,
     Optional,
     Tuple,
-    TypedDict,
     TypeVar,
     Union,
     cast,
 )
 from unittest import mock
+from unittest.mock import patch
 
 import boto3.session
 import fakeldap
@@ -38,19 +39,21 @@ from django.urls import URLResolver
 from moto.s3 import mock_s3
 from mypy_boto3_s3.service_resource import Bucket
 
-import zerver.lib.upload
-from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.realm_settings import do_set_realm_user_default_setting
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib import cache
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
 from zerver.lib.db import Params, ParamsT, Query, TimeTrackingCursor
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+from zerver.lib.per_request_cache import flush_per_request_caches
+from zerver.lib.rate_limiter import RateLimitedIPAddr, rules
 from zerver.lib.request import RequestNotes
-from zerver.lib.upload import LocalUploadBackend, S3UploadBackend
+from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.models import (
     Client,
     Message,
-    Realm,
+    RealmUserDefault,
     Subscription,
     UserMessage,
     UserProfile,
@@ -103,9 +106,7 @@ def cache_tries_captured() -> Iterator[List[Tuple[str, Union[str, List[str]], Op
         cache_queries.append(("get", key, cache_name))
         return orig_get(key, cache_name)
 
-    def my_cache_get_many(
-        keys: List[str], cache_name: Optional[str] = None
-    ) -> Dict[str, Any]:  # nocoverage -- simulated code doesn't use this
+    def my_cache_get_many(keys: List[str], cache_name: Optional[str] = None) -> Dict[str, Any]:
         cache_queries.append(("getmany", keys, cache_name))
         return orig_get_many(keys, cache_name)
 
@@ -131,21 +132,22 @@ def simulated_empty_cache() -> Iterator[List[Tuple[str, Union[str, List[str]], O
         yield cache_queries
 
 
-class CapturedQueryDict(TypedDict):
-    sql: bytes
+@dataclass
+class CapturedQuery:
+    sql: str
     time: str
 
 
 @contextmanager
 def queries_captured(
     include_savepoints: bool = False, keep_cache_warm: bool = False
-) -> Iterator[List[CapturedQueryDict]]:
+) -> Iterator[List[CapturedQuery]]:
     """
     Allow a user to capture just the queries executed during
     the with statement.
     """
 
-    queries: List[CapturedQueryDict] = []
+    queries: List[CapturedQuery] = []
 
     def wrapper_execute(
         self: TimeTrackingCursor,
@@ -161,10 +163,10 @@ def queries_captured(
             duration = stop - start
             if include_savepoints or not isinstance(sql, str) or "SAVEPOINT" not in sql:
                 queries.append(
-                    {
-                        "sql": self.mogrify(sql, params).decode(),
-                        "time": f"{duration:.3f}",
-                    }
+                    CapturedQuery(
+                        sql=self.mogrify(sql, params).decode(),
+                        time=f"{duration:.3f}",
+                    )
                 )
 
     def cursor_execute(
@@ -180,6 +182,7 @@ def queries_captured(
     if not keep_cache_warm:
         cache = get_cache_backend(None)
         cache.clear()
+        flush_per_request_caches()
     with mock.patch.multiple(
         TimeTrackingCursor, execute=cursor_execute, executemany=cursor_executemany
     ):
@@ -198,19 +201,35 @@ def stdout_suppressed() -> Iterator[IO[str]]:
             sys.stdout = stdout
 
 
-def reset_emails_in_zulip_realm() -> None:
+def reset_email_visibility_to_everyone_in_zulip_realm() -> None:
+    """
+    This function is used to reset email visibility for all users and
+    RealmUserDefault object in the zulip realm in development environment
+    to "EMAIL_ADDRESS_VISIBILITY_EVERYONE" since the default value is
+    "EMAIL_ADDRESS_VISIBILITY_ADMINS". This function is needed in
+    tests that want "email" field of users to be set to their real email.
+    """
     realm = get_realm("zulip")
-    do_set_realm_property(
-        realm,
+    realm_user_default = RealmUserDefault.objects.get(realm=realm)
+    do_set_realm_user_default_setting(
+        realm_user_default,
         "email_address_visibility",
-        Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
         acting_user=None,
     )
+    users = UserProfile.objects.filter(realm=realm)
+    for user in users:
+        do_change_user_setting(
+            user,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
+        )
 
 
 def get_test_image_file(filename: str) -> IO[bytes]:
     test_avatar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../tests/images"))
-    return open(os.path.join(test_avatar_dir, filename), "rb")
+    return open(os.path.join(test_avatar_dir, filename), "rb")  # noqa: SIM115
 
 
 def read_test_image_file(filename: str) -> bytes:
@@ -224,9 +243,9 @@ def avatar_disk_path(
     avatar_url_path = avatar_url(user_profile, medium)
     assert avatar_url_path is not None
     assert settings.LOCAL_UPLOADS_DIR is not None
+    assert settings.LOCAL_AVATARS_DIR is not None
     avatar_disk_path = os.path.join(
-        settings.LOCAL_UPLOADS_DIR,
-        "avatars",
+        settings.LOCAL_AVATARS_DIR,
         avatar_url_path.split("/")[-2],
         avatar_url_path.split("/")[-1].split("?")[0],
     )
@@ -339,7 +358,7 @@ class HostRequestMock(HttpRequest):
             self.META = meta_data
         self.path = path
         self.user = user_profile or AnonymousUser()
-        self._body = b""
+        self._body = orjson.dumps(post_data)
         self.content_type = ""
 
         RequestNotes.set_notes(
@@ -498,6 +517,8 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "static/(?P<path>.+)",
             "flush_caches",
             "external_content/(?P<digest>[^/]+)/(?P<received_url>[^/]+)",
+            # Such endpoints are only used in certain test cases that can be skipped
+            "testing/(?P<path>.+)",
             # These are SCIM2 urls overridden from django-scim2 to return Not Implemented.
             # We actually test them, but it's not being detected as a tested pattern,
             # possibly due to the use of re_path. TODO: Investigate and get them
@@ -524,7 +545,6 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
 
         if full_suite:
             print(f"INFO: URL coverage report is in {fn}")
-            print("INFO: Try running: ./tools/create-test-api-docs")
 
         if full_suite and len(untested_patterns):  # nocoverage -- test suite error handling
             print("\nERROR: Some URLs are untested!  Here's the list of untested URLs:")
@@ -547,12 +567,11 @@ FuncT = TypeVar("FuncT", bound=Callable[..., None])
 def use_s3_backend(method: FuncT) -> FuncT:
     @mock_s3
     @override_settings(LOCAL_UPLOADS_DIR=None)
+    @override_settings(LOCAL_AVATARS_DIR=None)
+    @override_settings(LOCAL_FILES_DIR=None)
     def new_method(*args: Any, **kwargs: Any) -> Any:
-        zerver.lib.upload.upload_backend = S3UploadBackend()
-        try:
+        with mock.patch("zerver.lib.upload.upload_backend", S3UploadBackend()):
             return method(*args, **kwargs)
-        finally:
-            zerver.lib.upload.upload_backend = LocalUploadBackend()
 
     return new_method
 
@@ -727,4 +746,21 @@ def timeout_mock(mock_path: str) -> Iterator[None]:
         return func()
 
     with mock.patch(f"{mock_path}.timeout", new=mock_timeout):
+        yield
+
+
+@contextmanager
+def ratelimit_rule(
+    range_seconds: int,
+    num_requests: int,
+    domain: str = "api_by_user",
+) -> Iterator[None]:
+    """Temporarily add a rate-limiting rule to the ratelimiter"""
+    RateLimitedIPAddr("127.0.0.1", domain=domain).clear_history()
+
+    domain_rules = rules.get(domain, []).copy()
+    domain_rules.append((range_seconds, num_requests))
+    domain_rules.sort(key=lambda x: x[0])
+
+    with patch.dict(rules, {domain: domain_rules}), override_settings(RATE_LIMITING=True):
         yield

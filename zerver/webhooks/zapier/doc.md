@@ -11,10 +11,10 @@ sent by Zapier directly in Zulip.
 1. [Click here](https://zapier.com/developer/public-invite/8304/bb0e9784d171eb44762c1bef4fcba2df/)
    and then click **Accept Invite & Build a Zap**.
 
-1. Click **Make a Zap!** in the upper left.
+1. Click **Create Zap** in the upper left.
 
 1. Follow the instructions to select a Trigger App and Event (**When this happens ...** (Step 1)).
-   This could be an app like Trello, Gmail, Calendar, or anything else.
+   This could be an app like Asana, Trello, Gmail, Calendar, or anything else.
 
 1. **Do this ...** (Step 2): Search for Zulip, and click on the Zulip icon. Follow the instructions.
 

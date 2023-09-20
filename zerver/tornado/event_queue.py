@@ -8,7 +8,7 @@ import time
 import traceback
 import uuid
 from collections import deque
-from dataclasses import asdict
+from contextlib import suppress
 from functools import lru_cache
 from typing import (
     AbstractSet,
@@ -39,10 +39,10 @@ from tornado import autoreload
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import MessageDict
-from zerver.lib.narrow import build_narrow_filter
+from zerver.lib.narrow import build_narrow_predicate
+from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
 from zerver.lib.notification_data import UserMessageNotificationsData
 from zerver.lib.queue import queue_json_publish, retry_event
-from zerver.lib.utils import statsd
 from zerver.middleware import async_request_timer_restart
 from zerver.models import CustomProfileField
 from zerver.tornado.descriptors import clear_descriptor_by_handler_id, set_descriptor_by_handler_id
@@ -96,7 +96,12 @@ class ClientDescriptor:
         stream_typing_notifications: bool = False,
         user_settings_object: bool = False,
         pronouns_field_type_supported: bool = True,
+        linkifier_url_template: bool = False,
     ) -> None:
+        # TODO: We eventually want to upstream this code to the caller, but
+        # serialization concerns make it a bit difficult.
+        modern_narrow = narrow_dataclasses_from_tuples(narrow)
+
         # These objects are serialized on shutdown and restored on restart.
         # If fields are added or semantics are changed, temporary code must be
         # added to load_event_queues() to update the restored objects.
@@ -115,11 +120,12 @@ class ClientDescriptor:
         self.client_type_name = client_type_name
         self._timeout_handle: Any = None  # TODO: should be return type of ioloop.call_later
         self.narrow = narrow
-        self.narrow_filter = build_narrow_filter(narrow)
+        self.narrow_predicate = build_narrow_predicate(modern_narrow)
         self.bulk_message_deletion = bulk_message_deletion
         self.stream_typing_notifications = stream_typing_notifications
         self.user_settings_object = user_settings_object
         self.pronouns_field_type_supported = pronouns_field_type_supported
+        self.linkifier_url_template = linkifier_url_template
 
         # Default for lifespan_secs is DEFAULT_EVENT_QUEUE_TIMEOUT_SECS;
         # but users can set it as high as MAX_QUEUE_TIMEOUT_SECS.
@@ -148,6 +154,7 @@ class ClientDescriptor:
             stream_typing_notifications=self.stream_typing_notifications,
             user_settings_object=self.user_settings_object,
             pronouns_field_type_supported=self.pronouns_field_type_supported,
+            linkifier_url_template=self.linkifier_url_template,
         )
 
     def __repr__(self) -> str:
@@ -181,6 +188,7 @@ class ClientDescriptor:
             d.get("stream_typing_notifications", False),
             d.get("user_settings_object", False),
             d.get("pronouns_field_type_supported", True),
+            d.get("linkifier_url_template", False),
         )
         ret.last_connection_time = d["last_connection_time"]
         return ret
@@ -223,7 +231,7 @@ class ClientDescriptor:
                 # older servers that don't support user_topic.
                 return False
         if event["type"] == "message":
-            return self.narrow_filter(event)
+            return self.narrow_predicate(message=event["message"], flags=event["flags"])
         if event["type"] == "typing" and "stream_id" in event:
             # Typing notifications for stream messages are only
             # delivered if the stream_typing_notifications
@@ -561,8 +569,6 @@ def gc_event_queues(port: int) -> None:
             len(clients),
             handler_stats_string(),
         )
-    statsd.gauge("tornado.active_queues", len(clients))
-    statsd.gauge("tornado.active_users", len(user_clients))
 
 
 def persistent_queue_filename(port: int, last: bool = False) -> str:
@@ -640,10 +646,8 @@ async def setup_event_queue(server: tornado.httpserver.HTTPServer, port: int) ->
         load_event_queues(port)
         autoreload.add_reload_hook(lambda: dump_event_queues(port))
 
-    try:
+    with suppress(OSError):
         os.rename(persistent_queue_filename(port), persistent_queue_filename(port, last=True))
-    except OSError:
-        pass
 
     # Set up event queue garbage collection
     pc = tornado.ioloop.PeriodicCallback(lambda: gc_event_queues(port), EVENT_QUEUE_GC_FREQ_MSECS)
@@ -770,19 +774,84 @@ def missedmessage_hook(
         internal_data = event.get("internal_data", {})
         sender_id = event["message"]["sender_id"]
 
+        # TODO/compatibility: Translation code for the rename of
+        # `pm_push_notify` to `dm_push_notify`. Remove this when
+        # one can no longer directly upgrade from 7.x to main.
+        dm_push_notify = False
+        if "dm_push_notify" in internal_data:
+            dm_push_notify = internal_data.get("dm_push_notify")
+        elif "pm_push_notify" in internal_data:
+            dm_push_notify = internal_data.get("pm_push_notify")
+
+        # TODO/compatibility: Translation code for the rename of
+        # `pm_email_notify` to `dm_email_notify`. Remove this when
+        # one can no longer directly upgrade from 7.x to main.
+        dm_email_notify = False
+        if "dm_email_notify" in internal_data:
+            dm_email_notify = internal_data.get("dm_email_notify")
+        elif "pm_email_notify" in internal_data:
+            dm_email_notify = internal_data.get("pm_email_notify")
+
+        # TODO/compatibility: Translation code for the rename of
+        # `wildcard_mention_push_notify` to `stream_wildcard_mention_push_notify`.
+        # Remove this when one can no longer directly upgrade from 7.x to main.
+        stream_wildcard_mention_push_notify = False
+        if "stream_wildcard_mention_push_notify" in internal_data:
+            stream_wildcard_mention_push_notify = internal_data.get(
+                "stream_wildcard_mention_push_notify"
+            )
+        elif "wildcard_mention_push_notify" in internal_data:
+            stream_wildcard_mention_push_notify = internal_data.get("wildcard_mention_push_notify")
+
+        # TODO/compatibility: Translation code for the rename of
+        # `wildcard_mention_email_notify` to `stream_wildcard_mention_email_notify`.
+        # Remove this when one can no longer directly upgrade from 7.x to main.
+        stream_wildcard_mention_email_notify = False
+        if "stream_wildcard_mention_email_notify" in internal_data:
+            stream_wildcard_mention_email_notify = internal_data.get(
+                "stream_wildcard_mention_email_notify"
+            )
+        elif "wildcard_mention_email_notify" in internal_data:
+            stream_wildcard_mention_email_notify = internal_data.get(
+                "wildcard_mention_email_notify"
+            )
+
         user_notifications_data = UserMessageNotificationsData(
             user_id=user_profile_id,
             sender_is_muted=internal_data.get("sender_is_muted", False),
-            pm_push_notify=internal_data.get("pm_push_notify", False),
-            pm_email_notify=internal_data.get("pm_email_notify", False),
+            dm_push_notify=dm_push_notify,
+            dm_email_notify=dm_email_notify,
             mention_push_notify=internal_data.get("mention_push_notify", False),
             mention_email_notify=internal_data.get("mention_email_notify", False),
-            wildcard_mention_push_notify=internal_data.get("wildcard_mention_push_notify", False),
-            wildcard_mention_email_notify=internal_data.get("wildcard_mention_email_notify", False),
+            topic_wildcard_mention_push_notify=internal_data.get(
+                "topic_wildcard_mention_push_notify", False
+            ),
+            topic_wildcard_mention_email_notify=internal_data.get(
+                "topic_wildcard_mention_email_notify", False
+            ),
+            stream_wildcard_mention_push_notify=stream_wildcard_mention_push_notify,
+            stream_wildcard_mention_email_notify=stream_wildcard_mention_email_notify,
             stream_push_notify=internal_data.get("stream_push_notify", False),
             stream_email_notify=internal_data.get("stream_email_notify", False),
+            followed_topic_push_notify=internal_data.get("followed_topic_push_notify", False),
+            followed_topic_email_notify=internal_data.get("followed_topic_email_notify", False),
+            topic_wildcard_mention_in_followed_topic_push_notify=internal_data.get(
+                "topic_wildcard_mention_in_followed_topic_push_notify", False
+            ),
+            topic_wildcard_mention_in_followed_topic_email_notify=internal_data.get(
+                "topic_wildcard_mention_in_followed_topic_email_notify", False
+            ),
+            stream_wildcard_mention_in_followed_topic_push_notify=internal_data.get(
+                "stream_wildcard_mention_in_followed_topic_push_notify", False
+            ),
+            stream_wildcard_mention_in_followed_topic_email_notify=internal_data.get(
+                "stream_wildcard_mention_in_followed_topic_email_notify", False
+            ),
             # Since one is by definition idle, we don't need to check online_push_enabled
             online_push_enabled=False,
+            disable_external_notifications=internal_data.get(
+                "disable_external_notifications", False
+            ),
         )
 
         mentioned_user_group_id = internal_data.get("mentioned_user_group_id")
@@ -846,7 +915,7 @@ def maybe_enqueue_notifications(
             queue_json_publish("missedmessage_mobile_notifications", notice)
             notified["push_notified"] = True
 
-    # Send missed_message emails if a private message or a
+    # Send missed_message emails if a direct message or a
     # mention.  Eventually, we'll add settings to allow email
     # notifications to match the model of push notifications
     # above.
@@ -922,17 +991,59 @@ def process_message_event(
 
     presence_idle_user_ids = set(event_template.get("presence_idle_user_ids", []))
     online_push_user_ids = set(event_template.get("online_push_user_ids", []))
-    pm_mention_push_disabled_user_ids = set(
-        event_template.get("pm_mention_push_disabled_user_ids", [])
-    )
-    pm_mention_email_disabled_user_ids = set(
-        event_template.get("pm_mention_email_disabled_user_ids", [])
-    )
+
+    # TODO/compatibility: Translation code for the rename of
+    # `pm_mention_push_disabled_user_ids` to `dm_mention_push_disabled_user_ids`.
+    # Remove this when one can no longer directly upgrade from 7.x to main.
+    dm_mention_push_disabled_user_ids = set()
+    if "dm_mention_push_disabled_user_ids" in event_template:
+        dm_mention_push_disabled_user_ids = set(
+            event_template.get("dm_mention_push_disabled_user_ids", [])
+        )
+    elif "pm_mention_push_disabled_user_ids" in event_template:
+        dm_mention_push_disabled_user_ids = set(
+            event_template.get("pm_mention_push_disabled_user_ids", [])
+        )
+
+    # TODO/compatibility: Translation code for the rename of
+    # `pm_mention_email_disabled_user_ids` to `dm_mention_email_disabled_user_ids`.
+    # Remove this when one can no longer directly upgrade from 7.x to main.
+    dm_mention_email_disabled_user_ids = set()
+    if "dm_mention_email_disabled_user_ids" in event_template:
+        dm_mention_email_disabled_user_ids = set(
+            event_template.get("dm_mention_email_disabled_user_ids", [])
+        )
+    elif "pm_mention_email_disabled_user_ids" in event_template:
+        dm_mention_email_disabled_user_ids = set(
+            event_template.get("pm_mention_email_disabled_user_ids", [])
+        )
+
     stream_push_user_ids = set(event_template.get("stream_push_user_ids", []))
     stream_email_user_ids = set(event_template.get("stream_email_user_ids", []))
-    wildcard_mention_user_ids = set(event_template.get("wildcard_mention_user_ids", []))
+    topic_wildcard_mention_user_ids = set(event_template.get("topic_wildcard_mention_user_ids", []))
+
+    # TODO/compatibility: Translation code for the rename of
+    # `wildcard_mention_user_ids` to `stream_wildcard_mention_user_ids`.
+    # Remove this when one can no longer directly upgrade from 7.x to main.
+    stream_wildcard_mention_user_ids = set()
+    if "stream_wildcard_mention_user_ids" in event_template:
+        stream_wildcard_mention_user_ids = set(
+            event_template.get("stream_wildcard_mention_user_ids", [])
+        )
+    elif "wildcard_mention_user_ids" in event_template:
+        stream_wildcard_mention_user_ids = set(event_template.get("wildcard_mention_user_ids", []))
+
+    followed_topic_push_user_ids = set(event_template.get("followed_topic_push_user_ids", []))
+    followed_topic_email_user_ids = set(event_template.get("followed_topic_email_user_ids", []))
+    topic_wildcard_mention_in_followed_topic_user_ids = set(
+        event_template.get("topic_wildcard_mention_in_followed_topic_user_ids", [])
+    )
+    stream_wildcard_mention_in_followed_topic_user_ids = set(
+        event_template.get("stream_wildcard_mention_in_followed_topic_user_ids", [])
+    )
     muted_sender_user_ids = set(event_template.get("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.get("all_bot_user_ids", []))
+    disable_external_notifications = event_template.get("disable_external_notifications", False)
 
     wide_dict: Dict[str, Any] = event_template["message_dict"]
 
@@ -947,7 +1058,7 @@ def process_message_event(
 
     sender_id: int = wide_dict["sender_id"]
     message_id: int = wide_dict["id"]
-    message_type: str = wide_dict["type"]
+    recipient_type_name: str = wide_dict["type"]
     sending_client: str = wide_dict["client"]
 
     @lru_cache(maxsize=None)
@@ -966,24 +1077,34 @@ def process_message_event(
         flags: Collection[str] = user_data.get("flags", [])
         mentioned_user_group_id: Optional[int] = user_data.get("mentioned_user_group_id")
 
-        # If the recipient was offline and the message was a single or group PM to them
-        # or they were @-notified potentially notify more immediately
-        private_message = message_type == "private"
+        # If the recipient was offline and the message was a (1:1 or group) direct message
+        # to them or they were @-notified potentially notify more immediately
+        private_message = recipient_type_name == "private"
         user_notifications_data = UserMessageNotificationsData.from_user_id_sets(
             user_id=user_profile_id,
             flags=flags,
             private_message=private_message,
+            disable_external_notifications=disable_external_notifications,
             online_push_user_ids=online_push_user_ids,
-            pm_mention_push_disabled_user_ids=pm_mention_push_disabled_user_ids,
-            pm_mention_email_disabled_user_ids=pm_mention_email_disabled_user_ids,
+            dm_mention_push_disabled_user_ids=dm_mention_push_disabled_user_ids,
+            dm_mention_email_disabled_user_ids=dm_mention_email_disabled_user_ids,
             stream_push_user_ids=stream_push_user_ids,
             stream_email_user_ids=stream_email_user_ids,
-            wildcard_mention_user_ids=wildcard_mention_user_ids,
+            topic_wildcard_mention_user_ids=topic_wildcard_mention_user_ids,
+            stream_wildcard_mention_user_ids=stream_wildcard_mention_user_ids,
+            followed_topic_push_user_ids=followed_topic_push_user_ids,
+            followed_topic_email_user_ids=followed_topic_email_user_ids,
+            topic_wildcard_mention_in_followed_topic_user_ids=topic_wildcard_mention_in_followed_topic_user_ids,
+            stream_wildcard_mention_in_followed_topic_user_ids=stream_wildcard_mention_in_followed_topic_user_ids,
             muted_sender_user_ids=muted_sender_user_ids,
             all_bot_user_ids=all_bot_user_ids,
         )
 
-        internal_data = asdict(user_notifications_data)
+        # Calling asdict would be slow, as it does a deep copy; pull
+        # the attributes out directly and perform a shallow copy, as
+        # we do intend to adjust the dict.
+        internal_data = {**vars(user_notifications_data)}
+
         # Remove fields sent through other pipes to save some space.
         internal_data.pop("user_id")
         internal_data["mentioned_user_group_id"] = mentioned_user_group_id
@@ -1117,17 +1238,59 @@ def process_message_update_event(
     event_template = dict(orig_event)
     prior_mention_user_ids = set(event_template.pop("prior_mention_user_ids", []))
     presence_idle_user_ids = set(event_template.pop("presence_idle_user_ids", []))
-    pm_mention_push_disabled_user_ids = set(
-        event_template.pop("pm_mention_push_disabled_user_ids", [])
-    )
-    pm_mention_email_disabled_user_ids = set(
-        event_template.pop("pm_mention_email_disabled_user_ids", [])
-    )
+
+    # TODO/compatibility: Translation code for the rename of
+    # `pm_mention_push_disabled_user_ids` to `dm_mention_push_disabled_user_ids`.
+    # Remove this when one can no longer directly upgrade from 7.x to main.
+    dm_mention_push_disabled_user_ids = set()
+    if "dm_mention_push_disabled_user_ids" in event_template:
+        dm_mention_push_disabled_user_ids = set(
+            event_template.pop("dm_mention_push_disabled_user_ids")
+        )
+    elif "pm_mention_push_disabled_user_ids" in event_template:
+        dm_mention_push_disabled_user_ids = set(
+            event_template.pop("pm_mention_push_disabled_user_ids")
+        )
+
+    # TODO/compatibility: Translation code for the rename of
+    # `pm_mention_email_disabled_user_ids` to `dm_mention_email_disabled_user_ids`.
+    # Remove this when one can no longer directly upgrade from 7.x to main.
+    dm_mention_email_disabled_user_ids = set()
+    if "dm_mention_email_disabled_user_ids" in event_template:
+        dm_mention_email_disabled_user_ids = set(
+            event_template.pop("dm_mention_email_disabled_user_ids")
+        )
+    elif "pm_mention_email_disabled_user_ids" in event_template:
+        dm_mention_email_disabled_user_ids = set(
+            event_template.pop("pm_mention_email_disabled_user_ids")
+        )
+
     stream_push_user_ids = set(event_template.pop("stream_push_user_ids", []))
     stream_email_user_ids = set(event_template.pop("stream_email_user_ids", []))
-    wildcard_mention_user_ids = set(event_template.pop("wildcard_mention_user_ids", []))
+    topic_wildcard_mention_user_ids = set(event_template.pop("topic_wildcard_mention_user_ids", []))
+
+    # TODO/compatibility: Translation code for the rename of
+    # `wildcard_mention_user_ids` to `stream_wildcard_mention_user_ids`.
+    # Remove this when one can no longer directly upgrade from 7.x to main.
+    stream_wildcard_mention_user_ids = set()
+    if "stream_wildcard_mention_user_ids" in event_template:
+        stream_wildcard_mention_user_ids = set(
+            event_template.pop("stream_wildcard_mention_user_ids")
+        )
+    elif "wildcard_mention_user_ids" in event_template:
+        stream_wildcard_mention_user_ids = set(event_template.pop("wildcard_mention_user_ids"))
+
+    followed_topic_push_user_ids = set(event_template.pop("followed_topic_push_user_ids", []))
+    followed_topic_email_user_ids = set(event_template.pop("followed_topic_email_user_ids", []))
+    topic_wildcard_mention_in_followed_topic_user_ids = set(
+        event_template.pop("topic_wildcard_mention_in_followed_topic_user_ids", [])
+    )
+    stream_wildcard_mention_in_followed_topic_user_ids = set(
+        event_template.pop("stream_wildcard_mention_in_followed_topic_user_ids", [])
+    )
     muted_sender_user_ids = set(event_template.pop("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.pop("all_bot_user_ids", []))
+    disable_external_notifications = event_template.pop("disable_external_notifications", False)
 
     # TODO/compatibility: Translation code for the rename of
     # `push_notify_user_ids` to `online_push_user_ids`.  Remove this
@@ -1158,7 +1321,7 @@ def process_message_update_event(
         user_profile_id = user_data["id"]
 
         user_event = dict(event_template)  # shallow copy, but deep enough for our needs
-        for key in user_data.keys():
+        for key in user_data:
             if key != "id":
                 user_event[key] = user_data[key]
 
@@ -1177,13 +1340,19 @@ def process_message_update_event(
             user_notifications_data = UserMessageNotificationsData.from_user_id_sets(
                 user_id=user_profile_id,
                 flags=flags,
-                private_message=(stream_name is None),
+                private_message=stream_name is None,
+                disable_external_notifications=disable_external_notifications,
                 online_push_user_ids=online_push_user_ids,
-                pm_mention_push_disabled_user_ids=pm_mention_push_disabled_user_ids,
-                pm_mention_email_disabled_user_ids=pm_mention_email_disabled_user_ids,
+                dm_mention_push_disabled_user_ids=dm_mention_push_disabled_user_ids,
+                dm_mention_email_disabled_user_ids=dm_mention_email_disabled_user_ids,
                 stream_push_user_ids=stream_push_user_ids,
                 stream_email_user_ids=stream_email_user_ids,
-                wildcard_mention_user_ids=wildcard_mention_user_ids,
+                topic_wildcard_mention_user_ids=topic_wildcard_mention_user_ids,
+                stream_wildcard_mention_user_ids=stream_wildcard_mention_user_ids,
+                followed_topic_push_user_ids=followed_topic_push_user_ids,
+                followed_topic_email_user_ids=followed_topic_email_user_ids,
+                topic_wildcard_mention_in_followed_topic_user_ids=topic_wildcard_mention_in_followed_topic_user_ids,
+                stream_wildcard_mention_in_followed_topic_user_ids=stream_wildcard_mention_in_followed_topic_user_ids,
                 muted_sender_user_ids=muted_sender_user_ids,
                 all_bot_user_ids=all_bot_user_ids,
             )
@@ -1192,9 +1361,9 @@ def process_message_update_event(
                 user_notifications_data=user_notifications_data,
                 message_id=message_id,
                 acting_user_id=acting_user_id,
-                private_message=(stream_name is None),
-                presence_idle=(user_profile_id in presence_idle_user_ids),
-                prior_mentioned=(user_profile_id in prior_mention_user_ids),
+                private_message=stream_name is None,
+                presence_idle=user_profile_id in presence_idle_user_ids,
+                prior_mentioned=user_profile_id in prior_mention_user_ids,
             )
 
         for client in get_client_descriptors_for_user(user_profile_id):
@@ -1236,8 +1405,9 @@ def maybe_enqueue_notifications_for_message_update(
         return
 
     if private_message:
-        # We don't do offline notifications for PMs, because
-        # we already notified the user of the original message
+        # We don't do offline notifications for direct messages,
+        # because we already notified the user of the original
+        # message.
         return
 
     if prior_mentioned:
@@ -1256,7 +1426,12 @@ def maybe_enqueue_notifications_for_message_update(
         # without extending the UserMessage data model.
         return
 
-    if user_notifications_data.stream_push_notify or user_notifications_data.stream_email_notify:
+    if (
+        user_notifications_data.stream_push_notify
+        or user_notifications_data.stream_email_notify
+        or user_notifications_data.followed_topic_push_notify
+        or user_notifications_data.followed_topic_email_notify
+    ):
         # Currently we assume that if this flag is set to True, then
         # the user already was notified about the earlier message,
         # so we short circuit.  We may handle this more rigorously
@@ -1298,7 +1473,7 @@ def reformat_legacy_send_message_event(
     modern_event["online_push_user_ids"] = []
     modern_event["stream_push_user_ids"] = []
     modern_event["stream_email_user_ids"] = []
-    modern_event["wildcard_mention_user_ids"] = []
+    modern_event["stream_wildcard_mention_user_ids"] = []
     modern_event["muted_sender_user_ids"] = []
 
     for user in user_dicts:
@@ -1309,7 +1484,7 @@ def reformat_legacy_send_message_event(
         if user.pop("stream_email_notify", False):
             modern_event["stream_email_user_ids"].append(user_id)
         if user.pop("wildcard_mention_notify", False):
-            modern_event["wildcard_mention_user_ids"].append(user_id)
+            modern_event["stream_wildcard_mention_user_ids"].append(user_id)
         if user.pop("sender_is_muted", False):
             modern_event["muted_sender_user_ids"].append(user_id)
 

@@ -1,0 +1,151 @@
+#searchbox {
+    width: 100%;
+    height: var(--header-height);
+
+    .navbar-search:not(.expanded) {
+        display: none;
+    }
+
+    .navbar-search.expanded {
+        float: left;
+        overflow: hidden;
+        margin-top: 0;
+        margin-bottom: 0;
+        width: calc(100% - 2px);
+        position: absolute;
+
+        @media (width < $md_min) {
+            width: calc(100% - 42px);
+        }
+
+        .search_close_button {
+            display: inline;
+            margin-right: 5px;
+        }
+
+        .zulip-icon-close {
+            font-size: 15px;
+        }
+    }
+
+    .typeahead.dropdown-menu {
+        /* Match the typeahead's width to its parent container. */
+        right: 0;
+
+        @media (width < $md_min) {
+            margin-left: 40px;
+        }
+    }
+
+    .input-append {
+        position: relative;
+        width: 100%;
+        width: max-content;
+        min-width: 100%;
+
+        .zulip-icon-search {
+            padding: 0;
+            font-size: 20px;
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            z-index: 5;
+
+            @media (width < $sm_min) {
+                top: 5px;
+            }
+        }
+
+        .zulip-icon-search:not(.deactivated) {
+            cursor: pointer;
+        }
+    }
+
+    #search_query {
+        width: 100%;
+        font-size: 16px;
+        height: calc(var(--header-height) - 1px);
+        min-height: 30px;
+        padding: 0;
+        padding-right: 40px;
+        border: none;
+        border-radius: 0;
+        font-family: "Source Sans 3 VF", sans-serif;
+        font-weight: 300;
+        line-height: var(--header-height);
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        padding-left: 35px;
+        color: hsl(0deg 0% 33%);
+
+        &:focus {
+            outline: 0;
+        }
+
+        @media (width < $sm_min) {
+            vertical-align: text-bottom;
+        }
+    }
+
+    #searchbox-input-container:focus {
+        box-shadow: inset 0 0 0 2px hsl(204deg 20% 74%);
+    }
+
+    .search_close_button {
+        position: absolute;
+        right: 0;
+        top: 6px;
+        background: none;
+        border-radius: 0;
+        border: none;
+        height: 30px;
+        text-align: center;
+        padding: 4px;
+        color: inherit;
+        opacity: 0.5;
+        font-size: 18px;
+        box-shadow: none;
+        text-shadow: none;
+        z-index: 5;
+
+        &:hover {
+            opacity: 1;
+        }
+
+        &:disabled {
+            visibility: hidden;
+        }
+
+        @media (width < $sm_min) {
+            top: 0;
+        }
+    }
+
+    .search_icon {
+        position: absolute;
+        height: 100%;
+        text-decoration: none;
+        padding: 0 10px;
+        font-size: 20px;
+        z-index: 5;
+        left: 0;
+    }
+
+    #searchbox-input-container {
+        font-size: 90%;
+        letter-spacing: normal;
+        padding-left: 0;
+    }
+}
+
+.typeahead-menu li a {
+    .search_list_item {
+        display: flex;
+        align-items: center;
+    }
+
+    .search_list_item .pill-container {
+        margin-left: 5px;
+    }
+}

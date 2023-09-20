@@ -1,9 +1,11 @@
 from typing import Dict, List, Optional
 
-import orjson
 from django.db import transaction
+from django.db.models import Max
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.types import LinkifierDict
 from zerver.models import (
     Realm,
@@ -11,22 +13,15 @@ from zerver.models import (
     RealmFilter,
     UserProfile,
     active_user_ids,
+    flush_linkifiers,
     linkifiers_for_realm,
-    realm_filters_for_realm,
 )
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_on_commit
 
 
 def notify_linkifiers(realm: Realm, realm_linkifiers: List[LinkifierDict]) -> None:
     event: Dict[str, object] = dict(type="realm_linkifiers", realm_linkifiers=realm_linkifiers)
-    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
-
-    # Below is code for backwards compatibility. The now deprecated
-    # "realm_filters" event-type is used by older clients, and uses
-    # tuples.
-    realm_filters = realm_filters_for_realm(realm.id)
-    legacy_event = dict(type="realm_filters", realm_filters=realm_filters)
-    transaction.on_commit(lambda: send_event(realm, legacy_event, active_user_ids(realm.id)))
+    send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
 # NOTE: Regexes must be simple enough that they can be easily translated to JavaScript
@@ -35,11 +30,23 @@ def notify_linkifiers(realm: Realm, realm_linkifiers: List[LinkifierDict]) -> No
 #   * Inline-regex flags will be stripped, and where possible translated to RegExp-wide flags
 @transaction.atomic(durable=True)
 def do_add_linkifier(
-    realm: Realm, pattern: str, url_format_string: str, *, acting_user: Optional[UserProfile]
+    realm: Realm,
+    pattern: str,
+    url_template: str,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> int:
     pattern = pattern.strip()
-    url_format_string = url_format_string.strip()
-    linkifier = RealmFilter(realm=realm, pattern=pattern, url_format_string=url_format_string)
+    url_template = url_template.strip()
+    # This makes sure that the new linkifier is always ordered the last modulo
+    # the rare race condition.
+    max_order = RealmFilter.objects.aggregate(Max("order"))["order__max"]
+    if max_order is None:
+        linkifier = RealmFilter(realm=realm, pattern=pattern, url_template=url_template)
+    else:
+        linkifier = RealmFilter(
+            realm=realm, pattern=pattern, url_template=url_template, order=max_order + 1
+        )
     linkifier.full_clean()
     linkifier.save()
 
@@ -49,16 +56,14 @@ def do_add_linkifier(
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_LINKIFIER_ADDED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                "realm_linkifiers": realm_linkifiers,
-                "added_linkifier": LinkifierDict(
-                    pattern=pattern,
-                    url_format=url_format_string,
-                    id=linkifier.id,
-                ),
-            }
-        ).decode(),
+        extra_data={
+            "realm_linkifiers": realm_linkifiers,
+            "added_linkifier": LinkifierDict(
+                pattern=pattern,
+                url_template=url_template,
+                id=linkifier.id,
+            ),
+        },
     )
     notify_linkifiers(realm, realm_linkifiers)
 
@@ -80,7 +85,7 @@ def do_remove_linkifier(
         realm_linkifier = RealmFilter.objects.get(realm=realm, id=id)
 
     pattern = realm_linkifier.pattern
-    url_format = realm_linkifier.url_format_string
+    url_template = realm_linkifier.url_template
     realm_linkifier.delete()
 
     realm_linkifiers = linkifiers_for_realm(realm.id)
@@ -89,15 +94,13 @@ def do_remove_linkifier(
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_LINKIFIER_REMOVED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                "realm_linkifiers": realm_linkifiers,
-                "removed_linkifier": {
-                    "pattern": pattern,
-                    "url_format": url_format,
-                },
-            }
-        ).decode(),
+        extra_data={
+            "realm_linkifiers": realm_linkifiers,
+            "removed_linkifier": {
+                "pattern": pattern,
+                "url_template": url_template,
+            },
+        },
     )
     notify_linkifiers(realm, realm_linkifiers)
 
@@ -107,17 +110,17 @@ def do_update_linkifier(
     realm: Realm,
     id: int,
     pattern: str,
-    url_format_string: str,
+    url_template: str,
     *,
     acting_user: Optional[UserProfile],
 ) -> None:
     pattern = pattern.strip()
-    url_format_string = url_format_string.strip()
+    url_template = url_template.strip()
     linkifier = RealmFilter.objects.get(realm=realm, id=id)
     linkifier.pattern = pattern
-    linkifier.url_format_string = url_format_string
+    linkifier.url_template = url_template
     linkifier.full_clean()
-    linkifier.save(update_fields=["pattern", "url_format_string"])
+    linkifier.save(update_fields=["pattern", "url_template"])
 
     realm_linkifiers = linkifiers_for_realm(realm.id)
     RealmAuditLog.objects.create(
@@ -125,16 +128,63 @@ def do_update_linkifier(
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_LINKIFIER_CHANGED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                "realm_linkifiers": realm_linkifiers,
-                "changed_linkifier": LinkifierDict(
-                    pattern=pattern,
-                    url_format=url_format_string,
-                    id=linkifier.id,
-                ),
-            }
-        ).decode(),
+        extra_data={
+            "realm_linkifiers": realm_linkifiers,
+            "changed_linkifier": LinkifierDict(
+                pattern=pattern,
+                url_template=url_template,
+                id=linkifier.id,
+            ),
+        },
     )
 
+    notify_linkifiers(realm, realm_linkifiers)
+
+
+@transaction.atomic(durable=True)
+def check_reorder_linkifiers(
+    realm: Realm, ordered_linkifier_ids: List[int], *, acting_user: Optional[UserProfile]
+) -> None:
+    """ordered_linkifier_ids should contain ids of all existing linkifiers.
+    In the rare situation when any of the linkifier gets deleted that more ids
+    are passed, the checks below are sufficient to detect inconsistencies most of
+    the time."""
+    # Repeated IDs in the user request would collapse into the same key when
+    # constructing the set.
+    linkifier_id_set = set(ordered_linkifier_ids)
+    if len(linkifier_id_set) < len(ordered_linkifier_ids):
+        raise JsonableError(_("The ordered list must not contain duplicated linkifiers"))
+
+    linkifiers = RealmFilter.objects.filter(realm=realm)
+    if {linkifier.id for linkifier in linkifiers} != linkifier_id_set:
+        raise JsonableError(
+            _("The ordered list must enumerate all existing linkifiers exactly once")
+        )
+
+    # After the validation, we are sure that there is nothing to do. Return
+    # early to avoid flushing the cache and populating the audit logs.
+    if len(linkifiers) == 0:
+        return
+
+    id_to_new_order = {
+        linkifier_id: order for order, linkifier_id in enumerate(ordered_linkifier_ids)
+    }
+
+    for linkifier in linkifiers:
+        assert linkifier.id in id_to_new_order
+        linkifier.order = id_to_new_order[linkifier.id]
+    RealmFilter.objects.bulk_update(linkifiers, fields=["order"])
+    flush_linkifiers(instance=linkifiers[0])
+
+    # This roundtrip re-fetches the linkifiers sorted in the new order.
+    realm_linkifiers = linkifiers_for_realm(realm.id)
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.REALM_LINKIFIERS_REORDERED,
+        event_time=timezone_now(),
+        extra_data={
+            "realm_linkifiers": realm_linkifiers,
+        },
+    )
     notify_linkifiers(realm, realm_linkifiers)

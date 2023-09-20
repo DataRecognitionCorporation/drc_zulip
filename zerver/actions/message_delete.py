@@ -1,12 +1,15 @@
 from typing import Iterable, List, TypedDict
 
+<<<<<<< HEAD
 from django.db import transaction
 
+=======
+>>>>>>> drc_main
 from zerver.lib import retention
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.models import Message, Realm, UserMessage, UserProfile
-from zerver.tornado.django_api import send_event
+from zerver.tornado.django_api import send_event_on_commit
 
 
 class DeleteMessagesEvent(TypedDict, total=False):
@@ -19,7 +22,7 @@ class DeleteMessagesEvent(TypedDict, total=False):
 
 def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
     # messages in delete_message event belong to the same topic
-    # or is a single private message, as any other behaviour is not possible with
+    # or is a single direct message, as any other behaviour is not possible with
     # the current callers to this method.
     messages = list(messages)
     message_ids = [message.id for message in messages]
@@ -56,12 +59,15 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
     move_messages_to_archive(message_ids, realm=realm, chunk_size=archiving_chunk_size)
 
     event["message_type"] = message_type
-    transaction.on_commit(lambda: send_event(realm, event, users_to_notify))
+    send_event_on_commit(realm, event, users_to_notify)
 
 
 def do_delete_messages_by_sender(user: UserProfile) -> None:
     message_ids = list(
-        Message.objects.filter(sender=user).values_list("id", flat=True).order_by("id")
+        # Uses index: zerver_message_realm_sender_recipient (prefix)
+        Message.objects.filter(realm_id=user.realm_id, sender=user)
+        .values_list("id", flat=True)
+        .order_by("id")
     )
     if message_ids:
         move_messages_to_archive(message_ids, chunk_size=retention.STREAM_MESSAGE_BATCH_SIZE)

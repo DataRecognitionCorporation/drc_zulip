@@ -1,6 +1,5 @@
 from typing import IO, Dict, Optional
 
-import orjson
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.utils import IntegrityError
@@ -11,13 +10,21 @@ from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.upload import upload_emoji_image
-from zerver.models import EmojiInfo, Realm, RealmAuditLog, RealmEmoji, UserProfile, active_user_ids
-from zerver.tornado.django_api import send_event
+from zerver.models import (
+    EmojiInfo,
+    Realm,
+    RealmAuditLog,
+    RealmEmoji,
+    UserProfile,
+    active_user_ids,
+    get_all_custom_emoji_for_realm,
+)
+from zerver.tornado.django_api import send_event_on_commit
 
 
 def notify_realm_emoji(realm: Realm, realm_emoji: Dict[str, EmojiInfo]) -> None:
     event = dict(type="realm_emoji", op="update", realm_emoji=realm_emoji)
-    transaction.on_commit(lambda: send_event(realm, event, active_user_ids(realm.id)))
+    send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
 def check_add_realm_emoji(
@@ -49,18 +56,16 @@ def check_add_realm_emoji(
     realm_emoji.is_animated = is_animated
     realm_emoji.save(update_fields=["file_name", "is_animated"])
 
-    realm_emoji_dict = realm.get_emoji()
+    realm_emoji_dict = get_all_custom_emoji_for_realm(realm.id)
     RealmAuditLog.objects.create(
         realm=realm,
         acting_user=author,
         event_type=RealmAuditLog.REALM_EMOJI_ADDED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                "realm_emoji": dict(sorted(realm_emoji_dict.items())),
-                "added_emoji": realm_emoji_dict[str(realm_emoji.id)],
-            }
-        ).decode(),
+        extra_data={
+            "realm_emoji": dict(sorted(realm_emoji_dict.items())),
+            "added_emoji": realm_emoji_dict[str(realm_emoji.id)],
+        },
     )
     notify_realm_emoji(realm_emoji.realm, realm_emoji_dict)
     return realm_emoji
@@ -72,18 +77,16 @@ def do_remove_realm_emoji(realm: Realm, name: str, *, acting_user: Optional[User
     emoji.deactivated = True
     emoji.save(update_fields=["deactivated"])
 
-    realm_emoji_dict = realm.get_emoji()
+    realm_emoji_dict = get_all_custom_emoji_for_realm(realm.id)
     RealmAuditLog.objects.create(
         realm=realm,
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_EMOJI_REMOVED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                "realm_emoji": dict(sorted(realm_emoji_dict.items())),
-                "deactivated_emoji": realm_emoji_dict[str(emoji.id)],
-            }
-        ).decode(),
+        extra_data={
+            "realm_emoji": dict(sorted(realm_emoji_dict.items())),
+            "deactivated_emoji": realm_emoji_dict[str(emoji.id)],
+        },
     )
 
     notify_realm_emoji(realm, realm_emoji_dict)

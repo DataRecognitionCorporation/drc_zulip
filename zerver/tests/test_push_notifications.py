@@ -25,7 +25,9 @@ from analytics.lib.counts import CountStat, LoggingCountStat
 from analytics.models import InstallationCount, RealmCount
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_update_message_flags
-from zerver.actions.user_settings import do_regenerate_api_key
+from zerver.actions.user_groups import check_add_user_group
+from zerver.actions.user_settings import do_change_user_setting, do_regenerate_api_key
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
@@ -56,11 +58,10 @@ from zerver.lib.remote_server import (
     send_to_push_bouncer,
 )
 from zerver.lib.response import json_response_from_error
-from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.user_groups import create_user_group
+from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.models import (
     Message,
     NotificationTriggers,
@@ -70,8 +71,8 @@ from zerver.models import (
     Stream,
     Subscription,
     UserMessage,
+    UserTopic,
     get_client,
-    get_display_recipient,
     get_realm,
     get_stream,
     get_user_profile_by_id,
@@ -398,9 +399,15 @@ class PushBouncerNotificationTest(BouncerTestCase):
             logger.output,
             [
                 "INFO:zilencer.views:"
+<<<<<<< HEAD
                 f"Deduplicating push registrations for server id:{server.id} user id:{hamlet.id} uuid:{str(hamlet.uuid)} and tokens:{sorted([t.token for t in android_tokens[:]])}",
                 "INFO:zilencer.views:"
                 f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{hamlet.id}><uuid:{str(hamlet.uuid)}>: "
+=======
+                f"Deduplicating push registrations for server id:{server.id} user id:{hamlet.id} uuid:{hamlet.uuid} and tokens:{sorted(t.token for t in android_tokens)}",
+                "INFO:zilencer.views:"
+                f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{hamlet.id}><uuid:{hamlet.uuid}>: "
+>>>>>>> drc_main
                 "2 via FCM devices, 1 via APNs devices",
             ],
         )
@@ -655,7 +662,11 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.USER_CREATED,
             event_time=end_time,
-            extra_data="data",
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user.realm),
+                }
+            ).decode(),
         )
         # Event type not in SYNCED_BILLING_EVENTS -- should not be included
         RealmAuditLog.objects.create(
@@ -663,7 +674,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.REALM_LOGO_CHANGED,
             event_time=end_time,
-            extra_data="data",
+            extra_data=orjson.dumps({"foo": "bar"}).decode(),
         )
         self.assertEqual(RealmCount.objects.count(), 1)
         self.assertEqual(InstallationCount.objects.count(), 1)
@@ -706,7 +717,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.REALM_LOGO_CHANGED,
             event_time=end_time,
-            extra_data="data",
+            extra_data={"data": "foo"},
         )
         send_analytics_to_remote_server()
         check_counts(6, 4, 3, 2, 1)
@@ -716,7 +727,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.USER_REACTIVATED,
             event_time=end_time,
-            extra_data="data",
+            extra_data={
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user.realm),
+            },
         )
         send_analytics_to_remote_server()
         check_counts(7, 5, 3, 2, 2)
@@ -819,7 +832,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.USER_REACTIVATED,
             event_time=self.TIME_ZERO,
-            extra_data="data",
+            extra_data={
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user.realm),
+            },
         )
         # Event type not in SYNCED_BILLING_EVENTS -- should not be included
         RealmAuditLog.objects.create(
@@ -827,7 +842,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             modified_user=user,
             event_type=RealmAuditLog.REALM_LOGO_CHANGED,
             event_time=self.TIME_ZERO,
-            extra_data="data",
+            extra_data=orjson.dumps({"foo": "bar"}).decode(),
         )
 
         # send_analytics_to_remote_server calls send_to_push_bouncer twice.
@@ -857,13 +872,14 @@ class AnalyticsBouncerTest(BouncerTestCase):
     def test_realmauditlog_data_mapping(self) -> None:
         self.add_mock_response()
         user = self.example_user("hamlet")
+        user_count = realm_user_count_by_role(user.realm)
         log_entry = RealmAuditLog.objects.create(
             realm=user.realm,
             modified_user=user,
             backfilled=True,
             event_type=RealmAuditLog.USER_REACTIVATED,
             event_time=self.TIME_ZERO,
-            extra_data="data",
+            extra_data=orjson.dumps({RealmAuditLog.ROLE_COUNT: user_count}).decode(),
         )
         send_analytics_to_remote_server()
         remote_log_entry = RemoteRealmAuditLog.objects.order_by("id").last()
@@ -872,8 +888,88 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.assertEqual(remote_log_entry.remote_id, log_entry.id)
         self.assertEqual(remote_log_entry.event_time, self.TIME_ZERO)
         self.assertEqual(remote_log_entry.backfilled, True)
-        self.assertEqual(remote_log_entry.extra_data, "data")
+        assert remote_log_entry.extra_data is not None
+        self.assertEqual(remote_log_entry.extra_data, {RealmAuditLog.ROLE_COUNT: user_count})
         self.assertEqual(remote_log_entry.event_type, RealmAuditLog.USER_REACTIVATED)
+
+    # This verifies that the bouncer is backwards-compatible with remote servers using
+    # TextField to store extra_data.
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    @responses.activate
+    def test_realmauditlog_string_extra_data(self) -> None:
+        self.add_mock_response()
+
+        def verify_request_with_overridden_extra_data(
+            request_extra_data: object,
+            *,
+            expected_extra_data: object = None,
+            skip_audit_log_check: bool = False,
+        ) -> None:
+            user = self.example_user("hamlet")
+            log_entry = RealmAuditLog.objects.create(
+                realm=user.realm,
+                modified_user=user,
+                event_type=RealmAuditLog.USER_REACTIVATED,
+                event_time=self.TIME_ZERO,
+                extra_data=orjson.dumps({RealmAuditLog.ROLE_COUNT: 0}).decode(),
+            )
+
+            # We use this to patch send_to_push_bouncer so that extra_data in the
+            # legacy format gets sent to the bouncer.
+            def transform_realmauditlog_extra_data(
+                method: str,
+                endpoint: str,
+                post_data: Union[bytes, Mapping[str, Union[str, int, None, bytes]]],
+                extra_headers: Mapping[str, str] = {},
+            ) -> Dict[str, Any]:
+                if endpoint == "server/analytics":
+                    assert isinstance(post_data, dict)
+                    assert isinstance(post_data["realmauditlog_rows"], str)
+                    original_data = orjson.loads(post_data["realmauditlog_rows"])
+                    # We replace the extra_data with another fake example to verify that
+                    # the bouncer actually gets requested with extra_data being string
+                    new_data = [{**row, "extra_data": request_extra_data} for row in original_data]
+                    post_data["realmauditlog_rows"] = orjson.dumps(new_data).decode()
+                return send_to_push_bouncer(method, endpoint, post_data, extra_headers)
+
+            with mock.patch(
+                "zerver.lib.remote_server.send_to_push_bouncer",
+                side_effect=transform_realmauditlog_extra_data,
+            ):
+                send_analytics_to_remote_server()
+
+            if skip_audit_log_check:
+                return
+
+            remote_log_entry = RemoteRealmAuditLog.objects.order_by("id").last()
+            assert remote_log_entry is not None
+            self.assertEqual(str(remote_log_entry.server.uuid), self.server_uuid)
+            self.assertEqual(remote_log_entry.remote_id, log_entry.id)
+            self.assertEqual(remote_log_entry.event_time, self.TIME_ZERO)
+            self.assertEqual(remote_log_entry.extra_data, expected_extra_data)
+
+        # Pre-migration extra_data
+        verify_request_with_overridden_extra_data(
+            request_extra_data=orjson.dumps({"fake_data": 42}).decode(),
+            expected_extra_data={"fake_data": 42},
+        )
+        verify_request_with_overridden_extra_data(request_extra_data=None, expected_extra_data={})
+        # Post-migration extra_data
+        verify_request_with_overridden_extra_data(
+            request_extra_data={"fake_data": 42},
+            expected_extra_data={"fake_data": 42},
+        )
+        verify_request_with_overridden_extra_data(
+            request_extra_data={},
+            expected_extra_data={},
+        )
+        # Invalid extra_data
+        with self.assertLogs(level="WARNING") as m:
+            verify_request_with_overridden_extra_data(
+                request_extra_data="{malformedjson:",
+                skip_audit_log_check=True,
+            )
+        self.assertIn("Malformed audit log data", m.output[0])
 
 
 class PushNotificationTest(BouncerTestCase):
@@ -905,12 +1001,17 @@ class PushNotificationTest(BouncerTestCase):
         return message
 
     @contextmanager
-    def mock_apns(self) -> Iterator[APNsContext]:
-        apns_context = APNsContext(apns=mock.Mock(), loop=asyncio.new_event_loop())
+    def mock_apns(self) -> Iterator[Tuple[APNsContext, mock.AsyncMock]]:
+        apns = mock.Mock(spec=aioapns.APNs)
+        apns.send_notification = mock.AsyncMock()
+        apns_context = APNsContext(
+            apns=apns,
+            loop=asyncio.new_event_loop(),
+        )
         try:
             with mock.patch("zerver.lib.push_notifications.get_apns_context") as mock_get:
                 mock_get.return_value = apns_context
-                yield apns_context
+                yield apns_context, apns.send_notification
         finally:
             apns_context.loop.close()
 
@@ -972,6 +1073,10 @@ class PushNotificationTest(BouncerTestCase):
 class HandlePushNotificationTest(PushNotificationTest):
     DEFAULT_SUBDOMAIN = ""
 
+    def soft_deactivate_main_user(self) -> None:
+        self.user_profile = self.example_user("hamlet")
+        self.soft_deactivate_user(self.user_profile)
+
     def request_callback(self, request: PreparedRequest) -> Tuple[int, ResponseHeaders, bytes]:
         assert request.url is not None  # allow mypy to infer url is present.
         assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
@@ -1001,11 +1106,11 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             "message_id": message.id,
-            "trigger": "private_message",
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         with mock.patch(
             "zerver.lib.push_notifications.gcm_client"
-        ) as mock_gcm, self.mock_apns() as apns_context, self.assertLogs(
+        ) as mock_gcm, self.mock_apns() as (apns_context, send_notification), self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
         ) as pn_logger, self.assertLogs(
             "zilencer.views", level="INFO"
@@ -1021,26 +1126,25 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_gcm.json_request.return_value = {
                 "success": {device[2]: message.id for device in gcm_devices}
             }
-            apns_context.apns.send_notification = mock.AsyncMock()
-            apns_context.apns.send_notification.return_value.is_successful = True
+            send_notification.return_value.is_successful = True
             handle_push_notification(self.user_profile.id, missed_message)
             self.assertEqual(
                 views_logger.output,
                 [
                     "INFO:zilencer.views:"
-                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{str(self.user_profile.id)}><uuid:{str(self.user_profile.uuid)}>: "
+                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}>: "
                     f"{len(gcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices"
                 ],
             )
             for _, _, token in apns_devices:
                 self.assertIn(
                     "INFO:zerver.lib.push_notifications:"
-                    f"APNs: Success sending for user <id:{str(self.user_profile.id)}><uuid:{str(self.user_profile.uuid)}> to device {token}",
+                    f"APNs: Success sending for user <id:{self.user_profile.id}><uuid:{self.user_profile.uuid}> to device {token}",
                     pn_logger.output,
                 )
             for _, _, token in gcm_devices:
                 self.assertIn(
-                    "INFO:zerver.lib.push_notifications:" f"GCM: Sent {token} as {message.id}",
+                    f"INFO:zerver.lib.push_notifications:GCM: Sent {token} as {message.id}",
                     pn_logger.output,
                 )
 
@@ -1063,11 +1167,11 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             "message_id": message.id,
-            "trigger": "private_message",
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         with mock.patch(
             "zerver.lib.push_notifications.gcm_client"
-        ) as mock_gcm, self.mock_apns() as apns_context, self.assertLogs(
+        ) as mock_gcm, self.mock_apns() as (apns_context, send_notification), self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
         ) as pn_logger, self.assertLogs(
             "zilencer.views", level="INFO"
@@ -1081,15 +1185,14 @@ class HandlePushNotificationTest(PushNotificationTest):
                 for device in RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.GCM)
             ]
             mock_gcm.json_request.return_value = {"success": {gcm_devices[0][2]: message.id}}
-            apns_context.apns.send_notification = mock.AsyncMock()
-            apns_context.apns.send_notification.return_value.is_successful = False
-            apns_context.apns.send_notification.return_value.description = "Unregistered"
+            send_notification.return_value.is_successful = False
+            send_notification.return_value.description = "Unregistered"
             handle_push_notification(self.user_profile.id, missed_message)
             self.assertEqual(
                 views_logger.output,
                 [
                     "INFO:zilencer.views:"
-                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{str(self.user_profile.id)}><uuid:{str(self.user_profile.uuid)}>: "
+                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}>: "
                     f"{len(gcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices"
                 ],
             )
@@ -1122,7 +1225,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         missed_message = {
             "user_profile_id": self.user_profile.id,
             "message_id": message.id,
-            "trigger": "private_message",
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         assert settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
         URL = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/push/notify"
@@ -1152,7 +1255,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             "message_id": message.id,
-            "trigger": "private_message",
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
 
         # If the message is unread, we should send push notifications.
@@ -1192,7 +1295,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         )
         missed_message = {
             "message_id": message.id,
-            "trigger": "private_message",
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         # Now, delete the message the normal way
         do_delete_messages(user_profile.realm, [message])
@@ -1225,7 +1328,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         )
         missed_message = {
             "message_id": message.id,
-            "trigger": "private_message",
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         # Now delete the message forcefully, so it just doesn't exist.
         message.delete()
@@ -1261,7 +1364,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             "message_id": message.id,
-            "trigger": "private_message",
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=True), mock.patch(
             "zerver.lib.push_notifications.get_message_payload_apns", return_value={"apns": True}
@@ -1311,7 +1414,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             "message_id": message.id,
-            "trigger": "private_message",
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         with mock.patch(
             "zerver.lib.push_notifications.get_message_payload_apns", return_value={"apns": True}
@@ -1498,7 +1601,8 @@ class HandlePushNotificationTest(PushNotificationTest):
         self.subscribe(sender, "public_stream")
         logger_string = "zulip.soft_deactivation"
         with self.assertLogs(logger_string, level="INFO") as info_logs:
-            do_soft_deactivate_users([self.user_profile])
+            self.soft_deactivate_main_user()
+
         self.assertEqual(
             info_logs.output,
             [
@@ -1509,7 +1613,7 @@ class HandlePushNotificationTest(PushNotificationTest):
         message_id = self.send_stream_message(sender, "public_stream", "test")
         missed_message = {
             "message_id": message_id,
-            "trigger": "stream_push_notify",
+            "trigger": NotificationTriggers.STREAM_PUSH,
         }
 
         android_devices = list(
@@ -1547,51 +1651,122 @@ class HandlePushNotificationTest(PushNotificationTest):
     ) -> None:
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
-        large_user_group = create_user_group(
-            "large_user_group", [self.user_profile, othello, cordelia], get_realm("zulip")
+        large_user_group = check_add_user_group(
+            get_realm("zulip"),
+            "large_user_group",
+            [self.user_profile, othello, cordelia],
+            acting_user=None,
         )
 
         # Personal mention in a stream message should soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=False):
+        def mention_in_stream() -> None:
             mention = f"@**{self.user_profile.full_name}**"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_push_notification(
                 self.user_profile.id,
-                {"message_id": stream_mentioned_message_id, "trigger": "mentioned"},
+                {
+                    "message_id": stream_mentioned_message_id,
+                    "trigger": NotificationTriggers.MENTION,
+                },
             )
 
-        # Private message should soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=False):
+        self.soft_deactivate_main_user()
+        self.expect_soft_reactivation(self.user_profile, mention_in_stream)
+
+        # Direct message should soft reactivate the user
+        def direct_message() -> None:
             # Soft reactivate the user by sending a personal message
             personal_message_id = self.send_personal_message(othello, self.user_profile, "Message")
             handle_push_notification(
                 self.user_profile.id,
-                {"message_id": personal_message_id, "trigger": "private_message"},
+                {
+                    "message_id": personal_message_id,
+                    "trigger": NotificationTriggers.DIRECT_MESSAGE,
+                },
             )
 
-        # Wild card mention should NOT soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=True):
-            # Soft reactivate the user by sending a personal message
+        self.soft_deactivate_main_user()
+        self.expect_soft_reactivation(self.user_profile, direct_message)
+
+        # User FOLLOWS the topic.
+        # 'wildcard_mentions_notify' is disabled to verify the corner case when only
+        # 'enable_followed_topic_wildcard_mentions_notify' is enabled (True by default).
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "test",
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+        )
+        do_change_user_setting(
+            self.user_profile, "wildcard_mentions_notify", False, acting_user=None
+        )
+
+        # Topic wildcard mention in followed topic should soft reactivate the user
+        # user should be a topic participant
+        self.send_stream_message(self.user_profile, "Denmark", "topic paticipant")
+
+        def send_topic_wildcard_mention() -> None:
+            mention = "@**topic**"
+            stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
+            handle_push_notification(
+                self.user_profile.id,
+                {
+                    "message_id": stream_mentioned_message_id,
+                    "trigger": NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+                },
+            )
+
+        self.soft_deactivate_main_user()
+        self.expect_soft_reactivation(self.user_profile, send_topic_wildcard_mention)
+
+        # Stream wildcard mention in followed topic should NOT soft reactivate the user
+        def send_stream_wildcard_mention() -> None:
             mention = "@**all**"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_push_notification(
                 self.user_profile.id,
-                {"message_id": stream_mentioned_message_id, "trigger": "wildcard_mentioned"},
+                {
+                    "message_id": stream_mentioned_message_id,
+                    "trigger": NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC,
+                },
             )
 
+        self.soft_deactivate_main_user()
+        self.expect_to_stay_long_term_idle(self.user_profile, send_stream_wildcard_mention)
+
+        # Reset
+        do_set_user_topic_visibility_policy(
+            self.user_profile,
+            get_stream("Denmark", self.user_profile.realm),
+            "test",
+            visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
+        )
+        do_change_user_setting(
+            self.user_profile, "wildcard_mentions_notify", True, acting_user=None
+        )
+
+        # Topic Wildcard mention should soft reactivate the user
+        self.expect_soft_reactivation(self.user_profile, send_topic_wildcard_mention)
+
+        # Stream Wildcard mention should NOT soft reactivate the user
+        self.soft_deactivate_main_user()
+        self.expect_to_stay_long_term_idle(self.user_profile, send_stream_wildcard_mention)
+
         # Group mention should NOT soft reactivate the user
-        with self.soft_deactivate_and_check_long_term_idle(self.user_profile, expected=True):
-            # Soft reactivate the user by sending a personal message
+        def send_group_mention() -> None:
             mention = "@*large_user_group*"
             stream_mentioned_message_id = self.send_stream_message(othello, "Denmark", mention)
             handle_push_notification(
                 self.user_profile.id,
                 {
                     "message_id": stream_mentioned_message_id,
-                    "trigger": "mentioned",
+                    "trigger": NotificationTriggers.MENTION,
                     "mentioned_user_group_id": large_user_group.id,
                 },
             )
+
+        self.soft_deactivate_main_user()
+        self.expect_to_stay_long_term_idle(self.user_profile, send_group_mention)
 
     @mock.patch("zerver.lib.push_notifications.logger.info")
     @mock.patch("zerver.lib.push_notifications.push_notifications_enabled", return_value=True)
@@ -1612,7 +1787,7 @@ class HandlePushNotificationTest(PushNotificationTest):
 
         missed_message = {
             "message_id": message.id,
-            "trigger": "private_message",
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
         }
         handle_push_notification(user_profile.id, missed_message)
         mock_push_notifications.assert_called_once()
@@ -1689,11 +1864,10 @@ class TestAPNs(PushNotificationTest):
 
     def test_success(self) -> None:
         self.setup_apns_tokens()
-        with self.mock_apns() as apns_context, self.assertLogs(
+        with self.mock_apns() as (apns_context, send_notification), self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
         ) as logger:
-            apns_context.apns.send_notification = mock.AsyncMock()
-            apns_context.apns.send_notification.return_value.is_successful = True
+            send_notification.return_value.is_successful = True
             self.send()
             for device in self.devices():
                 self.assertIn(
@@ -1703,26 +1877,35 @@ class TestAPNs(PushNotificationTest):
 
     def test_http_retry_eventually_fails(self) -> None:
         self.setup_apns_tokens()
-        with self.mock_apns() as apns_context, self.assertLogs(
+        with self.mock_apns() as (apns_context, send_notification), self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
         ) as logger:
-            apns_context.apns.send_notification = mock.AsyncMock(
-                side_effect=aioapns.exceptions.ConnectionError()
-            )
+            send_notification.side_effect = aioapns.exceptions.ConnectionError()
             self.send(devices=self.devices()[0:1])
             self.assertIn(
                 f"ERROR:zerver.lib.push_notifications:APNs: ConnectionError sending for user <id:{self.user_profile.id}> to device {self.devices()[0].token}; check certificate expiration",
                 logger.output,
             )
 
-    def test_internal_server_error(self) -> None:
+    def test_other_exception(self) -> None:
         self.setup_apns_tokens()
-        with self.mock_apns() as apns_context, self.assertLogs(
+        with self.mock_apns() as (apns_context, send_notification), self.assertLogs(
             "zerver.lib.push_notifications", level="INFO"
         ) as logger:
-            apns_context.apns.send_notification = mock.AsyncMock()
-            apns_context.apns.send_notification.return_value.is_successful = False
-            apns_context.apns.send_notification.return_value.description = "InternalServerError"
+            send_notification.side_effect = IOError
+            self.send(devices=self.devices()[0:1])
+            self.assertIn(
+                f"ERROR:zerver.lib.push_notifications:APNs: Error sending for user <id:{self.user_profile.id}> to device {self.devices()[0].token}",
+                logger.output[1],
+            )
+
+    def test_internal_server_error(self) -> None:
+        self.setup_apns_tokens()
+        with self.mock_apns() as (apns_context, send_notification), self.assertLogs(
+            "zerver.lib.push_notifications", level="INFO"
+        ) as logger:
+            send_notification.return_value.is_successful = False
+            send_notification.return_value.description = "InternalServerError"
             self.send(devices=self.devices()[0:1])
             self.assertIn(
                 f"WARNING:zerver.lib.push_notifications:APNs: Failed to send for user <id:{self.user_profile.id}> to device {self.devices()[0].token}: InternalServerError",
@@ -1785,7 +1968,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         )
         message = Message.objects.get(id=message_id)
         payload = get_message_payload_apns(
-            user_profile, message, NotificationTriggers.PRIVATE_MESSAGE
+            user_profile, message, NotificationTriggers.DIRECT_MESSAGE
         )
         expected = {
             "alert": {
@@ -1820,7 +2003,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         )
         message = Message.objects.get(id=message_id)
         payload = get_message_payload_apns(
-            user_profile, message, NotificationTriggers.PRIVATE_MESSAGE
+            user_profile, message, NotificationTriggers.DIRECT_MESSAGE
         )
         expected = {
             "alert": {
@@ -1853,10 +2036,10 @@ class TestGetAPNsPayload(PushNotificationTest):
         self.assertDictEqual(payload, expected)
         mock_push_notifications.assert_called()
 
-    def test_get_message_payload_apns_stream_message(self) -> None:
+    def _test_get_message_payload_apns_stream_message(self, trigger: str) -> None:
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
-        payload = get_message_payload_apns(self.sender, message, NotificationTriggers.STREAM_PUSH)
+        payload = get_message_payload_apns(self.sender, message, trigger)
         expected = {
             "alert": {
                 "title": "#Verona > Test topic",
@@ -1871,7 +2054,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "recipient_type": "stream",
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,
-                    "stream": get_display_recipient(message.recipient),
+                    "stream": stream.name,
                     "stream_id": stream.id,
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
@@ -1882,6 +2065,12 @@ class TestGetAPNsPayload(PushNotificationTest):
             },
         }
         self.assertDictEqual(payload, expected)
+
+    def test_get_message_payload_apns_stream_message(self) -> None:
+        self._test_get_message_payload_apns_stream_message(NotificationTriggers.STREAM_PUSH)
+
+    def test_get_message_payload_apns_followed_topic_message(self) -> None:
+        self._test_get_message_payload_apns_stream_message(NotificationTriggers.FOLLOWED_TOPIC_PUSH)
 
     def test_get_message_payload_apns_stream_mention(self) -> None:
         user_profile = self.example_user("othello")
@@ -1902,7 +2091,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "recipient_type": "stream",
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,
-                    "stream": get_display_recipient(message.recipient),
+                    "stream": stream.name,
                     "stream_id": stream.id,
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
@@ -1916,7 +2105,9 @@ class TestGetAPNsPayload(PushNotificationTest):
 
     def test_get_message_payload_apns_user_group_mention(self) -> None:
         user_profile = self.example_user("othello")
-        user_group = create_user_group("test_user_group", [user_profile], get_realm("zulip"))
+        user_group = check_add_user_group(
+            get_realm("zulip"), "test_user_group", [user_profile], acting_user=None
+        )
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
         payload = get_message_payload_apns(
@@ -1936,7 +2127,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "recipient_type": "stream",
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,
-                    "stream": get_display_recipient(message.recipient),
+                    "stream": stream.name,
                     "stream_id": stream.id,
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
@@ -1950,12 +2141,14 @@ class TestGetAPNsPayload(PushNotificationTest):
         }
         self.assertDictEqual(payload, expected)
 
-    def test_get_message_payload_apns_stream_wildcard_mention(self) -> None:
+    def _test_get_message_payload_apns_wildcard_mention(self, trigger: str) -> None:
         user_profile = self.example_user("othello")
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
         payload = get_message_payload_apns(
-            user_profile, message, NotificationTriggers.WILDCARD_MENTION
+            user_profile,
+            message,
+            trigger,
         )
         expected = {
             "alert": {
@@ -1971,7 +2164,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "recipient_type": "stream",
                     "sender_email": self.sender.email,
                     "sender_id": self.sender.id,
-                    "stream": get_display_recipient(message.recipient),
+                    "stream": stream.name,
                     "stream_id": stream.id,
                     "topic": message.topic_name(),
                     "server": settings.EXTERNAL_HOST,
@@ -1983,6 +2176,26 @@ class TestGetAPNsPayload(PushNotificationTest):
         }
         self.assertDictEqual(payload, expected)
 
+    def test_get_message_payload_apns_topic_wildcard_mention_in_followed_topic(self) -> None:
+        self._test_get_message_payload_apns_wildcard_mention(
+            NotificationTriggers.TOPIC_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
+        )
+
+    def test_get_message_payload_apns_stream_wildcard_mention_in_followed_topic(self) -> None:
+        self._test_get_message_payload_apns_wildcard_mention(
+            NotificationTriggers.STREAM_WILDCARD_MENTION_IN_FOLLOWED_TOPIC
+        )
+
+    def test_get_message_payload_apns_topic_wildcard_mention(self) -> None:
+        self._test_get_message_payload_apns_wildcard_mention(
+            NotificationTriggers.TOPIC_WILDCARD_MENTION
+        )
+
+    def test_get_message_payload_apns_stream_wildcard_mention(self) -> None:
+        self._test_get_message_payload_apns_wildcard_mention(
+            NotificationTriggers.STREAM_WILDCARD_MENTION
+        )
+
     @override_settings(PUSH_NOTIFICATION_REDACT_CONTENT=True)
     def test_get_message_payload_apns_redacted_content(self) -> None:
         user_profile = self.example_user("othello")
@@ -1991,7 +2204,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         )
         message = Message.objects.get(id=message_id)
         payload = get_message_payload_apns(
-            user_profile, message, NotificationTriggers.PRIVATE_MESSAGE
+            user_profile, message, NotificationTriggers.DIRECT_MESSAGE
         )
         expected = {
             "alert": {
@@ -2025,32 +2238,32 @@ class TestGetAPNsPayload(PushNotificationTest):
 
 
 class TestGetGCMPayload(PushNotificationTest):
-    def _test_get_message_payload_gcm_mentions(
+    def _test_get_message_payload_gcm_stream_message(
         self,
-        trigger: str,
-        alert: str,
-        *,
+        truncate_content: bool = False,
         mentioned_user_group_id: Optional[int] = None,
         mentioned_user_group_name: Optional[str] = None,
     ) -> None:
         stream = Stream.objects.filter(name="Verona").get()
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
-        message.content = "a" * 210
-        message.rendered_content = "a" * 210
-        message.save()
+        content = message.content
+        if truncate_content:
+            message.content = "a" * 210
+            message.rendered_content = "a" * 210
+            message.save()
+            content = "a" * 200 + "…"
 
         hamlet = self.example_user("hamlet")
         payload, gcm_options = get_message_payload_gcm(
-            hamlet, message, trigger, mentioned_user_group_id, mentioned_user_group_name
+            hamlet, message, mentioned_user_group_id, mentioned_user_group_name
         )
         expected_payload = {
             "user_id": hamlet.id,
             "event": "message",
-            "alert": alert,
             "zulip_message_id": message.id,
             "time": datetime_to_timestamp(message.date_sent),
-            "content": "a" * 200 + "…",
-            "content_truncated": True,
+            "content": content,
+            "content_truncated": truncate_content,
             "server": settings.EXTERNAL_HOST,
             "realm_id": hamlet.realm.id,
             "realm_uri": hamlet.realm.uri,
@@ -2059,7 +2272,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "sender_full_name": "King Hamlet",
             "sender_avatar_url": absolute_avatar_url(message.sender),
             "recipient_type": "stream",
-            "stream": get_display_recipient(message.recipient),
+            "stream": stream.name,
             "stream_id": stream.id,
             "topic": message.topic_name(),
         }
@@ -2075,42 +2288,36 @@ class TestGetGCMPayload(PushNotificationTest):
             },
         )
 
-    def test_get_message_payload_gcm_personal_mention(self) -> None:
-        self._test_get_message_payload_gcm_mentions(
-            "mentioned", "King Hamlet mentioned you in #Verona"
-        )
+    # Here, the payload is notification trigger independent. This test covers
+    # the case when the trigger for push notifications is personal mention,
+    # wildcard mention, stream push, or followed topic push.
+    def test_get_message_payload_gcm_stream_message(self) -> None:
+        self._test_get_message_payload_gcm_stream_message()
+
+    def test_get_message_payload_gcm_stream_message_truncate_content(self) -> None:
+        self._test_get_message_payload_gcm_stream_message(truncate_content=True)
 
     def test_get_message_payload_gcm_user_group_mention(self) -> None:
         # Note that the @mobile_team user group doesn't actually
         # exist; this test is just verifying the formatting logic.
-        self._test_get_message_payload_gcm_mentions(
-            "mentioned",
-            "King Hamlet mentioned @mobile_team in #Verona",
+        self._test_get_message_payload_gcm_stream_message(
             mentioned_user_group_id=3,
             mentioned_user_group_name="mobile_team",
         )
 
-    def test_get_message_payload_gcm_wildcard_mention(self) -> None:
-        self._test_get_message_payload_gcm_mentions(
-            "wildcard_mentioned", "King Hamlet mentioned everyone in #Verona"
-        )
-
-    def test_get_message_payload_gcm_private_message(self) -> None:
+    def test_get_message_payload_gcm_direct_message(self) -> None:
         message = self.get_message(
             Recipient.PERSONAL,
             type_id=self.personal_recipient_user.id,
             realm_id=self.personal_recipient_user.realm_id,
         )
         hamlet = self.example_user("hamlet")
-        payload, gcm_options = get_message_payload_gcm(
-            hamlet, message, NotificationTriggers.PRIVATE_MESSAGE
-        )
+        payload, gcm_options = get_message_payload_gcm(hamlet, message)
         self.assertDictEqual(
             payload,
             {
                 "user_id": hamlet.id,
                 "event": "message",
-                "alert": "New private message from King Hamlet",
                 "zulip_message_id": message.id,
                 "time": datetime_to_timestamp(message.date_sent),
                 "content": message.content,
@@ -2132,57 +2339,17 @@ class TestGetGCMPayload(PushNotificationTest):
             },
         )
 
-    def test_get_message_payload_gcm_stream_notifications(self) -> None:
-        stream = Stream.objects.get(name="Denmark")
-        message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
-        hamlet = self.example_user("hamlet")
-        payload, gcm_options = get_message_payload_gcm(
-            hamlet, message, NotificationTriggers.STREAM_PUSH
-        )
-        self.assertDictEqual(
-            payload,
-            {
-                "user_id": hamlet.id,
-                "event": "message",
-                "alert": "New stream message from King Hamlet in #Denmark",
-                "zulip_message_id": message.id,
-                "time": datetime_to_timestamp(message.date_sent),
-                "content": message.content,
-                "content_truncated": False,
-                "server": settings.EXTERNAL_HOST,
-                "realm_id": hamlet.realm.id,
-                "realm_uri": hamlet.realm.uri,
-                "sender_id": hamlet.id,
-                "sender_email": hamlet.email,
-                "sender_full_name": "King Hamlet",
-                "sender_avatar_url": absolute_avatar_url(message.sender),
-                "recipient_type": "stream",
-                "topic": "Test topic",
-                "stream": "Denmark",
-                "stream_id": stream.id,
-            },
-        )
-        self.assertDictEqual(
-            gcm_options,
-            {
-                "priority": "high",
-            },
-        )
-
     @override_settings(PUSH_NOTIFICATION_REDACT_CONTENT=True)
     def test_get_message_payload_gcm_redacted_content(self) -> None:
         stream = Stream.objects.get(name="Denmark")
         message = self.get_message(Recipient.STREAM, stream.id, stream.realm_id)
         hamlet = self.example_user("hamlet")
-        payload, gcm_options = get_message_payload_gcm(
-            hamlet, message, NotificationTriggers.STREAM_PUSH
-        )
+        payload, gcm_options = get_message_payload_gcm(hamlet, message)
         self.assertDictEqual(
             payload,
             {
                 "user_id": hamlet.id,
                 "event": "message",
-                "alert": "New stream message from King Hamlet in #Denmark",
                 "zulip_message_id": message.id,
                 "time": datetime_to_timestamp(message.date_sent),
                 "content": "*This organization has disabled including message content in mobile push notifications*",

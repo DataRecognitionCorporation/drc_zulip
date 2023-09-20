@@ -13,7 +13,7 @@ from django.contrib.auth.views import (
 from django.urls import path, re_path
 from django.urls.resolvers import URLPattern, URLResolver
 from django.utils.module_loading import import_string
-from django.views.generic import RedirectView, TemplateView
+from django.views.generic import RedirectView
 
 from zerver.forms import LoggingSetPasswordForm
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
@@ -26,9 +26,10 @@ from zerver.views.auth import (
     api_fetch_api_key,
     api_get_server_settings,
     json_fetch_api_key,
+    jwt_fetch_api_key,
     log_into_subdomain,
     login_page,
-    logout_then_login,
+    logout_view,
     password_reset,
     remote_user_jwt,
     remote_user_sso,
@@ -53,6 +54,7 @@ from zerver.views.documentation import IntegrationView, MarkdownDirectoryView, i
 from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_drafts
 from zerver.views.email_mirror import email_mirror_message
 from zerver.views.events_register import events_register_backend
+from zerver.views.health import health
 from zerver.views.home import accounts_accept_terms, desktop_home, home
 from zerver.views.hotspots import mark_hotspot_as_read
 from zerver.views.invite import (
@@ -78,7 +80,7 @@ from zerver.views.message_flags import (
     update_message_flags_for_narrow,
 )
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
-from zerver.views.muting import mute_user, unmute_user, update_muted_topic
+from zerver.views.muted_users import mute_user, unmute_user
 from zerver.views.presence import (
     get_presence_backend,
     get_statuses_for_realm,
@@ -113,6 +115,7 @@ from zerver.views.realm_linkifiers import (
     create_linkifier,
     delete_linkifier,
     list_linkifiers,
+    reorder_linkifiers,
     update_linkifier,
 )
 from zerver.views.realm_logo import delete_logo_backend, get_logo_backend, upload_logo
@@ -124,15 +127,19 @@ from zerver.views.registration import (
     create_realm,
     find_account,
     get_prereg_key_and_redirect,
+    new_realm_send_confirm,
     realm_redirect,
+    realm_register,
+    signup_send_confirm,
 )
-from zerver.views.report import (
-    report_csp_violations,
-    report_error,
-    report_narrow_times,
-    report_send_times,
-    report_unnarrow_times,
+from zerver.views.report import report_csp_violations
+from zerver.views.scheduled_messages import (
+    create_scheduled_message_backend,
+    delete_scheduled_messages,
+    fetch_scheduled_messages,
+    update_scheduled_message_backend,
 )
+from zerver.views.sentry import sentry_tunnel
 from zerver.views.storage import get_storage, remove_storage, update_storage
 from zerver.views.streams import (
     add_default_stream,
@@ -164,8 +171,9 @@ from zerver.views.unsubscribe import email_unsubscribe
 from zerver.views.upload import (
     serve_file_backend,
     serve_file_download_backend,
+    serve_file_unauthed_from_token,
     serve_file_url_backend,
-    serve_local_file_unauthed,
+    serve_local_avatar_unauthed,
     upload_file_backend,
 )
 from zerver.views.user_groups import (
@@ -186,6 +194,7 @@ from zerver.views.user_settings import (
     regenerate_api_key,
     set_avatar_backend,
 )
+from zerver.views.user_topics import update_muted_topic, update_user_topic
 from zerver.views.users import (
     add_bot_backend,
     avatar,
@@ -216,9 +225,13 @@ from zerver.views.zephyr import webathena_kerberos_login
 from zproject import dev_urls
 from zproject.legacy_urls import legacy_urls
 
+<<<<<<< HEAD
 from zerver.views.drc_scripts import drc_reports, drc_maintenance
 
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
+=======
+if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:  # nocoverage
+>>>>>>> drc_main
     from two_factor.gateways.twilio.urls import urlpatterns as tf_twilio_urls
     from two_factor.urls import urlpatterns as tf_urls
 
@@ -232,7 +245,7 @@ if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
 #
 #   - The nginx config knows which URLs to route to Django or Tornado.
 #
-#   - Likewise for the local dev server in tools/run-dev.py.
+#   - Likewise for the local dev server in tools/run-dev.
 
 # These endpoints constitute the currently designed API (V1), which uses:
 # * REST verbs
@@ -258,15 +271,14 @@ v1_api_and_json_patterns = [
     rest_path(
         "realm/emoji/<path:emoji_name>",
         POST=upload_emoji,
-        DELETE=(delete_emoji, {"intentionally_undocumented"}),
+        DELETE=delete_emoji,
     ),
-    # this endpoint throws a status code 400 JsonableError when it should be a 404.
     # realm/icon -> zerver.views.realm_icon
     rest_path("realm/icon", POST=upload_icon, DELETE=delete_icon_backend, GET=get_icon_backend),
     # realm/logo -> zerver.views.realm_logo
     rest_path("realm/logo", POST=upload_logo, DELETE=delete_logo_backend, GET=get_logo_backend),
     # realm/filters and realm/linkifiers -> zerver.views.realm_linkifiers
-    rest_path("realm/linkifiers", GET=list_linkifiers),
+    rest_path("realm/linkifiers", GET=list_linkifiers, PATCH=reorder_linkifiers),
     rest_path("realm/filters", POST=create_linkifier),
     rest_path("realm/filters/<int:filter_id>", DELETE=delete_linkifier, PATCH=update_linkifier),
     # realm/playgrounds -> zerver.views.realm_playgrounds
@@ -317,6 +329,15 @@ v1_api_and_json_patterns = [
     # Endpoints for syncing drafts.
     rest_path("drafts", GET=fetch_drafts, POST=create_drafts),
     rest_path("drafts/<int:draft_id>", PATCH=edit_draft, DELETE=delete_draft),
+    # New scheduled messages are created via send_message_backend.
+    rest_path(
+        "scheduled_messages", GET=fetch_scheduled_messages, POST=create_scheduled_message_backend
+    ),
+    rest_path(
+        "scheduled_messages/<int:scheduled_message_id>",
+        DELETE=delete_scheduled_messages,
+        PATCH=update_scheduled_message_backend,
+    ),
     # messages -> zerver.views.message*
     # GET returns messages, possibly filtered, POST sends a message
     rest_path(
@@ -470,32 +491,17 @@ v1_api_and_json_patterns = [
         PATCH=update_subscriptions_backend,
         DELETE=remove_subscriptions_backend,
     ),
-    # muting -> zerver.views.muting
+    # topic-muting -> zerver.views.user_topics
+    # (deprecated and will be removed once clients are migrated to use '/user_topics')
     rest_path("users/me/subscriptions/muted_topics", PATCH=update_muted_topic),
+    # used to update the personal preferences for a topic -> zerver.views.user_topics
+    rest_path("user_topics", POST=update_user_topic),
+    # user-muting -> zerver.views.user_mutes
     rest_path("users/me/muted_users/<int:muted_user_id>", POST=mute_user, DELETE=unmute_user),
     # used to register for an event queue in tornado
     rest_path("register", POST=(events_register_backend, {"allow_anonymous_user_web"})),
     # events -> zerver.tornado.views
     rest_path("events", GET=get_events, DELETE=cleanup_event_queue),
-    # report -> zerver.views.report
-    #
-    # These endpoints are for internal error/performance reporting
-    # from the browser to the web app, and we don't expect to ever
-    # include in our API documentation.
-    rest_path(
-        "report/error",
-        # Logged-out browsers can hit this endpoint, for portico page JS exceptions.
-        POST=(report_error, {"allow_anonymous_user_web", "intentionally_undocumented"}),
-    ),
-    rest_path("report/send_times", POST=(report_send_times, {"intentionally_undocumented"})),
-    rest_path(
-        "report/narrow_times",
-        POST=(report_narrow_times, {"allow_anonymous_user_web", "intentionally_undocumented"}),
-    ),
-    rest_path(
-        "report/unnarrow_times",
-        POST=(report_unnarrow_times, {"allow_anonymous_user_web", "intentionally_undocumented"}),
-    ),
     # Used to generate a Zoom video call URL
     rest_path("calls/zoom/create", POST=make_zoom_video_call),
     # Used to generate a BigBlueButton video call URL
@@ -539,7 +545,7 @@ i18n_urls = [
     # return `/accounts/login/`.
     path("accounts/login/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),
     path("accounts/login/", LoginView.as_view(template_name="zerver/login.html"), name="login"),
-    path("accounts/logout/", logout_then_login),
+    path("accounts/logout/", logout_view),
     path("accounts/webathena_kerberos_login/", webathena_kerberos_login),
     path("accounts/password/reset/", password_reset, name="password_reset"),
     path(
@@ -565,17 +571,17 @@ i18n_urls = [
     # Registration views, require a confirmation ID.
     path("accounts/home/", accounts_home),
     path(
-        "accounts/send_confirm/<email>",
-        TemplateView.as_view(template_name="zerver/accounts_send_confirm.html"),
+        "accounts/send_confirm/",
+        signup_send_confirm,
         name="signup_send_confirm",
     ),
     path(
-        "accounts/new/send_confirm/<email>",
-        TemplateView.as_view(template_name="zerver/accounts_send_confirm.html"),
-        {"realm_creation": True},
+        "accounts/new/send_confirm/",
+        new_realm_send_confirm,
         name="new_realm_send_confirm",
     ),
     path("accounts/register/", accounts_register, name="accounts_register"),
+    path("realm/register/", realm_register, name="realm_register"),
     path(
         "accounts/do_confirm/<confirmation_key>",
         get_prereg_key_and_redirect,
@@ -587,7 +593,7 @@ i18n_urls = [
         name="confirm_email_change",
     ),
     # Email unsubscription endpoint. Allows for unsubscribing from various types of emails,
-    # including the welcome emails (day 1 & 2), missed PMs, etc.
+    # including welcome emails, missed direct messages, etc.
     path(
         "accounts/unsubscribe/<email_type>/<confirmation_key>",
         email_unsubscribe,
@@ -642,12 +648,12 @@ urls += [
 urls += [
     path(
         "user_uploads/temporary/<token>/<filename>",
-        serve_local_file_unauthed,
-        name="local_file_unauthed",
+        serve_file_unauthed_from_token,
+        name="file_unauthed_from_token",
     ),
     rest_path(
         "user_uploads/download/<realm_id_str>/<path:filename>",
-        GET=(serve_file_download_backend, {"override_api_url_scheme"}),
+        GET=(serve_file_download_backend, {"override_api_url_scheme", "allow_anonymous_user_web"}),
     ),
     rest_path(
         "user_uploads/<realm_id_str>/<path:filename>",
@@ -672,6 +678,11 @@ urls += [
             {"override_api_url_scheme", "allow_anonymous_user_web"},
         ),
     ),
+    path(
+        "user_avatars/<path:path>",
+        serve_local_avatar_unauthed,
+        name="local_avatar_unauthed",
+    ),
 ]
 
 # This URL serves as a way to receive CSP violation reports from the users.
@@ -683,8 +694,7 @@ urls += [
 # Incoming webhook URLs
 # We don't create URLs for particular Git integrations here
 # because of generic one below
-for incoming_webhook in WEBHOOK_INTEGRATIONS:
-    urls.append(incoming_webhook.url_object)
+urls.extend(incoming_webhook.url_object for incoming_webhook in WEBHOOK_INTEGRATIONS)
 
 # Desktop-specific authentication URLs
 urls += [
@@ -713,6 +723,9 @@ v1_api_mobile_patterns = [
     # API key - as we consider access to the API key sensitive
     # and just having a logged-in session should be insufficient.
     rest_path("users/me/api_key/regenerate", POST=regenerate_api_key),
+    #  This view accepts a JWT containing an email and returns an API key
+    #  and the details for a single user.
+    path("jwt/fetch_api_key", jwt_fetch_api_key),
 ]
 
 # View for uploading messages from email mirror
@@ -742,6 +755,7 @@ urls += [
 
 urls += [path("", include("social_django.urls", namespace="social"))]
 urls += [path("saml/metadata.xml", saml_sp_metadata)]
+
 
 # SCIM2
 
@@ -776,12 +790,20 @@ urls += [
     path("scim/v2/", include("django_scim.urls", namespace="scim")),
 ]
 
+# Front-end Sentry requests tunnel through the server, if enabled
+if settings.SENTRY_FRONTEND_DSN:  # nocoverage
+    urls += [path("error_tracing", sentry_tunnel)]
+
 # User documentation site
 help_documentation_view = MarkdownDirectoryView.as_view(
-    template_name="zerver/documentation_main.html", path_template="/zerver/help/%s.md"
+    template_name="zerver/documentation_main.html",
+    path_template=f"{settings.DEPLOY_ROOT}/help/%s.md",
+    help_view=True,
 )
 api_documentation_view = MarkdownDirectoryView.as_view(
-    template_name="zerver/documentation_main.html", path_template="/zerver/api/%s.md"
+    template_name="zerver/documentation_main.html",
+    path_template=f"{settings.DEPLOY_ROOT}/api_docs/%s.md",
+    api_doc_view=True,
 )
 policy_documentation_view = MarkdownDirectoryView.as_view(
     template_name="zerver/documentation_main.html",
@@ -802,7 +824,11 @@ urls += [
     path("policies/<slug:article>", policy_documentation_view),
 ]
 
+<<<<<<< HEAD
 if not settings.CORPORATE_ENABLED:
+=======
+if not settings.CORPORATE_ENABLED:  # nocoverage
+>>>>>>> drc_main
     # This conditional behavior cannot be tested directly, since
     # urls.py is not readily reloaded in Django tests. See the block
     # comment inside apps_view for details.
@@ -811,7 +837,7 @@ if not settings.CORPORATE_ENABLED:
     ]
 
 # Two-factor URLs
-if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
+if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:  # nocoverage
     urls += [path("", include(tf_urls)), path("", include(tf_twilio_urls))]
 
 if settings.DEVELOPMENT:
@@ -822,6 +848,9 @@ if settings.DEVELOPMENT:
 urls += [
     path("api/v1/", include(v1_api_mobile_patterns)),
 ]
+
+# Healthcheck URL
+urls += [path("health", health)]
 
 # The sequence is important; if i18n URLs don't come first then
 # reverse URL mapping points to i18n URLs which causes the frontend
