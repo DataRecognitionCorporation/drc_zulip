@@ -40,7 +40,7 @@ pipeline {
                             sh 'git branch -a'
                             sh 'git tag'
                             sh '''
-                                git config zulip.zulipRemote
+                                remote=upstream
                                 git describe --always --tags --match='[0-9]*'
                                 ./tools/cache-zulip-git-version
                                 head -n1 zulip-git-version
