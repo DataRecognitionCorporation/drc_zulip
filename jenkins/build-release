@@ -39,7 +39,9 @@ pipeline {
                             sh 'git pull'
                             sh 'git branch -a'
                             sh 'git tag'
-                            sh '''#!/bin/bash
+                            sh '''
+                                git config zulip.zulipRemote
+                                git describe --always --tags --match='[0-9]*'
                                 ./tools/cache-zulip-git-version
                                 head -n1 zulip-git-version
                                 OVERRIDE_MERGE_BASE="$version" ./tools/cache-zulip-git-version
