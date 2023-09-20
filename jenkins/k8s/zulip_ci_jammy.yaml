@@ -1,0 +1,23 @@
+metadata:
+  labels:
+    label: zulip-ci-jammy
+spec:
+  containers:
+    - name: zulip-ci-jammy
+      image: 911870898277.dkr.ecr.us-east-1.amazonaws.com/team-ss/zulip-ci:1.0.7-amd64
+      command:
+        - sleep
+      args:
+        - 99d
+      tty: true
+      imagePullPolicy: Always
+      resources:
+        limits:
+          cpu: 4
+          memory: 8Gi
+        requests:
+          cpu: 4
+          memory: 4Gi
+      securityContext:
+        runAsUser: 1000
+        allowPrivilegeEscalation: true

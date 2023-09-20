@@ -251,6 +251,7 @@ function build_stream_popover(opts) {
 
     const content = render_stream_sidebar_actions({
         stream: sub_store.get(stream_id),
+        is_realm_admin: page_params.is_admin
     });
 
     $(elt).popover({
@@ -304,6 +305,7 @@ function build_topic_popover(opts) {
         topic_muted,
         can_move_topic,
         is_realm_admin: page_params.is_admin,
+        is_guest: page_params.is_guest,
         topic_is_resolved: resolved_topic.is_resolved(topic_name),
         color: sub.color,
         has_starred_messages,
@@ -599,7 +601,38 @@ export function register_click_handlers() {
         });
     });
 
+    $("#stream_folders").on("click", ".stream-sidebar-menu-icon", (e) => {
+        e.stopPropagation();
+
+        const elt = e.target;
+        const $stream_li = $(elt).parents("li");
+        const stream_id = elem_to_stream_id($stream_li);
+
+        build_stream_popover({
+            elt,
+            stream_id,
+        });
+    });
+
     $("#stream_filters").on("click", ".topic-sidebar-menu-icon", (e) => {
+        e.stopPropagation();
+
+        const elt = $(e.target).closest(".topic-sidebar-menu-icon").expectOne()[0];
+        const $stream_li = $(elt).closest(".narrow-filter").expectOne();
+        const stream_id = elem_to_stream_id($stream_li);
+        const topic_name = $(elt).closest("li").expectOne().attr("data-topic-name");
+        const url = $(elt).closest("li").find(".topic-name").expectOne().prop("href");
+
+        build_topic_popover({
+            elt,
+            stream_id,
+            topic_name,
+        });
+
+        build_topic_link_clipboard(url);
+    });
+
+    $("#stream_folders").on("click", ".topic-sidebar-menu-icon", (e) => {
         e.stopPropagation();
 
         const elt = $(e.target).closest(".topic-sidebar-menu-icon").expectOne()[0];

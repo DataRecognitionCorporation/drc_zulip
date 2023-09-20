@@ -4,10 +4,6 @@
             <i class="fa fa-cog settings-dropdown-cog" aria-hidden="true"></i>
         </a>
         <ul class="dropdown-menu" role="menu" aria-labelledby="settings-dropdown">
-            {{!-- It is quite ingrained in our frontend code that your Home
-            view is a Bootstrap nav tab, even though we don't show the tab
-            anymore --}}
-            <li class="invisible" style="display:none;" role="presentation"><a href="#message_feed_container" data-toggle="tab"></a></li>
             <li class="org-info org-name">{{realm_name}}</li>
             <li class="org-info org-url">{{realm_uri}}</li>
             {{#if is_self_hosted }}
@@ -57,12 +53,14 @@
                     <i class="fa fa-wrench" aria-hidden="true"></i> {{t 'Personal settings' }}
                 </a>
             </li>
+            {{#if is_admin}}
             <li class="admin-menu-item hidden-for-spectators" role="presentation">
                 <a href="#organization" role="menuitem">
                     <i class="fa fa-bolt" aria-hidden="true"></i>
-                    <span>{{t 'Manage organization' }}</span>
+                    <span>{{t 'Organization settings' }}</span>
                 </a>
             </li>
+            {{/if}}
             {{#unless is_guest}}
             <li class="hidden-for-spectators" role="presentation">
                 <a href="/stats" target="_blank" rel="noopener noreferrer" role="menuitem">
@@ -71,6 +69,21 @@
                 </a>
             </li>
             {{/unless}}
+            <!-- DRC MODIFICATION -->
+            {{#if is_owner}}
+            <li class="admin-menu-item hidden-for-spectators" role="presentation">
+                <a href="/drc_maintenance" target="_blank" rel="noopener noreferrer" role="menuitem">
+                    <i class="fa fa-wrench" aria-hidden="true"></i>
+                    <span>{{t 'Maintenance' }}</span>
+                </a>
+            </li>
+            <li class="admin-menu-item hidden-for-spectators" role="presentation">
+                <a href="/drc_reports" target="_blank" rel="noopener noreferrer" role="menuitem">
+                    <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                    <span>{{t 'Reports' }}</span>
+                </a>
+            </li>
+            {{/if}}
             <li role="presentation" class="only-visible-for-spectators">
                 <a class="change-language-spectator" role="menuitem">
                     <i class="zulip-icon zulip-icon-language" aria-hidden="true"></i> {{t 'Select language' }}
@@ -104,7 +117,7 @@
             </li>
             <li role="presentation">
                 <a tabindex="0" role="menuitem" data-overlay-trigger="search-operators">
-                    <i class="fa fa-search" aria-hidden="true"></i> {{t 'Search operators' }}
+                    <i class="fa fa-search" aria-hidden="true"></i> {{t 'Search filters' }}
                 </a>
             </li>
             <li class="divider only-visible-for-spectators" role="presentation"></li>
@@ -115,12 +128,15 @@
                 </a>
             </li>
             {{#if corporate_enabled}}
+            {{#unless is_guest}}
             <li role="presentation">
                 <a href="/help/contact-support" target="_blank" rel="noopener noreferrer" role="menuitem">
                     <i class="fa fa-envelope" aria-hidden="true"></i> {{t 'Contact support' }}
                 </a>
             </li>
+            {{/unless}}
             {{/if}}
+            {{#unless is_guest}}
             <li class="divider" role="presentation"></li>
             <li role="presentation" class="hidden-for-spectators">
                 <a href="{{ apps_page_url }}" target="_blank" rel="noopener noreferrer" role="menuitem">
@@ -137,6 +153,7 @@
                     <i class="fa fa-sitemap" aria-hidden="true"></i> {{t 'API documentation' }}
                 </a>
             </li>
+            {{/unless}}
             {{#if show_billing}}
             <li role="presentation" class="hidden-for-spectators">
                 <a href="/billing" target="_blank" rel="noopener noreferrer" role="menuitem">
@@ -145,11 +162,13 @@
             </li>
             {{/if}}
             {{#if promote_sponsoring_zulip}}
+            {{#unless is_guest}}
             <li role="presentation" class="hidden-for-spectators">
                 <a href="https://github.com/sponsors/zulip" target="_blank" rel="noopener noreferrer" role="menuitem">
                     <i class="fa fa-heart" aria-hidden="true"></i> {{t 'Support Zulip' }}
                 </a>
             </li>
+            {{/unless}}
             {{/if}}
             {{#if show_plans}}
             <li role="presentation" class="hidden-for-spectators">
@@ -162,7 +181,7 @@
             {{#if can_invite_others_to_realm}}
             <li role="presentation">
                 <a href="#invite" role="menuitem">
-                    <i class="fa fa-user-plus" aria-hidden="true"></i> {{t 'Invite users' }}
+                    <i class="fa fa-user-plus" aria-hidden="true"></i> {{t 'Add/Set up users' }}
                 </a>
             </li>
             <li class="divider" role="presentation"></li>

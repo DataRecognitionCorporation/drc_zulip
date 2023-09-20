@@ -1,0 +1,15 @@
+<label class="checkbox display-block">
+    <input type="checkbox" class="checkbox_alert" name="stream" value="{{stream_id}}"
+      {{#if default_stream}}
+        checked="checked"
+      {{else if checked}}
+        checked="checked"
+      {{/if}} />
+    <span></span>
+    {{#if invite_only}}<i class="fa fa-lock" aria-hidden="true"></i>{{/if}}
+    {{#if (eq name ../notifications_stream)}}
+    #{{name}} <i>({{t 'Receives new stream announcements' }})</i>
+    {{else}}
+    #{{name}}
+    {{/if}}
+</label>

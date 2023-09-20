@@ -55,6 +55,7 @@
                         <span class="unread_count {{#unless unread_count}}unread_hidden{{/unless}} tippy-zulip-tooltip on_hover_topic_read" data-stream-id="{{stream_id}}" data-topic-name="{{topic}}" data-tippy-content="{{t 'Mark as read' }}" role="button" tabindex="0" aria-label="{{t 'Mark as read' }}">{{unread_count}}</span>
                     </div>
                 </div>
+                {{#unless is_guest}}
                 <div class="recent_topic_actions">
                     <div class="recent_topics_focusable hidden-for-spectators">
                         {{#if topic_muted}}
@@ -64,6 +65,7 @@
                         {{/if}}
                     </div>
                 </div>
+                {{/unless}}
                 {{/if}}
             </div>
         </div>

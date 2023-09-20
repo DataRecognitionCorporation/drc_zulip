@@ -155,7 +155,7 @@ export function initialize() {
         show_webathena: page_params.show_webathena,
     });
     $("#navbar-buttons").html(rendered_gear_menu);
-    update_org_settings_menu_item();
+    // update_org_settings_menu_item();
 
     $('#gear-menu a[data-toggle="tab"]').on("show", (e) => {
         // Save the position of our old tab away, before we switch

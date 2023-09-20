@@ -428,6 +428,22 @@ def format_user_row(
     is_owner = row["role"] == UserProfile.ROLE_REALM_OWNER
     is_guest = row["role"] == UserProfile.ROLE_GUEST
     is_bot = row["is_bot"]
+    # DRC MODIFICATION
+    #lastname,firstname mod jwdunn - start
+    if(row["role"] > 200):
+        full_name_raw = row["full_name"]
+        mynames=full_name_raw.split(" ")
+        if(len(mynames) == 1):
+            full_name = row["full_name"]
+        else:
+            first_name = mynames[0]
+            last_name = mynames[-1]
+            full_name = last_name + ", " + first_name
+            full_name = full_name.replace("_", " ")
+    else:
+        full_name = row["full_name"]
+    #lastname,firstname mod jwdunn - end
+
     result = dict(
         email=row["email"],
         user_id=row["id"],
@@ -438,7 +454,10 @@ def format_user_row(
         is_billing_admin=row["is_billing_admin"],
         role=row["role"],
         is_bot=is_bot,
-        full_name=row["full_name"],
+        #lastname,firstname mod jwdunn - start
+        # full_name=row["full_name"],
+        full_name = full_name,
+        #lastname,firstname mod jwdunn - end
         timezone=canonicalize_timezone(row["timezone"]),
         is_active=row["is_active"],
         date_joined=row["date_joined"].isoformat(),

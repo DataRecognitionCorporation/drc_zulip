@@ -306,6 +306,8 @@ function render_user_info_popover(
         user_mention_syntax: people.get_mention_syntax(user.full_name, user.user_id),
         date_joined,
         spectator_view,
+        is_guest: page_params.is_guest,
+        is_admin: user.is_admin,
     };
 
     if (user.is_bot) {

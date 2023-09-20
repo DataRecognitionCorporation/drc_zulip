@@ -1,0 +1,355 @@
+@Library('DRC_Global_Pipeline_Libraries@master')
+
+def has_failures = false
+
+pipeline {
+    agent {
+        kubernetes {
+            yamlFile 'jenkins/k8s/zulip_ci_jammy.yaml'
+        }
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '100', artifactNumToKeepStr: '100'))
+        ansiColor('xterm')
+    }
+
+    environment {
+        GITHUB_ACTIONS = true
+    }
+
+
+    parameters {
+        string(
+            name: 'BUILD_NUMBER',
+            defaultValue: '6.1.18',
+            description: 'Build number. This must match the release in github.'
+        )
+    }
+
+    stages {
+         stage('Configure Environment') {
+             steps {
+                container('zulip-ci-jammy') {
+                    dir("${WORKSPACE}"){
+                        script {
+                            sh '''#!/bin/bash
+
+                                sudo mkdir -p /srv/zulip-npm-cache
+                                sudo mkdir -p /srv/zulip-venv-cache
+                                sudo mkdir -p /srv/zulip-emoji-cache
+                                sudo chown -Rf 1000.1000 /srv
+                                
+                                ./tools/ci/setup-backend --skip-dev-db-build
+                            '''
+
+                        }
+                    }
+                }
+            }
+        }
+        stage('Run Tests') {
+            stages {
+                stage('test-tools') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    try {
+                                        sh '''#!/bin/bash
+
+                                            source ./tools/ci/activate-venv
+                                            ./tools/test-tools
+                                        '''
+                                    } catch(e) {
+                                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                            println('test failed')
+                                            has_failures = true
+                                            error(e)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                stage('test-migrations') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    try {
+                                        sh '''#!/bin/bash
+
+                                            source ./tools/ci/activate-venv
+                                            ./tools/test-migrations
+                                            
+                                        '''
+                                    } catch(e) {
+                                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                            println('test failed')
+                                            has_failures = true
+                                            error(e)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                stage('test-database-compatibility') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    try {
+                                        sh '''#!/bin/bash
+                                    
+                                            source ./tools/ci/activate-venv
+                                            chmod 000 static/generated
+                                            ./scripts/lib/check-database-compatibility.py
+                                            chmod 755 static/generated
+                                        '''
+                                    } catch(e) {
+                                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                            println('test failed')
+                                            has_failures = true
+                                            error(e)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                stage('test-api') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    try {
+                                        sh '''#!/bin/bash
+
+                                            source ./tools/ci/activate-venv
+                                            ./tools/test-api
+                                        '''
+                                    } catch(e) {
+                                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                            println('test failed')
+                                            has_failures = true
+                                            error(e)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                stage('test-schemas') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    try {
+                                        sh '''#!/bin/bash
+
+                                            source ./tools/ci/activate-venv
+                                            # Check that various schemas are consistent. (is fast)
+                                            ./tools/check-schemas
+
+                                        '''
+                                    } catch(e) {
+                                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                            println('test failed')
+                                            has_failures = true
+                                            error(e)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                stage('test-messaging') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    try {
+                                        sh '''#!/bin/bash
+
+                                            source ./tools/ci/activate-venv
+                                            ./manage.py makemessages --locale en
+                                            PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
+                                            PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
+                                        '''
+                                    } catch(e) {
+                                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                            println('test failed')
+                                            has_failures = true
+                                            error(e)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                stage('test-locked-requirements') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    try {
+                                        sh '''#!/bin/bash
+
+                                            source ./tools/ci/activate-venv
+                                            ./tools/test-locked-requirements
+                                        '''
+                                    } catch(e) {
+                                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                            println('test failed')
+                                            has_failures = true
+                                            error(e)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                stage('test-backend') {
+                    steps {
+                      
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    try {
+                                        sh '''#!/bin/bash
+
+                                            source ./tools/ci/activate-venv
+                                            ./tools/test-backend --coverage --include-webhooks --no-cov-cleanup
+                                        '''
+                                    } catch(e) {
+                                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                            println('test failed')
+                                            has_failures = true
+                                            error(e)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                    }
+                }
+                stage('test-js-with-node') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    try {
+                                        sh '''#!/bin/bash
+                                            source ./tools/ci/activate-venv
+                                            # Run the node tests first, since they're fast and deterministic
+                                            #./tools/test-js-with-node --coverage --parallel=1
+                                            ./tools/test-js-with-node --parallel=1
+                                        '''
+                                    } catch(e) {
+                                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                            println('test failed')
+                                            has_failures = true
+                                            error(e)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                stage('test-js-with-puppeteer') {
+                    steps {
+                        
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    try {
+                                        sh '''#!/bin/bash
+
+                                            source ./tools/ci/activate-venv
+                                            ./tools/test-js-with-puppeteer
+                                        '''
+                                    } catch(e) {
+                                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                            println('test failed')
+                                            has_failures = true
+                                            error(e)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                    }
+                }
+                stage('misc') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    try {
+                                        sh '''#!/bin/bash
+
+                                            source ./tools/ci/activate-venv
+                                            ./tools/setup/optimize-svg --check
+                                            ./tools/setup/generate_integration_bots_avatars.py --check-missing
+                                        '''
+                                    } catch(e) {
+                                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                            println('test failed')
+                                            has_failures = true
+                                            error(e)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                stage('test-db-build') {
+                    steps {
+                        container('zulip-ci-jammy') {
+                            dir("${WORKSPACE}"){
+                                script {
+                                    try {
+                                        sh '''#!/bin/bash
+
+                                        source ./tools/ci/activate-venv
+                                        ./tools/ci/setup-backend
+                                    '''
+                                    } catch(e) {
+                                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                            println('test failed')
+                                            has_failures = true
+                                            error(e)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    post {
+        always {
+            script {
+                if(has_failures == true) {
+                    error('tests failed')
+                }
+            }
+        }
+    }
+    
+}

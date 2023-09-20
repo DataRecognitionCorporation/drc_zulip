@@ -1,0 +1,220 @@
+{% extends "zerver/portico.html" %}
+{% set entrypoint = "integrations" %}
+
+<!-- {% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% endblock %} -->
+
+{% block hello_page_container %} hello-main{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/zulip_logo.html' %}
+{% include 'zerver/gradients.html' %}
+
+<div class="portico-landing integrations">
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content">
+
+                <div class="integration-main-text">
+                    <header>
+                        <h1 class="portico-page-heading">
+                            {% trans %}{{title}}{% endtrans %}
+                        </h1>
+                    </header>
+
+                </div>
+
+                <div class="catalog">
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+                    <br>
+
+                    <div class="integration-lozenges">
+
+                        <!-- Get Conversation -->
+                        <div class="card">
+                            <h5 class="card-header">Get Conversation</h5>
+                            <div class="card-body">
+                                <p class="card-text">Get a conversation between two individuals.</p>
+
+                                <form method="post">
+                                    {{ csrf_input }}
+                                    <div>
+                                        <input class="form-control form-control-lg" type="text" name="send_to" value="{% trans %}{{whoami}}{% endtrans %}">
+                                        <input class="form-control form-control-lg" type="text" name="email_1" placeholder="email A">
+                                        <input class="form-control form-control-lg" type="text" name="email_2" placeholder="email B">
+                                    </div>
+
+                                    <br>
+                                    <p>Start date and end date</p>
+                                    <div>
+
+                                      <input type="date" name="start-date" value="{% trans %}{{last_month}}{% endtrans %}">
+
+                                      <input type="date" name="end-date" value="{% trans %}{{today}}{% endtrans %}">
+                                    </div>
+                                    <br>
+                                    <input type="submit" name="get_conversation" class="btn btn-primary" value="Run Script">
+                                </form>
+                            </div>
+                        </div>
+                        <br><br>
+
+                        <!-- Get Users Messages -->
+                        <div class="card">
+                            <h5 class="card-header">Get Users Messages</h5>
+                            <div class="card-body">
+                                <p class="card-text">Get messages that a user has sent. First field is where the results will be sent too.</p>
+
+                                <form method="post">
+                                    {{ csrf_input }}
+                                    <div>
+                                        <input class="form-control form-control-lg" type="text" name="send_to" value="{% trans %}{{whoami}}{% endtrans %}">
+                                        <input class="form-control form-control-lg" type="text" name="email_1" placeholder="email A">
+                                    </div>
+                                    <br>
+                                    <button type="submit" name="messages_user_get" class="btn btn-primary">Run Script</button>
+                                </form>
+                            </div>
+                        </div>
+                        <br><br>
+
+                        <!-- Get User Activity -->
+                        <div class="card">
+                            <h5 class="card-header">Get User Activity</h5>
+                            <div class="card-body">
+                                <p class="card-text">Get the activity of a user.</p>
+
+                                <form method="post">
+                                    {{ csrf_input }}
+                                    <div>
+                                        <input class="form-control form-control-lg" type="text" name="email_1" placeholder="email A">
+                                    </div>
+
+                                    <br>
+                                    <p>Start date and end date</p>
+                                    <div>
+
+                                      <input type="date" name="start-date" value="{% trans %}{{last_month}}{% endtrans %}">
+
+                                      <input type="date" name="end-date" value="{% trans %}{{today}}{% endtrans %}">
+                                    </div>
+                                    <br>
+                                    <input type="submit" name="get_user_activity" class="btn btn-primary" value="Run Script">
+                                </form>
+                            </div>
+                        </div>
+                        <br><br>
+
+                        <!-- Get Stream Conversation -->
+                        <div class="card">
+                            <h5 class="card-header">Get Stream Conversation</h5>
+                            <div class="card-body">
+                                <p class="card-text">Get a stream conversion. First field is the email to send the conversion too.</p>
+
+                                <form method="post">
+                                    {{ csrf_input }}
+                                    <div>
+                                        <input class="form-control form-control-lg" type="text" name="send_to" value="{% trans %}{{whoami}}{% endtrans %}">
+                                        <input class="form-control form-control-lg" type="text" name="stream_name" placeholder="Stream Name">
+                                    </div>
+                                    <br>
+                                    <button type="submit" name="conversation_for_a_stream_get" class="btn btn-primary">Run Script</button>
+                                </form>
+                            </div>
+                        </div>
+                        <br><br>
+
+                        <!-- Get User Roles -->
+                        <div class="card">
+                            <h5 class="card-header">Get Users Roles</h5>
+                            <div class="card-body">
+                                <p class="card-text">Get a list of all the user roles within Zulip. First field is the email to send the information too.</p>
+
+                                <form method="post">
+                                    {{ csrf_input }}
+                                    <div>
+                                        <input class="form-control form-control-lg" type="text" name="send_to" value="{% trans %}{{whoami}}{% endtrans %}">
+                                    </div>
+                                    <br>
+                                    <button type="submit" name="users_role_get" class="btn btn-primary">Run Script</button>
+                                </form>
+                            </div>
+                        </div>
+                        <br><br>
+
+                        <!-- Get Subscriptions for Users -->
+                        <div class="card">
+                            <h5 class="card-header">Get Subscriptions for Users</h5>
+                            <div class="card-body">
+                                <p class="card-text">Get a list of all the streams that a user is subscribed too.</p>
+
+                                <form method="post">
+                                    {{ csrf_input }}
+                                    <div>
+                                        <input class="form-control form-control-lg" type="text" name="email_1" placeholder="email A">
+                                    </div>
+                                    <br>
+                                    <button type="submit" name="subscriptions_for_user_get" class="btn btn-primary">Run Script</button>
+                                </form>
+                            </div>
+                        </div>
+                        <br><br>
+
+                        <!-- Get Muted Topics -->
+                        <div class="card">
+                            <h5 class="card-header">Get Muted Topics</h5>
+                            <div class="card-body">
+                                <p class="card-text">Get muted topics. The output will be emailed to the email below.</p>
+
+                                <form method="post">
+                                    {{ csrf_input }}
+                                    <div>
+                                        <input class="form-control form-control-lg" type="text" name="email_to" placeholder="email A" value="{% trans %}{{whoami}}{% endtrans %}">
+                                    </div>
+                                    <br>
+                                    <button type="submit" name="muted_topics_get" class="btn btn-primary">Run Script</button>
+                                </form>
+                            </div>
+                        </div>
+                        <br><br>
+
+                        <!-- Get Mobile Devices -->
+                        <div class="card">
+                            <h5 class="card-header">Get Mobile Devices</h5>
+                            <div class="card-body">
+                                <p class="card-text">Get a list of users that are using a mobile device.</p>
+
+                                <form method="post">
+                                    {{ csrf_input }}
+                                    <br>
+                                    <button type="submit" name="get_mobile_devices" class="btn btn-primary">Run Script</button>
+                                </form>
+                            </div>
+                        </div>
+                        <br><br>
+
+                        <!-- Enable Login Emails -->
+                        <div class="card">
+                            <h5 class="card-header">List Enable Login Emails</h5>
+                            <div class="card-body">
+                                <p class="card-text">Get a list of users with enable_login_emails set to true.</p>
+
+                                <form method="post">
+                                    {{ csrf_input }}
+                                    <br>
+                                    <button type="submit" name="enable_login_emails" class="btn btn-primary">Run Script</button>
+                                </form>
+                            </div>
+                        </div>
+                        <br><br>
+                    </div>
+                </div>
+
+            </div> <!-- .inner-content -->
+        </div> <!-- .padded-content -->
+    </div> <!-- .main -->
+</div> <!-- .portico-landing -->
+
+{% endblock %}
