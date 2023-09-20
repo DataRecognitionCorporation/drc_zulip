@@ -1,3 +1,4 @@
+
 import $ from "jquery";
 import _ from "lodash";
 
@@ -158,21 +159,27 @@ function initialize_bottom_whitespace() {
     $("#bottom_whitespace").html(render_message_feed_bottom_whitespace());
 }
 
+// DRC MODIFICATION - add is_admin
 function initialize_left_sidebar() {
     const rendered_sidebar = render_left_sidebar({
+        is_admin: page_params.is_admin,
         is_guest: page_params.is_guest,
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);
 }
 
+// DRC MODIFICATION - add is_geust
 function initialize_right_sidebar() {
     const rendered_sidebar = render_right_sidebar({
         can_invite_others_to_realm: settings_data.user_can_invite_others_to_realm(),
         realm_rendered_description: page_params.realm_rendered_description,
+        is_guest: page_params.is_guest,
     });
 
+
     $("#right-sidebar-container").html(rendered_sidebar);
+
     if (page_params.is_spectator) {
         rendered_markdown.update_elements(
             $(".right-sidebar .realm-description .rendered_markdown"),
@@ -222,6 +229,8 @@ function initialize_compose_box() {
                 (common.has_mac_keyboard() ? "⌘" : "Ctrl") + " + .",
             max_stream_name_length: page_params.max_stream_name_length,
             max_topic_length: page_params.max_topic_length,
+            // DRC MODIFICATION - add is admin
+            is_admin: page_params.is_admin,
         }),
     );
     $(`.enter_sends_${user_settings.enter_sends}`).show();

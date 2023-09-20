@@ -571,6 +571,10 @@ def handle_missedmessage_emails(
         # upgrade from versions <= 4.0 to versions >= 5.0
         logger.warning("Send-email event found for bot user %s. Skipping.", user_profile_id)
         return
+    elif user_profile.role > 200:
+        # DRC modification.... don't send email for message to guests
+        return
+
 
     if not user_profile.enable_offline_email_notifications:
         # BUG: Investigate why it's possible to get here.

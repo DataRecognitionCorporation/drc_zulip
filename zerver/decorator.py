@@ -163,6 +163,23 @@ def require_realm_admin(
     return wrapper
 
 
+# DRC MODIFICATION
+def require_owner(
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
+    @zulip_login_required
+    @wraps(view_func)
+    def _wrapped_view_func(
+        request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> HttpResponse:
+        if not request.user.role == 100:
+            return HttpResponseRedirect(settings.HOME_NOT_LOGGED_IN)
+
+        return add_logging_data(view_func)(request, *args, **kwargs)
+
+    return _wrapped_view_func
+
+
 def require_organization_member(
     func: Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]
 ) -> Callable[Concatenate[HttpRequest, UserProfile, ParamT], HttpResponse]:

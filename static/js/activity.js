@@ -93,6 +93,10 @@ export function redraw_user(user_id) {
     if (page_params.realm_presence_disabled) {
         return;
     }
+    
+    if(page_params.is_guest && buddy_list.keys != 0 && !buddy_list.keys.includes(user_id)) {
+      return;
+    }
 
     const filter_text = get_filter_text();
 
@@ -113,12 +117,17 @@ export function searching() {
 }
 
 export function build_user_sidebar() {
+    if(page_params.is_guest){
+      return undefined;
+    }
+
     if (page_params.realm_presence_disabled) {
         return undefined;
     }
 
     const filter_text = get_filter_text();
 
+    // const user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
     const user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
 
     blueslip.measure_time("buddy_list.populate", () => {
@@ -127,6 +136,24 @@ export function build_user_sidebar() {
 
     return user_ids; // for testing
 }
+
+export function drc_build_user_sidebar(user_ids) {
+    // alert(stream_name)
+    if (page_params.realm_presence_disabled) {
+        return undefined;
+    }
+
+    const filter_text = get_filter_text();
+
+    // const user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
+
+    blueslip.measure_time("buddy_list.populate", () => {
+        buddy_list.populate({keys: user_ids});
+    });
+
+    return user_ids; // for testing
+}
+
 
 function do_update_users_for_search() {
     // Hide all the popovers but not userlist sidebar

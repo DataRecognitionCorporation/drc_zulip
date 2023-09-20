@@ -3,7 +3,7 @@
     <div class="overlay-content modal-bg">
         <div class="modal-header">
             <button type="button" class="exit" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
-            <h3 id="invite-user-label">{{t "Invite users to Zulip" }}</h3>
+            <h3 id="invite-user-label">{{t "Invite - Reactivate - Subscribe - Change Level" }}</h3>
         </div>
         <form id="invite_user_form" class="form-horizontal">{{ csrf_input }}
             <div class="modal-body" data-simplebar data-simplebar-auto-hide="false">
@@ -56,8 +56,10 @@
                     </label>
                     <div>
                         <select id="invite_as">
-                            <option name="invite_as" value="{{ invite_as_options.guest.code }}">{{t "Guests" }}</option>
-                            <option name="invite_as" selected="selected" value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
+                            <!-- DRC MODIFICATION -->
+                            <option name="invite_as" selected="selected" value="{{ invite_as_options.guest.code }}">{{t "Guests" }}</option>
+                            <option name="invite_as" value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
+                            <!-- DRC MODIFICATION -->
                             {{#if is_admin}}
                             <option name="invite_as" value="{{ invite_as_options.moderator.code }}">{{t "Moderators" }}</option>
                             <option name="invite_as" value="{{ invite_as_options.admin.code }}">{{t "Organization administrators" }}</option>
@@ -68,6 +70,26 @@
                         </select>
                     </div>
                 </div>
+
+                <!-- DRC MODIFICATION -->
+                <label for="stream_search">{{t "Stream filter" }}</label>
+                <div>
+                    <input type="text" id="stream_search" class="stream_search" name="stream_search" placeholder="{{t 'Stream name...' }}">
+                    <button type="button" class="btn invite_clear_search_button" >
+                        <i class="fa fa-remove" aria-hidden="true"></i>
+                    </button>
+                    <!-- <button id="stream_search_btn">Filter</button> -->
+                </div>
+
+                <label class="checkbox display-vlock">
+                  <input type="checkbox" class="checkbox_alert display_all_streams">
+                  <span></span>
+                  Display all
+                </label>
+                <br>
+                <br>
+                <!-- DRC MODIFICATION -->
+
                 <div>
                     <label>{{t "Streams they should join" }}</label>
                     <div id="streams_to_add"></div>
