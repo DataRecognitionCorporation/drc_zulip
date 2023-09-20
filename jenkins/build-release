@@ -40,7 +40,9 @@ pipeline {
                             sh 'git branch -a'
                             sh 'git tag'
 
-                            sh '''
+                            sh '''#!/bin/bash
+                                -o xtrace
+                                
                                 remote=origin
                                 git describe --always --tags --match='[0-9]*'
                                 branches="$(git for-each-ref --format='%(objectname)' "refs/remotes/$remote/main" "refs/remotes/$remote/drc_*.x" "refs/remotes/$remote/*-branch")"
