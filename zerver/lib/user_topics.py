@@ -2,7 +2,10 @@ import datetime
 import logging
 from typing import Callable, List, Optional, Tuple, TypedDict
 
+<<<<<<< HEAD
+=======
 from django.db import transaction
+>>>>>>> drc_main
 from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
 from sqlalchemy.sql import ClauseElement, and_, column, not_, or_

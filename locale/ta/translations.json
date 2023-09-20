@@ -219,7 +219,7 @@
   "Click on the pencil (<z-pencil-icon></z-pencil-icon>) icon to edit and reschedule a message.": "",
   "Click outside the input box to save. We'll automatically notify anyone that was added or removed.": "",
   "Click to view or download.": "",
-  "Close": "மூடு",
+  "Close": "நெருக்கமான",
   "Close modal": "",
   "Close this dialog window": "",
   "Code playgrounds": "",
@@ -923,7 +923,7 @@
   "SAVING": "",
   "STREAMS": "",
   "Saturday": "",
-  "Save": "சேமிக்க",
+  "Save": "சேமி",
   "Save changes": "மாற்றங்களை சேமியுங்கள்",
   "Save failed": "",
   "Saved": "",
@@ -1166,7 +1166,13 @@
   "Upload profile picture": "",
   "Upload stalled for %'{seconds}' seconds, aborting.": "",
   "Uploaded files": "",
+<<<<<<< HEAD
+  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "",
   "Uploading {filename}…": "",
+  "Uploading…": "",
+=======
+  "Uploading {filename}…": "",
+>>>>>>> drc_main
   "Usage statistics": "",
   "Use full width on wide screens": "",
   "Use html encoding (not recommended)": "",

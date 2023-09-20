@@ -1657,8 +1657,13 @@ class NormalActionsTest(BaseAction):
         check_realm_user_update("events[0]", events[0], "full_name")
 
     def test_change_user_delivery_email_email_address_visibility_admins(self) -> None:
+<<<<<<< HEAD
+        do_set_realm_property(
+            self.user_profile.realm,
+=======
         do_change_user_setting(
             self.user_profile,
+>>>>>>> drc_main
             "email_address_visibility",
             UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
             acting_user=None,

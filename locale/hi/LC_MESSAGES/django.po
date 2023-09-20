@@ -1,23 +1,36 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
 # Aruna Maurya, 2022
-# Ayan Raj <ayanujju351@gmail.com>, 2019
-# dev sapariya <devsapariya94@gmail.com>, 2021
-# Mukul Agrawal <amukul28@yahoo.com>, 2018
-# sid shah <sidshah203@gmail.com>, 2020
-# Tim Abbott <tabbott@kandralabs.com>, 2019
-# Vishwesh Jainkuniya <vishwesh03071998@gmail.com>, 2017
+# Kunal Tyagi <kunal.tyagi.3.1994@gmail.com>, 2022
+# Tim Abbott <tabbott@kandralabs.com>, 2022
+# Kunal Gupta <kunall.gupta17@gmail.com>, 2022
+# Mukul Agrawal <amukul28@yahoo.com>, 2022
+# Akash Nimare <svnitakash@gmail.com>, 2022
+# sid shah <sidshah203@gmail.com>, 2022
+# Vishwesh Jainkuniya <vishwesh03071998@gmail.com>, 2022
+# dev sapariya <devsapariya94@gmail.com>, 2022
+# Ayan Raj <ayanujju351@gmail.com>, 2022
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
+<<<<<<< HEAD
+"POT-Creation-Date: 2022-11-17 16:38+0000\n"
+"PO-Revision-Date: 2022-11-17 23:30+0000\n"
+"Last-Translator: Ayan Raj <ayanujju351@gmail.com>, 2022\n"
+"Language-Team: Hindi (https://app.transifex.com/zulip/teams/53893/hi/)\n"
+=======
 "POT-Creation-Date: 2023-05-31 01:00+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Aruna Maurya, 2022\n"
 "Language-Team: Hindi (http://app.transifex.com/zulip/zulip/language/hi/)\n"
+>>>>>>> drc_main
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -60,7 +73,9 @@ msgstr ""
 
 #: analytics/views/stats.py:350 analytics/views/stats.py:385
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "कोई विश्लेषण डेटा उपलब्ध नहीं है। कृपया अपने सर्वर व्यवस्थापक से संपर्क करें।"
+msgstr ""
+"कोई विश्लेषण डेटा उपलब्ध नहीं है। कृपया अपने सर्वर व्यवस्थापक से संपर्क "
+"करें।"
 
 #: analytics/views/support.py:189 zerver/views/streams.py:304
 #: zerver/views/streams.py:308 zerver/views/streams.py:316
@@ -878,7 +893,9 @@ msgstr ""
 
 #: templates/zerver/accounts_send_confirm.html:25
 msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>."
-msgstr "फिर भी कोई ईमेल नहीं? हम इसे <a href=\"#\" id=\"resend_email_link\">पुनः भेज</a> सकते हैं।"
+msgstr ""
+"फिर भी कोई ईमेल नहीं? हम इसे <a href=\"#\" id=\"resend_email_link\">पुनः "
+"भेज</a> सकते हैं।"
 
 #: templates/zerver/accounts_send_confirm.html:26
 msgid "Just in case, take a look at your Spam folder."
@@ -1551,12 +1568,51 @@ msgstr ""
 msgid "Go to Zulip"
 msgstr ""
 
+<<<<<<< HEAD
+#: templates/zerver/emails/followup_day2.source.html:18
+#: templates/zerver/emails/followup_day2.txt:9
+msgid ""
+"Not recommended: \"What do people think of this new design mockup?\", \"I'm "
+"looking at Bug 345\", \"Is Acme Burgers open for lunch?\""
+msgstr ""
+
+#: templates/zerver/emails/followup_day2.source.html:21
+msgid "Example of a topic that is too long"
+msgstr ""
+
+#: templates/zerver/emails/followup_day2.source.html:23
+msgid ""
+"Why bother with topics? Well, two reasons: it makes conversations clearer "
+"(imagine if email didn't have them!), and it lets you more efficiently catch"
+" up on what's happened while you're away&mdash;read the topics that are "
+"relevant to you, and ignore the ones that aren't!"
+msgstr ""
+"विषयों से परेशान क्यों? खैर, दो कारण: यह बातचीत को स्पष्ट करता है (कल्पना "
+"करें कि क्या ईमेल उनके पास नहीं है!), और यह आपको अधिक कुशलता से पकड़ सकता है"
+" कि आपके दूर रहने के दौरान क्या हुआ है & mdash; आपके लिए प्रासंगिक विषयों को"
+" पढ़ें, और जो नहीं हैं  उन्हें अनदेखा करें !"
+
+#: templates/zerver/emails/followup_day2.source.html:25
+msgid "Take it for a spin now."
+msgstr ""
+
+#: templates/zerver/emails/followup_day2.source.html:27
+#: templates/zerver/emails/followup_day2.txt:16
+#: templates/zerver/emails/notify_new_login.source.html:40
+#: templates/zerver/emails/notify_new_login.txt:20
+msgid "Thanks,"
+msgstr ""
+
+#: templates/zerver/emails/followup_day2.source.html:34
+msgid "Unsubscribe from welcome emails"
+=======
 #: templates/zerver/emails/followup_day2.html:34
 #: templates/zerver/emails/followup_day2.txt:14
 #: templates/zerver/emails/onboarding_zulip_guide.html:40
 #: templates/zerver/emails/onboarding_zulip_guide.txt:27
 #, python-format
 msgid "Unsubscribe from welcome emails for %(realm_name)s"
+>>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
@@ -1565,17 +1621,42 @@ msgstr ""
 
 #: templates/zerver/emails/followup_day2.txt:3
 msgid ""
+<<<<<<< HEAD
+"Topics are like email subject lines. The big difference, though, is that "
+"they're really short and lightweight. Two or three words will do it. Don't "
+"overthink 'em -- you can always edit the message later!"
+msgstr ""
+"विषय ईमेल विषय लाइनों की तरह हैं। हालांकि, बड़ा अंतर यह है कि वे वास्तव में "
+"छोटे और हल्के हैं। दो या तीन शब्द करेंगे। उन्हें उखाड़ फेंकें नहीं - आप "
+"हमेशा बाद में संदेश को संपादित कर सकते हैं!"
+=======
 "In Zulip, streams determine who gets a message. Topics tell you what the "
 "message is about."
 msgstr ""
+>>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.txt:7
 #, python-format
 msgid ""
+<<<<<<< HEAD
+"Why bother with topics? Well, two reasons: it makes conversations clearer "
+"(imagine if email didn't have them!), and it lets you more efficiently catch"
+" up on what's happened while you're away -- read the topics that are "
+"relevant to you, and ignore the ones that aren't!"
+msgstr ""
+"विषयों से परेशान क्यों? खैर, दो कारण: यह बातचीत को स्पष्ट करता है (कल्पना "
+"करें कि क्या ईमेल उनके पास नहीं है!), और यह आपको अधिक कुशलता से पकड़ सकता है"
+" कि आपके दूर रहने के दौरान क्या हुआ है & mdash; आपके लिए प्रासंगिक विषयों को"
+" पढ़ें, और जो नहीं हैं उन्हें अनदेखा करें !"
+
+#: templates/zerver/emails/followup_day2.txt:13
+msgid "Take it for a spin now:"
+=======
 "Don't stress about picking the perfect name for your topic. If anything is "
 "out of place, it's easy to move messages (%(move_messages_link)s), rename "
 "topics (%(rename_topics_link)s), or even move a topic to a different stream "
 "(%(move_topic_to_different_stream_link)s)."
+>>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/emails/invitation.html:9
@@ -2475,7 +2556,7 @@ msgstr ""
 
 #: templates/zerver/login.html:100
 msgid "Username"
-msgstr "उपयोगकर्ता नाम"
+msgstr "उपयोगकर्ता का नाम"
 
 #: templates/zerver/login.html:111 templates/zerver/register.html:133
 #: templates/zerver/register.html:146 templates/zerver/reset_confirm.html:31
@@ -2964,7 +3045,9 @@ msgstr ""
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
-msgstr "इस संगठन के लिए आमंत्रण भेजने के लिए आपका खाता बहुत नया है। एक संगठन व्यवस्थापक, या एक अधिक अनुभवी उपयोगकर्ता से पूछें।"
+msgstr ""
+"इस संगठन के लिए आमंत्रण भेजने के लिए आपका खाता बहुत नया है। एक संगठन "
+"व्यवस्थापक, या एक अधिक अनुभवी उपयोगकर्ता से पूछें।"
 
 #: zerver/actions/invites.py:273
 msgid "Some emails did not validate, so we didn't send any invitations."
@@ -2978,7 +3061,9 @@ msgstr "हम किसी को भी आमंत्रित करने 
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "उनमें से कुछ पते पहले से ही ज़ूलिप का उपयोग कर रहे हैं, इसलिए हमने उन्हें निमंत्रण नहीं भेजा। हमने सभी को निमंत्रण भेजा!"
+msgstr ""
+"उनमें से कुछ पते पहले से ही ज़ूलिप का उपयोग कर रहे हैं, इसलिए हमने उन्हें "
+"निमंत्रण नहीं भेजा। हमने सभी को निमंत्रण भेजा!"
 
 #: zerver/actions/message_edit.py:92 zerver/views/scheduled_messages.py:59
 msgid "Nothing to change"
@@ -3349,7 +3434,9 @@ msgstr ""
 #: zerver/forms.py:244
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
-msgstr "जिस संगठन को आप {email} के उपयोग से जोड़ने का प्रयास कर रहे हैं वह मौजूद नहीं है।"
+msgstr ""
+"जिस संगठन को आप {email} के उपयोग से जोड़ने का प्रयास कर रहे हैं वह मौजूद "
+"नहीं है।"
 
 #: zerver/forms.py:252
 #, python-brace-format
@@ -3362,7 +3449,9 @@ msgstr "कृपया संगठन व्यवस्थापक से {e
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
-msgstr "आपका ईमेल पता, {email}, उन डोमेन में से एक नहीं है, जिन्हें इस संगठन में खातों के लिए पंजीकरण करने की अनुमति है।"
+msgstr ""
+"आपका ईमेल पता, {email}, उन डोमेन में से एक नहीं है, जिन्हें इस संगठन में "
+"खातों के लिए पंजीकरण करने की अनुमति है।"
 
 #: zerver/forms.py:271
 msgid "Email addresses containing + are not allowed in this organization."
@@ -3725,7 +3814,9 @@ msgstr ""
 msgid ""
 "Messages sent to a stream are seen by everyone subscribed to that stream. "
 "Try clicking on one of the stream links below."
-msgstr "किसी स्ट्रीम में भेजे गए संदेश उस स्ट्रीम के सब्सक्राइब किए गए सभी लोगों द्वारा देखे जाते हैं। नीचे दिए गए किसी एक स्ट्रीम लिंक पर क्लिक करके देखें।"
+msgstr ""
+"किसी स्ट्रीम में भेजे गए संदेश उस स्ट्रीम के सब्सक्राइब किए गए सभी लोगों "
+"द्वारा देखे जाते हैं। नीचे दिए गए किसी एक स्ट्रीम लिंक पर क्लिक करके देखें।"
 
 #: zerver/lib/hotspots.py:20
 msgid "Topics"
@@ -3735,7 +3826,9 @@ msgstr "सभी विषय"
 msgid ""
 "Every message has a topic. Topics keep conversations easy to follow, and "
 "make it easy to reply to conversations that start while you are offline."
-msgstr "हर संदेश का एक विषय होता है। विषय बातचीत का अनुसरण करना आसान बनाते हैं, और ऑफ़लाइन होने पर शुरू होने वाली बातचीत का उत्तर देना आसान बनाते हैं।"
+msgstr ""
+"हर संदेश का एक विषय होता है। विषय बातचीत का अनुसरण करना आसान बनाते हैं, और "
+"ऑफ़लाइन होने पर शुरू होने वाली बातचीत का उत्तर देना आसान बनाते हैं।"
 
 #: zerver/lib/hotspots.py:28
 msgid "Settings"
@@ -3753,7 +3846,9 @@ msgstr "लिखें"
 msgid ""
 "Click here to start a new conversation. Pick a topic (2-3 words is best), "
 "and give it a go!"
-msgstr "एक नई बातचीत शुरू करने के लिए यहां क्लिक करें। एक विषय चुनें (2-3 शब्द सबसे अच्छा है), और इसे एक बार दें!"
+msgstr ""
+"एक नई बातचीत शुरू करने के लिए यहां क्लिक करें। एक विषय चुनें (2-3 शब्द सबसे "
+"अच्छा है), और इसे एक बार दें!"
 
 #: zerver/lib/integrations.py:37
 msgid "Integration frameworks"

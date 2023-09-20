@@ -865,7 +865,11 @@ class TestRealmAuditLog(ZulipTestCase):
             url_template="https://python.example.com{code}",
         )
         expected_extra_data = {
+<<<<<<< HEAD
+            "realm_playgrounds": initial_playgrounds + [added_playground],
+=======
             "realm_playgrounds": [*initial_playgrounds, added_playground],
+>>>>>>> drc_main
             "added_playground": added_playground,
         }
         self.assertEqual(
@@ -923,7 +927,11 @@ class TestRealmAuditLog(ZulipTestCase):
             id=linkifier_id,
         )
         expected_extra_data = {
+<<<<<<< HEAD
+            "realm_linkifiers": initial_linkifiers + [added_linkfier],
+=======
             "realm_linkifiers": [*initial_linkifiers, added_linkfier],
+>>>>>>> drc_main
             "added_linkifier": added_linkfier,
         }
         self.assertEqual(
@@ -951,7 +959,11 @@ class TestRealmAuditLog(ZulipTestCase):
             id=linkifier_id,
         )
         expected_extra_data = {
+<<<<<<< HEAD
+            "realm_linkifiers": initial_linkifiers + [changed_linkifier],
+=======
             "realm_linkifiers": [*initial_linkifiers, changed_linkifier],
+>>>>>>> drc_main
             "changed_linkifier": changed_linkifier,
         }
         self.assertEqual(

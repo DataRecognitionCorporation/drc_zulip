@@ -129,7 +129,11 @@ def get_prereg_key_and_redirect(
     accidentally adding an extra character after pasting).
     """
     try:
+<<<<<<< HEAD
+        check_prereg_key(request, confirmation_key)
+=======
         prereg_object, realm_creation = check_prereg_key(request, confirmation_key)
+>>>>>>> drc_main
     except ConfirmationKeyError as e:
         return render_confirmation_key_error(request, e)
 
@@ -152,9 +156,14 @@ def check_prereg_key(
     request: HttpRequest, confirmation_key: str
 ) -> Tuple[Union[PreregistrationUser, PreregistrationRealm], bool]:
     """
+<<<<<<< HEAD
+    Checks if the Confirmation key is valid, returning the PreregistrationUser object in case of success
+    and raising an appropriate ConfirmationKeyError otherwise.
+=======
     Checks if the Confirmation key is valid, returning the PreregistrationUser or
     PreregistrationRealm object in case of success and raising an appropriate
     ConfirmationKeyError otherwise.
+>>>>>>> drc_main
     """
     confirmation_types = [
         Confirmation.USER_REGISTRATION,
@@ -216,7 +225,11 @@ def registration_helper(
     form_is_demo_organization: Optional[str] = REQ("is_demo_organization", default=None),
 ) -> HttpResponse:
     try:
+<<<<<<< HEAD
+        prereg_user = check_prereg_key(request, key)
+=======
         prereg_object, realm_creation = check_prereg_key(request, key)
+>>>>>>> drc_main
     except ConfirmationKeyError as e:
         return render_confirmation_key_error(request, e)
 
@@ -764,7 +777,11 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
     try:
         key_record = validate_key(creation_key)
     except RealmCreationKey.InvalidError:
+<<<<<<< HEAD
+        return render(
+=======
         return TemplateResponse(
+>>>>>>> drc_main
             request,
             "zerver/realm_creation_link_invalid.html",
         )

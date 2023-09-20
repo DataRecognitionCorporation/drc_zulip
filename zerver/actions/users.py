@@ -9,6 +9,7 @@ from django.utils.timezone import now as timezone_now
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.actions.invites import revoke_invites_generated_by_user
+from zerver.actions.streams import bulk_remove_subscriptions
 from zerver.actions.user_groups import (
     do_send_user_group_members_update_event,
     update_users_in_full_members_system_group,
@@ -17,11 +18,16 @@ from zerver.lib.avatar import avatar_url_from_dict
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.cache import bot_dict_fields
 from zerver.lib.create_user import create_user
+from zerver.lib.message import get_last_message_id
 from zerver.lib.send_email import clear_scheduled_emails
 from zerver.lib.sessions import delete_user_sessions
+<<<<<<< HEAD
+from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
+=======
 from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import get_streams_for_user, stream_to_dict
+>>>>>>> drc_main
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import get_active_bots_owned_by_user
@@ -39,6 +45,7 @@ from zerver.models import (
     bot_owner_user_ids,
     get_bot_dicts_in_realm,
     get_bot_services,
+    get_stream_by_id_in_realm,
     get_fake_email_domain,
     get_user_profile_by_id,
 )
@@ -251,6 +258,21 @@ def do_deactivate_user(
 ) -> None:
     if not user_profile.is_active:
         return
+
+    streams = []
+    subscribed_stream_ids = get_subscribed_stream_ids_for_user(user_profile)
+    for i in subscribed_stream_ids:
+        stream = get_stream_by_id_in_realm(i, user_profile.realm)
+        streams.append(stream)
+
+    bulk_remove_subscriptions(user_profile.realm, [user_profile], streams, acting_user=user_profile)
+
+
+    with transaction.atomic():
+        Subscription.objects.filter(
+            id__in=subscribed_stream_ids,
+        ).update(active=False)
+
 
     if _cascade:
         # We need to deactivate bots before the target user, to ensure

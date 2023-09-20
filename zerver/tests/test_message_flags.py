@@ -24,6 +24,10 @@ from zerver.lib.message import (
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription, timeout_mock
 from zerver.lib.timeout import TimeoutExpiredError
+<<<<<<< HEAD
+from zerver.lib.user_topics import add_topic_mute
+=======
+>>>>>>> drc_main
 from zerver.models import (
     Message,
     Recipient,

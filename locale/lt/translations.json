@@ -170,7 +170,7 @@
   "Audible": "",
   "Audible desktop notifications": "",
   "August": "",
-  "Authentication methods": "Autentifikavimo metodai",
+  "Authentication methods": "Autentifikavimo būdai",
   "Author": "",
   "Automated messages and emails": "",
   "Automatic": "",
@@ -1166,7 +1166,13 @@
   "Upload profile picture": "",
   "Upload stalled for %'{seconds}' seconds, aborting.": "",
   "Uploaded files": "Įkelti failai",
+<<<<<<< HEAD
+  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "",
   "Uploading {filename}…": "",
+  "Uploading…": "",
+=======
+  "Uploading {filename}…": "",
+>>>>>>> drc_main
   "Usage statistics": "",
   "Use full width on wide screens": "",
   "Use html encoding (not recommended)": "",

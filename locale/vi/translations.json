@@ -1,7 +1,11 @@
 {
   "%'{file}' exceeds the maximum file size for attachments ({variable} MB).": "",
+<<<<<<< HEAD
+  "(forever)": "(mãi mãi)",
+=======
   "(attached file)": "",
   "(forever)": "(forever)",
+>>>>>>> drc_main
   "(hidden)": "",
   "(no description)": "",
   "(no topic)": "(no topic)",
@@ -57,8 +61,12 @@
   "Account & privacy": "Bảo mật va tài khoản",
   "Action": "",
   "Actions": "",
+<<<<<<< HEAD
+  "Active": "Đang hoạt động",
+=======
   "Active": "Đang trực tuyến",
   "Active an hour ago": "",
+>>>>>>> drc_main
   "Active bots": "Các bot đang hoạt động",
   "Active more than 2 weeks ago": "",
   "Active now": "Đang trực tuyến",
@@ -77,7 +85,7 @@
   "Add a new custom profile field": "",
   "Add a new emoji": "",
   "Add a new linkifier": "",
-  "Add a new profile field": "Thêm bộ hồ sơ mới",
+  "Add a new profile field": "Thêm lĩnh vực hồ sơ mới",
   "Add a new user group": "Thêm nhóm người dùng",
   "Add alert word": "",
   "Add all users": "",
@@ -96,7 +104,7 @@
   "Add option": "",
   "Add question": "",
   "Add stream": "Thêm stream",
-  "Add streams": "Thêm stream",
+  "Add streams": "Thêm nhiều stream",
   "Add subscribers": "Thêm người đăng ký",
   "Add subscribers. Use usergroup or #streamname to bulk add subscribers.": "Thêm người đăng ký. Sử dụng usergroup hoặc #tencuastream để thêm người đăng ký số lượng lớn.",
   "Add task": "",
@@ -119,14 +127,26 @@
   "Alert word": "Từ cảnh báo",
   "Alert word \"{alert_word}\" removed successfully!": "",
   "Alert word already exists!": "",
+<<<<<<< HEAD
+  "Alert word removed successfully!": "",
+  "Alert words": "Từ cảnh báo",
+=======
   "Alert words": "Từ báo động",
+>>>>>>> drc_main
   "Alert words allow you to be notified as if you were @-mentioned when certain words or phrases are used in Zulip. Alert words are not case sensitive.": "",
   "Alerted messages": "",
   "All": "Tất cả",
   "All direct messages": "",
   "All messages": "Tất cả tin nhắn",
   "All messages including muted streams": "Tất cả tin nhắn bao gồm cả Stream bị tắt tiếng",
+<<<<<<< HEAD
+  "All private messages": "",
+  "All private messages (P)": "",
+  "All stream subscribers can post.": "Tất cả người tham gia Stream đều có thể đăng.",
+  "All streams": "Tất cả các stream",
+=======
   "All streams": "Tất cả các dòng hội thoại",
+>>>>>>> drc_main
   "All time": "",
   "All unreads": "",
   "Allow creating web-public streams (visible to anyone on the Internet)": "Cho phép tạo Stream công khai trên web (hiển thị với mọi người trên Internet)",
@@ -136,7 +156,7 @@
   "Allow subdomains": "",
   "Allowed domains": "",
   "Allowed domains: {domains}": "",
-  "Already not subscribed.": "Chưa tham gia",
+  "Already not subscribed.": "Chưa tham gia.",
   "Already subscribed to {stream}": "Đã tham gia{stream}",
   "Already subscribed users:": "Người dùng đã tham gia:",
   "Always": "Luôn luôn",
@@ -150,8 +170,12 @@
   "Archive <z-link></z-link>?": "",
   "Archive stream": "Lưu trữ stream",
   "Archiving stream <z-stream></z-stream> will immediately unsubscribe everyone. This action cannot be undone.": "",
+<<<<<<< HEAD
+  "Are you sure you want to create stream ''''{stream_name}'''' and subscribe {count} users to it?": "Bạn có chắc chắn muốn tạo Stream ''''{stream_name}''' và đăng ký {count} người dùng vào Stream đó không?",
+=======
   "Are you sure you want to continue?": "",
   "Are you sure you want to create stream ''''{stream_name}'''' and subscribe {count} users to it?": "Bạn có chắc chắn muốn tạo Stream '' '' {stream_name} '' '' và đăng ký {count} người dùng vào Stream đó không?",
+>>>>>>> drc_main
   "Are you sure you want to deactivate this organization?": "",
   "Are you sure you want to deactivate your account?": "",
   "Are you sure you want to delete all drafts?  This action cannot be undone.": "Bạn có chắc chắn muốn xóa tất cả các bản nháp không? Hành động này không thể được khôi phục lại.",
@@ -179,9 +203,13 @@
   "Available on Zulip Cloud Standard. <z-link-upgrade>Upgrade</z-link-upgrade> or <z-link-sponsorship>request sponsorship</z-link-sponsorship> to access.": "",
   "Avatar changes are disabled in this organization": "",
   "Avatar from Gravatar": "",
+<<<<<<< HEAD
+  "Back to streams": "Quay lại streams",
+=======
   "Back to streams": "Quay lại Stream",
   "Because you are the only organization owner, you cannot deactivate your account.": "",
   "Because you are the only subscriber, this stream will be automatically archived.": "",
+>>>>>>> drc_main
   "Billing": "",
   "Bold": "",
   "Bot": "Bot",
@@ -207,6 +235,12 @@
   "Change group info": "",
   "Change password": "Đổi mật khẩu",
   "Change send shortcut": "",
+<<<<<<< HEAD
+  "Change stream info": "Thay đổi thông tin stream",
+  "Change stream permissions": "Thay đổi quyền stream",
+  "Change stream permissions for #{stream_name}": "Thay đổi quyền stream cho # {stream_name}",
+=======
+>>>>>>> drc_main
   "Check all": "Kiểm tra tất cả",
   "Check your email ({email}) to confirm the new address.": "",
   "Choose avatar": "",
@@ -218,6 +252,10 @@
   "Click here to reveal.": "Nhấn vào đây để xem tiết lộ.",
   "Click on the pencil (<z-pencil-icon></z-pencil-icon>) icon to edit and reschedule a message.": "",
   "Click outside the input box to save. We'll automatically notify anyone that was added or removed.": "Nhấp vào bên ngoài khung nhập liệu để lưu. Chúng tôi sẽ tự động thông báo cho bất kỳ ai được thêm hoặc xóa.",
+<<<<<<< HEAD
+  "Click to join video call": "Nhấp để tham gia cuộc gọi video",
+=======
+>>>>>>> drc_main
   "Click to view or download.": "Bấm để xem hoặc tải xuống",
   "Close": "Tắt",
   "Close modal": "",
@@ -229,7 +267,7 @@
   "Collapse message": "",
   "Collapse/show selected message": "",
   "Community": "",
-  "Commuting": "Đang di chuyển",
+  "Commuting": "Đổi lại",
   "Compact": "",
   "Complete": "",
   "Complete the <z-link>organization profile</z-link> to brand and explain the purpose of this Zulip organization.": "",
@@ -242,7 +280,7 @@
   "Configure the <z-link>default personal preference settings</z-link> for new users joining your organization.": "Thiết lập cấu hình<z-link>cài đặt sở thích cá nhân mặc định</z-link> cho những người dùng mới tham gia tổ chức của bạn.",
   "Configure the authentication methods for your organization.": "Thiết lập cấu hình các phương thức xác thực cho tổ chức của bạn.",
   "Configure the default streams new users are subscribed to when joining your organization.": "Thiết lập cấu hình các stream mặc định mà người dùng mới đã đăng ký khi tham gia tổ chức của bạn.",
-  "Confirm": "xác nhận",
+  "Confirm": "Xác nhận",
   "Consider <z-link>searching all public streams</z-link>.": "Xem xét<z-link>tìm kiếm tất cả các stream công khai</z-link>.",
   "Contact a moderator to resolve this topic.": "",
   "Contact a moderator to unresolve this topic.": "",
@@ -268,16 +306,21 @@
   "Create stream": "Tạo Stream",
   "Create user group": "",
   "Creating group...": "",
+<<<<<<< HEAD
+  "Creating stream...": "Đang tạo stream ...",
+  "Current password": "",
+=======
   "Creating stream...": "Đang tạo dòng hội thoại...",
   "Currently viewing all direct messages.": "",
+>>>>>>> drc_main
   "Currently viewing all messages.": "Hiện đang xem tất cả các tin nhắn.",
   "Currently viewing the entire stream.": "Hiện đang xem toàn bộ stream.",
   "Custom": "Tùy chỉnh",
   "Custom emoji": "Custom emoji",
   "Custom language: {query}": "Tùy chỉnh ngôn ngữ: {query}",
   "Custom linkifier added!": "Tùy chỉnh trình liên kết đã thêm!",
-  "Custom playground added!": "Đã thêm playground tùy chỉnh!",
-  "Custom profile fields": "Các bộ hồ sơ tùy chỉnh",
+  "Custom playground added!": "Tùy chỉnh playground đã thêm",
+  "Custom profile fields": "Tùy chỉnh cái lĩnh vực hồ sơ",
   "Custom time": "",
   "Cycle between stream narrows": "Chu kỳ giữa các stream thu hẹp",
   "DIRECT MESSAGES": "",
@@ -306,8 +349,12 @@
   "Default is {language}. Use 'text' to disable highlighting.": "Mặc định là {language}. Sử dụng 'văn bản' để tắt đánh dấu.",
   "Default language for code blocks": "",
   "Default streams": "Stream mặc định",
+<<<<<<< HEAD
+  "Default user settings": "Cài đặt người dùng mặc định",
+=======
   "Default streams for this organization": "",
   "Default user settings": "Cài đặt mặc định người dùng",
+>>>>>>> drc_main
   "Default view": "",
   "Delay before sending message notification emails": "Tạm hoãn trước khi gửi email thông báo tin nhắn",
   "Delay period (minutes)": "Tạm hoãn thời gian trễ (phút)",
@@ -340,11 +387,11 @@
   "Dense mode": "",
   "Depending on the size of your organization, an export can take anywhere from seconds to an hour.": "",
   "Deprecation notice": "",
-  "Description": "Mô tả",
+  "Description": "Phần mô tả",
   "Desktop": "",
   "Desktop & mobile apps": "Ứng dụng máy tính & điện thoại",
   "Desktop message notifications": "Thông báo tin nhắn trên màn hình",
-  "Detailed keyboard shortcuts documentation": "Tài liệu về các phím tắt chi tiết",
+  "Detailed keyboard shortcuts documentation": "Tài liệu chi tiết về các phím tắt ",
   "Detailed message formatting documentation": "Tài liệu chi tiết định dạng tin nhắn ",
   "Detailed search filters documentation": "",
   "Direct message": "",
@@ -418,25 +465,30 @@
   "Enable message edit history": "",
   "Enable notifications": "Bật thông báo",
   "Enable read receipts": "",
-  "Enabled": "Đã bật",
-  "End of results from your <z-link>history</z-link>.": "Kết thúc kết quả từ <z-link>lịch sử</z-link> của bạn.",
+  "Enabled": "Bật",
+  "End of results from your <z-link>history</z-link>.": "Kết thúc kết quả từ <z-link>lịch sử</z-link> cá nhân của bạn.",
   "Endpoint URL": "URL điểm cuối",
   "Enter sends when composing a message": "Nhập số lần gửi khi soạn tin nhắn",
   "Error": "Lỗi",
   "Error adding subscription": "Lỗi khi thêm đăng ký",
+<<<<<<< HEAD
+  "Error checking subscription": "Lỗi khi kiểm tra đăng ký",
+  "Error creating stream": "Lỗi tạo Stream",
+=======
   "Error checking subscription.": "",
   "Error creating stream": "Lỗi khi tạo Stream",
+>>>>>>> drc_main
   "Error creating user group.": "",
-  "Error deleting message": "Lỗi khi xóa tin nhắn",
-  "Error fetching message edit history": "Lỗi khi tìm nạp lịch sử chỉnh sửa tin nhắn",
+  "Error deleting message": "Lỗi xóa tin nhắn",
+  "Error fetching message edit history": "Lỗi khi tìm lịch sử chỉnh sửa tin nhắn",
   "Error in unsubscribing from #{stream_name}": "Lỗi khi hủy đăng ký khỏi # {stream_name}",
-  "Error listing invites": "Lỗi khi liệt kê lời mời",
+  "Error listing invites": "Lỗi khi lập danh sách lời mời",
   "Error moving topic": "Lỗi khi di chuyển chủ đề",
   "Error removing alert word!": "Lỗi khi xóa từ cảnh báo!",
   "Error removing subscription": "Lỗi khi xóa đăng ký",
   "Error removing user from #{stream_name}": "Lỗi khi xóa người dùng khỏi # {stream_name}",
   "Error removing user from this group.": "",
-  "Error removing user from this stream.": "Lỗi khi xóa người dùng khỏi dòng hội thoại.",
+  "Error removing user from this stream.": "Lỗi khi xóa người dùng khỏi stream.",
   "Error saving edit": "Lỗi khi lưu chỉnh sửa",
   "Error: Cannot deactivate the only organization owner.": "Lỗi: Không thể hủy kích hoạt chủ sở hữu tổ chức duy nhất.",
   "Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <z-link>organization profile settings</z-link>.": "Lỗi: Không thể hủy kích hoạt người dùng duy nhất. Bạn có thể hủy kích hoạt toàn bộ tổ chức trong <z-link>cài đặt hồ sơ tổ chức của mình</z-link>.",
@@ -455,31 +507,40 @@
   "Expires at": "Hết hạn lúc",
   "Expires on {date} at {time}": "",
   "Export failed": "Xuất không thành công",
-  "Export organization": "Tổ chức xuất khẩu",
+  "Export organization": "Xuất tổ chức",
   "Export started. Check back in a few minutes.": "Đã bắt đầu xuất. Kiểm tra lại sau vài phút.",
-  "Exports all users, settings, and all data visible in public streams.": "Admin của nhóm có thể kích hoạt tài khoản đã ngừng hoạt động.",
+  "Exports all users, settings, and all data visible in public streams.": "Xuất tất cả người dùng, cài đặt và tất cả dữ liệu hiển thị trong các stream công khai.",
   "External account type": "Loại tài khoản bên ngoài",
   "External link": "Liên kết bên ngoài",
   "Failed": "Thất bại",
-  "Failed to create video call.": "Không tạo được cuộc gọi điện video.",
+  "Failed to create video call.": "Không tạo được cuộc gọi video.",
   "Failed to generate preview": "Không tạo được bản xem trước",
-  "Failed to upload %'{file}'": "Không tải lên được% '{file}'",
+  "Failed to upload %'{file}'": "Không tải lên được % '{file}'",
   "Failed!": "Thất bại!",
+<<<<<<< HEAD
+  "Failed: A custom emoji with this name already exists.": "Không thành công: Biểu tượng cảm xúc tùy chỉnh với tên này đã tồn tại.",
+  "Failed: Emoji name is required.": "Không thành công: Yêu cầu phải có tên biểu tưởng cảm xúc.",
+=======
   "Failed: A custom emoji with this name already exists.": "Không thành công: Đã tồn tại một biểu tượng cảm xúc tùy chỉnh với tên này",
   "Failed: Emoji name is required.": "Không thành công: Tên biểu tượng cảm xúc là bắt buộc.",
   "Failed: There is a default emoji with this name. Only administrators can override default emoji.": "",
+>>>>>>> drc_main
   "February": "Tháng 2",
   "Field choices": "Lựa chọn lĩnh vực",
-  "File": "File",
-  "File and image uploads have been disabled for this organization.": "Việc tải lên tệp và hình ảnh đã bị vô hiệu hóa đối với tổ chức này.",
+  "File": "Tệp",
+  "File and image uploads have been disabled for this organization.": "Tệp và hình ảnh tải lên đã bị vô hiệu hóa đối với tổ chức này.",
   "File name: {filename}": "Tên tệp: {filename}",
   "File size must be at most {max_file_size} MiB.": "Kích thước tệp tối đa phải là {max_file_size} MiB.",
+<<<<<<< HEAD
+  "File type is not supported.": "Loại tệp này không được hỗ trợ.",
+=======
   "File type is not supported.": "Loại tệp không được hỗ trợ.",
   "Filter": "",
+>>>>>>> drc_main
   "Filter bots": "Lọc bots",
-  "Filter by category": "Filter by category",
-  "Filter code playgrounds": "Lọc mã các playground",
-  "Filter deactivated users": "Lọc người dùng đã ngừng hoạt động",
+  "Filter by category": "Lọc theo danh mục",
+  "Filter code playgrounds": "Lọc các mã playground",
+  "Filter deactivated users": "Lọc người dùng đã bị vô hiệu hóa",
   "Filter default streams": "Lọc các Stream mặc định",
   "Filter emoji": "Lọc biểu tượng cảm xúc",
   "Filter exports": "Lọc xuất ",
@@ -488,9 +549,15 @@
   "Filter languages": "Lọc ngôn ngữ",
   "Filter linkifiers": "Lọc trình liên kết",
   "Filter members": "",
+<<<<<<< HEAD
+  "Filter muted topics": "Lọc các chủ đề bị ẩn",
+  "Filter muted users": "Lọc người dùng bị ẩn",
+  "Filter streams": "Lọc Streams",
+=======
   "Filter muted users": "Lọc người dụng bị ẩn",
   "Filter roles": "",
   "Filter streams": "Lọc Stream",
+>>>>>>> drc_main
   "Filter subscribers": "Lọc người đăng ký",
   "Filter topics": "Lọc chủ đề",
   "Filter topics (t)": "Lọc chủ đề (t)",
@@ -500,23 +567,32 @@
   "First message": "Tin nhắn đầu tiên",
   "First time? Read our <z-link>guidelines</z-link> for creating and naming streams.": "Điều đầu tiên? Đọc các <z-link>nguyên tắc</z-link> của chúng tôi để tạo và đặt tên cho các Streams.",
   "First time? Read our <z-link>guidelines</z-link> for creating user groups.": "",
+<<<<<<< HEAD
+  "Fixed width": "Sửa chiều rộng",
+  "Fixed width mode": "Chỉnh sửa chế độ chiều rộng.",
+  "Fluid width": "Thay đổi chiều rộng.",
+  "Fluid width mode": "Thay đổi chế độ chiều rộng",
+  "For example, to configure code playgrounds for languages like Python or JavaScript, you could specify the <i>Language</i> and <i>URL prefix</i> fields as:": "Ví dụ: để định cấu hình các mã playground cho các ngôn ngữ như Python hoặc JavaScript, bạn có thể chỉ định các lĩnh vực<i>Ngôn ngữ</i> và<i> URL tiền tố</i> là:",
+  "Forgotten it?": "Quên nó đi?",
+=======
   "For example, to configure a code playground for code blocks tagged as Python, you can set:": "",
   "For more examples and technical details, see the <z-link>help center documentation</z-link> on adding code playgrounds.": "",
   "For more examples, see the <z-link>help center documentation</z-link> on adding linkifiers.": "",
   "Forgot it?": "",
+>>>>>>> drc_main
   "Forked from upstream at {zulip_merge_base}": "Đã chuyển từ ngược dòng tại {zulip_merge_base}",
   "Friday": "Thứ sáu",
   "Full name": "Họ và tên",
-  "GIPHY attribution": "Phân bổ GIPHY",
+  "GIPHY attribution": "Phân quyền GIPHY",
   "GIPHY integration": "Tích hợp GIPHY",
-  "General": "General",
+  "General": "Chung",
   "Generate email address": "",
   "Generate invite link": "Tạo liên kết mời",
-  "Generate new API key": "Tạo khóa API mới",
+  "Generate new API key": "Tạo mã API mới",
   "Generate stream email address": "",
   "Generating link...": "Đang tạo liên kết ...",
   "Generic": "Chung",
-  "Get API key": "Nhận khóa API",
+  "Get API key": "Lấy mã API",
   "Go back through viewing history": "",
   "Go forward through viewing history": "",
   "Go invisible": "",
@@ -529,10 +605,10 @@
   "Got it!": "Hiểu rồi!",
   "Government": "",
   "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena": "Cấp cho Zulip vé Kerberos cần thiết để chạy máy nhân bản Zephyr của bạn qua Webathena",
-  "Guest": "Guest",
+  "Guest": "Khách",
   "Guest users cannot edit custom emoji.": "Tài khoản khách không thể chỉnh sửa emoji",
   "Guests": "Khách",
-  "Guests cannot edit custom emoji.": "Khách không thể chỉnh sửa biểu tượng cảm xúc tùy chỉnh.",
+  "Guests cannot edit custom emoji.": "Khách không thể tùy chỉnh chỉnh sửa biểu tượng cảm xúc.",
   "Header": "",
   "Help center": "Trung tâm hỗ trợ",
   "Hide muted message again": "Ẩn lại tin nhắn đã tắt tiếng",
@@ -540,18 +616,27 @@
   "Hide password": "Ẩn mật khẩu",
   "Hide starred message count": "Ẩn số lượng tin nhắn có gắn dấu sao",
   "High contrast mode": "Chế độ tương phản cao",
-  "Hint": "Dấu",
+  "Hint": "Gợi ý",
   "Hint (up to 80 characters)": "Gợi ý (tối đa 80 ký tự)",
   "Humans": "Con người",
   "Idle": "Đang nhàn rỗi",
+<<<<<<< HEAD
+  "Ignored deactivated users:": "Bỏ qua người dùng đã hủy kích hoạt:",
+=======
   "If you don't know your password, you can <z-link>reset it</z-link>.": "",
   "Ignored deactivated users:": "Người dùng đã hủy kích hoạt bị bỏ qua:",
+>>>>>>> drc_main
   "Image": "Hình ảnh",
   "In a meeting": "Đang họp",
   "Inactive": "Không hoạt động",
   "Inactive bots": "Các bot không hoạt động",
+<<<<<<< HEAD
+  "Include PMs": "",
+  "Include content of private messages in desktop notifications": "Bao gồm nội dung tin nhắn riêng tư vào thông báo trên màn hình",
+=======
   "Include DMs": "",
   "Include content of direct messages in desktop notifications": "",
+>>>>>>> drc_main
   "Include message content in message notification emails": "Bao gồm nội dung tin nhắn trong email thông báo tin nhắn",
   "Include muted": "Bao gồm các Topic tắt tiếng",
   "Include organization name in subject of message notification emails": "Bao gồm tên tổ chức trong chủ đề của email thông báo tin nhắn",
@@ -561,18 +646,22 @@
   "Integrations": "Hợp nhất",
   "Interface": "Giao diện",
   "Invalid URL": "URL không hợp lệ",
+<<<<<<< HEAD
+  "Invalid slash command. Check if you are missing a space after the command.": "Cú pháp không hợp lệ. Kiểm tra xem bạn có thiếu dấu cách sau lệnh hay không.",
+=======
+>>>>>>> drc_main
   "Invalid stream ID": "",
   "Invalid time format: {timestamp}": "Định dạng thời gian không hợp lệ: {timestamp}",
   "Invalid user": "",
   "Invalid users": "",
   "Invitation expires after": "Lời mời hết hạn sau",
-  "Invitations": "Lời mời",
+  "Invitations": "Các lời mời",
   "Invitations are required for joining this organization": "Cần có lời mời để tham gia tổ chức này",
   "Invite": "Mời",
   "Invite link": "Liên kết mời",
   "Invite more users": "Mời thêm bạn",
   "Invite users": "Mời bạn bè",
-  "Invite users to Zulip": "Mời thêm bạn bè dùng Zulip",
+  "Invite users to Zulip": "Mời bạn bè dùng Zulip",
   "Invited as": "Được mời với tư cách",
   "Invited at": "Được mời lúc",
   "Invited by": "Được mời bởi",
@@ -590,8 +679,12 @@
   "June": "Tháng 6",
   "Just now": "Vừa rồi",
   "Keyboard shortcuts": "Phím tắt bàn phím",
-  "Label": "Nhãn mác",
+  "Label": "Nhãn hiệu",
   "Language": "Ngôn ngữ",
+<<<<<<< HEAD
+  "Language and time": "Ngôn ngữ và thời gian",
+=======
+>>>>>>> drc_main
   "Language for automated messages and invitation emails": "",
   "Large number of subscribers": "Số lượng lớn người đăng ký",
   "Last 10 days": "10 ngày qua",
@@ -610,8 +703,12 @@
   "Let subscribers see when I'm typing messages in streams": "Cho phép người đăng ký xem khi tôi nhập tin nhắn trong Streams",
   "Light": "",
   "Light theme": "Chủ đề sáng",
+<<<<<<< HEAD
+  "Link": "Liên kết",
+=======
   "Light theme logo": "",
   "Link": "Link",
+>>>>>>> drc_main
   "Link with Webathena": "Liên kết với Webathena",
   "Link:": "Liên kết:",
   "Linkifiers": "Trình liên kết",
@@ -631,8 +728,12 @@
   "Manage user groups": "Quản lý nhóm người dùng",
   "March": "Tháng 3",
   "Mark all messages as read": "Đánh dấu tất cả các tin nhắn là đã đọc",
+<<<<<<< HEAD
+  "Mark as read": "Đánh dấu đã đọc",
+=======
   "Mark all messages as read?": "",
   "Mark as read": "Dánh dấu đã đọc",
+>>>>>>> drc_main
   "Mark as resolved": "Đánh dấu là đã giải quyết",
   "Mark as unread from here": "",
   "Mark as unread from selected message": "",
@@ -641,14 +742,20 @@
   "Marking all messages as read…": "Đánh dấu tất cả các tin nhắn là đã đọc…",
   "May": "Tháng 5",
   "Me": "Tôi",
+<<<<<<< HEAD
+  "Member": "Thành viên",
+  "Members": "Các thành viên",
+  "Members can only view or manage invitations that you yourself sent.": "Thành viên chỉ có thể xem hoặc quản lý lời mời mà chính bạn đã gửi.",
+=======
   "Member": "Member",
   "Members": "Thành viên",
+>>>>>>> drc_main
   "Mention a time-zone-aware time": "Đề cập đến thời gian nhận biết múi giờ",
   "Mentioned in": "Đề cập trong",
   "Mentions": "Đề cập",
-  "Menu": "Thực đơn",
-  "Menus": "Thực đơn",
-  "Message #{stream_name}": "Nhắn tin # {stream_name}",
+  "Menu": "Menu",
+  "Menus": "Menus",
+  "Message #{stream_name}": "Tin nhắn # {stream_name}",
   "Message #{stream_name} > {topic_name}": "Tin nhắn # {stream_name}> {topic_name}",
   "Message actions": "Tin nhắn hành động",
   "Message deletion": "",
@@ -662,16 +769,26 @@
   "Message {recipient_names}": "Nhắn tin cho {receiver_names}",
   "Message {recipient_name} ({recipient_status})": "Nhắn tin cho {accept_name} ({accept_status})",
   "Messages in all public streams": "",
+<<<<<<< HEAD
+  "Messages in this stream will be automatically deleted after {retention_days} days.": "Tin nhắn trong Stream này sẽ tự động bị xóa sau {keep_days} ngày.",
+  "Messages in this stream will be retained forever.": "Tin nhắn trong Stream này sẽ được lưu giữ mãi mãi.",
+=======
   "Messages will not be automatically marked as read because this is not a conversation view. <z-link>Change setting</z-link>": "",
   "Messages will not be automatically marked as read. <z-link>Change setting</z-link>": "",
+>>>>>>> drc_main
   "Mobile": "Điện thoại",
   "Mobile message notifications": "Thông báo tin nhắn di động",
   "Mobile notifications": "Thông báo trên điện thoại",
-  "Mobile push notifications are not configured on this server.": "Thông báo đẩy trên thiết bị di động không được định cấu hình trên máy chủ này.",
-  "Moderator": "Moderator",
-  "Moderators": "Kiểm duyệt viên",
+  "Mobile push notifications are not configured on this server.": "Thông báo đẩy trên thiết bị di động không được thiết lập cấu hình trên máy chủ này.",
+  "Moderator": "Người điều hành",
+  "Moderators": "Người điều hành",
   "Monday": "Thứ hai",
+<<<<<<< HEAD
+  "More details are available <z-link>in the Help Center article</z-link>.": "Thông tin chi tiết có sẵn <z-link>trong bài viết Trung tâm trợ giúp</z-link>.",
+  "More than 2 weeks ago": "Hơn 2 tuần trước",
+=======
   "Monday at {time}": "",
+>>>>>>> drc_main
   "Move all messages in <strong>{topic_name}</strong>": "Di chuyển tất cả các tin nhắn trong <strong>{topic_name}</strong>",
   "Move all messages in this topic": "",
   "Move message": "",
@@ -686,16 +803,30 @@
   "Moving messages": "",
   "Must be invited by a subscriber; new subscribers can only see messages sent after they join; hidden from non-administrator users": "Phải được mời bởi một người đăng ký; người đăng ký mới chỉ có thể xem tin nhắn được gửi sau khi họ tham gia; ẩn khỏi người dùng không phải quản trị viên",
   "Must be invited by a subscriber; new subscribers can view complete message history; hidden from non-administrator users": "Phải được mời bởi một người đăng ký; người đăng ký mới có thể xem toàn bộ lịch sử tin nhắn; ẩn khỏi người dùng không phải quản trị viên",
-  "Mute stream": "Ẩn stream",
-  "Mute this user": "Tắt tiếng người dùng này",
+  "Mute stream": "Tắt tiếng stream",
+  "Mute this user": "Ẩn người dùng này",
   "Mute topic": "Ẩn topic",
+<<<<<<< HEAD
+  "Mute user": "Người dùng bị ẩn",
+  "Muted streams don't show up in \"All messages\" or generate notifications unless you are mentioned.": "Stream bị tắt tiếng sẽ không hiển thị trong \"Tất cả tin nhắn\" hoặc tạo thông báo trừ khi bạn được đề cập.",
+  "Muted topics": "Chủ đề bị ẩn",
+  "Muted user": "Người dùng bị ẩn",
+=======
   "Mute user": "Người dùng tắt tiếng",
   "Muted": "Đã ẩn",
   "Muted streams don't show up in \"All messages\" or generate notifications unless you are mentioned.": "Stream bị tắt tiếng không hiển thị trong \"Tất cả tin nhắn\" hoặc tạo thông báo trừ khi bạn được đề cập.",
   "Muted user": "Người dùng bị tắt tiếng",
+>>>>>>> drc_main
   "Muted users": "Người dùng bị ẩn",
   "Name": "Tên",
   "Name changes are disabled in this organization. Contact an administrator to change your name.": "Thay đổi tên bị vô hiệu hóa trong tổ chức này. Liên hệ với quản trị viên để thay đổi tên của bạn.",
+<<<<<<< HEAD
+  "Narrow to all private messages": "Thu hẹp tất cả tin nhắn riêng",
+  "Narrow to all unmuted messages": "Chỉ hiển thị tất cả các tin nhắn chưa được bật âm",
+  "Narrow to current compose box recipient": "Chỉ hiển thị đối với người nhận hộp soạn thư hiện tại",
+  "Narrow to group private messages with <z-value></z-value>.": "Chỉ hiển thị để nhóm các tin nhắn riêng tư với.<z-value></z-value>",
+  "Narrow to just message ID <z-value></z-value>.": "Chỉ hiển thị ID tin nhắn<z-value></z-value>.",
+=======
   "Narrow to all direct messages": "",
   "Narrow to all unmuted messages": "Thu hẹp tất cả các tin nhắn chưa được bật âm",
   "Narrow to current compose box recipient": "Thu hẹp đối với người nhận hộp soạn thư hiện tại",
@@ -703,14 +834,31 @@
   "Narrow to direct messages with <z-value></z-value>.": "",
   "Narrow to direct messages.": "",
   "Narrow to just message ID <z-value></z-value>.": "Thu hẹp chỉ ID tin nhắn<z-value></z-value>.",
+>>>>>>> drc_main
   "Narrow to messages containing images.": "Chỉ hiển thị tin nhắn chứa hình ảnh.",
-  "Narrow to messages containing links.": "Chỉ hiển thị tin nhắn chứa đường link.",
+  "Narrow to messages containing links.": "Chỉ hiển thị tin nhắn chứa đường dẫn liên kết.",
   "Narrow to messages containing uploads.": "Chỉ hiển thị tin nhắn chứa nội dung tải lên.",
-  "Narrow to messages in resolved topics.": "Thu hẹp các thư trong các chủ đề đã giải quyết.",
-  "Narrow to messages on stream <z-value></z-value>.": "Thu hẹp các tin nhắn trên Stream<z-value></z-value>.",
-  "Narrow to messages sent by <z-value></z-value>.": "Thu hẹp đối với các tin nhắn được gửi bởi<z-value></z-value>.",
-  "Narrow to messages sent by you.": "Chỉ hiển thị tin nhắn được bạn gửi.",
+  "Narrow to messages in resolved topics.": "Chỉ hiển thị tin nhắn trong các chủ đề đã giải quyết",
+  "Narrow to messages on stream <z-value></z-value>.": "Chỉ hiển thị các tin nhắn trên Stream<z-value></z-value>.",
+  "Narrow to messages sent by <z-value></z-value>.": "Chỉ hiển thị đối với các tin nhắn được gửi bởi<z-value></z-value>.",
+  "Narrow to messages sent by you.": "Chỉ hiển thị tin nhắn do bạn gửi.",
   "Narrow to messages that mention you.": "Chỉ hiển thị tin nhắn nhắc tới bạn.",
+<<<<<<< HEAD
+  "Narrow to messages with alert words.": "Chỉ hiển thị tin nhắn có từ khóa cảnh báo.",
+  "Narrow to messages with topic <z-value></z-value>.": "Chỉ hiển thị đối với các tin nhắn có chủ đề<z-value></z-value>.",
+  "Narrow to next unread private message": "Chỉ hiển thị đến tin nhắn riêng tư chưa đọc tiếp theo",
+  "Narrow to next unread topic": "Chỉ hiển thị chủ đề chưa đọc tiếp theo",
+  "Narrow to private messages with <z-value></z-value>.": "Chỉ hiển thị các tin nhắn riêng tư với<z-value></z-value>.",
+  "Narrow to private messages.": "Chỉ hiển thị tin nhắn riêng.",
+  "Narrow to starred messages.": "Chỉ hiển thị tin nhắn đã được đánh dấu.",
+  "Narrow to stream": "Chỉ hiển thị đến Stream",
+  "Narrow to stream &quot;{display_recipient}&quot;": "Chỉ hiển thị đối với stream &quot;{display_recipient}&quot;",
+  "Narrow to stream &quot;{display_recipient}&quot;, topic &quot;{topic}&quot;": "Chỉ hiển thị đối với stream &quot;{display_recipient}&quot;,topic &quot; {topic}&quot;",
+  "Narrow to topic or PM conversation": "Chỉ hiển thị chủ đề hoặc cuộc trò chuyện riêng tư",
+  "Narrow to unread messages.": "Chỉ hiển thị các tin nhắn chưa đọc.",
+  "Narrow to your private messages with {display_reply_to}": "Chỉ hiển thị các tin nhắn riêng tư của bạn với {display_reply_to}",
+  "Narrow to {message_recipient}": "Chỉ hiển thị thành {message_recipient}",
+=======
   "Narrow to messages with alert words.": "Chỉ hiển thị tin nhắn có từ khóa.",
   "Narrow to messages with topic <z-value></z-value>.": "Thu hẹp đối với các tin nhắn có chủ đề<z-value></z-value>.",
   "Narrow to next unread direct message": "",
@@ -720,20 +868,31 @@
   "Narrow to topic or DM conversation": "",
   "Narrow to unread messages.": "Thu hẹp các tin nhắn chưa đọc.",
   "Narrow to {message_recipient}": "Thu hẹp thành {message_recipient}",
+>>>>>>> drc_main
   "Narrowing": "Thu hẹp lại",
   "Navigation": "Định vị",
   "Never": "Không bao giờ",
   "Never ask on this computer": "Không bao giờ hỏi trên máy tính này",
   "Never expires": "Không bao giờ hết hạn",
+<<<<<<< HEAD
+  "Never had one? Forgotten it?": "Không bao giờ có một? Quên nó đi?",
+=======
+>>>>>>> drc_main
   "New": "Mới",
   "New direct message": "",
   "New email": "Email mới",
   "New message": "Tin nhắn mới",
   "New option": "Tùy chọn mới",
-  "New password": "New password",
+  "New password": "Mật khẩu mới",
   "New password is too weak": "Mật khẩu mới quá yếu",
   "New stream announcements": "",
+<<<<<<< HEAD
+  "New stream message": "Tin nhắn mới trên dòng hội thoại",
+  "New subscribers can only see messages sent after they join.": "Người mới đăng ký chỉ có thể xem tin nhắn được gửi sau khi họ tham gia.",
+  "New subscribers can view complete message history.": "Người đăng ký mới có thể xem toàn bộ lịch sử tin nhắn.",
+=======
   "New stream message": "Tin nhắn mới trên hội",
+>>>>>>> drc_main
   "New task": "Nhiệm vụ mới",
   "New topic": "Chủ đề mới",
   "New user announcements": "",
@@ -744,16 +903,16 @@
   "No bots match your current filter.": "Không có bot nào phù hợp với bộ lọc hiện tại của bạn.",
   "No custom emoji.": "Không có biểu tượng cảm xúc tùy chỉnh.",
   "No default streams match you current filter.": "Không có luồng mặc định nào phù hợp với bộ lọc hiện tại của bạn.",
-  "No description.": "No description.",
+  "No description.": "Không có mô tả",
   "No drafts.": "Không có bản nháp.",
-  "No exports.": "Không có hàng xuất khẩu.",
+  "No exports.": "Không xuất .",
   "No invites match your current filter.": "Không có lời mời nào phù hợp với bộ lọc của bạn.",
   "No language set": "Không có ngôn ngữ nào được đặt",
-  "No linkifiers set.": "Không có công cụ liên kết nào được đặt.",
+  "No linkifiers set.": "Không có bộ liên kết nào được đặt.",
   "No matching users.": "Không có người dùng phù hợp.",
   "No one has read this message yet.": "Chưa có ai đọc tin nhắn này.",
   "No owner": "Không có chủ sở hữu",
-  "No playgrounds configured.": "Không có sân chơi nào được định cấu hình.",
+  "No playgrounds configured.": "Không có playground nào được định cấu hình.",
   "No restrictions": "Không có hạn chế",
   "No scheduled messages.": "",
   "No search results": "Không có kết quả tìm kiếm",
@@ -774,6 +933,10 @@
   "Note that any bots that you maintain will be disabled.": "Lưu ý rằng bất kỳ bot nào mà bạn duy trì sẽ bị vô hiệu hóa.",
   "Note that organizations are limited to five exports per week.": "Lưu ý rằng các tổ chức bị giới hạn năm lần xuất mỗi tuần.",
   "Nothing to preview": "Không có gì để xem trước",
+<<<<<<< HEAD
+  "Nothing's been sent here yet!": "Chưa có tin nhắn nào được gửi ở đây!",
+=======
+>>>>>>> drc_main
   "Notification of account deactivation on {realm_name}": "",
   "Notification settings": "Thiết lập thông báo",
   "Notification sound": "Âm thanh thông báo",
@@ -784,10 +947,10 @@
   "Notify stream": "",
   "Notify this user by email?": "",
   "November": "Tháng 11",
-  "October": "Tháng 8",
-  "Old password": "Mật khẩu củ",
+  "October": "Tháng 10",
+  "Old password": "Mật khẩu cũ",
   "Once you leave this group, you will not be able to rejoin.": "",
-  "Once you leave this stream, you will not be able to rejoin.": "Sau khi rời khỏi luồng này, bạn sẽ không thể tham gia lại.",
+  "Once you leave this stream, you will not be able to rejoin.": "Sau khi rời khỏi stream này, bạn sẽ không thể tham gia lại.",
   "One or more email addresses...": "Một hoặc nhiều địa chỉ email...",
   "One or more of these users do not exist!": "Một số tài khoản người dùng không tồn tại!",
   "Only 2 custom profile fields can be displayed on the user card.": "",
@@ -795,6 +958,13 @@
   "Only in conversation views": "Chỉ trong chế độ xem cuộc trò chuyện",
   "Only organization administrators can edit these settings": "Chỉ quản trị viên của tổ chức mới có thể chỉnh sửa các cài đặt này",
   "Only organization administrators can edit these settings.": "Chỉ quản trị viên của tổ chức mới có thể chỉnh sửa các cài đặt này.",
+<<<<<<< HEAD
+  "Only organization administrators can modify user groups in this organization.": "Chỉ quản trị viên tổ chức mới có thể sửa đổi nhóm người dùng trong tổ chức này.",
+  "Only organization administrators can post.": "Chỉ quản trị viên tổ chức mới có thể đăng.",
+  "Only organization full members can add custom emoji in this organization.": "Chỉ những thành viên đầy đủ của tổ chức mới có thể thêm biểu tượng cảm xúc tùy chỉnh trong tổ chức này.",
+  "Only organization full members can post.": "Chỉ có tất cả thành viên của tổ chức mới có thể đăng bài",
+=======
+>>>>>>> drc_main
   "Only organization owners can edit these settings.": "Chỉ chủ sở hữu tổ chức mới có thể chỉnh sửa các cài đặt này.",
   "Only organization owners may deactivate an organization.": "",
   "Only owners can change these settings.": "",
@@ -808,7 +978,7 @@
   "Option already present.": "Đã có tùy chọn.",
   "Optional": "Không bắt buộc",
   "Organization": "Cơ quan",
-  "Organization administrators": "Admin nhóm",
+  "Organization administrators": "Quản trị viên tổ chức",
   "Organization administrators can change the announcement stream in the organization settings.": "",
   "Organization administrators can reactivate deactivated users.": "Quản trị viên tổ chức có thể kích hoạt lại người dùng đã hủy kích hoạt.",
   "Organization description": "Mô tả tổ chức",
@@ -835,6 +1005,11 @@
   "Owner: {name}": "Owner: {name}",
   "Owners": "",
   "Owners only": "Chỉ chủ sở hữu",
+<<<<<<< HEAD
+  "PMs, mentions, and alerts": "Tin nhắn riêng, lượt đề cập và cảnh báo",
+  "PRIVATE MESSAGES": "TIN NHẮN RIÊNG TƯ",
+=======
+>>>>>>> drc_main
   "Participants": "Những người tham gia",
   "Participated": "Đã tham gia",
   "Password": "Mật khẩu",
@@ -869,8 +1044,17 @@
   "Previous message": "Tin nhắn trước đó",
   "Privacy": "Bảo mật",
   "Privacy settings": "Thiết lập riêng tư",
+<<<<<<< HEAD
+  "Private messages": "Tin nhắn riêng",
+  "Private messages and mentions": "Tin nhắn và đề cập riêng tư",
+  "Private messages are disabled in this organization.": "Tin nhắn riêng tư bị vô hiệu hóa trong tổ chức này.",
+  "Private messages disabled": "Tin nhắn riêng tư bị vô hiệu hóa",
+  "Private, protected history": "Lịch sử riêng tư, được bảo vệ",
+  "Private, shared history": "Lịch sử riêng tư, được chia sẻ",
+=======
   "Private, protected history": "Private, protected history",
   "Private, shared history": "Private, shared history",
+>>>>>>> drc_main
   "Profile": "Hồ sơ",
   "Pronouns": "",
   "Public": "Công cộng",
@@ -904,7 +1088,7 @@
   "Request education pricing": "",
   "Request sponsorship": "Request sponsorship",
   "Requesting user": "Yêu cầu người dùng",
-  "Require topics in stream messages": "Yêu cầu chủ đề trong tin nhắn luồng",
+  "Require topics in stream messages": "Yêu cầu chủ đề trong tin nhắn Stream",
   "Research": "Research",
   "Resend": "Gửi lại",
   "Resend invitation": "Gửi lại lời mời",
@@ -920,7 +1104,7 @@
   "Revoke invitation link": "Thu hồi liên kết lời mời",
   "Revoke invitation to {email}": "Thu hồi lời mời tới {email}",
   "Role": "Vai trò",
-  "SAVING": "TIẾT KIỆM",
+  "SAVING": "ĐANG LƯU",
   "STREAMS": "Dòng hội thoại",
   "Saturday": "Thứ bảy",
   "Save": "Lưu",
@@ -940,8 +1124,12 @@
   "Scroll up": "Kéo lên",
   "Search": "Tìm kiếm",
   "Search GIFs": "Tìm kiếm GIF",
+<<<<<<< HEAD
+  "Search all public streams in the organization.": "Tìm kiếm tất cả các Streams công khai trong tổ chức.",
+=======
   "Search all public streams in the organization.": "Tìm kiếm tất cả các luồng công khai trong tổ chức.",
   "Search filters": "",
+>>>>>>> drc_main
   "Search for <z-value></z-value> in the topic or message content.": "Tìm kiếm <z-value></z-value>trong chủ đề hoặc nội dung tin nhắn.",
   "Search people": "Tìm người",
   "Search results": "Kết quả tìm kiếm",
@@ -967,6 +1155,11 @@
   "Send weekly digest emails to inactive users": "Gửi email tổng kết hàng tuần cho người dùng không hoạt động",
   "Sent!": "Đã gửi!",
   "Sent! Your message is outside your current narrow.": "Gởi! Thông điệp của bạn nằm ngoài phạm vi hạn hẹp hiện tại của bạn.",
+<<<<<<< HEAD
+  "Sent! Your message was sent to a stream you have muted.": "Gởi! Tin nhắn của bạn đã được gửi đến một Stream mà bạn đã ẩn.",
+  "Sent! Your message was sent to a topic you have muted.": "Gởi! Tin nhắn của bạn đã được gửi đến một chủ đề mà bạn đã ẩn.",
+=======
+>>>>>>> drc_main
   "Sent! Your recent message is outside the current search.": "Gởi! Tin nhắn gần đây của bạn nằm ngoài tìm kiếm hiện tại.",
   "September": "Tháng 9",
   "Set a status": "Đặt trạng thái",
@@ -1014,7 +1207,7 @@
   "Stream description": "Mô tả Stream",
   "Stream email address:": "",
   "Stream name": "Tên Stream",
-  "Stream permissions": "Stream cho phép",
+  "Stream permissions": "Cho phép Stream",
   "Stream settings": "Cài đặt stream",
   "Stream successfully created!": "Đã tạo Stream thành công",
   "Streams": "Streams",
@@ -1034,7 +1227,12 @@
   "Support Zulip": "Hỗ trợ Zulip",
   "Switch between tabs": "Chuyển đổi giữa các tab",
   "Switch to dark theme": "Chuyển sang chủ đề tối",
+<<<<<<< HEAD
+  "Switch to light theme": "Chuyển sang chủ đề sáng",
+  "Sync with computer": "Đồng bộ với máy tính",
+=======
   "Switch to light theme": "Chuyển sang chủ đề tối",
+>>>>>>> drc_main
   "System bot": "Bot hệ thống",
   "Task already exists": "Nhiệm vụ đã tồn tại",
   "Task list": "Danh sách nhiệm vụ",
@@ -1129,9 +1327,13 @@
   "URL template": "",
   "USERS": "Người dùng",
   "Uncheck all": "Bỏ chọn tất cả",
+<<<<<<< HEAD
+  "Unknown": "Không xác định",
+=======
   "Undo": "",
   "Undo mute": "",
   "Unknown": "không xác định",
+>>>>>>> drc_main
   "Unknown stream": "Không xác định được Stream",
   "Unknown stream #{search_text}": "",
   "Unmute": "Bật tiếng",
@@ -1166,7 +1368,13 @@
   "Upload profile picture": "Tải ảnh lên hồ sơ",
   "Upload stalled for %'{seconds}' seconds, aborting.": "Tải lên bị đình trệ trong% '{seconds}' giây, đang dừng.",
   "Uploaded files": "Tệp đã tải lên",
+<<<<<<< HEAD
+  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "Tải lên biểu tượng cảm xúc tùy chỉnh có tên này sẽ ghi đè biểu tượng cảm xúc tích hợp sẵn. Tiếp tục?",
   "Uploading {filename}…": "Đang tải lên {filename}…",
+  "Uploading…": "Đang tải lên…",
+=======
+  "Uploading {filename}…": "Đang tải lên {filename}…",
+>>>>>>> drc_main
   "Usage statistics": "Thống kê sử dụng",
   "Use full width on wide screens": "Sử dụng toàn bộ chiều rộng trên màn hình rộng",
   "Use html encoding (not recommended)": "",
@@ -1189,8 +1397,8 @@
   "User list style": "",
   "User list style changed successfully!": "",
   "User role": "Vai trò người dùng",
-  "User(s) invited successfully.": "Mời thành công.",
-  "User(s) join as": "Người dùng tham gia với tư cách là",
+  "User(s) invited successfully.": "(Các) người dùng đã được mời thành công.",
+  "User(s) join as": "(Các) người dùng tham gia với tư cách",
   "Users": "Người dùng",
   "Users can always disable their personal read receipts.": "",
   "Vacationing": "Đang đi nghỉ mát",
@@ -1232,9 +1440,14 @@
   "When you deactivate <z-user></z-user>, they will be immediately logged out.": "Khi bạn hủy kích hoạt<z-user></z-user>, họ sẽ bị đăng xuất ngay lập tức.",
   "Whether wildcard mentions like @all are treated as mentions for the purpose of notifications.": "Liệu các đề cập theo ký tự đại diện như @all có được coi là đề cập cho mục đích thông báo hay không.",
   "Which parts of the email should be included in the Zulip message sent to this stream?": "",
+<<<<<<< HEAD
+  "Who can access the stream?": "Ai có thể truy cập stream?",
+  "Who can access user email addresses": "Ai có thể truy cập địa chỉ email của người dùng",
+=======
   "Who can access the stream?": "Ai có thể truy cập stream này?",
   "Who can access user's email address": "",
   "Who can access your email address": "",
+>>>>>>> drc_main
   "Who can add bots": "Ai có thể thêm bot",
   "Who can add custom emoji": "Ai có thể thêm biểu tượng cảm xúc tùy chỉnh",
   "Who can add users to streams": "Những người có thể thêm người dùng vào dòng hội thoại",
@@ -1313,6 +1526,10 @@
   "You have not uploaded any files.": "Bạn chưa tải lên bất kỳ tệp nào.",
   "You haven't been mentioned yet!": "Bạn vẫn chưa được nhắc đến!",
   "You haven't received any messages sent by {person} yet.": "",
+<<<<<<< HEAD
+  "You haven't starred anything yet!": "Bạn chưa đánh dấu tin nhắn nào hết!",
+=======
+>>>>>>> drc_main
   "You must be an organization administrator to create a stream without subscribing.": "Bạn phải là quản trị viên tổ chức để tạo luồng mà không cần đăng ký.",
   "You need to be running Zephyr mirroring in order to send messages!": "Bạn cần chạy phản chiếu Zephyr để gửi tin nhắn!",
   "You searched for:": "Bạn tìm kiếm cho:",

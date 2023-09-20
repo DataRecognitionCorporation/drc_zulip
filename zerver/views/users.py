@@ -89,6 +89,11 @@ from zerver.models import (
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
     InvalidFakeEmailDomainError,
+<<<<<<< HEAD
+    Message,
+    Realm,
+=======
+>>>>>>> drc_main
     Service,
     Stream,
     UserProfile,
@@ -116,7 +121,11 @@ def deactivate_user_backend(
 ) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, for_admin=True)
     if target.is_realm_owner and not user_profile.is_realm_owner:
+<<<<<<< HEAD
+        raise OrganizationOwnerRequiredError()
+=======
         raise OrganizationOwnerRequiredError
+>>>>>>> drc_main
     if check_last_owner(target):
         raise JsonableError(_("Cannot deactivate the only organization owner"))
     if deactivation_notification_comment is not None:
@@ -230,9 +239,15 @@ def update_user_backend(
         #
         # Logic replicated in patch_bot_backend.
         if UserProfile.ROLE_REALM_OWNER in [role, target.role] and not user_profile.is_realm_owner:
+<<<<<<< HEAD
+            raise OrganizationOwnerRequiredError()
+        elif not user_profile.is_realm_admin:
+            raise OrganizationAdministratorRequiredError()
+=======
             raise OrganizationOwnerRequiredError
         elif not user_profile.is_realm_admin:
             raise OrganizationAdministratorRequiredError
+>>>>>>> drc_main
 
         if target.role == UserProfile.ROLE_REALM_OWNER and check_last_owner(target):
             raise JsonableError(
@@ -366,9 +381,15 @@ def patch_bot_backend(
     if role is not None and bot.role != role:
         # Logic duplicated from update_user_backend.
         if UserProfile.ROLE_REALM_OWNER in [role, bot.role] and not user_profile.is_realm_owner:
+<<<<<<< HEAD
+            raise OrganizationOwnerRequiredError()
+        elif not user_profile.is_realm_admin:
+            raise OrganizationAdministratorRequiredError()
+=======
             raise OrganizationOwnerRequiredError
         elif not user_profile.is_realm_admin:
             raise OrganizationAdministratorRequiredError
+>>>>>>> drc_main
 
         do_change_user_role(bot, role, acting_user=user_profile)
 

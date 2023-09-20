@@ -196,8 +196,13 @@ export function start(msg_type, opts) {
     if (reload_state.is_in_progress()) {
         return;
     }
+<<<<<<< HEAD:static/js/compose_actions.js
+    notifications.clear_compose_notifications();
+
+=======
     compose_banner.clear_message_sent_banners();
     expand_compose_box();
+>>>>>>> drc_main:web/src/compose_actions.js
 
     opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
 
@@ -246,6 +251,15 @@ export function start(msg_type, opts) {
     compose_state.private_message_recipient(
         opts.private_message_recipient.replaceAll(/,\s*/g, ", "),
     );
+
+    // DRC MODIFICATION
+    // const msg_recipient = opts.private_message_recipient
+    // var person = people.get_by_email(msg_recipient);
+    // if(person.is_guest){
+    //   return;
+    // }
+
+    expand_compose_box();
 
     // If the user opens the compose box, types some text, and then clicks on a
     // different stream/topic, we want to keep the text in the compose box

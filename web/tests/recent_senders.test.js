@@ -334,13 +334,21 @@ test("process_pms", () => {
         id: 3,
     });
 
+<<<<<<< HEAD:frontend_tests/node_tests/recent_senders.js
+    // Recent topics displays avatars in the opposite order to this since
+=======
     // Recent Conversations displays avatars in the opposite order to this since
+>>>>>>> drc_main:web/tests/recent_senders.test.js
     // that was simpler to implement in HTML.
     assert.deepEqual(rs.get_pm_recent_senders(user_ids_string), {
         participants: [1, 3, 2],
         non_participants: [4],
     });
+<<<<<<< HEAD:frontend_tests/node_tests/recent_senders.js
+    // PM doesn't exist.
+=======
     // Direct message doesn't exist.
+>>>>>>> drc_main:web/tests/recent_senders.test.js
     assert.deepEqual(rs.get_pm_recent_senders("1000,2000"), {
         participants: [],
         non_participants: [],

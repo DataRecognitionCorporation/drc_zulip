@@ -137,6 +137,8 @@ def send_message_backend(
     queue_id: Optional[str] = REQ(default=None),
     time: Optional[float] = REQ(default=None, converter=to_float, documentation_pending=True),
 ) -> HttpResponse:
+<<<<<<< HEAD
+=======
     recipient_type_name = req_type
     if recipient_type_name == "direct":
         # For now, use "private" from Message.API_RECIPIENT_TYPES.
@@ -144,6 +146,7 @@ def send_message_backend(
         # message (created, schdeduled, drafts) objects/dicts.
         recipient_type_name = "private"
 
+>>>>>>> drc_main
     # If req_to is None, then we default to an
     # empty list of recipients.
     message_to: Union[Sequence[int], Sequence[str]] = []

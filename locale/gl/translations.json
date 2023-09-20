@@ -91,6 +91,10 @@
   "Add linkifier": "",
   "Add members": "",
   "Add member…": "",
+<<<<<<< HEAD
+  "Add new default stream": "",
+=======
+>>>>>>> drc_main
   "Add new user group": "",
   "Add one or more users": "",
   "Add option": "",
@@ -1172,7 +1176,13 @@
   "Upload profile picture": "",
   "Upload stalled for %'{seconds}' seconds, aborting.": "",
   "Uploaded files": "",
+<<<<<<< HEAD
+  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "",
   "Uploading {filename}…": "",
+  "Uploading…": "",
+=======
+  "Uploading {filename}…": "",
+>>>>>>> drc_main
   "Usage statistics": "",
   "Use full width on wide screens": "",
   "Use html encoding (not recommended)": "",
@@ -1350,6 +1360,10 @@
   "Zulip's translations are contributed by our amazing community of volunteer translators. If you'd like to help, see the <z-link>Zulip translation guidelines</z-link>.": "",
   "[Configure]": "",
   "[Disable]": "",
+<<<<<<< HEAD
+  "[More…]": "",
+=======
+>>>>>>> drc_main
   "[Quoting…]": "",
   "[Unset]": "",
   "and {remaining_senders, plural, one {1 other} other {# others}}.": "",

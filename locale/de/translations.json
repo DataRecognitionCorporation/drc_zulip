@@ -28,6 +28,10 @@
   "<b>Total messages</b>: {total_messages}": "<b>Gesamtzahl der Nachrichten</b>: {total_messages}",
   "<p><strong>{file_name}</strong> will be removed from the messages where it was shared. This action cannot be undone.</p>": "<p><strong>{file_name}</strong> wird aus den Nachrichten, in denen diese Datei geteilt wurde, entfernt. Dies kann nicht rückgängig gemacht werden.</p>",
   "<p>Stream will be announced in <b>#{notifications_stream}</b>.</p>": "<p>Stream wird in in <b>#{notifications_stream}</b> bekannt gegeben.</p>",
+<<<<<<< HEAD
+  "<p>The stream <b>{stream_name}</b> does not exist.</p><p>Manage your subscriptions <z-link>on your Streams page</z-link>.</p>": "<p>Der Stream <b>{stream_name}</b> existiert nicht\\.</p><p>Verwalte deine Abonnements <z-link>auf deiner Streamseite</z-link>.</p>",
+=======
+>>>>>>> drc_main
   "<p>You are searching for messages that are sent by more than one person, which is not possible.</p>": "<p>Du suchst nach Nachrichten, die von mehr als einer Person gesendet wurden, und das ist nicht möglich.</p>",
   "<p>You are searching for messages that belong to more than one stream, which is not possible.</p>": "<p>Du suchst nach Nachrichten, die mehr als nur einem Stream zugeordnet sind, und das ist nicht möglich.</p>",
   "<p>You are searching for messages that belong to more than one topic, which is not possible.</p>": "<p>Du suchst nach Nachrichten, die mehr als nur einem Thema zugeordnet sind, und das ist nicht möglich.</p>",
@@ -40,7 +44,7 @@
   "<z-shortcut></z-shortcut> to add a new line": "<z-shortcut></z-shortcut>, um eine neue Zeile einzufügen",
   "<z-shortcut></z-shortcut> to send": "<z-shortcut></z-shortcut> zum Absenden",
   "<z-user></z-user> will have the same properties as it did prior to deactivation, including role, owner and stream subscriptions.": "<z-user></z-user> werden dieselben Eigenschaften zugeteilt wie vor der Deaktivierung, einschließlich Rolle, Besitzer und Stream-Abonnements.",
-  "<z-user></z-user> will have the same role, stream subscriptions, user group memberships, and other settings and permissions as they did prior to deactivation.": "<z-user></z-user> wird die gleiche Rolle, die gleichen Stream-Abonnements und Nutzergruppen-Mitgliedschaften sowie Einstellungen und Rechte haben wir vor der Deaktivierung.",
+  "<z-user></z-user> will have the same role, stream subscriptions, user group memberships, and other settings and permissions as they did prior to deactivation.": "<z-user></z-user> wird die gleiche Rolle, die gleichen Stream-Abonnements und Nutzergruppen-Mitgliedschaften sowie Einstellungen und Rechte haben wie vor der Deaktivierung.",
   "A Topic Move already in progress.": "Ein Thema wird gerade schon bewegt.",
   "A deactivated bot cannot send messages, access data, or take any other action.": "Ein deaktivierter Bot kann keine Nachrichten senden, nicht auf Daten zugreifen und keinerlei anderen Aktionen ausführen.",
   "A deactivated emoji will remain visible in existing messages and emoji reactions, but cannot be used on new messages.": "Ein deaktiviertes Emoji bleibt in bestehenden Nachrichten und Emoji-Reaktionen sichtbar, kann aber nicht mehr in neuen Nachrichten verwendet werden.",
@@ -106,10 +110,16 @@
   "Administrator": "Administrator",
   "Administrators and moderators this Zulip organization will be able to see this email address.": "",
   "Administrators can delete any message.": "Administratoren können jede beliebige Nachricht löschen.",
+<<<<<<< HEAD
+  "Admins": "Administratoren",
+  "Admins and moderators": "Administratoren und Moderatoren",
+  "Admins only": "nur Administratoren",
+=======
   "Administrators of this Zulip organization will be able to see this email address.": "",
   "Admins": "Admins",
   "Admins and moderators": "Admins und Moderatoren",
   "Admins only": "nur Admins",
+>>>>>>> drc_main
   "Admins, moderators and full members": "Administratoren, Moderatoren und vollständige Mitglieder",
   "Admins, moderators and members": "Administratoren, Moderatoren und Mitglieder",
   "Admins, moderators and members, but only admins can add generic bots": "Administratoren, Moderatoren und Mitglieder, aber nur Administratoren können Standard-Bots hinzufügen",
@@ -146,6 +156,10 @@
   "Announce new stream in": "",
   "Any organization administrator can conduct an export.": "Jeder Administrator einer Organisation kann einen Export durchführen.",
   "Any time": "Keine zeitliche Begrenzung",
+<<<<<<< HEAD
+  "Anyone in this organization can add bots.": "Jeder in dieser Organisation kann Bots hinzufügen.",
+=======
+>>>>>>> drc_main
   "April": "April",
   "Archive <z-link></z-link>?": "",
   "Archive stream": "Stream archivieren",
@@ -173,9 +187,13 @@
   "Authentication methods": "Authentifizierungs-Methoden",
   "Author": "Autor",
   "Automated messages and emails": "Automatisierte Nachrichten und E-Mails",
+<<<<<<< HEAD
+  "Automatic": "Automatisch",
+=======
   "Automatic": "automatisch",
   "Automatic (follows system settings)": "",
   "Automatically mark messages as read": "",
+>>>>>>> drc_main
   "Available on Zulip Cloud Standard. <z-link-upgrade>Upgrade</z-link-upgrade> or <z-link-sponsorship>request sponsorship</z-link-sponsorship> to access.": "Verfügbar auf Zulip Cloud Standard. <z-link-upgrade>Upgrade</z-link-upgrade> oder <z-link-sponsorship>Förderung anfragen</z-link-sponsorship>, um Zugriff zu erhalten.",
   "Avatar changes are disabled in this organization": "Änderungen am Avatar sind in dieser Organisation deaktiviert.",
   "Avatar from Gravatar": "Avatar von Gravatar",
@@ -237,6 +255,10 @@
   "Compose your message here": "Erstelle hier deine Nachricht",
   "Compose your message here...": "Erstelle hier deine Nachricht...",
   "Composing messages": "Nachrichten verfassen",
+<<<<<<< HEAD
+  "Configure external code playgrounds for your Zulip organization. Code playgrounds are interactive in-browser development environments, such as <z-link-repl>replit</z-link-repl>, that are designed to make it convenient to edit and debug code. Zulip code blocks that are <z-link-markdown-help>tagged with a programming language</z-link-markdown-help> will have a button visible on hover that allows you to open the code block in the code playground site.": "Externe Code-Spielwiese für deine Zulip-Organisation konfigurieren. Code-Spielwiesen sind interaktive browser-basierte Entwicklungsumgebungen wie zum Beispiel <z-link-repl>replit</z-link-repl>, die eine bequeme Code-Bearbeitung und Fehlersuche ermöglichen sollen. Auf Blöcken des Zulip-Codes, die <z-link-markdown-help>mit einer Programmiersprache getaggt</z-link-markdown-help> sind, erscheint beim Darüberfahren mit der Maus ein Button, mit dem du den Code-Block auf der Spielwiese öffnen kannst.",
+=======
+>>>>>>> drc_main
   "Configure how Zulip notifies you about new messages.": "Stelle ein, wie Zulip dich über neue Nachrichten informiert.",
   "Configure regular expression patterns that will be used to automatically transform any matching text in Zulip messages and topics into links.": "",
   "Configure the <z-link>default personal preference settings</z-link> for new users joining your organization.": "Stelle die <z-link>persönlichen Standard-Einstellungen</z-link> für neue Nutzer ein, die deiner Organisation beitreten.",
@@ -360,8 +382,12 @@
   "Display my availability to other users": "Anderen Nutzern meine Verfügbarkeit anzeigen",
   "Display names of reacting users when few users have reacted to a message": "Die Namen der reagierenden Nutzer anzeigen, wenn nur wenige auf eine Nachricht reagiert haben",
   "Display on user card": "Auf Nutzerkarte darstellen",
+<<<<<<< HEAD
+  "Display settings": "Anzeige-Einstellungen",
+=======
   "Display settings": "Einstellungen der Anzeige",
   "Do you still want to move the latest {total_messages_allowed_to_move, plural, one {message} other {# messages}}?": "",
+>>>>>>> drc_main
   "Do you want to add everyone?": "Möchtest du alle hinzufügen?",
   "Domain": "Domain",
   "Don’t allow disposable email addresses": "Keine Wegwerf-E-Mail-Adressen erlauben",
@@ -380,7 +406,7 @@
   "Drafts older than <strong>{draft_lifetime}</strong> days are automatically removed.": "Entwürfe, die älter als <strong>{draft_lifetime}</strong> Tage sind, werden automatisch entfernt.",
   "Duration deletion is allowed after posting (minutes)": "Zeit, innerhalb der nach dem Posten noch Löschen möglich ist (in Minuten)",
   "Duration editing is allowed after posting (minutes)": "Zeit, innerhalb der nachdem Posten noch Bearbeitung möglich ist (in Minuten)",
-  "EDITED": "EDITIERT",
+  "EDITED": "BEARBEITET",
   "Edit": "Bearbeiten",
   "Edit #{stream_name}": "#{stream_name} bearbeiten",
   "Edit and reschedule message": "",
@@ -511,7 +537,7 @@
   "GIPHY integration": "GIPHY-Integration",
   "General": "Allgemein",
   "Generate email address": "E-Mail-Adresse generieren",
-  "Generate invite link": "Erstelle Einladungs-Link",
+  "Generate invite link": "erstelle Einladungs-Link",
   "Generate new API key": "Neuen API-Schlüssel generieren",
   "Generate stream email address": "E-Mail-Adresse für Stream generieren",
   "Generating link...": "Erstelle Link...",
@@ -578,7 +604,7 @@
   "Invited by": "Eingeladen von",
   "Invitee": "Eingeladener",
   "Invites": "Einladungen",
-  "Inviting...": "Lädt ein...",
+  "Inviting...": "Lade ein...",
   "Italic": "Kursiv",
   "January": "Januar",
   "Join video call.": "",
@@ -725,6 +751,10 @@
   "Never": "Nie",
   "Never ask on this computer": "Auf diesem Computer nie fragen",
   "Never expires": "Läuft nie ab",
+<<<<<<< HEAD
+  "Never had one? Forgotten it?": "Du hattest noch nie eins? Oder hast du es vergessen?",
+=======
+>>>>>>> drc_main
   "New": "Neu",
   "New direct message": "",
   "New email": "Neue E-Mail",
@@ -733,7 +763,13 @@
   "New password": "Neues Passwort",
   "New password is too weak": "Neues Passwort ist zu schwach",
   "New stream announcements": "Bekanntmachungen über neue Streams",
+<<<<<<< HEAD
+  "New stream message": "Neue Stream-Nachricht",
+  "New subscribers can only see messages sent after they join.": "Neue Abonnenten sehen nur die Nachrichten, die nach ihrem Beitritt gesendet wurden.",
+  "New subscribers can view complete message history.": "Neue Abonnenten können den kompletten Nachrichtenverlauf sehen.",
+=======
   "New stream message": "Neue Stream Nachricht",
+>>>>>>> drc_main
   "New task": "Neue Aufgabe",
   "New topic": "Neues Thema",
   "New user announcements": "Bekanntmachungen über neue Nutzer",
@@ -787,16 +823,33 @@
   "October": "Oktober",
   "Old password": "Altes Passwort",
   "Once you leave this group, you will not be able to rejoin.": "Wenn du die Gruppe verlassen hast, kannst du ihr nicht wieder beitreten.",
-  "Once you leave this stream, you will not be able to rejoin.": "Sobald du diesen Stream verlässt, wirst du ihm nicht wieder beitreten können.",
+  "Once you leave this stream, you will not be able to rejoin.": "Sobald du diesen Stream verlässt, kannst du ihm nicht wieder beitreten.",
   "One or more email addresses...": "Eine oder mehrere E-Mail-Adressen...",
   "One or more of these users do not exist!": "Einer oder mehrere dieser Nutzer existieren nicht!",
   "Only 2 custom profile fields can be displayed on the user card.": "Nur zwei benutzerdefinierte Profilfelder können auf der Nutzerkarte dargestellt werden.",
   "Only group members can add users to a group.": "Nur Mitglieder der Gruppe können ihr weitere Nutzer hinzufügen.",
+<<<<<<< HEAD
+  "Only group members, organization administrators and moderators can modify a group.": "Nur Gruppenmitglieder, Administratoren und Moderatoren der Organisation können eine Gruppe modifizieren.",
+  "Only organization administrators and moderators can add custom emoji in this organization.": "Nur Administratoren der Organisation und Moderatoren können in dieser Organisation benutzerdefinierte Emoji hinzufügen.",
+  "Only organization administrators and moderators can modify user groups in this organization.": "Nur Administratoren und Moderatoren der Organisation können in dieser Organisation Nutzergruppen modifizieren.",
+  "Only organization administrators and moderators can post.": "Nur Administratoren und Moderatoren von Organisationen dürfen Beiträge verfassen.",
+  "Only organization administrators can add bots to this organization.": "Nur Administratoren dieser Organisation können ihr Bots hinzufügen.",
+  "Only organization administrators can add custom emoji in this organization.": "In dieser Organisation können nur Administratoren eigene Emojis hinzufügen.",
+  "Only organization administrators can add generic bots.": "Nur Administratoren dieser Organisation können ihr Standard-Bots hinzufügen.",
+  "Only organization administrators can edit these settings": "Nur Administratoren der Organisation können diese Einstellungen bearbeiten.",
+  "Only organization administrators can edit these settings.": "Diese Einstellungen können nur von Administratoren dieser Organisation bearbeitet werden.",
+  "Only organization administrators can modify user groups in this organization.": "Nur Organisationsadministratoren können Nutzergruppen in dieser Organisation ändern.",
+  "Only organization administrators can post.": "Nur Administratoren dieser Organisation können posten.",
+  "Only organization full members can add custom emoji in this organization.": "Nur vollständige Mitglieder der Organisation können in dieser Organisation benutzerdefinierte Emoji hinzufügen.",
+  "Only organization full members can post.": "Nur vollständige Mitglieder der Organisation können posten.",
+  "Only organization owners can edit these settings.": "Nur Besitzer dieser Organisation können diese Einstellungen ändern.",
+=======
   "Only in conversation views": "Nur bei Ansicht einer bestimmten Unterhaltung",
   "Only organization administrators can edit these settings": "Nur Administratoren der Organisation können diese Einstellungen bearbeiten.",
   "Only organization administrators can edit these settings.": "Diese Einstellungen können nur von Administratoren dieser Organisation bearbeitet werden.",
   "Only organization owners can edit these settings.": "Diese Besitzer dieser Organisation können diese Einstellungen ändern.",
   "Only organization owners may deactivate an organization.": "Nur Besitzer einer Organisation können diese deaktivieren.",
+>>>>>>> drc_main
   "Only owners can change these settings.": "Nur Eigentümer können diese Einstellungen ändern.",
   "Only stream members can add users to a private stream": "Nur Stream-Mitglieder können Nutzer zu einem privaten Stream hinzufügen",
   "Only stream members can add users to a private stream.": "",
@@ -928,7 +981,7 @@
   "Save failed": "Speichern fehlgeschlagen",
   "Saved": "Gespeichert",
   "Saved as draft": "Als Entwurf gespeichert",
-  "Saved. Please <z-link>reload</z-link> for the change to take effect.": "Gespeichert. Bitte <z-link>lade die Seite neu</z-link> um die Änderungen zu aktivieren.",
+  "Saved. Please <z-link>reload</z-link> for the change to take effect.": "Gespeichert. Bitte <z-link>lade die Seite neu</z-link>, um die Änderungen zu sehen.",
   "Saving": "Wird gespeichert",
   "Schedule for {formatted_send_later_time}": "",
   "Schedule message": "",
@@ -1047,7 +1100,7 @@
   "The sender's email address": "Die E-Mail-Adresse des Absenders",
   "The stream <b>#{stream_name}</b> does not exist. Manage your subscriptions <z-link>on your Streams page</z-link>.": "Der Stream <b>#{stream_name}</b> existiert nicht. Verwalte deine Abonnements <z-link>auf deiner Stream-Seite</z-link>.",
   "The stream description cannot contain newline characters.": "Die Streambeschreibung darf keine Zeichen mit Zeilenumbruch enthalten.",
-  "Their password will be cleared from our systems, and any bots they maintain will be disabled.": "Ihr Passwort wird von unserem System gelöscht,\nund alle Bots, die sie verwalten, werden deaktiviert.",
+  "Their password will be cleared from our systems, and any bots they maintain will be disabled.": "Ihr Passwort wird von unserem System gelöscht, und alle Bots, die sie verwalten, werden deaktiviert.",
   "Theme": "Theme",
   "There are no current alert words.": "Es gibt derzeit keine Signalwörter.",
   "There are no messages here.": "Hier gibt es keine Nachrichten.",
@@ -1154,7 +1207,7 @@
   "Unsubscribed successfully!": "Erfolgreich ausgetragen!",
   "Up to {time_limit} after posting": "Bis zu {time_limit} nach dem Senden einer Nachricht",
   "Update successful: Subdomains allowed for {domain}": "Aktualisierung erfolgreich: Subdomains für {domain} erlaubt.",
-  "Update successful: Subdomains no longer allowed for {domain}": "Aktualisierung erfolgreich: Subdomains für {domain} nicht mehr erlabut",
+  "Update successful: Subdomains no longer allowed for {domain}": "Aktualisierung erfolgreich: Subdomains für {domain} nicht mehr erlaubt.",
   "Upgrade to the latest release": "Zur neuesten Version upgraden",
   "Upgrade to {standard_plan_name}": "Zu {standard_plan_name} upgraden",
   "Upload avatar": "Avatar hochladen",
@@ -1166,7 +1219,13 @@
   "Upload profile picture": "Profilbild hochladen",
   "Upload stalled for %'{seconds}' seconds, aborting.": "Das Hochladen stockt seit %'{seconds}' Sekunden, breche ab.",
   "Uploaded files": "Hochgeladene Dateien",
+<<<<<<< HEAD
+  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "Wenn du ein benutzerdefiniertes Emoji mit diesem Namen hochlädtst, wird das gleichnamige vorgegebene überschrieben. Fortfahren?",
   "Uploading {filename}…": "Lädt hoch {filename}...",
+  "Uploading…": "Lädt hoch...",
+=======
+  "Uploading {filename}…": "Lädt hoch {filename}...",
+>>>>>>> drc_main
   "Usage statistics": "Statistiken über die Benutzung",
   "Use full width on wide screens": "Auf breiten Bildschirmen volle Breite nutzen",
   "Use html encoding (not recommended)": "HTML-Kodierung verwenden (nicht empfohlen)",
@@ -1181,7 +1240,7 @@
   "User group settings": "Einstellungen der Nutzergruppe",
   "User group successfully created!": "Die Nutzergruppe wurde erfolgreich angelegt!",
   "User groups": "Nutzergruppen",
-  "User groups allow you to <z-link>mention</z-link> multiple users at once. When you mention a user group, everyone in the group is notified as if they were individually mentioned.": "Nutzergruppen ermöglichen dir, mehrere Benutzer auf einmal <z-link>zu erwähnen</z-link>. Wenn du eine Nutzergruppe erwähnst, bekommen alle in der Gruppe eine Benachrichtigung, als hättest du sie einzeln erwähnt.",
+  "User groups allow you to <z-link>mention</z-link> multiple users at once. When you mention a user group, everyone in the group is notified as if they were individually mentioned.": "Nutzergruppen ermöglichen es dir, mehrere Nutzer auf einmal <z-link>zu erwähnen</z-link>. Wenn du eine Nutzergruppe erwähnst, bekommen alle in der Gruppe eine Benachrichtigung, als hättest du sie einzeln erwähnt.",
   "User identity": "Nutzeridentität",
   "User is already not subscribed.": "Nutzer ist schon deabonniert.",
   "User is deactivated": "Nutzer ist deaktiviert",
@@ -1223,7 +1282,7 @@
   "Warning: <strong>#{stream_name}</strong> is a private stream.": "Achtung: <strong>#{stream_name}</strong> ist ein privater Stream.",
   "We are about to have a poll.  Please wait for the question.": "Wir haben gleich eine Umfrage. Bitte warte auf die Frage.",
   "We strongly recommend enabling desktop notifications. They help Zulip keep your team connected.": "Wir empfehlen dir dringend, Desktop-Benachrichtigungen zu aktivieren. Sie helfen Zulip, dein Team zu verbinden.",
-  "We've replaced the \"{originalHotkey}\" hotkey with \"{replacementHotkey}\" to make this common shortcut easier to trigger.": "Wir haben \"{originalHotkey}\" hotkey erstezt mit \"{replacementHotkey}\" damit der shortcut leichter benutzt werden kann.",
+  "We've replaced the \"{originalHotkey}\" hotkey with \"{replacementHotkey}\" to make this common shortcut easier to trigger.": "Wir haben \"{originalHotkey}\" hotkey erstezt mit \"{replacementHotkey}\", damit der shortcut leichter benutzt werden kann.",
   "Web-public": "öffentlich im Netz",
   "Wednesday": "Mittwoch",
   "Week of {date}": "Woche {date}",
@@ -1382,7 +1441,7 @@
   "{minutes} min to edit": "{minutes} Minuten zum Bearbeiten",
   "{minutes} minutes ago": "Vor {minutes} Minuten",
   "{modal_heading_text}": "{modal_heading_text}",
-  "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, one {Diese Nachricht wurde von {num_of_people} Person <z-link>gelesen</z-link>.} other {Diese Nachricht wurde von {num_of_people} Personen <z-link>gelesen</z-link>.}}",
+  "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, one {Diese Nachricht wurde von {num_of_people} Person <z-link>gelesen</z-link>:} other {Diese Nachricht wurde von {num_of_people} Personen <z-link>gelesen</z-link>:}}",
   "{seconds} sec to edit": "{seconds} Sekunden zum Bearbeiten",
   "{user_time} local time": "{user_time} Ortszeit",
   "{username} [said]({link_to_message}):": "{username} [schrieb]({link_to_message}):",

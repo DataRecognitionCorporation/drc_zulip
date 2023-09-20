@@ -13,7 +13,11 @@ mock_esm("../src/stream_topic_history", {
     add_message: noop,
 });
 
+<<<<<<< HEAD:frontend_tests/node_tests/message_store.js
+mock_esm("../../static/js/recent_senders", {
+=======
 mock_esm("../src/recent_senders", {
+>>>>>>> drc_main:web/tests/message_store.test.js
     process_stream_message: noop,
     process_private_message: noop,
 });

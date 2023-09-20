@@ -184,7 +184,11 @@ $(() => {
         },
     });
 
+<<<<<<< HEAD:static/js/portico/signup.js
+    function check_subdomain_available(subdomain) {
+=======
     function check_subdomain_available(subdomain: string): void {
+>>>>>>> drc_main:web/src/portico/signup.ts
         const url = "/json/realm/subdomain/" + subdomain;
         void $.get(url, (response) => {
             if (response.msg !== "available") {

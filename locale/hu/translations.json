@@ -71,7 +71,7 @@
   "Activity unknown": "",
   "Add": "Hozzáadás",
   "Add GIF": "GIF hozzáadása",
-  "Add a new alert word": "Új figyelmeztető szó hozzáadása",
+  "Add a new alert word": "Új figyelt szó hozzáadása",
   "Add a new bot": "Új robot hozzáadása",
   "Add a new code playground": "Kód játszótér hozzáadása",
   "Add a new custom profile field": "",
@@ -79,7 +79,7 @@
   "Add a new linkifier": "Új linkesítő létrehozása",
   "Add a new profile field": "Új profil mező hozzáadása",
   "Add a new user group": "Új felhasználói csoport hozzáadása",
-  "Add alert word": "Figyelmeztető szó hozzáadása",
+  "Add alert word": "Figyelt szó hozzáadása",
   "Add all users": "Minden felhasználó hozzáadása",
   "Add another user...": "Újabb felhasználó hozzáadása...",
   "Add code playground": "Kód játszótér hozzáadása",
@@ -117,10 +117,15 @@
   "Advanced": "Haladó",
   "Advertise organization in the Zulip communities directory": "",
   "Alert word": "Szófigyelő",
+<<<<<<< HEAD
+  "Alert word already exists!": "A figyelt szó már létezik!",
+  "Alert word removed successfully!": "A figyelt szót sikeresen eltávolítottuk!",
+=======
   "Alert word \"{alert_word}\" removed successfully!": "",
   "Alert word already exists!": "A figyelmeztető szó már létezik!",
+>>>>>>> drc_main
   "Alert words": "Szófigyelés",
-  "Alert words allow you to be notified as if you were @-mentioned when certain words or phrases are used in Zulip. Alert words are not case sensitive.": "A szófigyelés a beállított figyelmeztető szavakat figyeli a csevegésekben, és azokról olyan értesítést küld, mintha személyesen szólítottak volna meg a Zulipban a @ jellel. A figyelmeztető szavaknál a kis- és nagybetűk különbsége nem számít.",
+  "Alert words allow you to be notified as if you were @-mentioned when certain words or phrases are used in Zulip. Alert words are not case sensitive.": "A szófigyelés a beállított figyelt szavakat keresi a csevegésekben, és azokról olyan értesítést küld, mintha személyesen szólítottak volna meg a Zulipban a @ jellel. A figyelt szavaknál a kis- és nagybetűk különbsége nem számít.",
   "Alerted messages": "",
   "All": "Mindenki",
   "All direct messages": "",
@@ -169,7 +174,7 @@
   "At the office": "",
   "Audible": "",
   "Audible desktop notifications": "Hallható asztali értesítések",
-  "August": "Augusztus",
+  "August": "augusztus",
   "Authentication methods": "Azonosítási módok",
   "Author": "Szerző",
   "Automated messages and emails": "",
@@ -312,7 +317,7 @@
   "Delay before sending message notification emails": "Küldje az üzenet-értesítő e-mailt késleltetve",
   "Delay period (minutes)": "",
   "Delete": "Törlés",
-  "Delete alert word": "Figyelmeztető szó törlése",
+  "Delete alert word": "Figyelt szó törlése",
   "Delete all drafts": "Minden piszkozat törlése",
   "Delete code playground?": "",
   "Delete custom profile field?": "",
@@ -432,7 +437,7 @@
   "Error in unsubscribing from #{stream_name}": "Sikertelen leiratkozás innen: #{stream_name}",
   "Error listing invites": "Meghívó listázási hiba",
   "Error moving topic": "Hiba a téma áthelyezése közben",
-  "Error removing alert word!": "A figyelmeztető szó eltávolítása nem sikerült!",
+  "Error removing alert word!": "A figyelt szó eltávolítása nem sikerült!",
   "Error removing subscription": "Feliratkozás megszüntetése sikertelen",
   "Error removing user from #{stream_name}": "Nem sikerült a felhasználó eltávolítása innen: #{stream_name}",
   "Error removing user from this group.": "",
@@ -467,8 +472,12 @@
   "Failed!": "Sikertelen!",
   "Failed: A custom emoji with this name already exists.": "Hiba: ezzel a névvel már készült emoji.",
   "Failed: Emoji name is required.": "Sikertelen: a hangulatjel nevének kitöltése kötelező",
+<<<<<<< HEAD
+  "February": "február",
+=======
   "Failed: There is a default emoji with this name. Only administrators can override default emoji.": "",
   "February": "Február",
+>>>>>>> drc_main
   "Field choices": "Sikertelen választások",
   "File": "Fájl",
   "File and image uploads have been disabled for this organization.": "Az állomány- és képfeltöltés ebben a szervezetben le van tiltva.",
@@ -1007,7 +1016,7 @@
   "Start a new topic or select one from the list.": "",
   "Start export of public data": "Nyilvános adatok exportálása: kezdés",
   "Status": "Állapot",
-  "Stream": "Folyam",
+  "Stream": "Üzenetfolyam",
   "Stream color": "Folyam szín",
   "Stream created recently": "Legutóbb létrehozott üzenetfolyamok",
   "Stream creation": "Üzenetfolyam létrehozása",
@@ -1035,7 +1044,12 @@
   "Switch between tabs": "Lapok közötti váltás",
   "Switch to dark theme": "",
   "Switch to light theme": "",
+<<<<<<< HEAD
+  "Sync with computer": "Összehangolás a géppel",
+  "System bot": "Rendszer robot",
+=======
   "System bot": "Rendszet robot",
+>>>>>>> drc_main
   "Task already exists": "A feladat már létezik",
   "Task list": "Feladatlista",
   "Test desktop notification": "Asztali értesítés tesztelése",
@@ -1166,7 +1180,13 @@
   "Upload profile picture": "Profilkép feltöltése",
   "Upload stalled for %'{seconds}' seconds, aborting.": "A feltöltés %'{seconds}' másodpercen át el volt akadva, és leállításra kerül.",
   "Uploaded files": "Feltöltött fájlok",
+<<<<<<< HEAD
+  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "Saját emoji feltöltése ezzel a névvel átírja az eredeti emojit. Folytatod?",
   "Uploading {filename}…": "{filename} feltöltése...",
+  "Uploading…": "Feltöltés...",
+=======
+  "Uploading {filename}…": "{filename} feltöltése...",
+>>>>>>> drc_main
   "Usage statistics": "Használati statisztikák",
   "Use full width on wide screens": "Széles képernyőkön teljes szélesség használata",
   "Use html encoding (not recommended)": "",

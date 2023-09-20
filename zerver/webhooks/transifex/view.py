@@ -6,6 +6,10 @@ from pydantic import Json
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+<<<<<<< HEAD
+from zerver.lib.request import REQ, has_request_variables
+=======
+>>>>>>> drc_main
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -35,5 +39,9 @@ def api_transifex_webhook(
         body = f"Resource {resource} fully reviewed."
     else:
         raise UnsupportedWebhookEventTypeError("Unknown Event Type")
+<<<<<<< HEAD
+    check_send_webhook_message(request, user_profile, subject, body, event)
+=======
     check_send_webhook_message(request, user_profile, topic, body, event)
+>>>>>>> drc_main
     return json_success(request)

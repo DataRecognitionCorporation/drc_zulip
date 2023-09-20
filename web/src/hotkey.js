@@ -147,7 +147,12 @@ const keypress_mappings = {
     73: {name: "open_inbox", message_view_only: true}, // 'I'
     74: {name: "vim_page_down", message_view_only: true}, // 'J'
     75: {name: "vim_page_up", message_view_only: true}, // 'K'
+<<<<<<< HEAD:static/js/hotkey.js
+    // DRC MODIFICATION - remove hotkey
+    // 77: {name: "toggle_topic_mute", message_view_only: true}, // 'M'
+=======
     77: {name: "toggle_topic_visibility_policy", message_view_only: true}, // 'M'
+>>>>>>> drc_main:web/src/hotkey.js
     80: {name: "narrow_private", message_view_only: true}, // 'P'
     82: {name: "respond_to_author", message_view_only: true}, // 'R'
     83: {name: "toggle_stream_subscription", message_view_only: true}, // 'S'
@@ -1055,6 +1060,12 @@ export function process_hotkey(e, hotkey) {
             reactions.toggle_emoji_reaction(msg.id, canonical_name);
             return true;
         }
+<<<<<<< HEAD:static/js/hotkey.js
+        // DRC MODIFICATION - remove mute hotkey
+        // case "toggle_topic_mute":
+        //     muted_topics_ui.toggle_topic_mute(msg);
+        //     return true;
+=======
         case "upvote_first_emoji": {
             // '=': If the current message has at least one emoji
             // reaction, toggle out vote on the first one.
@@ -1075,6 +1086,7 @@ export function process_hotkey(e, hotkey) {
         case "toggle_topic_visibility_policy":
             user_topics_ui.toggle_topic_visibility_policy(msg);
             return true;
+>>>>>>> drc_main:web/src/hotkey.js
         case "toggle_message_collapse":
             condense.toggle_collapse(msg);
             return true;

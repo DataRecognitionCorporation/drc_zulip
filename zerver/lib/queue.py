@@ -27,6 +27,7 @@ ChannelT = TypeVar("ChannelT", Channel, BlockingChannel)
 Consumer: TypeAlias = Callable[[ChannelT, Basic.Deliver, pika.BasicProperties, bytes], None]
 
 
+
 # This simple queuing library doesn't expose much of the power of
 # RabbitMQ/Pika's queuing system; its purpose is to just provide an
 # interface for external files to put things into queues and take them

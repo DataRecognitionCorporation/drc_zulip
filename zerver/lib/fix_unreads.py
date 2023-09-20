@@ -43,7 +43,13 @@ def get_timing(message: str, f: Callable[[], T]) -> T:
 
 
 def fix_unsubscribed(cursor: CursorWrapper, user_profile: UserProfile) -> None:
+<<<<<<< HEAD
+    recipient_ids = []
+
+    def find_recipients() -> None:
+=======
     def find_recipients() -> List[int]:
+>>>>>>> drc_main
         query = SQL(
             """
             SELECT

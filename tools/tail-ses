@@ -30,10 +30,16 @@ class IdentityArgsDict(TypedDict, total=False):
 
 
 def main() -> None:
+<<<<<<< HEAD
+    session = boto3.session.Session()
+
+    from_address = settings.NOREPLY_EMAIL_ADDRESS
+=======
     session = boto3.session.Session(region_name=settings.S3_REGION)
 
     # Strip off the realname, if present, and extract just the domain name
     _, from_address = parseaddr(settings.NOREPLY_EMAIL_ADDRESS)
+>>>>>>> drc_main
     from_host = Address(addr_spec=from_address).domain
 
     ses: SESClient = session.client("ses")

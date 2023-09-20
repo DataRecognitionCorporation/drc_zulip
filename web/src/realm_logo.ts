@@ -113,5 +113,20 @@ export function initialize(): void {
     render();
 
     // Rerender the realm-logo when the browser detects color scheme changes.
+<<<<<<< HEAD:static/js/realm_logo.js
+    const media_query_list = window.matchMedia("(prefers-color-scheme: dark)");
+    // MediaQueryList.addEventListener is missing in Safari < 14
+    const listener = () => {
+        if ($(":root").hasClass("color-scheme-automatic")) {
+            render();
+        }
+    };
+    if ("addEventListener" in media_query_list) {
+        media_query_list.addEventListener("change", listener);
+    } else {
+        media_query_list.addListener(listener);
+    }
+=======
     ui_util.listener_for_preferred_color_scheme_change(render);
+>>>>>>> drc_main:web/src/realm_logo.ts
 }

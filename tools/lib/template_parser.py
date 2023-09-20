@@ -465,6 +465,18 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> List[Token
         tag = token.tag
 
         if not state.foreign:
+<<<<<<< HEAD
+            if kind == "html_start":
+                if tag in HTML_VOID_TAGS:
+                    raise TemplateParserError(
+                        f"Tag must be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
+                    )
+            elif kind == "html_singleton":
+                if tag not in HTML_VOID_TAGS:
+                    raise TemplateParserError(
+                        f"Tag must not be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
+                    )
+=======
             if kind == "html_start" and tag in HTML_VOID_TAGS:
                 raise TemplateParserError(
                     f"Tag must be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
@@ -473,6 +485,7 @@ def validate(fn: Optional[str] = None, text: Optional[str] = None) -> List[Token
                 raise TemplateParserError(
                     f"Tag must not be self-closing: {tag} at {fn} line {token.line}, col {token.col}"
                 )
+>>>>>>> drc_main
 
         flavor = tag_flavor(token)
         if flavor == "start":

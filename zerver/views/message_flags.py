@@ -123,7 +123,11 @@ def mark_all_as_read(request: HttpRequest, user_profile: UserProfile) -> HttpRes
     try:
         count = timeout(50, lambda: do_mark_all_as_read(user_profile))
     except TimeoutExpiredError:
+<<<<<<< HEAD
+        return json_partial_success(request, data={"code": ErrorCode.REQUEST_TIMEOUT.name})
+=======
         return json_success(request, data={"complete": False})
+>>>>>>> drc_main
 
     log_data_str = f"[{count} updated]"
     assert request_notes.log_data is not None

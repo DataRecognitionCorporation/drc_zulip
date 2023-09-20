@@ -1,6 +1,9 @@
 {
   "%'{file}' exceeds the maximum file size for attachments ({variable} MB).": "%'{file}' перевищує максимальний розмір файлу для вкладень ({variable} MB).",
+<<<<<<< HEAD
+=======
   "(attached file)": "",
+>>>>>>> drc_main
   "(forever)": "(назавжди)",
   "(hidden)": "(приховано)",
   "(no description)": "(без опису)",
@@ -9,8 +12,8 @@
   "({message_retention_days} days)": "({message_retention_days} днів)",
   "/dark (Switch to the dark theme)": "/dark (Перемкнути на темне оформлення)",
   "/light (Switch to light theme)": "/light  (Перемкнути на світле оформлення)",
-  "/me is excited (Display action text)": "/me схвильований (Показати дію)",
-  "/poll Where should we go to lunch today? (Create a poll)": "/poll Куди ми сьогодні підемо обідати? (Створити голосування)",
+  "/me is excited (Display action text)": "/me схвильований (Показати текст дії)",
+  "/poll Where should we go to lunch today? (Create a poll)": "/poll Куди нам сьогодні піти обідати? (Створити опитування)",
   "/todo (Create a todo list)": "/todo (Створити список завдань)",
   "1 day": "1 день",
   "1 hour": "1 година",
@@ -28,6 +31,10 @@
   "<b>Total messages</b>: {total_messages}": "<b>Всього повідомлень</b>: {total_messages}",
   "<p><strong>{file_name}</strong> will be removed from the messages where it was shared. This action cannot be undone.</p>": "<p><strong>{file_name}</strong> буде видалено з повідомлень, до яких вона була поширена. Цю дію не можна скасувати.</p>",
   "<p>Stream will be announced in <b>#{notifications_stream}</b>.</p>": "<p>Канал буде оголошено в <b>#{notifications_stream}</b>.</p>",
+<<<<<<< HEAD
+  "<p>The stream <b>{stream_name}</b> does not exist.</p><p>Manage your subscriptions <z-link>on your Streams page</z-link>.</p>": "<p>Канал <b>{stream_name}</b> не існує.</p><p>Керуйте своїми підписками <z-link>на сторінці «Канали»</z-link>.</p>",
+=======
+>>>>>>> drc_main
   "<p>You are searching for messages that are sent by more than one person, which is not possible.</p>": "<p>Ви шукаєте повідомлення, надіслані кількома користувачами, що неможливо.</p>",
   "<p>You are searching for messages that belong to more than one stream, which is not possible.</p>": "",
   "<p>You are searching for messages that belong to more than one topic, which is not possible.</p>": "",
@@ -49,7 +56,11 @@
   "A stream with this name already exists": "Канал з таким іменем вже існує",
   "A user group needs to have a name": "Група користувачів повинна мати назву",
   "A user group with this name already exists": "Група користувачів з такою назвою вже існує",
+<<<<<<< HEAD
+  "A wide image for the upper left corner of the app.": "Широкий малюнок для верхнього лівого кута додатку.",
+=======
   "A wide image (200×25 pixels) for the upper left corner of the app.": "",
+>>>>>>> drc_main
   "API documentation": "Документація API",
   "API key": "Ключ API",
   "About Zulip": "Про Zulip",
@@ -70,11 +81,15 @@
   "Active {minutes} minutes ago": "",
   "Activity unknown": "",
   "Add": "Додати",
-  "Add GIF": "Додати GIF",
+  "Add GIF": "Додати анімацію",
   "Add a new alert word": "Додати нове сигнальне слово",
   "Add a new bot": "Додати нового бота",
   "Add a new code playground": "Додати новий майданчик для коду",
+<<<<<<< HEAD
+  "Add a new custom profile field": "Додати нове користувацьке поле профілю",
+=======
   "Add a new custom profile field": "Додати нове кастомне поле профілю",
+>>>>>>> drc_main
   "Add a new emoji": "Додати нові емодзі",
   "Add a new linkifier": "Додати новий зв'язувач",
   "Add a new profile field": "Додати поле нового профілю",
@@ -87,6 +102,10 @@
   "Add emoji reaction": "Додати емодзі-реакцію",
   "Add extra emoji for members of the {realm_name} organization.": "Додайте додаткові емодзі для членів організації {realm_name}.",
   "Add global time": "Додати глобальний час",
+<<<<<<< HEAD
+  "Add global time<br />Everyone sees global times in their own time zone.": "",
+=======
+>>>>>>> drc_main
   "Add linkifier": "Додати зв'язувач",
   "Add members": "Додати учасників",
   "Add member…": "Додати учасника…",
@@ -104,9 +123,13 @@
   "Added successfully!": "Додано успішно!",
   "Added successfully.": "Успішно додано.",
   "Administrator": "Адміністратор",
+<<<<<<< HEAD
+  "Administrators can delete any message.": "Адміністратори можуть видалити будь-яке повідомлення.",
+=======
   "Administrators and moderators this Zulip organization will be able to see this email address.": "",
   "Administrators can delete any message.": "Адміністратори можуть видалити будь-яке повідомлення.",
   "Administrators of this Zulip organization will be able to see this email address.": "",
+>>>>>>> drc_main
   "Admins": "Адміністратори",
   "Admins and moderators": "Адміністратори та модератори",
   "Admins only": "Лише адміністратори",
@@ -126,6 +149,12 @@
   "All direct messages": "",
   "All messages": "Усі повідомлення",
   "All messages including muted streams": "Усі повідомлення включно зі заглушеними каналами",
+<<<<<<< HEAD
+  "All private messages": "Всі приватні повідомлення",
+  "All private messages (P)": "Всі особисті повідомлення (P)",
+  "All stream subscribers can post.": "Дописувати можуть усі підписники стріму.",
+=======
+>>>>>>> drc_main
   "All streams": "Всі канали",
   "All time": "За весь час",
   "All unreads": "Усі непрочитані",
@@ -589,7 +618,7 @@
   "July": "Липень",
   "June": "Червень",
   "Just now": "Прямо зараз",
-  "Keyboard shortcuts": "Гарячі клавіші",
+  "Keyboard shortcuts": "Комбінації клавіш",
   "Label": "Позначка",
   "Language": "Мова",
   "Language for automated messages and invitation emails": "",
@@ -648,7 +677,7 @@
   "Mentions": "Згадки",
   "Menu": "Меню",
   "Menus": "Меню",
-  "Message #{stream_name}": "Написати #{stream_name}",
+  "Message #{stream_name}": "Написати в #{stream_name}",
   "Message #{stream_name} > {topic_name}": "Написати в #{stream_name} > {topic_name}",
   "Message actions": "Дії з повідомленнями",
   "Message deletion": "",
@@ -659,8 +688,8 @@
   "Message retention": "Збереження повідомлень",
   "Message retention period": "Період збереження повідомлень",
   "Message {recipient_label}": "",
-  "Message {recipient_names}": "Повідомлення {recipient_names}",
-  "Message {recipient_name} ({recipient_status})": "Повідомлення {recipient_name} ({recipient_status})",
+  "Message {recipient_names}": "Написати {recipient_names}",
+  "Message {recipient_name} ({recipient_status})": "Написати {recipient_name} ({recipient_status})",
   "Messages in all public streams": "",
   "Messages will not be automatically marked as read because this is not a conversation view. <z-link>Change setting</z-link>": "",
   "Messages will not be automatically marked as read. <z-link>Change setting</z-link>": "",
@@ -688,7 +717,7 @@
   "Must be invited by a subscriber; new subscribers can view complete message history; hidden from non-administrator users": "",
   "Mute stream": "Заглушити канал",
   "Mute this user": "Заглушити цього користувача",
-  "Mute topic": "Вимкнути сповіщення для теми",
+  "Mute topic": "Заглушити тему",
   "Mute user": "Заглушити користувача",
   "Muted": "Заглушено",
   "Muted streams don't show up in \"All messages\" or generate notifications unless you are mentioned.": "Заглушені канали не показуються у розділі \"Усі повідомлення\" та не створюють сповіщення, хіба що вас згадали.",
@@ -939,7 +968,7 @@
   "Scroll to bottom": "",
   "Scroll up": "Прокрутити вгору",
   "Search": "Пошук",
-  "Search GIFs": "Пошук GIF",
+  "Search GIFs": "Пошук анімацій",
   "Search all public streams in the organization.": "Знайти всі відкриті канали в організації.",
   "Search filters": "",
   "Search for <z-value></z-value> in the topic or message content.": "",
@@ -1166,7 +1195,13 @@
   "Upload profile picture": "Завантажити зображення профілю",
   "Upload stalled for %'{seconds}' seconds, aborting.": "",
   "Uploaded files": "Завантажені файли",
+<<<<<<< HEAD
+  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "",
   "Uploading {filename}…": "Передача {filename}…",
+  "Uploading…": "Завантаження...",
+=======
+  "Uploading {filename}…": "Передача {filename}…",
+>>>>>>> drc_main
   "Usage statistics": "Статистика користування",
   "Use full width on wide screens": "Використовувати всю ширину на широких екранах",
   "Use html encoding (not recommended)": "",

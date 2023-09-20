@@ -298,6 +298,12 @@ export class MessageListView {
         if (last_edit_timestamp !== undefined) {
             const last_edit_time = new Date(last_edit_timestamp * 1000);
             const today = new Date();
+<<<<<<< HEAD:static/js/message_list_view.js
+            return $t(
+                {defaultMessage: "{date} at {time}"},
+                {
+                    date: timerender.render_date(last_edit_time, undefined, today)[0].textContent,
+=======
             let date = timerender.render_date(last_edit_time, today)[0].textContent;
             // If the date is today or yesterday, we don't want to show the date as capitalized.
             // Thus, we need to check if the date string contains a digit or not using regex,
@@ -309,6 +315,7 @@ export class MessageListView {
                 {defaultMessage: "{date} at {time}"},
                 {
                     date,
+>>>>>>> drc_main:web/src/message_list_view.js
                     time: timerender.stringify_time(last_edit_time),
                 },
             );

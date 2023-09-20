@@ -8,6 +8,10 @@ from returns.curry import partial
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+<<<<<<< HEAD
+from zerver.lib.request import REQ, has_request_variables
+=======
+>>>>>>> drc_main
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_bool, check_int, check_string

@@ -21,7 +21,11 @@ let giphy_popover_instance = null;
 let edit_message_id;
 
 export function is_popped_from_edit_message() {
+<<<<<<< HEAD:static/js/giphy.js
+    return $active_popover_element && edit_message_id !== undefined;
+=======
     return giphy_popover_instance && edit_message_id !== undefined;
+>>>>>>> drc_main:web/src/giphy.js
 }
 
 export function focus_current_edit_message() {

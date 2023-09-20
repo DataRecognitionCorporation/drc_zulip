@@ -181,7 +181,11 @@ elif "debian" in os_families():
     # additional dependency for postgresql-13-pgdg-pgroonga.
     #
     # See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=895037
+<<<<<<< HEAD
+    if vendor == "debian" and os_version == "11":
+=======
     if vendor == "debian":
+>>>>>>> drc_main
         DEBIAN_DEPENDENCIES.remove("libappindicator1")
         DEBIAN_DEPENDENCIES.append("libgroonga0")
 
@@ -354,7 +358,11 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
 
 
 def main(options: argparse.Namespace) -> NoReturn:
+<<<<<<< HEAD
+    # yarn and management commands expect to be run from the root of the
+=======
     # pnpm and management commands expect to be run from the root of the
+>>>>>>> drc_main
     # project.
     os.chdir(ZULIP_PATH)
 

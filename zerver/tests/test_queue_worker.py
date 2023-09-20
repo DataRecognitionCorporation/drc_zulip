@@ -112,6 +112,8 @@ class WorkerTest(ZulipTestCase):
             self.assert_length(activity_records, 1)
             self.assertEqual(activity_records[0].count, 2)
 
+<<<<<<< HEAD
+=======
     def test_missed_message_worker(self) -> None:
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
@@ -374,6 +376,7 @@ class WorkerTest(ZulipTestCase):
             error_logs.output[0],
         )
 
+>>>>>>> drc_main
     def test_push_notifications_worker(self) -> None:
         """
         The push notifications system has its own comprehensive test suite,

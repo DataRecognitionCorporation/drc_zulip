@@ -106,7 +106,10 @@ class WrappedIO(IO[bytes]):
         return num_chars
 
     def writelines(self, data: "Iterable[ReadableBuffer]") -> None:
+<<<<<<< HEAD
+=======
         data, data_copy = itertools.tee(data)
+>>>>>>> drc_main
         self.stream.writelines(data)
         lines = b"".join(data_copy)
         self.extra_output_finder.find_extra_output(lines)

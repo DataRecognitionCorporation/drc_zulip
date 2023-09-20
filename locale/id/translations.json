@@ -837,7 +837,7 @@
   "Owners only": "",
   "Participants": "",
   "Participated": "",
-  "Password": "Kata sandi",
+  "Password": "Password",
   "Password is too weak": "Password terlalu lemah",
   "Password should be at least {length} characters long": "",
   "Pattern": "Pola",
@@ -1166,7 +1166,13 @@
   "Upload profile picture": "",
   "Upload stalled for %'{seconds}' seconds, aborting.": "",
   "Uploaded files": "File yang telah diupload",
+<<<<<<< HEAD
+  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "",
   "Uploading {filename}…": "",
+  "Uploading…": "",
+=======
+  "Uploading {filename}…": "",
+>>>>>>> drc_main
   "Usage statistics": "",
   "Use full width on wide screens": "",
   "Use html encoding (not recommended)": "",

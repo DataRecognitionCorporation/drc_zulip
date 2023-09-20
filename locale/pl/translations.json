@@ -200,8 +200,12 @@
   "Cancel compose and save draft": "",
   "Card": "",
   "Center the view around message ID <z-value></z-value>.": "",
+<<<<<<< HEAD
+  "Change": "Zmiana",
+=======
   "Change": "Zmień",
   "Change avatar": "",
+>>>>>>> drc_main
   "Change color": "Zmień kolor",
   "Change email": "Zmień adres email",
   "Change group info": "",
@@ -234,7 +238,7 @@
   "Complete": "Wykonane",
   "Complete the <z-link>organization profile</z-link> to brand and explain the purpose of this Zulip organization.": "",
   "Compose message": "",
-  "Compose your message here": "Napisz swoją wiadomość tutaj",
+  "Compose your message here": "Tutaj napisz swoją wiadomość",
   "Compose your message here...": "Tu napisz wiadomość...",
   "Composing messages": "Pisanie wiadomości",
   "Configure how Zulip notifies you about new messages.": "Skonfiguruj, w jaki sposób Zulip ma Cię powiadamiać o nowych wiadomościach.",
@@ -311,7 +315,7 @@
   "Default view": "Pokaż na starcie",
   "Delay before sending message notification emails": "",
   "Delay period (minutes)": "",
-  "Delete": "Skasuj",
+  "Delete": "Usuń",
   "Delete alert word": "Usuń słowo ostrzegawcze",
   "Delete all drafts": "",
   "Delete code playground?": "",
@@ -1166,7 +1170,13 @@
   "Upload profile picture": "Prześlij zdjęcie profilowe",
   "Upload stalled for %'{seconds}' seconds, aborting.": "",
   "Uploaded files": "Przesłane pliki",
+<<<<<<< HEAD
+  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "",
   "Uploading {filename}…": "",
+  "Uploading…": "Przesyłanie...",
+=======
+  "Uploading {filename}…": "",
+>>>>>>> drc_main
   "Usage statistics": "",
   "Use full width on wide screens": "",
   "Use html encoding (not recommended)": "",

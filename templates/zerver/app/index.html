@@ -47,6 +47,22 @@
     animation-fill-mode: forwards;
     visibility: hidden;
     }
+<<<<<<< HEAD
+    :root.color-scheme-automatic #app-loading {
+    color: hsl(0, 0%, 20%);
+    }
+    :root.dark-theme #app-loading {
+    background-color: hsl(212, 28%, 18%);
+    color: hsl(236, 33%, 90%);
+    }
+    /* DRC CUSTOM - hide upload file button from guests */
+    {% if is_guest %}
+    a.compose_control_button.compose_upload_file.fa.fa-paperclip, a.compose_upload_file {
+        display: none !important;
+    }
+    {% endif %}
+    /* END DRC CUSTOM */
+=======
     #app-loading-error {
     display: flex;
     height: 100vh;
@@ -110,6 +126,7 @@
     color: #005580;
     text-decoration: underline;
     }
+>>>>>>> drc_main
 </style>
 {% endblock %}
 
@@ -237,9 +254,26 @@
                         </div>
                     </div>
                 </div>
+<<<<<<< HEAD
+                <div class="tab-pane active" id="message_feed_container">
+                    <div class="fixed-app" id="floating_recipient_bar">
+                        <div class="app-main recipient_bar_content">
+                            <div class="column-middle column-overlay recipient-bar-main">
+                                <div class="floating_recipient">
+                                    <div style="display: none;" id="current_label_stream" class="recipient_row">
+                                        <div class="message_label_clickable message_header message_header_stream right_part"></div>
+                                    </div>
+                                    <div style="display: none;" id="current_label_private_message" class="recipient_row">
+                                        <div class="message_label_clickable message_header message_header_private_message right_part"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+=======
                 <div id="inbox-view">
                     <div class="inbox-container">
                         <div id="inbox-pane"></div>
+>>>>>>> drc_main
                     </div>
                 </div>
                 <div id="message_feed_container">

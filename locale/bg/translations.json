@@ -200,8 +200,12 @@
   "Cancel compose and save draft": "",
   "Card": "",
   "Center the view around message ID <z-value></z-value>.": "",
+<<<<<<< HEAD
+  "Change": "промяна",
+=======
   "Change": "Промени",
   "Change avatar": "",
+>>>>>>> drc_main
   "Change color": "",
   "Change email": "",
   "Change group info": "",
@@ -219,7 +223,7 @@
   "Click on the pencil (<z-pencil-icon></z-pencil-icon>) icon to edit and reschedule a message.": "",
   "Click outside the input box to save. We'll automatically notify anyone that was added or removed.": "",
   "Click to view or download.": "",
-  "Close": "Затвори",
+  "Close": "Близо",
   "Close modal": "",
   "Close this dialog window": "",
   "Code playgrounds": "",
@@ -263,8 +267,12 @@
   "Could not unresolve topic": "",
   "Create": "Създай",
   "Create a stream": "",
+<<<<<<< HEAD
+  "Create new stream": "Създай нов канал",
+=======
   "Create new stream": "Създай нов поток",
   "Create new user group": "",
+>>>>>>> drc_main
   "Create stream": "",
   "Create user group": "",
   "Creating group...": "",
@@ -381,7 +389,7 @@
   "Duration deletion is allowed after posting (minutes)": "",
   "Duration editing is allowed after posting (minutes)": "",
   "EDITED": "РЕДАКТИРАНО",
-  "Edit": "Редактирай",
+  "Edit": "редактиране",
   "Edit #{stream_name}": "",
   "Edit and reschedule message": "",
   "Edit bot": "",
@@ -403,7 +411,7 @@
   "Education (for-profit)": "",
   "Education (non-profit)": "",
   "Effect": "Ефект",
-  "Email": "Email",
+  "Email": "Е-поща",
   "Email address": "",
   "Email address changes are disabled in this organization.": "",
   "Email copied": "",
@@ -686,7 +694,7 @@
   "Moving messages": "",
   "Must be invited by a subscriber; new subscribers can only see messages sent after they join; hidden from non-administrator users": "",
   "Must be invited by a subscriber; new subscribers can view complete message history; hidden from non-administrator users": "",
-  "Mute stream": "Ограничи канал",
+  "Mute stream": "Заглуши канал",
   "Mute this user": "",
   "Mute topic": "Заглуши тема",
   "Mute user": "",
@@ -923,7 +931,7 @@
   "SAVING": "",
   "STREAMS": "ПОТОЦИ",
   "Saturday": "Събота",
-  "Save": "Запиши",
+  "Save": "Запази",
   "Save changes": "Запази промени",
   "Save failed": "",
   "Saved": "",
@@ -1166,7 +1174,13 @@
   "Upload profile picture": "",
   "Upload stalled for %'{seconds}' seconds, aborting.": "",
   "Uploaded files": "",
+<<<<<<< HEAD
+  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "",
   "Uploading {filename}…": "",
+  "Uploading…": "",
+=======
+  "Uploading {filename}…": "",
+>>>>>>> drc_main
   "Usage statistics": "",
   "Use full width on wide screens": "",
   "Use html encoding (not recommended)": "",

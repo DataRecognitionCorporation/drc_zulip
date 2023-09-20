@@ -6,6 +6,10 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+<<<<<<< HEAD
+from zerver.lib.request import REQ, has_request_variables
+=======
+>>>>>>> drc_main
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
@@ -92,7 +96,11 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
             blacklist
         )
         if not previous_attributes:  # nocoverage
+<<<<<<< HEAD
+            raise SuppressedEventError()
+=======
             raise SuppressedEventError
+>>>>>>> drc_main
         return "".join(
             "\n* "
             + attribute.replace("_", " ").capitalize()
@@ -113,11 +121,24 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
         if resource == "account":
             if event == "updated":
                 if "previous_attributes" not in payload["data"]:
+<<<<<<< HEAD
+                    raise SuppressedEventError()
+=======
                     raise SuppressedEventError
+>>>>>>> drc_main
                 topic = "account updates"
                 body = update_string()
         else:
             # Part of Stripe Connect
+<<<<<<< HEAD
+            raise NotImplementedEventTypeError()
+    if category == "application_fee":  # nocoverage
+        # Part of Stripe Connect
+        raise NotImplementedEventTypeError()
+    if category == "balance":  # nocoverage
+        # Not that interesting to most businesses, I think
+        raise NotImplementedEventTypeError()
+=======
             raise NotImplementedEventTypeError
     if category == "application_fee":  # nocoverage
         # Part of Stripe Connect
@@ -125,6 +146,7 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
     if category == "balance":  # nocoverage
         # Not that interesting to most businesses, I think
         raise NotImplementedEventTypeError
+>>>>>>> drc_main
     if category == "charge":
         if resource == "charge":
             if not topic:  # only in legacy fixtures
@@ -154,10 +176,17 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
             )
     if category == "checkout_beta":  # nocoverage
         # Not sure what this is
+<<<<<<< HEAD
+        raise NotImplementedEventTypeError()
+    if category == "coupon":  # nocoverage
+        # Not something that likely happens programmatically
+        raise NotImplementedEventTypeError()
+=======
         raise NotImplementedEventTypeError
     if category == "coupon":  # nocoverage
         # Not something that likely happens programmatically
         raise NotImplementedEventTypeError
+>>>>>>> drc_main
     if category == "customer":
         if resource == "customer":
             # Running into the 60 character topic limit.
@@ -260,10 +289,17 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
             )
     if category.startswith("issuing"):  # nocoverage
         # Not implemented
+<<<<<<< HEAD
+        raise NotImplementedEventTypeError()
+    if category.startswith("order"):  # nocoverage
+        # Not implemented
+        raise NotImplementedEventTypeError()
+=======
         raise NotImplementedEventTypeError
     if category.startswith("order"):  # nocoverage
         # Not implemented
         raise NotImplementedEventTypeError
+>>>>>>> drc_main
     if category in [
         "payment_intent",
         "payout",
@@ -282,7 +318,11 @@ def topic_and_body(payload: WildValue) -> Tuple[str, str]:
         # Not implemented. In theory doing something like
         #   body = default_body()
         # may not be hard for some of these
+<<<<<<< HEAD
+        raise NotImplementedEventTypeError()
+=======
         raise NotImplementedEventTypeError
+>>>>>>> drc_main
 
     if body is None:
         raise UnsupportedWebhookEventTypeError(event_type)

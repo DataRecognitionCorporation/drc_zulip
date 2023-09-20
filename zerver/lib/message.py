@@ -1088,7 +1088,11 @@ def get_raw_unread_data(
 def extract_unread_data_from_um_rows(
     rows: List[Dict[str, Any]], user_profile: Optional[UserProfile]
 ) -> RawUnreadMessagesResult:
+<<<<<<< HEAD
+    pm_dict: Dict[int, RawUnreadPrivateMessageDict] = {}
+=======
     pm_dict: Dict[int, RawUnreadDirectMessageDict] = {}
+>>>>>>> drc_main
     stream_dict: Dict[int, RawUnreadStreamDict] = {}
     unmuted_stream_msgs: Set[int] = set()
     huddle_dict: Dict[int, RawUnreadHuddleDict] = {}

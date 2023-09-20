@@ -6,6 +6,10 @@ from returns.curry import partial
 
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+<<<<<<< HEAD
+from zerver.lib.request import REQ, has_request_variables
+=======
+>>>>>>> drc_main
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_bool, check_int, check_none_or, check_string
@@ -884,6 +888,9 @@ def get_zulip_event_name(
             # this means GH has actually added new actions since September 2020,
             # so it's a bit more cause for alarm
             raise UnsupportedWebhookEventTypeError(f"unsupported team action {action}")
+<<<<<<< HEAD
+    elif header_event in list(EVENT_FUNCTION_MAPPER.keys()):
+=======
     elif header_event == "issues":
         action = payload["action"].tame(check_string)
         if action in ("labeled", "unlabeled"):
@@ -893,6 +900,7 @@ def get_zulip_event_name(
         else:
             return "issues"
     elif header_event in EVENT_FUNCTION_MAPPER:
+>>>>>>> drc_main
         return header_event
     elif header_event in IGNORED_EVENTS:
         return None

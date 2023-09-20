@@ -28,6 +28,10 @@
   "<b>Total messages</b>: {total_messages}": "<b>전체 메세지</b>: {전체 메세지}",
   "<p><strong>{file_name}</strong> will be removed from the messages where it was shared. This action cannot be undone.</p>": "",
   "<p>Stream will be announced in <b>#{notifications_stream}</b>.</p>": "<p>알림이 시작될 것 입니다. <b>#{방송 알림}</b>.</p>",
+<<<<<<< HEAD
+  "<p>The stream <b>{stream_name}</b> does not exist.</p><p>Manage your subscriptions <z-link>on your Streams page</z-link>.</p>": "<p>알림 <b>{방송_이름}</b> 이 존재하지 않습니다.</p><p>당신의 구독상황을 관리하십시오<z-link>너의 알림 페이지에서</z-link>.</p>",
+=======
+>>>>>>> drc_main
   "<p>You are searching for messages that are sent by more than one person, which is not possible.</p>": "",
   "<p>You are searching for messages that belong to more than one stream, which is not possible.</p>": "",
   "<p>You are searching for messages that belong to more than one topic, which is not possible.</p>": "",
@@ -381,7 +385,7 @@
   "Duration deletion is allowed after posting (minutes)": "",
   "Duration editing is allowed after posting (minutes)": "",
   "EDITED": "편집됨",
-  "Edit": "편집",
+  "Edit": "편집하다",
   "Edit #{stream_name}": "편집하기#{stream_name}",
   "Edit and reschedule message": "",
   "Edit bot": "봇 편집",
@@ -686,9 +690,9 @@
   "Moving messages": "",
   "Must be invited by a subscriber; new subscribers can only see messages sent after they join; hidden from non-administrator users": "구독자에 의해 초대 되어야합니다; 새로운 구독자들은 그들이 참여한 뒤에 관리자가 아닌 유저들에 의해 숨겨진 메세지들을 볼 수 있습니다;",
   "Must be invited by a subscriber; new subscribers can view complete message history; hidden from non-administrator users": "구독자에 의해 초대 되어야합니다; 새로운 구독자들은 관리자가 아닌 유저들에 의해 숨겨진 메세지 기록들을 볼 수 있습니다.",
-  "Mute stream": "스트림 뮤트하기",
+  "Mute stream": "스트림 알림끄기",
   "Mute this user": "이 유저를 음소거함",
-  "Mute topic": "주제 뮤트하기",
+  "Mute topic": "주제 알림끄기",
   "Mute user": "유저를 음소거하다",
   "Muted": "알림끔",
   "Muted streams don't show up in \"All messages\" or generate notifications unless you are mentioned.": "음소거된 스트림들은 \"모든 메세지들\"에서 보이지 않거나 너가 언급하기 전까지 알림을 만들지 않는다.",
@@ -818,7 +822,7 @@
   "Organization name": "조직명",
   "Organization owners": "조직 소유자",
   "Organization permissions": "조직 권한",
-  "Organization profile": "조직 프로파일",
+  "Organization profile": "조직 프로필",
   "Organization profile picture": "조직 프로필 사진",
   "Organization settings": "조직 설정",
   "Organization type": "",
@@ -1135,10 +1139,14 @@
   "Unknown stream": "알려지지않은 스트림",
   "Unknown stream #{search_text}": "",
   "Unmute": "언뮤트",
-  "Unmute stream": "스트림 언뮤트하기",
+  "Unmute stream": "스트림 알림받기",
   "Unmute this user": "이 유저를 음소거 해제함",
+<<<<<<< HEAD
+  "Unmute topic": "주제 알림받기",
+=======
   "Unmute topic": "주제 언뮤트하기",
   "Unmuted": "",
+>>>>>>> drc_main
   "Unpin stream from top": "탑에서 스트림에 핀을 해제함",
   "Unread": "읽지 않음",
   "Unread count badge (appears in desktop sidebar and browser tab)": "",
@@ -1166,7 +1174,13 @@
   "Upload profile picture": "프로필 사진을 업로드",
   "Upload stalled for %'{seconds}' seconds, aborting.": "%'{seconds}' 초 동안 설치 업로드됩니다. ",
   "Uploaded files": "업로드된 파일들",
+<<<<<<< HEAD
+  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "커스텀된 이모티콘을 이 이름으로 올리는 것은 기존에 있던 이모티콘에 덮어씁니다. 진행하시겠습니까?",
   "Uploading {filename}…": " {filename}을 업로딩...",
+  "Uploading…": "업로드 중...",
+=======
+  "Uploading {filename}…": " {filename}을 업로딩...",
+>>>>>>> drc_main
   "Usage statistics": "사용 통계",
   "Use full width on wide screens": "와이드 스크린을 위한 전체 비율을 사용",
   "Use html encoding (not recommended)": "",

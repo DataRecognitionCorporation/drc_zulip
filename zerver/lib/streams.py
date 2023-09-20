@@ -331,7 +331,11 @@ def check_stream_access_for_delete_or_update(
     if sub is None and stream.invite_only:
         raise JsonableError(error)
 
+<<<<<<< HEAD
+    raise OrganizationAdministratorRequiredError()
+=======
     raise OrganizationAdministratorRequiredError
+>>>>>>> drc_main
 
 
 def access_stream_for_delete_or_update(
@@ -376,6 +380,11 @@ def check_basic_stream_access(
     # description), we allow realm admins to access stream even if
     # they are not subscribed to a private stream.
     if user_profile.is_realm_admin and allow_realm_admin:
+        return True
+
+    # DRC MODIFICATION
+    # Owner can invite to private stream
+    if user_profile.role == 100:
         return True
 
     return False
@@ -655,6 +664,11 @@ def filter_stream_authorization(
         if not stream.invite_only and not user_profile.is_guest:
             continue
 
+        # DRC MODIFICATION
+        # Zulip admins and owners can do anything with streams
+        if user_profile.role <= 200:
+            continue
+
         unauthorized_streams.append(stream)
 
     authorized_streams = [
@@ -761,7 +775,11 @@ def list_to_streams(
 
         if message_retention_days_not_none:
             if not user_profile.is_realm_owner:
+<<<<<<< HEAD
+                raise OrganizationOwnerRequiredError()
+=======
                 raise OrganizationOwnerRequiredError
+>>>>>>> drc_main
 
             user_profile.realm.ensure_not_on_limited_plan()
 

@@ -97,7 +97,12 @@ The Zulip server and client apps are all carefully engineered to
 ensure compatibility with old versions. In particular:
 
 - The Zulip mobile and desktop apps maintain backwards-compatibility
+<<<<<<< HEAD
+  code to support any Zulip server since 4.0. (They may also work
+  with older versions, with a degraded experience).
+=======
   code to support any Zulip server version from the last 18 months.
+>>>>>>> drc_main
 - Zulip maintains an [API changelog](https://zulip.com/api/changelog)
   detailing all changes to the API to make it easy for client
   developers to do this correctly.
@@ -111,6 +116,10 @@ As a result, we generally do not backport changes to previous stable
 release series except in rare cases involving a security issue or
 critical bug just after publishing a major release.
 
+<<<<<<< HEAD
+[blog-major-releases]: https://blog.zulip.com/tag/major-releases/
+=======
+>>>>>>> drc_main
 [upgrade-from-git]: ../production/upgrade.md#upgrading-from-a-git-repository
 
 ### Security releases

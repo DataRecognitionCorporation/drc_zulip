@@ -65,6 +65,7 @@ if settings.ZILENCER_ENABLED:
 DeviceToken: TypeAlias = Union[PushDeviceToken, "RemotePushDeviceToken"]
 
 
+
 # We store the token as b64, but apns-client wants hex strings
 def b64_to_hex(data: str) -> str:
     return base64.b64decode(data).hex()
@@ -74,6 +75,8 @@ def hex_to_b64(data: str) -> str:
     return base64.b64encode(bytes.fromhex(data)).decode()
 
 
+<<<<<<< HEAD
+=======
 def get_message_stream_name_from_database(message: Message) -> str:
     """
     Never use this function outside of the push-notifications
@@ -84,6 +87,7 @@ def get_message_stream_name_from_database(message: Message) -> str:
     return Stream.objects.get(id=stream_id).name
 
 
+>>>>>>> drc_main
 class UserPushIdentityCompat:
     """Compatibility class for supporting the transition from remote servers
     sending their UserProfile ids to the bouncer to sending UserProfile uuids instead.
@@ -124,7 +128,11 @@ class UserPushIdentityCompat:
 
         return result
 
+<<<<<<< HEAD
+    def __eq__(self, other: Any) -> bool:
+=======
     def __eq__(self, other: object) -> bool:
+>>>>>>> drc_main
         if isinstance(other, UserPushIdentityCompat):
             return self.user_id == other.user_id and self.user_uuid == other.user_uuid
         return False

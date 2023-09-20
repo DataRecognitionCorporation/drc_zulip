@@ -244,6 +244,13 @@ export class BuddyList extends BuddyListConf {
         const key = opts.key;
         const item = opts.item;
 
+        // For some dumb reason keys is initialized to 0 if there is no buddy list... not an
+        // empty array.
+        // DRC MODIFICATION
+        if(this.keys == 0){
+          return;
+        }
+
         this.maybe_remove_key({key});
 
         const pos = this.find_position({

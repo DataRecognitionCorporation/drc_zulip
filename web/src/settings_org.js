@@ -29,7 +29,10 @@ import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_settings_data from "./stream_settings_data";
 import * as ui_report from "./ui_report";
+<<<<<<< HEAD:static/js/settings_org.js
+=======
 import * as user_groups from "./user_groups";
+>>>>>>> drc_main:web/src/settings_org.js
 
 const meta = {
     loaded: false,

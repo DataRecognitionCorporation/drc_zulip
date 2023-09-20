@@ -791,6 +791,10 @@
   "One or more email addresses...": "One or more email addresses...",
   "One or more of these users do not exist!": "One or more of these users do not exist!",
   "Only 2 custom profile fields can be displayed on the user card.": "Only 2 custom profile fields can be displayed on the user card.",
+<<<<<<< HEAD
+  "Only full members belonging to the group, organization administrators and moderators can modify a group.": "Only full members belonging to the group, organisation administrators and moderators can modify a group.",
+=======
+>>>>>>> drc_main
   "Only group members can add users to a group.": "Only group members can add users to a group.",
   "Only in conversation views": "Only in conversation views",
   "Only organization administrators can edit these settings": "Only organisation administrators can edit these settings",
@@ -1013,6 +1017,10 @@
   "Stream creation": "Stream creation",
   "Stream description": "Stream description",
   "Stream email address:": "Stream email address:",
+<<<<<<< HEAD
+  "Stream list": "Stream list",
+=======
+>>>>>>> drc_main
   "Stream name": "Stream name",
   "Stream permissions": "Stream permissions",
   "Stream settings": "Stream settings",
@@ -1042,10 +1050,16 @@
   "The administrators provided the following comment:": "The administrators provided the following comment:",
   "The basics": "The basics",
   "The group description cannot contain newline characters.": "The group description cannot contain newline characters.",
+<<<<<<< HEAD
+  "The recipient {recipient} is not valid": "The recipient {recipient} is not valid",
+  "The recipients {recipients} are not valid": "The recipients {recipients} are not valid",
+  "The sender's email address": "The sender's email address",
+=======
   "The recipient {recipient} is not valid.": "The recipient {recipient} is not valid.",
   "The recipients {recipients} are not valid.": "The recipients {recipients} are not valid.",
   "The sender's email address": "The sender's email address",
   "The stream <b>#{stream_name}</b> does not exist. Manage your subscriptions <z-link>on your Streams page</z-link>.": "The stream <b>#{stream_name}</b> does not exist. Manage your subscriptions <z-link>on your Streams page</z-link>.",
+>>>>>>> drc_main
   "The stream description cannot contain newline characters.": "The stream description cannot contain newline characters.",
   "Their password will be cleared from our systems, and any bots they maintain will be disabled.": "Their password will be cleared from our systems, and any bots they maintain will be disabled.",
   "Theme": "Theme",
@@ -1166,7 +1180,13 @@
   "Upload profile picture": "Upload profile picture",
   "Upload stalled for %'{seconds}' seconds, aborting.": "Upload stalled for %'{seconds}' seconds, aborting.",
   "Uploaded files": "Uploaded files",
+<<<<<<< HEAD
+  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "Uploading a custom emoji with this name will override the built-in emoji. Continue?",
   "Uploading {filename}…": "Uploading {filename}…",
+  "Uploading…": "Uploading…",
+=======
+  "Uploading {filename}…": "Uploading {filename}…",
+>>>>>>> drc_main
   "Usage statistics": "Usage statistics",
   "Use full width on wide screens": "Use full width on wide screens",
   "Use html encoding (not recommended)": "Use html encoding (not recommended)",
@@ -1207,13 +1227,20 @@
   "View message source": "View message source",
   "View messages sent": "View messages sent",
   "View messages with yourself": "View messages with yourself",
+<<<<<<< HEAD
+  "View private messages": "View private messages",
+=======
+>>>>>>> drc_main
   "View profile": "View profile",
   "View read receipts": "View read receipts",
   "View recent conversations": "View recent conversations",
   "View scheduled messages": "View scheduled messages",
   "View stream": "View stream",
   "View stream messages": "View stream messages",
+<<<<<<< HEAD
+=======
   "View streams": "View streams",
+>>>>>>> drc_main
   "View user card": "View user card",
   "View your profile": "View your profile",
   "Visual": "Visual",
@@ -1268,8 +1295,13 @@
   "You and": "You and",
   "You and {display_reply_to}": "You and {display_reply_to}",
   "You and {recipients}": "You and {recipients}",
+<<<<<<< HEAD
+  "You are not allowed to send group private messages in this organization.": "You are not allowed to send group private messages in this organisation.",
+  "You are not allowed to send private messages in this organization.": "You are not allowed to send private messages in this organisation.",
+=======
   "You are about to disable all notifications for private messages, @&#8209;mentions and alerts, which may cause you to miss messages that require your timely attention. If you would like to temporarily disable all desktop notifications, consider <z-link>turning on \"Do not disturb\"</z-link> instead.": "You are about to disable all notifications for private messages, @&#8209;mentions and alerts, which may cause you to miss messages that require your timely attention. If you would like to temporarily disable all desktop notifications, consider <z-link>turning on \"Do not disturb\"</z-link> instead.",
   "You are not allowed to send direct messages in this organization.": "You are not allowed to send direct messages in this organisation.",
+>>>>>>> drc_main
   "You are not currently subscribed to this stream.": "You are not currently subscribed to this stream.",
   "You are not subscribed to any streams.": "You are not subscribed to any streams.",
   "You are not subscribed to stream <z-stream-name></z-stream-name>": "You are not subscribed to stream <z-stream-name></z-stream-name>",
@@ -1300,12 +1332,20 @@
   "You get": "You get",
   "You have muted <z-stream-topic></z-stream-topic>.": "You have muted <z-stream-topic></z-stream-topic>.",
   "You have no active bots.": "You have no active bots.",
+<<<<<<< HEAD
+  "You have no group private messages with {person} yet.": "You have no group private messages with {person} yet.",
+  "You have no inactive bots.": "You have no inactive bots.",
+  "You have no private messages with these users yet.": "You have no private messages with these users yet.",
+  "You have no private messages with {person} yet.": "You have no private messages with {person} yet.",
+  "You have no private messages yet!": "You have no private messages yet!",
+=======
   "You have no direct messages including {person} yet.": "You have no direct messages including {person} yet.",
   "You have no direct messages with these users yet.": "You have no direct messages with these users yet.",
   "You have no direct messages with {person} yet.": "You have no direct messages with {person} yet.",
   "You have no direct messages yet!": "You have no direct messages yet!",
   "You have no inactive bots.": "You have no inactive bots.",
   "You have no starred messages.": "You have no starred messages.",
+>>>>>>> drc_main
   "You have no unread messages!": "You have no unread messages!",
   "You have not configured any topics yet.": "You have not configured any topics yet.",
   "You have not muted any users yet.": "You have not muted any users yet.",
@@ -1313,6 +1353,10 @@
   "You have not uploaded any files.": "You have not uploaded any files.",
   "You haven't been mentioned yet!": "You haven't been mentioned yet!",
   "You haven't received any messages sent by {person} yet.": "You haven't received any messages sent by {person} yet.",
+<<<<<<< HEAD
+  "You haven't starred anything yet!": "You haven't starred anything yet!",
+=======
+>>>>>>> drc_main
   "You must be an organization administrator to create a stream without subscribing.": "You must be an organisation administrator to create a stream without subscribing.",
   "You need to be running Zephyr mirroring in order to send messages!": "You need to be running Zephyr mirroring in order to send messages!",
   "You searched for:": "You searched for:",

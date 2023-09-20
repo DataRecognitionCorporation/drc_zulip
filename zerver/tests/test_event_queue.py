@@ -238,6 +238,15 @@ class MissedMessageHookTest(ZulipTestCase):
                 already_notified={"email_notified": True, "push_notified": True},
             )
 
+<<<<<<< HEAD
+        # If `enable_offline_email_notifications` is disabled, email notifications shouldn't
+        # be sent even for PMs
+        user_profile.enable_offline_email_notifications = False
+        user_profile.save()
+        client_descriptor = allocate_event_queue(user_profile)
+        self.assertTrue(client_descriptor.event_queue.empty())
+        msg_id = self.send_personal_message(iago, user_profile)
+=======
     def test_enable_offline_email_notifications_setting(self) -> None:
         # When `enable_offline_email_notifications` is off, email notifications
         # should not be sent for direct messages
@@ -245,6 +254,7 @@ class MissedMessageHookTest(ZulipTestCase):
             self.user_profile, "enable_offline_email_notifications", False, acting_user=None
         )
         msg_id = self.send_personal_message(self.iago, self.user_profile)
+>>>>>>> drc_main
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
             mock_enqueue.assert_called_once()
@@ -278,12 +288,22 @@ class MissedMessageHookTest(ZulipTestCase):
                 already_notified={"email_notified": True, "push_notified": True},
             )
 
+<<<<<<< HEAD
+        # If `enable_offline_push_notifications` is disabled, push notifications shouldn't
+        # be sent even for mentions
+        user_profile.enable_offline_push_notifications = False
+        user_profile.save()
+        client_descriptor = allocate_event_queue(user_profile)
+        self.assertTrue(client_descriptor.event_queue.empty())
+        msg_id = self.send_personal_message(iago, user_profile)
+=======
     def test_enable_offline_push_notifications_setting(self) -> None:
         # When `enable_offline_push_notifications` is off, push notifications should not be sent for mentions
         do_change_user_setting(
             self.user_profile, "enable_offline_push_notifications", False, acting_user=None
         )
         msg_id = self.send_personal_message(self.iago, self.user_profile)
+>>>>>>> drc_main
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             missedmessage_hook(self.user_profile.id, self.client_descriptor, True)
             mock_enqueue.assert_called_once()

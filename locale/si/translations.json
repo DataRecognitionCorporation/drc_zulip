@@ -22,7 +22,7 @@
   "24-hour clock (17:00)": "පැය 24 ඔරලෝසුව (17:00)",
   "3 days": "දවස් 3",
   "30 days": "",
-  "30 minutes": "විනාඩි 30",
+  "30 minutes": "",
   "5 minutes": "විනාඩි 5",
   "6 hours": "පැය 6",
   "<b>Total messages</b>: {total_messages}": "<b>මුළු පණිවිඩ</b>: {total_messages}",
@@ -52,9 +52,9 @@
   "A wide image (200×25 pixels) for the upper left corner of the app.": "",
   "API documentation": "යෙ.ක්‍ර.ම්‍ර. ප්‍රලේඛනය",
   "API key": "යෙ.ක්‍ර.මු. යතුර",
-  "About Zulip": "සුලිප් ගැන",
-  "Account": "ගිණුම",
-  "Account & privacy": "ගිණුම සහ පෞද්ගලිකත්වය",
+  "About Zulip": "සුලිප් පිළිබඳව",
+  "Account": "",
+  "Account & privacy": "",
   "Action": "ක්‍රියාමාර්ගය",
   "Actions": "ක්‍රියාමාර්ග",
   "Active": "ක්‍රියාත්මකයි",
@@ -63,6 +63,9 @@
   "Active more than 2 weeks ago": "",
   "Active now": "දැන් ක්‍රියාත්මකයි",
   "Active users": "සක්‍රිය පරිශීලකයින්",
+<<<<<<< HEAD
+  "Add": "එකතු",
+=======
   "Active yesterday": "",
   "Active {days_old} days ago": "",
   "Active {hours} hours ago": "",
@@ -70,6 +73,7 @@
   "Active {minutes} minutes ago": "",
   "Activity unknown": "",
   "Add": "එකතු කරන්න",
+>>>>>>> drc_main
   "Add GIF": "චලනරූ එකතු කරන්න",
   "Add a new alert word": "නව අනතුරු ඇඟවීමේ වචනයක් එක්කරන්න",
   "Add a new bot": "නව ස්වයංක්‍රමලේඛයක් එක්කරන්න",
@@ -103,8 +107,12 @@
   "Add video call": "දෘශ්‍ය ඇමතුම එක්කරන්න",
   "Added successfully!": "සාර්ථකව එකතු කරන ලදි!",
   "Added successfully.": "",
+<<<<<<< HEAD
+  "Administrator": "පරිපාලකයින්",
+=======
   "Administrator": "පරිපාලක",
   "Administrators and moderators this Zulip organization will be able to see this email address.": "",
+>>>>>>> drc_main
   "Administrators can delete any message.": "",
   "Administrators of this Zulip organization will be able to see this email address.": "",
   "Admins": "පරිපාලකයින්",
@@ -119,7 +127,12 @@
   "Alert word": "අනතුරු ඇඟවීමේ වචනය",
   "Alert word \"{alert_word}\" removed successfully!": "",
   "Alert word already exists!": "අනතුරු ඇඟවීමේ වචනය දැනටමත් පවතී!",
+<<<<<<< HEAD
+  "Alert word removed successfully!": "අනතුරු ඇඟවීමේ වචනය සාර්ථකව ඉවත් කෙරිණි!",
+  "Alert words": "",
+=======
   "Alert words": "අනතුරු ඇඟවීමේ වචන",
+>>>>>>> drc_main
   "Alert words allow you to be notified as if you were @-mentioned when certain words or phrases are used in Zulip. Alert words are not case sensitive.": "",
   "Alerted messages": "",
   "All": "සියළුම",
@@ -195,13 +208,17 @@
   "Business": "",
   "Busy": "",
   "By deactivating your account, you will be logged out immediately.": "",
-  "Cancel": "අවලංගු කරන්න",
+  "Cancel": "අවලංගු",
   "Cancel compose": "",
   "Cancel compose and save draft": "",
   "Card": "",
   "Center the view around message ID <z-value></z-value>.": "",
+<<<<<<< HEAD
+  "Change": "සංශෝධනය",
+=======
   "Change": "වෙනස් කරන්න",
   "Change avatar": "",
+>>>>>>> drc_main
   "Change color": "වර්ණය වෙනස් කරන්න",
   "Change email": "වි-තැපෑල වෙනස් කරන්න",
   "Change group info": "",
@@ -229,7 +246,7 @@
   "Collapse message": "",
   "Collapse/show selected message": "",
   "Community": "",
-  "Commuting": "ගමන් කිරමින්",
+  "Commuting": "ගමන් කරමින්",
   "Compact": "",
   "Complete": "සම්පූර්ණයි",
   "Complete the <z-link>organization profile</z-link> to brand and explain the purpose of this Zulip organization.": "සන්නාමයට සහ මෙම සුලිප් සංවිධානයේ අරමුණ පැහැදිලි කිරීමට <z-link>සංවිධානයේ පැතිකඩ</z-link> සම්පූර්ණ කරන්න.",
@@ -237,8 +254,14 @@
   "Compose your message here": "",
   "Compose your message here...": "",
   "Composing messages": "",
+<<<<<<< HEAD
+  "Configure external code playgrounds for your Zulip organization. Code playgrounds are interactive in-browser development environments, such as <z-link-repl>replit</z-link-repl>, that are designed to make it convenient to edit and debug code. Zulip code blocks that are <z-link-markdown-help>tagged with a programming language</z-link-markdown-help> will have a button visible on hover that allows you to open the code block in the code playground site.": "",
+  "Configure how Zulip notifies you about new messages.": "නව පණිවිඩ ගැන සුලිප් ඔබට දැනුම් දෙන අයුරු සකසන්න.",
+  "Configure regular expression patterns that will be automatically linkified when used in Zulip message bodies or topics.  For example to automatically linkify commit IDs and issue numbers (e.g. #123) to the corresponding items in a GitHub project, you could use the following:": "",
+=======
   "Configure how Zulip notifies you about new messages.": "නව පණිවිඩ ගැන සුලිප් ඔබට දැනුම් දෙන ආකාරය සකසන්න.",
   "Configure regular expression patterns that will be used to automatically transform any matching text in Zulip messages and topics into links.": "",
+>>>>>>> drc_main
   "Configure the <z-link>default personal preference settings</z-link> for new users joining your organization.": "",
   "Configure the authentication methods for your organization.": "",
   "Configure the default streams new users are subscribed to when joining your organization.": "",
@@ -273,7 +296,12 @@
   "Currently viewing all messages.": "",
   "Currently viewing the entire stream.": "",
   "Custom": "අභිරුචි",
+<<<<<<< HEAD
+  "Custom emoji": "",
+  "Custom emoji added!": "අභිරුචි ඉමොජි එකතු කෙරිණි!",
+=======
   "Custom emoji": "අභිරුචි ඉමොජි",
+>>>>>>> drc_main
   "Custom language: {query}": "අභිරුචි භාෂාව: {query}",
   "Custom linkifier added!": "",
   "Custom playground added!": "අභිරුචි ක්‍රීඩා පිටිය එකතු කෙරිණි!",
@@ -370,9 +398,9 @@
   "Download botserverrc": "බොට්සර්වර්ක් බාගන්න",
   "Download config of all active outgoing webhook bots in Zulip Botserver format.": "",
   "Download file": "ගොනුව බාගන්න",
-  "Download the latest version.": "නවතම අනුවාදය බාගන්න.",
+  "Download the latest version.": "",
   "Download zuliprc": "zuliprc බාගන්න",
-  "Download {filename}": "{filename} බාගන්න",
+  "Download {filename}": "",
   "Drafts": "කටුපිටපත්",
   "Drafts are not synced to other devices and browsers.": "",
   "Drafts from conversation with {recipient}": "",
@@ -465,7 +493,7 @@
   "Failed to generate preview": "පෙරදසුන ජනනය කිරීමට අසමත් විය",
   "Failed to upload %'{file}'": "%'{file}' උඩුගත කිරීමට අසමත් විය",
   "Failed!": "අසමත්!",
-  "Failed: A custom emoji with this name already exists.": "අසමත් විය: මෙම නම සහිත අභිරුචි ඉමොජි දැනටමත් පවතී.",
+  "Failed: A custom emoji with this name already exists.": "",
   "Failed: Emoji name is required.": "අසමත් විය: ඉමොජි නම අවශ්‍යයි.",
   "Failed: There is a default emoji with this name. Only administrators can override default emoji.": "",
   "February": "නවම්",
@@ -497,7 +525,7 @@
   "Filter uploaded files": "",
   "Filter uploads": "උඩුගත කිරීම් පෙරන්න",
   "Filter users": "පරිශීලකයින් පෙරන්න",
-  "First message": "පළමු පණිවිඩය",
+  "First message": "",
   "First time? Read our <z-link>guidelines</z-link> for creating and naming streams.": "",
   "First time? Read our <z-link>guidelines</z-link> for creating user groups.": "",
   "For example, to configure a code playground for code blocks tagged as Python, you can set:": "",
@@ -509,7 +537,7 @@
   "Full name": "සම්පූර්ණ නම",
   "GIPHY attribution": "",
   "GIPHY integration": "",
-  "General": "පොදු",
+  "General": "",
   "Generate email address": "",
   "Generate invite link": "ඇරයුම් සබැඳියක් ජනනය කරන්න",
   "Generate new API key": "නව යෙ.ක්‍ර.මු. යතුරක් ජනනය කරන්න",
@@ -531,12 +559,12 @@
   "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena": "",
   "Guest": "අමුත්තා",
   "Guest users cannot edit custom emoji.": "",
-  "Guests": "අමුත්තන්",
+  "Guests": "",
   "Guests cannot edit custom emoji.": "අමුත්තන්ට අභිරුචි ඉමොජි සංස්කරණය කළ නොහැකිය.",
   "Header": "",
   "Help center": "උපකාරක මධ්‍යස්ථානය",
   "Hide muted message again": "නිහඬ කළ පණිවිඩය යළි සඟවන්න",
-  "Hide notice": "දැන්වීම සඟවන්න",
+  "Hide notice": "",
   "Hide password": "මුරපදය සඟවන්න",
   "Hide starred message count": "තරු යෙදූ පණිවිඩ ගණන සඟවන්න",
   "High contrast mode": "",
@@ -557,7 +585,7 @@
   "Include organization name in subject of message notification emails": "පණිවිඩ දැනුම් දීමේ වි-තැපැල් වලට සංවිධානයේ නම ඇතුළත් කරන්න",
   "Incoming webhooks can only send messages.": "",
   "Initiate a search": "",
-  "Insert new line": "නව රේඛාවක් ඇතුළු කරන්න",
+  "Insert new line": "",
   "Integrations": "අනුකලන",
   "Interface": "අතුරුමුහුණත",
   "Invalid URL": "වලංගු නොවන ඒ.ස.නි.",
@@ -631,8 +659,12 @@
   "Manage user groups": "පරිශීලක සමූහ කළමනාකරණය",
   "March": "මැදින්",
   "Mark all messages as read": "සියළු පණිවිඩ කියවූ බව යොදන්න",
+<<<<<<< HEAD
+  "Mark as read": "කියවූ ලෙස යොදන්න",
+=======
   "Mark all messages as read?": "",
   "Mark as read": "කියවූ ලෙස සලකුණු කරන්න",
+>>>>>>> drc_main
   "Mark as resolved": "විසඳූ ලෙස සලකුණු කරන්න",
   "Mark as unread from here": "",
   "Mark as unread from selected message": "",
@@ -665,7 +697,7 @@
   "Messages will not be automatically marked as read because this is not a conversation view. <z-link>Change setting</z-link>": "",
   "Messages will not be automatically marked as read. <z-link>Change setting</z-link>": "",
   "Mobile": "ජංගම",
-  "Mobile message notifications": "ජංගම පණිවිඩ දැනුම්දීම්",
+  "Mobile message notifications": "",
   "Mobile notifications": "ජංගම දැනුම්දීම්",
   "Mobile push notifications are not configured on this server.": "",
   "Moderator": "",
@@ -732,14 +764,24 @@
   "New option": "නව විකල්පය",
   "New password": "නව මුරපදය",
   "New password is too weak": "නව මුරපදය ඉතා දුර්වල ය",
+<<<<<<< HEAD
+  "New private message": "නව පෞද්ගලික පණිවිඩය",
+=======
+>>>>>>> drc_main
   "New stream announcements": "",
   "New stream message": "",
   "New task": "නව කාර්යය",
   "New topic": "නව මාතෘකාව",
   "New user announcements": "",
+<<<<<<< HEAD
+  "Next message": "",
+  "Next unread private message": "",
+  "Next unread topic": "",
+=======
   "Next message": "ඊළඟ පණිවිඩය",
   "Next unread direct message": "",
   "Next unread topic": "නොකියවූ ඊළඟ මාතෘකාව",
+>>>>>>> drc_main
   "Next week": "ලබන සතිය",
   "No bots match your current filter.": "වත්මන් පෙරහනට ස්වයංක්‍රමලේඛ නොගැළපේ.",
   "No custom emoji.": "අභිරුචි ඉමොජි නැත.",
@@ -775,7 +817,7 @@
   "Note that organizations are limited to five exports per week.": "සංවිධාන සතියකට නිර්යාත පහකට සීමා වී ඇති බව සලකන්න.",
   "Nothing to preview": "පෙරදසුන් සඳහා කිසි දෙයක් නැත",
   "Notification of account deactivation on {realm_name}": "",
-  "Notification settings": "දැනුම්දීම් සැකසුම්",
+  "Notification settings": "",
   "Notification sound": "දැනුම් දීමේ ශබ්දය",
   "Notification triggers": "",
   "Notifications": "දැනුම්දීම්",
@@ -801,7 +843,7 @@
   "Only stream members can add users to a private stream": "",
   "Only stream members can add users to a private stream.": "",
   "Only subscribers to this stream can edit stream permissions.": "",
-  "Open": "විවෘත",
+  "Open": "",
   "Open message menu": "",
   "Open reactions menu": "",
   "Open-source project": "",
@@ -846,7 +888,7 @@
   "Pin stream to top": "",
   "Pin stream to top of left sidebar": "",
   "Pinned": "",
-  "Plans and pricing": "සැලසුම් සහ මිලකරණය",
+  "Plans and pricing": "",
   "Play sound": "ශබ්දය වාදනය",
   "Please <z-link-support>contact support</z-link-support> for an exception or <z-link-invite-help>add users with a reusable invite link</z-link-invite-help>.": "",
   "Please ask a billing administrator to <z-link-billing>increase the number of licenses</z-link-billing> or <z-link-help-page>deactivate inactive users</z-link-help-page>, and try again.": "",
@@ -855,8 +897,14 @@
   "Please just upload one file.": "කරුණාකර එක් ගොනුවක් උඩුගත කරන්න.",
   "Please only use characters that are valid in an email address": "",
   "Please re-enter your password to confirm your identity.": "",
+<<<<<<< HEAD
+  "Please specify a date or time.": "",
+  "Please specify a stream": "",
+  "Please specify at least one valid recipient": "",
+=======
   "Please specify a stream.": "",
   "Please specify at least one valid recipient.": "",
+>>>>>>> drc_main
   "Political group": "",
   "Posted by {full_name}": "",
   "Press > for list of topics": "",
@@ -866,17 +914,32 @@
   "Preview": "පෙරදසුන",
   "Preview organization profile": "සංවිධානයේ පැතිකඩ පෙරදසුන",
   "Preview profile": "පැතිකඩ පෙරදසුන",
+<<<<<<< HEAD
+  "Previous message": "",
+  "Privacy": "",
+  "Privacy settings": "",
+  "Private messages": "පෞද්ගලික පණිවිඩ",
+  "Private messages and mentions": "පෞද්ගලික පණිවිඩ සහ සැඳහුම්",
+  "Private messages are disabled in this organization.": "මෙම සංවිධානය තුළ පෞද්ගලික පණිවිඩ අබල කර ඇත.",
+  "Private messages disabled": "පෞද්ගලික පණිවිඩ අබල කර ඇත",
+=======
   "Previous message": "පෙර පණිවිඩය",
   "Privacy": "පෞද්ගලිකත්වය",
   "Privacy settings": "පෞද්ගලිකත්‍ව සැකසුම්",
+>>>>>>> drc_main
   "Private, protected history": "පෞද්ගලික, ආරක්‍ෂිත ඉතිහාසය",
   "Private, shared history": "පෞද්ගලික, හවුල් ඉතිහාසය",
   "Profile": "පැතිකඩ",
   "Pronouns": "",
   "Public": "ප්‍රසිද්ධ",
   "Question": "",
+<<<<<<< HEAD
+  "Quote and reply or forward": "",
+  "Quote and reply to message": "",
+=======
   "Quote and reply": "",
   "Quote and reply to message": "පණිවිඩය උපුටා ගෙන පිළිතුරු දෙන්න",
+>>>>>>> drc_main
   "Quoted original email (in replies)": "",
   "React to selected message with": "",
   "Reactivate": "",
@@ -898,8 +961,13 @@
   "Reply directly to sender": "",
   "Reply mentioning bot": "",
   "Reply mentioning user": "පරිශීලකයා සඳහන් කරමින් පිළිතුරු දෙන්න",
+<<<<<<< HEAD
+  "Reply to author": "",
+  "Reply to message": "",
+=======
   "Reply to message": "පණිවිඩයට පිළිතුරු දෙන්න",
   "Reply to selected conversation": "",
+>>>>>>> drc_main
   "Reply to selected message": "",
   "Request education pricing": "",
   "Request sponsorship": "",
@@ -943,13 +1011,18 @@
   "Search all public streams in the organization.": "",
   "Search filters": "",
   "Search for <z-value></z-value> in the topic or message content.": "<z-value></z-value> සඳහා මාතෘකාවේ හෝ පණිවිඩ අන්තර්ගතය තුළ සොයන්න.",
+<<<<<<< HEAD
+  "Search operators": "ක්‍රියාකරුවන් සොයන්න",
+  "Search people": "පුද්ගලයින් සොයන්න",
+=======
   "Search people": "මිනිසුන් සොයන්න",
+>>>>>>> drc_main
   "Search results": "සෙවුම් ප්‍රතිඵල",
   "See how to configure email.": "",
   "Select a stream": "",
   "Select a stream below or change topic name.": "",
   "Select date and time": "",
-  "Select emoji": "ඉමොජි තෝරන්න",
+  "Select emoji": "",
   "Select language": "",
   "Send": "යවන්න",
   "Send automated notice to new topic": "",
@@ -964,13 +1037,17 @@
   "Send message": "පණිවිඩය යවන්න",
   "Send mobile notifications even if I'm online": "",
   "Send mobile notifications even if user is online": "",
+<<<<<<< HEAD
+  "Send private message": "පෞද්ගලික පණිවිඩය යවන්න",
+=======
+>>>>>>> drc_main
   "Send weekly digest emails to inactive users": "",
   "Sent!": "යැවිණි!",
   "Sent! Your message is outside your current narrow.": "",
   "Sent! Your recent message is outside the current search.": "යැවිණි! ඔබගේ මෑත පණිවිඩය වත්මන් සෙවුමෙන් පිටත ය.",
   "September": "බිනර",
-  "Set a status": "තත්වයක් සකසන්න",
-  "Set status": "තත්ත්වය සකසන්න",
+  "Set a status": "තත්‍වයක් සකසන්න",
+  "Set status": "",
   "Set up two factor authentication": "",
   "Settings": "සැකසුම්",
   "Setup": "පිහිටුවීම",
@@ -979,8 +1056,8 @@
   "Show counts for starred messages": "",
   "Show fewer": "වඩා අඩුවෙන් පෙන්වන්න",
   "Show images in thread": "",
-  "Show keyboard shortcuts": "යතුරු පුවරුවේ කෙටිමං පෙන්වන්න",
-  "Show less": "අඩුවෙන් පෙන්වන්න",
+  "Show keyboard shortcuts": "",
+  "Show less": "",
   "Show message sender's user card": "",
   "Show more": "තව පෙන්වන්න",
   "Show password": "මුරපදය පෙන්වන්න",
@@ -989,7 +1066,7 @@
   "Show starred message count": "තරු යෙදූ පණිවිඩ ගණන පෙන්වන්න",
   "Show status text": "",
   "Show/change your API key": "ඔබගේ යෙ.ක්‍ර.මු. යතුර පෙන්වන්න/වෙනස් කරන්න",
-  "Sign up": "ලියාපදිංචි වන්න",
+  "Sign up": "ලියාපදිංචිය",
   "Silent mentions do not trigger notifications.": "",
   "Size": "ප්‍රමාණය",
   "Slack compatible": "",
@@ -1040,7 +1117,7 @@
   "Task list": "",
   "Test desktop notification": "",
   "The administrators provided the following comment:": "",
-  "The basics": "මූලික කරුණු",
+  "The basics": "",
   "The group description cannot contain newline characters.": "",
   "The recipient {recipient} is not valid.": "",
   "The recipients {recipients} are not valid.": "",
@@ -1116,10 +1193,15 @@
   "Tomorrow at {time}": "",
   "Topic": "මාතෘකාව",
   "Topic muted": "මාතෘකාව නිහඬ කෙරිණි",
+<<<<<<< HEAD
+  "Topics are required in this organization": "",
+  "Topics marked as resolved": "",
+=======
   "Topic settings": "",
   "Topics": "මාතෘකා",
   "Topics are required in this organization.": "",
   "Topics marked as resolved": "විසඳා ඇති ලෙස සලකුණු කළ මාතෘකා",
+>>>>>>> drc_main
   "Tuesday": "අඟහරුවාදා",
   "Turn off invisible mode": "",
   "Two factor authentication": "",
@@ -1165,8 +1247,15 @@
   "Upload new profile picture": "",
   "Upload profile picture": "පැතිකඩ පින්තූරය උඩුගත කරන්න",
   "Upload stalled for %'{seconds}' seconds, aborting.": "",
+<<<<<<< HEAD
+  "Uploaded files": "",
+  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "",
+  "Uploading {filename}…": "{filename} උඩුගත වෙමින්…",
+  "Uploading…": "උඩුගත වෙමින්…",
+=======
   "Uploaded files": "උඩුගත කළ ගොනු",
   "Uploading {filename}…": "{filename} උඩුගත වෙමින්…",
+>>>>>>> drc_main
   "Usage statistics": "භාවිතාවේ සංඛ්‍යාලේඛන",
   "Use full width on wide screens": "පුළුල් තිර මත පූර්ණ පළල භාවිතා කරන්න",
   "Use html encoding (not recommended)": "",
@@ -1185,7 +1274,7 @@
   "User identity": "පරිශීලක අනන්යතාව",
   "User is already not subscribed.": "",
   "User is deactivated": "",
-  "User list": "පරිශීලක ලැයිස්තුව",
+  "User list": "",
   "User list style": "",
   "User list style changed successfully!": "",
   "User role": "පරිශීලක භූමිකාව",
@@ -1256,9 +1345,13 @@
   "Working remotely": "දුරස්ථව වැඩ කරමින්",
   "Working…": "වැඩ කරමින්…",
   "Write": "ලියන්න",
+<<<<<<< HEAD
+  "Yes, please!": "",
+=======
   "Yes, please!": "ඔව්, කරුණාකරලා!",
   "Yes, save": "",
   "Yes, schedule": "",
+>>>>>>> drc_main
   "Yes, send": "ඔව්, යවන්න",
   "Yesterday": "ඊයේ",
   "You": "ඔබ",
@@ -1365,7 +1458,13 @@
   "marketing": "අලෙවිකරණය",
   "more conversations": "",
   "more topics": "තවත් මාතෘකා",
+<<<<<<< HEAD
+  "or": "",
+  "private messages with yourself": "ඔබ සමඟ පෞද්ගලික පණිවිඩ",
+  "private messages with {recipient}": "{recipient} සමඟ පෞද්ගලික පණිවිඩ",
+=======
   "or": "හෝ",
+>>>>>>> drc_main
   "she/her": "",
   "they/them": "",
   "{N, plural, one {Done! {N} message marked as read.} other {Done! {N} messages marked as read.}}": "{N, plural, one {} other {}}",
@@ -1378,12 +1477,23 @@
   "{full_name} is typing…": "",
   "{hours} hours ago": "පැය {hours} කට පෙර",
   "{items_selected} selected": "",
+<<<<<<< HEAD
+  "{last_active_date}": "{last_active_date}",
+  "{minutes} min to edit": "සංස්කරණයට විනාඩි {minutes}",
+  "{minutes} minutes ago": "විනාඩි {minutes} කට පෙර",
+  "{modal_heading_text}": "",
+  "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, one {} other {}}",
+  "{seconds} sec to edit": "සංස්කරණයට තත්පර {seconds}",
+  "{starred_status} this message": "මෙම පණිවිඩය {starred_status}",
+  "{starred_status} this message (Ctrl + s)": "",
+=======
   "{messages_not_allowed_to_move, plural, one {# message} other {# messages}} will remain in the current topic.": "{messages_not_allowed_to_move, plural, one {} other {}} will remain in the current topic.",
   "{minutes} min to edit": "සංස්කරණය කිරීමට විනාඩි {minutes}",
   "{minutes} minutes ago": "විනාඩි {minutes} කට පෙර",
   "{modal_heading_text}": "",
   "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, one {} other {}}",
   "{seconds} sec to edit": "සංස්කරණය කිරීමට තත්පර {seconds}",
+>>>>>>> drc_main
   "{user_time} local time": "",
   "{username} [said]({link_to_message}):": "",
   "{username} reacted with {emoji_name}": ""

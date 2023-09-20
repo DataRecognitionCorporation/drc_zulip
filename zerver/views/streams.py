@@ -341,7 +341,11 @@ def update_stream_backend(
 
     if message_retention_days is not None:
         if not user_profile.is_realm_owner:
+<<<<<<< HEAD
+            raise OrganizationOwnerRequiredError()
+=======
             raise OrganizationOwnerRequiredError
+>>>>>>> drc_main
         user_profile.realm.ensure_not_on_limited_plan()
         new_message_retention_days_value = parse_message_retention_days(
             message_retention_days, Stream.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
@@ -964,7 +968,11 @@ def delete_in_topic(
     try:
         timeout(50, delete_in_batches)
     except TimeoutExpiredError:
+<<<<<<< HEAD
+        return json_partial_success(request, data={"code": ErrorCode.REQUEST_TIMEOUT.name})
+=======
         return json_success(request, data={"complete": False})
+>>>>>>> drc_main
 
     return json_success(request, data={"complete": True})
 

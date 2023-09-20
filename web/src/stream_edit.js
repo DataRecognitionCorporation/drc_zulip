@@ -233,6 +233,11 @@ export function show_settings_for(node) {
 
     const other_settings = [];
     const notification_settings = all_settings.filter((setting) => {
+        //DRC MODIFICATION - if user is not admin... always return false so mute checkbox
+        // is not displayed
+        if(setting.name == "is_muted" && !page_params.is_admin){
+          return false;
+        }
         if (setting.is_notification_setting) {
             return true;
         }
@@ -244,6 +249,7 @@ export function show_settings_for(node) {
         sub,
         notification_settings,
         other_settings,
+        is_admin: page_params.is_admin,
         stream_post_policy_values: stream_data.stream_post_policy_values,
         stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
         stream_privacy_policy: stream_data.get_stream_privacy_policy(stream_id),

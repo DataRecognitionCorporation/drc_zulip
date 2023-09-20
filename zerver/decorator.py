@@ -140,7 +140,11 @@ def require_realm_owner(
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if not user_profile.is_realm_owner:
+<<<<<<< HEAD
+            raise OrganizationOwnerRequiredError()
+=======
             raise OrganizationOwnerRequiredError
+>>>>>>> drc_main
         return func(request, user_profile, *args, **kwargs)
 
     return wrapper
@@ -158,10 +162,31 @@ def require_realm_admin(
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if not user_profile.is_realm_admin:
+<<<<<<< HEAD
+            raise OrganizationAdministratorRequiredError()
+=======
             raise OrganizationAdministratorRequiredError
+>>>>>>> drc_main
         return func(request, user_profile, *args, **kwargs)
 
     return wrapper
+
+
+# DRC MODIFICATION
+def require_owner(
+    view_func: Callable[Concatenate[HttpRequest, ParamT], HttpResponse]
+) -> Callable[Concatenate[HttpRequest, ParamT], HttpResponse]:
+    @zulip_login_required
+    @wraps(view_func)
+    def _wrapped_view_func(
+        request: HttpRequest, /, *args: ParamT.args, **kwargs: ParamT.kwargs
+    ) -> HttpResponse:
+        if not request.user.role == 100:
+            return HttpResponseRedirect(settings.HOME_NOT_LOGGED_IN)
+
+        return add_logging_data(view_func)(request, *args, **kwargs)
+
+    return _wrapped_view_func
 
 
 def require_organization_member(
@@ -176,7 +201,11 @@ def require_organization_member(
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if user_profile.role > UserProfile.ROLE_MEMBER:
+<<<<<<< HEAD
+            raise OrganizationMemberRequiredError()
+=======
             raise OrganizationMemberRequiredError
+>>>>>>> drc_main
         return func(request, user_profile, *args, **kwargs)
 
     return wrapper
@@ -310,12 +339,20 @@ def log_unsupported_webhook_event(request: HttpRequest, summary: str) -> None:
     webhook_unsupported_events_logger.exception(summary, stack_info=True, extra=extra)
 
 
+<<<<<<< HEAD
+def log_exception_to_webhook_logger(err: Exception) -> None:
+    if isinstance(err, AnomalousWebhookPayloadError):
+        webhook_anomalous_payloads_logger.exception(str(err), stack_info=True)
+    elif isinstance(err, UnsupportedWebhookEventTypeError):
+        webhook_unsupported_events_logger.exception(str(err), stack_info=True)
+=======
 def log_exception_to_webhook_logger(request: HttpRequest, err: Exception) -> None:
     extra = {"request": request}
     if isinstance(err, AnomalousWebhookPayloadError):
         webhook_anomalous_payloads_logger.exception(str(err), stack_info=True, extra=extra)
     elif isinstance(err, UnsupportedWebhookEventTypeError):
         webhook_unsupported_events_logger.exception(str(err), stack_info=True, extra=extra)
+>>>>>>> drc_main
     else:
         webhook_logger.exception(str(err), stack_info=True, extra=extra)
 

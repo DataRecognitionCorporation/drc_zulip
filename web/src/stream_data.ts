@@ -258,11 +258,27 @@ export function get_stream_id(name: string): number | undefined {
     return stream_id;
 }
 
+<<<<<<< HEAD:static/js/stream_data.js
+export function is_private(name) {
+    // Note: Only use this function for situations where
+    // you are comfortable with a user dealing with an
+    // old name of a stream (from prior to a rename).
+    const sub = stream_info.get(name);
+
+    if (sub) {
+        return sub.invite_only;
+    }
+    return false;
+}
+
+export function get_sub_by_name(name) {
+=======
 export function get_stream_name_from_id(stream_id: number): string {
     return get_sub_by_id(stream_id)?.name ?? "";
 }
 
 export function get_sub_by_name(name: string): StreamSubscription | undefined {
+>>>>>>> drc_main:web/src/stream_data.ts
     // Note: Only use this function for situations where
     // you are comfortable with a user dealing with an
     // old name of a stream (from prior to a rename).
@@ -417,8 +433,43 @@ export function get_streams_for_user(user_id: number): {
     };
 }
 
+<<<<<<< HEAD:static/js/stream_data.js
+// DRC MODIFICATION - get all subs
+export function get_all_invite_stream_data() {
+  function get_data(sub) {
+      return {
+          name: sub.name,
+          stream_id: sub.stream_id,
+          invite_only: sub.invite_only,
+          default_stream: default_stream_ids.has(sub.stream_id),
+      };
+  }
+
+  const streams = [];
+
+  // Invite users to all default streams...
+  for (const stream_id of default_stream_ids) {
+      const sub = sub_store.get(stream_id);
+      streams.push(get_data(sub));
+  }
+
+
+  for (const sub of get_unsorted_subs()) {
+      if (!default_stream_ids.has(sub.stream_id)) {
+          streams.push(get_data(sub));
+      }
+  }
+
+  return streams;
+}
+
+
+export function get_invite_stream_data() {
+    function get_data(sub) {
+=======
 export function get_invite_stream_data(): InviteStreamData[] {
     function get_data(sub: StreamSubscription): InviteStreamData {
+>>>>>>> drc_main:web/src/stream_data.ts
         return {
             name: sub.name,
             stream_id: sub.stream_id,

@@ -197,6 +197,10 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     recipient_ids = []
     for sub in all_stream_subs:
         stream_subscription_logs = all_stream_subscription_logs[sub["recipient__type_id"]]
+        # DRC FIX FOR NO RECORDS AFTER PURGE
+        # ATORMANEN 22-08-12
+        if(len(stream_subscription_logs) == 0):
+            continue
         if stream_subscription_logs[-1].event_type == RealmAuditLog.SUBSCRIPTION_DEACTIVATED:
             assert stream_subscription_logs[-1].event_last_message_id is not None
             if (

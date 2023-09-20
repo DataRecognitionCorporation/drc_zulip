@@ -1,9 +1,35 @@
+<<<<<<< HEAD:static/styles/zulip.css
+/*
+This is the header, aka the navbar.
+*/
+$header_height: 40px;
+
+/*
+We have a 10px gutter below the header,
+which often needs to be respected by both
+the elements above it and below it on
+the y-axis, due to absolute positioning.
+*/
+$header_padding_bottom: 10px;
+
+/*
+Our sidebars (and anything that top-align
+with them such as floating recipient bars)
+go beneath the header.
+*/
+$sidebar_top: calc($header_height + $header_padding_bottom);
+
+$left_sidebar_collapse_widget_gutter: 10px;
+$left_sidebar_width: 310px;
+$right_sidebar_width: 250px;
+=======
 html {
     overflow-y: scroll;
     overflow-x: hidden;
     overscroll-behavior-y: none;
     width: calc(100% - var(--disabled-scrollbar-width));
 }
+>>>>>>> drc_main:web/styles/zulip.css
 
 body,
 html {
@@ -1669,7 +1695,26 @@ td.pointer {
     background-color: var(--color-background-private-message-content);
 
     .date_row {
+<<<<<<< HEAD:static/styles/zulip.css
+        background-color: hsla(192, 19%, 75%, 0.2);
+        /* The 5th parameter here is a spread-radius, which, when negative,
+         * causes the shadow to shrink (be smaller than the target
+         * element), resulting in a visual width of 3px-1px=2px. This
+         * is a workaround for a regression found in Electron
+         * v18.3.15+ where the box-shadow with spread-radius >= 0
+         * would cause horizontal separator lines to appear between
+         * messages in the color of the left ruler. The root cause of
+         * that regression is yet unknown.
+         *
+         * Similar CSS for stream messages is present directly in the
+         * Handlebars templates, since the color used there is the
+         * stream's configured color.
+         */
+        box-shadow: inset 3px 0 0 -1px hsl(0, 0%, 27%),
+            -1px 0 0 0 hsl(0, 0%, 27%);
+=======
         background-color: var(--color-background-private-message-content);
+>>>>>>> drc_main:web/styles/zulip.css
     }
 }
 

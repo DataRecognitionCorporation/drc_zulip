@@ -1,6 +1,9 @@
 {
   "%'{file}' exceeds the maximum file size for attachments ({variable} MB).": "%'{file}' از بیشینه‌ی اندازه‌ی فایل برای پیوست‌ها رد داده است({variable} MB).",
+<<<<<<< HEAD
+=======
   "(attached file)": "",
+>>>>>>> drc_main
   "(forever)": "(تاهمیشه)",
   "(hidden)": "(پنهان)",
   "(no description)": "(بدون توضیح)",
@@ -1166,7 +1169,13 @@
   "Upload profile picture": "بارگذاری تصویر پروفایل",
   "Upload stalled for %'{seconds}' seconds, aborting.": "",
   "Uploaded files": "فایل های بارگذاری شده",
+<<<<<<< HEAD
+  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "",
   "Uploading {filename}…": "",
+  "Uploading…": "در حال بارگذاری ...",
+=======
+  "Uploading {filename}…": "",
+>>>>>>> drc_main
   "Usage statistics": "",
   "Use full width on wide screens": "استفاده از حالت تمام عرض در صفحه نمایش های عریض",
   "Use html encoding (not recommended)": "",

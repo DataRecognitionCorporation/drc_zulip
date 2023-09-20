@@ -4,6 +4,10 @@ from typing import Any, Dict, List
 
 from django.conf import settings
 from django.core.management.base import CommandError
+<<<<<<< HEAD
+from django.db.models import QuerySet
+=======
+>>>>>>> drc_main
 
 from zerver.lib.management import ZulipBaseCommand
 from zerver.lib.soft_deactivation import (

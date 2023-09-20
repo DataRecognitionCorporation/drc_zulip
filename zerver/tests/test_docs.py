@@ -56,6 +56,16 @@ class DocPageTest(ZulipTestCase):
         self,
         *,
         url: str,
+<<<<<<< HEAD
+        expected_content: str,
+        extra_strings: Sequence[str] = [],
+        landing_missing_strings: Sequence[str] = [],
+        landing_page: bool = True,
+        doc_html_str: bool = False,
+    ) -> None:
+        # Test the URL on the "zephyr" subdomain
+        result = self.get_doc(url, subdomain="zephyr")
+=======
         subdomain: str,
         expected_strings: Sequence[str],
         allow_robots: bool,
@@ -69,6 +79,7 @@ class DocPageTest(ZulipTestCase):
             allow_robots = False
 
         result = self.get_doc(url, subdomain=subdomain)
+>>>>>>> drc_main
         self.print_msg_if_error(url, result)
         self.assertEqual(result.status_code, 200)
         for s in expected_strings:
@@ -246,8 +257,13 @@ class DocPageTest(ZulipTestCase):
         self._test("/errors/5xx/", ["Internal server error"])
 
     def test_corporate_portico_endpoints(self) -> None:
+<<<<<<< HEAD
+        self._test("/team/", "industry veterans")
+        self._test("/apps/", "Apps for every platform.")
+=======
         self._test("/team/", ["industry veterans"])
         self._test("/apps/", ["Apps for every platform."])
+>>>>>>> drc_main
 
         self._test("/history/", ["Zulip released as open source!"])
         # Test the i18n version of one of these pages.

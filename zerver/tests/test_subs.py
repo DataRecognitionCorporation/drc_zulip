@@ -4977,6 +4977,8 @@ class SubscriptionAPITest(ZulipTestCase):
                 acting_user=None,
             )
 
+<<<<<<< HEAD
+=======
     def test_subscribe_others_to_public_stream_in_zephyr_realm(self) -> None:
         """
         Users cannot be subscribed to public streams by other users in zephyr realm.
@@ -5002,6 +5004,7 @@ class SubscriptionAPITest(ZulipTestCase):
             status_code=400,
         )
 
+>>>>>>> drc_main
     def test_bulk_subscribe_many(self) -> None:
         # Create a whole bunch of streams
         streams = [f"stream_{i}" for i in range(30)]

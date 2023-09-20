@@ -268,6 +268,10 @@ def upload_file_backend(request: HttpRequest, user_profile: UserProfile) -> Http
         raise JsonableError(_("You must specify a file to upload"))
     if len(request.FILES) != 1:
         raise JsonableError(_("You may only upload one file at a time"))
+    #DRC MOD asher 2021-10-19
+    if not(user_profile.is_realm_admin):
+        raise JsonableError(_("You are not authorized to upload file(s)."))
+    #END OF DRC MOD
 
     [user_file] = request.FILES.values()
     assert isinstance(user_file, UploadedFile)

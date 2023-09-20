@@ -62,6 +62,9 @@
   "Active bots": "Faal botlar",
   "Active more than 2 weeks ago": "",
   "Active now": "Şu an faal",
+<<<<<<< HEAD
+  "Active users": "Aktif kullanıcılar",
+=======
   "Active users": "Faal kullanıcılar",
   "Active yesterday": "",
   "Active {days_old} days ago": "",
@@ -69,6 +72,7 @@
   "Active {last_active_date}": "",
   "Active {minutes} minutes ago": "",
   "Activity unknown": "",
+>>>>>>> drc_main
   "Add": "Ekle",
   "Add GIF": "GIF Ekle",
   "Add a new alert word": "Yeni bir uyarı kelimesi ekle",
@@ -85,7 +89,7 @@
   "Add code playground": "Kod oyun alanı ekle",
   "Add emoji": "Emoji ekle",
   "Add emoji reaction": "Emoji tepkisi ekle",
-  "Add extra emoji for members of the {realm_name} organization.": "{realm_name} organizasyonunun üyeleri için fazladan emoji ekleyin.",
+  "Add extra emoji for members of the {realm_name} organization.": "{realm_name} organizasyonun üyeleri için fazladan emoji ekleyin.",
   "Add global time": "Evrensel zaman ekle",
   "Add linkifier": "Linkifier ekle",
   "Add members": "",
@@ -323,7 +327,7 @@
   "Delete icon": "Ikon sil",
   "Delete linkifier?": "",
   "Delete logo": "Logoyu sil",
-  "Delete message": "İletiyi silin",
+  "Delete message": "İleti sil",
   "Delete message?": "",
   "Delete profile picture": "Profil resmini sil",
   "Delete scheduled message": "",
@@ -686,7 +690,7 @@
   "Moving messages": "",
   "Must be invited by a subscriber; new subscribers can only see messages sent after they join; hidden from non-administrator users": "Bir abone tarafından davet edilmelidir; yeni aboneler yalnızca üye olduktan sonra gönderilen iletileri görebilir; yönetici olmayan kullanıcılardan gizli",
   "Must be invited by a subscriber; new subscribers can view complete message history; hidden from non-administrator users": "Bir abone tarafından davet edilmelidir; yeni aboneler tam ileti geçmişini görüntüleyebilir; yönetici olmayan kullanıcılardan gizli",
-  "Mute stream": "Kanalı sustur",
+  "Mute stream": "Kanalı sessize al",
   "Mute this user": "Bu kullanıcının sesini kapat",
   "Mute topic": "Konuyu susturun",
   "Mute user": "Kullanıcıyı sessize al",
@@ -719,7 +723,12 @@
   "Narrow to stream from topic view": "",
   "Narrow to topic or DM conversation": "",
   "Narrow to unread messages.": "Okunmamış iletilere süz.",
+<<<<<<< HEAD
+  "Narrow to your private messages with {display_reply_to}": "{display_reply_to} ile özel iletilerinize süzün",
+  "Narrow to {message_recipient}": "{message_recipient} olarak süz",
+=======
   "Narrow to {message_recipient}": "{message_recipient} 'a süz",
+>>>>>>> drc_main
   "Narrowing": "Süzme",
   "Navigation": "Navigasyon",
   "Never": "Asla",
@@ -752,7 +761,7 @@
   "No linkifiers set.": "Linkifier oluşturulmadı.",
   "No matching users.": "Eşleşen kullanıcı yok.",
   "No one has read this message yet.": "Bu mesajı henüz kimse okumadı.",
-  "No owner": "Organizasyon yöneticisiz yok",
+  "No owner": "Organizasyon yöneticisi yok",
   "No playgrounds configured.": "Yapılandırılmış oyun alanı yok.",
   "No restrictions": "Kısıtlama yok",
   "No scheduled messages.": "",
@@ -795,9 +804,19 @@
   "Only in conversation views": "Sadece konuşma görünümü içindeyken",
   "Only organization administrators can edit these settings": "Bu ayarları yalnızca organizasyon yöneticileri düzenleyebilir",
   "Only organization administrators can edit these settings.": "Bu ayarları sadece organizasyon yöneticileri değiştirebilir.",
+<<<<<<< HEAD
+  "Only organization administrators can modify user groups in this organization.": "Bu organizasyonda sadece organizasyon yöneticileri kullanıcı gruplarını düzenleyebilir.",
+  "Only organization administrators can post.": "Sadece organizasyon yöneticileri paylaşabilir.",
+  "Only organization full members can add custom emoji in this organization.": "Bu organizasyonda yalnızca tam üyeler özel emoji ekleyebilir.",
+  "Only organization full members can post.": "Sadece organizasyon tam üyeleri ileti gönderebilir.",
+  "Only organization owners can edit these settings.": "Sadece organizasyon yöneticileri bu ayarları düzenleyebilir.",
+  "Only owners can change these settings.": "",
+  "Only owners can deactivate the organization.": "Sadece organizasyon yöneticileri organizasyonu devre dışı yapabilir.",
+=======
   "Only organization owners can edit these settings.": "Sadece organizasyon sahipleri bu ayarları düzenleyebilir.",
   "Only organization owners may deactivate an organization.": "",
   "Only owners can change these settings.": "",
+>>>>>>> drc_main
   "Only stream members can add users to a private stream": "Sadece kanal üyeleri özel kanallara kullanıcı ekleyebilir",
   "Only stream members can add users to a private stream.": "",
   "Only subscribers to this stream can edit stream permissions.": "",
@@ -822,13 +841,17 @@
   "Organization profile picture": "Organizasyon profil resmi",
   "Organization settings": "Organizasyon ayarları",
   "Organization type": "Organizasyon tipi",
-  "Organization using {percent_used}% of {upload_quota}.": "{upload_quota} %{percent_used} oranında kullanan organizasyon.",
+  "Organization using {percent_used}% of {upload_quota}.": "{upload_quota}'dan %{percent_used} oranında kullanan organizasyon.",
   "Other": "Diğer",
   "Other emails": "Diğer e-postalar",
   "Other permissions": "Diğer izinler",
   "Other settings": "Diğer ayarlar",
+<<<<<<< HEAD
+  "Out sick": "Hasta",
+=======
   "Other users in this Zulip organization will be able to see this email address.": "",
   "Out sick": "Tatilde",
+>>>>>>> drc_main
   "Outgoing webhook message format": "Dışarı yönlü webhook ileti biçimi",
   "Override default emoji?": "",
   "Owner": "Organizasyon Yöneticisi",
@@ -966,7 +989,14 @@
   "Send mobile notifications even if user is online": "",
   "Send weekly digest emails to inactive users": "Aktif olamayan kullanıcılara haftalık özet gönder",
   "Sent!": "Gönderildi!",
+<<<<<<< HEAD
+  "Sent! Scroll down to view your message.": "Gönderildi! iletinizi görmek için aşağıya doğru kaydırın.",
+  "Sent! Your message is outside your current narrow.": "Gönderildi! İletiniz aktif süzmenin dışında.",
+  "Sent! Your message was sent to a stream you have muted.": "Gönderildi! İletiniz daha önce susturmuş olduğunuz kanala gönderilmiştir.",
+  "Sent! Your message was sent to a topic you have muted.": "Gönderildi! İletiniz daha önce susturmuş olduğunuz konuya gönderilmiştir.",
+=======
   "Sent! Your message is outside your current narrow.": "Gönderildi! İletiniz aktif kanalın dışında.",
+>>>>>>> drc_main
   "Sent! Your recent message is outside the current search.": "Gönderildi! Önceki iletiniz aktif aramanın dışındadır.",
   "September": "Eylül",
   "Set a status": "Durum belirle",
@@ -1024,7 +1054,7 @@
   "Subscribe": "Abone ol",
   "Subscribe them": "Abone yapın",
   "Subscribe to/unsubscribe from selected stream": "Seçili kanala üye ol / üyelikten çık",
-  "Subscribed": "Abonelikler",
+  "Subscribed": "Abone olunan kanallar",
   "Subscribed streams": "Abone olunan kanallar",
   "Subscriber count": "Abone sayısı",
   "Subscribers": "Aboneler",
@@ -1158,7 +1188,7 @@
   "Upgrade to the latest release": "",
   "Upgrade to {standard_plan_name}": "",
   "Upload avatar": "Avatar yükle",
-  "Upload files": "Dosyaları yükle",
+  "Upload files": "Dosya yükle",
   "Upload icon": "İkon yükle",
   "Upload image or GIF": "Resim veya GIF yükle",
   "Upload logo": "Logo yükle",
@@ -1166,7 +1196,13 @@
   "Upload profile picture": "Profil resmi yükle",
   "Upload stalled for %'{seconds}' seconds, aborting.": "Yükleme {saniye} saniye durakladı, iptal ediliyor.",
   "Uploaded files": "Yüklenmiş dosyalar",
+<<<<<<< HEAD
+  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "Bu adla özel bir emoji yüklemek, yerleşik emojiyi geçersiz kılar. Devam et?",
   "Uploading {filename}…": "{filename} yükleniyor…",
+  "Uploading…": "Yükleniyor...",
+=======
+  "Uploading {filename}…": "{filename} yükleniyor…",
+>>>>>>> drc_main
   "Usage statistics": "Kullanım istatistikleri",
   "Use full width on wide screens": "Geniş ekranlar için tam genişlik kullan",
   "Use html encoding (not recommended)": "",

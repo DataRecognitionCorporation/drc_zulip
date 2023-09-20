@@ -259,9 +259,13 @@
   "Copy mention syntax": "",
   "Copy version": "",
   "Copy zuliprc": "",
+<<<<<<< HEAD
+  "Create": "इसे बनाओ",
+=======
   "Could not resolve topic": "",
   "Could not unresolve topic": "",
   "Create": "सर्जन करना",
+>>>>>>> drc_main
   "Create a stream": "",
   "Create new stream": "नई स्ट्रीम बनाएं",
   "Create new user group": "",
@@ -923,7 +927,7 @@
   "SAVING": "",
   "STREAMS": "",
   "Saturday": "",
-  "Save": "परिवर्तनों को सुरक्षित करें",
+  "Save": "बचाना / सहेजें",
   "Save changes": "",
   "Save failed": "",
   "Saved": "",
@@ -1166,7 +1170,13 @@
   "Upload profile picture": "",
   "Upload stalled for %'{seconds}' seconds, aborting.": "",
   "Uploaded files": "",
+<<<<<<< HEAD
+  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "",
   "Uploading {filename}…": "",
+  "Uploading…": "",
+=======
+  "Uploading {filename}…": "",
+>>>>>>> drc_main
   "Usage statistics": "",
   "Use full width on wide screens": "",
   "Use html encoding (not recommended)": "",

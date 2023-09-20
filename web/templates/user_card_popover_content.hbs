@@ -9,6 +9,7 @@
             <span class="{{user_circle_class}} user_circle popover_user_presence tippy-zulip-tooltip hidden-for-spectators" data-tippy-content="{{user_last_seen_time_status}}"></span>
             {{/if}}
         {{/if}}
+        {{#unless is_guest}}
         {{#if show_manage_menu }}
         <span class="user-card-popover-action-buttons">
             <a class="user-card-popover-manage-menu-btn" role="button" tabindex="0" aria-haspopup="true">
@@ -16,6 +17,7 @@
             </a>
         </span>
         {{/if}}
+        {{/unless}}
     </li>
 
 
@@ -84,6 +86,7 @@
     {{/if}}
 
     {{#if is_me}}
+        {{#unless is_guest}}
         <li>
             <a tabindex="0" class="update_status_text">
                 <i class="fa fa-comments" aria-hidden="true"></i>
@@ -107,6 +110,7 @@
             </a>
         </li>
         {{/if}}
+        {{/unless}}
     {{/if}}
 
 
@@ -122,11 +126,13 @@
             </a>
         </li>
         {{#if can_send_private_message}}
+        {{#if is_admin}}
             <li>
                 <a tabindex="0" class="{{ private_message_class }}">
                     <i class="fa fa-comment" aria-hidden="true"></i> {{t "Send direct message" }} {{#if is_sender_popover}}<span class="hotkey-hint">(R)</span>{{/if}}
                 </a>
             </li>
+        {{/if}}
         {{/if}}
         {{#unless is_me}}
         <li>
@@ -153,6 +159,7 @@
         </li>
         {{/if}}
         <hr />
+        {{#if is_admin}}
         <li>
             <a href="{{ pm_with_url }}" class="narrow_to_private_messages">
                 <i class="fa fa-envelope" aria-hidden="true"></i>
@@ -168,5 +175,6 @@
                 <i class="fa fa-paper-plane" aria-hidden="true"></i> {{t "View messages sent" }}
             </a>
         </li>
+        {{/if}}
     {{/unless}}
 </ul>

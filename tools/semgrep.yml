@@ -136,6 +136,15 @@ rules:
     severity: ERROR
     message: "Prefer f-strings or .format for string formatting"
 
+<<<<<<< HEAD
+  - id: typing-text
+    languages: [python]
+    pattern: typing.Text
+    severity: ERROR
+    message: "Use str instead of typing.Text"
+
+=======
+>>>>>>> drc_main
   - id: change-user-is-active
     languages: [python]
     patterns:

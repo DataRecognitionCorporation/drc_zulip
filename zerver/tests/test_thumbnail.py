@@ -14,6 +14,10 @@ class ThumbnailTest(ZulipTestCase):
         fp.name = "zulip.jpeg"
 
         result = self.client_post("/json/user_uploads", {"file": fp})
+        self.assert_json_error_contains(result, 'You are not authorized to upload file(s).')
+
+        self.login("desdemona")
+        result = self.client_post("/json/user_uploads", {"file": fp})
         self.assert_json_success(result)
         json = orjson.loads(result.content)
         self.assertIn("uri", json)
@@ -50,7 +54,7 @@ class ThumbnailTest(ZulipTestCase):
 
     @override_settings(RATE_LIMITING=True)
     def test_thumbnail_redirect_for_spectator(self) -> None:
-        self.login("hamlet")
+        self.login("iago")
         fp = StringIO("zulip!")
         fp.name = "zulip.jpeg"
 
@@ -70,12 +74,21 @@ class ThumbnailTest(ZulipTestCase):
             response = self.client_get("/thumbnail", {"url": url[1:], "size": "full"})
             self.assertEqual(response.status_code, 403)
 
+<<<<<<< HEAD
+        # Allow file access for web-public stream
+        self.login("iago")
+        self.make_stream("web-public-stream", is_web_public=True)
+        self.subscribe(self.example_user("hamlet"), "web-public-stream")
+        body = f"First message ...[zulip.txt](http://{host}" + uri + ")"
+        self.send_stream_message(self.example_user("hamlet"), "web-public-stream", body, "test")
+=======
             # Allow file access for web-public stream
             self.login("hamlet")
             self.make_stream("web-public-stream", is_web_public=True)
             self.subscribe(self.example_user("hamlet"), "web-public-stream")
             body = f"First message ...[zulip.txt](http://{host}" + url + ")"
             self.send_stream_message(self.example_user("hamlet"), "web-public-stream", body, "test")
+>>>>>>> drc_main
 
             self.logout()
             response = self.client_get("/thumbnail", {"url": url[1:], "size": "full"})
@@ -95,3 +108,10 @@ class ThumbnailTest(ZulipTestCase):
             },
         )
         self.assertEqual(response.status_code, 403)
+
+        self.login("hamlet")
+        fp = StringIO("zulip!")
+        fp.name = "zulip.jpeg"
+
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        self.assert_json_error_contains(result, 'You are not authorized to upload file(s).')

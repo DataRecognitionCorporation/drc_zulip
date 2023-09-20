@@ -1,6 +1,10 @@
 {
+<<<<<<< HEAD
+  "%'{file}' exceeds the maximum file size for attachments ({variable} MB).": "%'{file}' превышает максимальный размер файла для файловых приложений ({variable} МБ).",
+=======
   "%'{file}' exceeds the maximum file size for attachments ({variable} MB).": "%'{file}' превышает максимальный размер файла для файловых приложений ({variable} мб).",
   "(attached file)": "(прикрепленный файл)",
+>>>>>>> drc_main
   "(forever)": "(навсегда)",
   "(hidden)": "(скрытый)",
   "(no description)": "(нет описания)",
@@ -76,7 +80,11 @@
   "Add a new code playground": "Добавить новую интерактивную среду для кода",
   "Add a new custom profile field": "Добавить дополнительное поле профиля",
   "Add a new emoji": "Добавить эмодзи",
+<<<<<<< HEAD
+  "Add a new linkifier": "Добавить новый фильтр URL",
+=======
   "Add a new linkifier": "Добавить новый шаблон для ссылок",
+>>>>>>> drc_main
   "Add a new profile field": "Добавить новое поле профиля",
   "Add a new user group": "Добавить новую группу пользователей",
   "Add alert word": "Добавить сигнальное слово",
@@ -87,7 +95,12 @@
   "Add emoji reaction": "Добавить эмодзи-реакцию",
   "Add extra emoji for members of the {realm_name} organization.": "Добавить дополнительные эмодзи для участников организации {realm_name}.",
   "Add global time": "Добавить глобальное время",
+<<<<<<< HEAD
+  "Add global time<br />Everyone sees global times in their own time zone.": "Добавить глобальное время<br />Каждый видит глобальное время в своем часовом поясе.",
+  "Add linkifier": "Добавить фильтр URL",
+=======
   "Add linkifier": "Добавить шаблон",
+>>>>>>> drc_main
   "Add members": "Добавить участников",
   "Add member…": "Добавить участника...",
   "Add new default stream": "Добавить новый канал по умолчанию",
@@ -120,7 +133,7 @@
   "Alert word \"{alert_word}\" removed successfully!": "Сигнальное слово \"{alert_word}\" удалено успешно!",
   "Alert word already exists!": "Сигнальное слово уже существует!",
   "Alert words": "Сигнальные слова",
-  "Alert words allow you to be notified as if you were @-mentioned when certain words or phrases are used in Zulip. Alert words are not case sensitive.": "Слова предупреждения позволяют получать уведомления, как если бы вы упоминали @ при использовании определенных слов или фраз в Zulip. Оповещения не чувствительны к регистру.",
+  "Alert words allow you to be notified as if you were @-mentioned when certain words or phrases are used in Zulip. Alert words are not case sensitive.": "Сигнальные слова позволяют получать уведомления, как если бы вас упомянули с помощью @, в случае, если в Zulip используются определенные слова или фразы. Сигнальные слова не чувствительны к регистру.",
   "Alerted messages": "Сообщения с сигналами",
   "All": "Все",
   "All direct messages": "Все личные сообщения",
@@ -156,8 +169,13 @@
   "Are you sure you want to deactivate your account?": "Вы уверены, что хотите деактивировать вашу учетную запись?",
   "Are you sure you want to delete all drafts?  This action cannot be undone.": "Вы уверены, что хотите удалить все черновики? Это действие нельзя будет отменить.",
   "Are you sure you want to delete your profile picture?": "Вы действительно хотите удалить изображение профиля?",
+<<<<<<< HEAD
+  "Are you sure you want to mention all <strong>{count}</strong> people in this stream? <br /> This will send email and mobile push notifications to most of those <strong>{count}</strong> users. <br /> If you don't want to do that, please edit your message to remove the <strong>@{mention}</strong> mention.": "Вы уверены, что хотите упомянуть всех <strong>{count}</strong> человек в этом канале? <br /> Это приведет к отправке почтовых и мобильных уведомлений для большинства из этих <strong>{count}</strong> пользователей. <br /> Если вы не хотите этого, пожалуйста, отредактируйте сообщение и удалите упоминание <strong>@{mention}</strong>.",
+  "Are you sure you want to mute <b>{user_name}</b>?  Messages sent by muted users will never trigger notifications, will be marked as read, and will be hidden.": "Вы уверенны, что хотите заглушить<b>{user_name}</b>?  Сообщения, отправленные заглушенным пользователем, никогда не будут вызывать оповещения, будут помечены как прочитанные и будут скрыты.",
+=======
   "Are you sure you want to mark all messages as read? This action cannot be undone.": "Вы уверены, что хотите отметить все сообщения как прочитанные? Это сообщение нельзя будет отменить.",
   "Are you sure you want to mute <b>{user_name}</b>?  Messages sent by muted users will never trigger notifications, will be marked as read, and will be hidden.": "Вы уверены, что хотите заглушить<b>{user_name}</b>?  Сообщения, отправленные заглушенным пользователем, никогда не будут вызывать оповещения, они будут помечены как прочитанные и будут скрыты.",
+>>>>>>> drc_main
   "Are you sure you want to permanently delete <b>{topic_name}</b>?": "Вы уверены, что хотите безвозвратно удалить тему <b>{topic_name}</b>?",
   "Are you sure you want to resend the invitation to <z-email></z-email>?": "Вы уверены, что хотите повторно отправить приглашение для <z-email></z-email>?",
   "Are you sure you want to revoke the invitation to <strong>{email}</strong>?": "Вы уверены, что хотите отозвать приглашение для <strong>{email}</strong>?",
@@ -215,8 +233,12 @@
   "Clear avatar": "Очистить аватар",
   "Clear image": "Очистить изображение",
   "Clear profile picture": "Очистить картинку профиля",
+<<<<<<< HEAD
+  "Click here to reveal.": "Нажмите здесь, чтобы открыть.",
+=======
   "Click here to reveal.": "Нажмите здесь чтобы открыть.",
   "Click on the pencil (<z-pencil-icon></z-pencil-icon>) icon to edit and reschedule a message.": "Нажмите на значок (<z-pencil-icon></z-pencil-icon>) карандаша чтобы отредактировать и перенести сообщение.",
+>>>>>>> drc_main
   "Click outside the input box to save. We'll automatically notify anyone that was added or removed.": "Для сохранения нажмите вне поля ввода. Мы автоматически уведомим каждого, кто был добавлен или удален.",
   "Click to view or download.": "Нажмите, чтобы посмореть или скачать.",
   "Close": "Закрыть",
@@ -238,8 +260,13 @@
   "Compose your message here...": "Введите ваше сообщение здесь...",
   "Composing messages": "Составление сообщения",
   "Configure how Zulip notifies you about new messages.": "Настройте, каким образом Zulip оповещает вас о новых сообщениях.",
+<<<<<<< HEAD
+  "Configure regular expression patterns that will be automatically linkified when used in Zulip message bodies or topics.  For example to automatically linkify commit IDs and issue numbers (e.g. #123) to the corresponding items in a GitHub project, you could use the following:": "Настройте шаблоны регулярных выражений, которые будут автоматически вставлять ссылки при использовании в телах или темах сообщений Zulip. Например, чтобы автоматически привязывать идентификаторы коммитов и номера проблем (например, #123) к соответствующим элементам проекта GitHub, вы можете использовать следующее:",
+  "Configure the <z-link>default personal preference settings</z-link> for new users joining your organization.": "Настроить <z-link>персональные параметры по умолчанию</z-link> для новых пользователей, присоединившихся к вашей организации.",
+=======
   "Configure regular expression patterns that will be used to automatically transform any matching text in Zulip messages and topics into links.": "Настройте шаблоны регулярных выражений, которые будут использоваться для автоматического преобразования любого совпадающего текста в сообщениях и темах Zulip в ссылки.",
   "Configure the <z-link>default personal preference settings</z-link> for new users joining your organization.": "Настроить <z-link>персональные параметры по умолчанию</z-link>для новых пользователей, присоединившихся к вашей организации.",
+>>>>>>> drc_main
   "Configure the authentication methods for your organization.": "Настроить метод аутентификации для вашей организации",
   "Configure the default streams new users are subscribed to when joining your organization.": "Настроить каналы по умолчанию, на которые автоматически будут подписаны новые пользователи вашей организации.",
   "Confirm": "Подтвердить",
@@ -258,9 +285,13 @@
   "Copy link to topic": "Скопировать ссылку на тему",
   "Copy mention syntax": "Скопировать синтаксис упоминания",
   "Copy version": "Скопировать версию",
+<<<<<<< HEAD
+  "Copy zuliprc": "Скопировать zuliprc",
+=======
   "Copy zuliprc": "Копировать zuliprc",
   "Could not resolve topic": "Не удалось отметить тему как решенную",
   "Could not unresolve topic": "Не удалось отметить тему как нерешенную",
+>>>>>>> drc_main
   "Create": "Создать",
   "Create a stream": "Создать канал",
   "Create new stream": "Создать новый канал",
@@ -274,8 +305,14 @@
   "Currently viewing the entire stream.": "В данный момент отображается весь канал.",
   "Custom": "Свое",
   "Custom emoji": "Дополнительные эмодзи",
+<<<<<<< HEAD
+  "Custom emoji added!": "Дополнительный эмодзи добавлен!",
+  "Custom language: {query}": "Дополнительный язык: {query}",
+  "Custom linkifier added!": "Дополнительный фильтр URL добавлен!",
+=======
   "Custom language: {query}": "Другой язык: {query}",
   "Custom linkifier added!": "Дополнительный шаблон ссылок добавлен!",
+>>>>>>> drc_main
   "Custom playground added!": "Дополнительная интерактивная среда добавлена!",
   "Custom profile fields": "Дополнительные поля профиля",
   "Custom time": "Пользовательское время",
@@ -403,7 +440,7 @@
   "Education (for-profit)": "Образование (коммерческое)",
   "Education (non-profit)": "Образование (некоммерческое)",
   "Effect": "Результат",
-  "Email": "Электронная почта",
+  "Email": "Адрес эл. почты",
   "Email address": "Адрес электронной почты",
   "Email address changes are disabled in this organization.": "Изменение адреса электронной почты отключено в этой организации.",
   "Email copied": "Электронная почта скопирована",
@@ -486,7 +523,11 @@
   "Filter groups": "Фильтр групп",
   "Filter invites": "Фильтр приглашений",
   "Filter languages": "Фильтр языков",
+<<<<<<< HEAD
+  "Filter linkifiers": "Фильтровать URL",
+=======
   "Filter linkifiers": "Фильтр шаблонов",
+>>>>>>> drc_main
   "Filter members": "Фильтр участников",
   "Filter muted users": "Фильтр заглушенных пользователей",
   "Filter roles": "Фильтр ролей",
@@ -510,7 +551,11 @@
   "GIPHY attribution": "Атрибуция GIPHY",
   "GIPHY integration": "Интеграция с GIPHY",
   "General": "Общее",
+<<<<<<< HEAD
+  "Generate email address": "Создать email адрес",
+=======
   "Generate email address": "Создать адрес электронной почты",
+>>>>>>> drc_main
   "Generate invite link": "Создать ссылку для приглашения",
   "Generate new API key": "Сгенерировать новый API-ключ",
   "Generate stream email address": "Создать адрес электронной почты канала",
@@ -531,8 +576,8 @@
   "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena": "Предоставьте Zulip Kerberos тикеты, необходимые для запуска вашего зеркала Zephyr через Webathena",
   "Guest": "Гость",
   "Guest users cannot edit custom emoji.": "Гости не могут редактировать пользовательские эмодзи.",
-  "Guests": "Гости",
-  "Guests cannot edit custom emoji.": "Гости не могут редактировать собственные эмодзи.",
+  "Guests": "Гостей",
+  "Guests cannot edit custom emoji.": "Гости не могут редактировать дополнительные эмодзи.",
   "Header": "Заголовок",
   "Help center": "Центр помощи",
   "Hide muted message again": "Опять скрыть заглушенные сообщения",
@@ -642,7 +687,12 @@
   "May": "Май",
   "Me": "Я",
   "Member": "Участник",
+<<<<<<< HEAD
+  "Members": "Участников",
+  "Members can only view or manage invitations that you yourself sent.": "Участники могут видеть и управлять только теми приглашениями, которые вы сами выслали.",
+=======
   "Members": "Участники",
+>>>>>>> drc_main
   "Mention a time-zone-aware time": "Упомянуть время с учетом часовых поясов",
   "Mentioned in": "Упомянут в",
   "Mentions": "Упоминания",
@@ -669,7 +719,7 @@
   "Mobile notifications": "Мобильные оповещения",
   "Mobile push notifications are not configured on this server.": "Мобильные push-оповещения не настроены на этом сервере.",
   "Moderator": "Модератор",
-  "Moderators": "Модераторы",
+  "Moderators": "Модераторов",
   "Monday": "Понедельник",
   "Monday at {time}": "В понедельник в {time}",
   "Move all messages in <strong>{topic_name}</strong>": "Перенести все сообщения <strong>{topic_name}</strong>",
@@ -733,7 +783,13 @@
   "New password": "Новый пароль",
   "New password is too weak": "Новый пароль слишком простой",
   "New stream announcements": "Объявления о новых каналах",
+<<<<<<< HEAD
+  "New stream message": "Новое сообщение в канале",
+  "New subscribers can only see messages sent after they join.": "Новые подписчики видят только сообщения, отправленные после того, как они присоединились.",
+  "New subscribers can view complete message history.": "Новые подписчики могут видеть всю историю сообщений.",
+=======
   "New stream message": "Новое сообщение",
+>>>>>>> drc_main
   "New task": "Новая задача",
   "New topic": "Новая тема",
   "New user announcements": "Объявления о новых пользователях",
@@ -787,10 +843,14 @@
   "October": "Октябрь",
   "Old password": "Старый пароль",
   "Once you leave this group, you will not be able to rejoin.": "Если вы покинете эту группу, вы не сможете вновь к ней присоединиться.",
-  "Once you leave this stream, you will not be able to rejoin.": "Если вы покините этот канала, вы не сможете вновь к нему присоединиться.",
+  "Once you leave this stream, you will not be able to rejoin.": "Если вы покинете этот канал, вы не сможете вновь к нему подписаться.",
   "One or more email addresses...": "Один или несколько адресов электронной почты...",
   "One or more of these users do not exist!": "Одного или нескольких из этих пользователей не существует!",
   "Only 2 custom profile fields can be displayed on the user card.": "В карточке пользователя можно отобразить только два дополнительных поля.",
+<<<<<<< HEAD
+  "Only full members belonging to the group, organization administrators and moderators can modify a group.": "Только полноценные участники группы, администраторы организации и модераторы могут изменять группу. ",
+=======
+>>>>>>> drc_main
   "Only group members can add users to a group.": "Только участники группы могут добавлять к ней пользователей.",
   "Only in conversation views": "Только при показе определенной беседы",
   "Only organization administrators can edit these settings": "Только администраторы организации могут изменять эти настройки.",
@@ -808,7 +868,7 @@
   "Option already present.": "Опция уже присутствует.",
   "Optional": "Необязательно",
   "Organization": "Организация",
-  "Organization administrators": "Администраторы организации",
+  "Organization administrators": "Администраторов организации",
   "Organization administrators can change the announcement stream in the organization settings.": "Администраторы организации могут изменить канал для объявлений в настройках организации.",
   "Organization administrators can reactivate deactivated users.": "Администраторы организации могут вновь активировать деактивированных пользователей.",
   "Organization description": "Описание организации.",
@@ -816,7 +876,7 @@
   "Organization members can join (guests must be invited by a subscriber); anyone on the Internet can view complete message history without creating an account": "Участники организации могут подписаться (гости должны быть приглашены подписчиком); любому пользователю интернета доступна полная история сообщений, не создавая учетной записи",
   "Organization members can join (guests must be invited by a subscriber); organization members can view complete message history without joining": "Участники организации могут подписаться (гости должны быть приглашены подписчиком); вся история сообщений доступна участникам организации, в том числе без подписки.",
   "Organization name": "Название организации",
-  "Organization owners": "Владельцы организации",
+  "Organization owners": "Владельцев организации",
   "Organization permissions": "Разрешения организации",
   "Organization profile": "Профиль организации",
   "Organization profile picture": "Картинка профиля организации",
@@ -869,6 +929,13 @@
   "Previous message": "Предыдущее сообщение",
   "Privacy": "Безопасность",
   "Privacy settings": "Настройки конфиденциальности",
+<<<<<<< HEAD
+  "Private messages": "Личные сообщения",
+  "Private messages and mentions": "Личные сообщения и упоминания",
+  "Private messages are disabled in this organization.": "Личные сообщения в этой организации отключены.",
+  "Private messages disabled": "Личные сообщения отключены",
+=======
+>>>>>>> drc_main
   "Private, protected history": "Закрытый, защищенная история переписки",
   "Private, shared history": "Закрытый, открытая история переписки",
   "Profile": "Профиль",
@@ -884,7 +951,7 @@
   "Reactivate this bot": "Включить этот бот",
   "Reactivate this user": "Повторно активировать этого пользователя",
   "Reactivate {name}": "Повторно активировать {name}",
-  "Read receipts": "Уведомления о прочтении",
+  "Read receipts": "Подтверждения о прочтении",
   "Read receipts are currently disabled in this organization.": "Уведомления о прочтении в настоящее время отключены в этой организации.",
   "Read receipts are not available for Notification Bot messages.": "Подтверждение о прочтении недоступны для сообщений бота оповещений.",
   "Receives new stream announcements": "Получает объявления о новых каналах",
@@ -939,9 +1006,14 @@
   "Scroll to bottom": "Прокрутить вниз",
   "Scroll up": "Прокрутить вверх",
   "Search": "Поиск",
+<<<<<<< HEAD
+  "Search GIFs": "Поиск GIF",
+  "Search all public streams in the organization.": "Искать во всех публичных каналах организации",
+=======
   "Search GIFs": "Искать GIF",
   "Search all public streams in the organization.": "Искать во всех публичных каналах организации.",
   "Search filters": "Фильтры поиска",
+>>>>>>> drc_main
   "Search for <z-value></z-value> in the topic or message content.": "Искать <z-value></z-value> в названии темы или содержимом сообщения.",
   "Search people": "Поиск людей",
   "Search results": "Результаты поиска",
@@ -1013,6 +1085,10 @@
   "Stream creation": "Создание канала",
   "Stream description": "Описание канала",
   "Stream email address:": "Адрес электронной почты канала:",
+<<<<<<< HEAD
+  "Stream list": "Список каналов",
+=======
+>>>>>>> drc_main
   "Stream name": "Имя канала",
   "Stream permissions": "Разрешения канала",
   "Stream settings": "Настройки канала",
@@ -1042,10 +1118,16 @@
   "The administrators provided the following comment:": "Администраторы предоставили следующий комментарий:",
   "The basics": "Основы",
   "The group description cannot contain newline characters.": "Описание группы не может содержать символы новой строки.",
+<<<<<<< HEAD
+  "The recipient {recipient} is not valid": "Неверный получатель {recipient}",
+  "The recipients {recipients} are not valid": "Неверные получатели {recipients}",
+  "The sender's email address": "Электронный адрес отправителя",
+=======
   "The recipient {recipient} is not valid.": "Неверный получатель {recipient}.",
   "The recipients {recipients} are not valid.": "Неверные получатели {recipients}.",
   "The sender's email address": "Электронная почта отправителя",
   "The stream <b>#{stream_name}</b> does not exist. Manage your subscriptions <z-link>on your Streams page</z-link>.": "Канал <b>#{stream_name}</b> отсутствует. Управляйте подписками <z-link>на странице ваших каналов</z-link>.",
+>>>>>>> drc_main
   "The stream description cannot contain newline characters.": "Описание канала не должна содержать перенос строки.",
   "Their password will be cleared from our systems, and any bots they maintain will be disabled.": "Их пароли будут стерты в нашей системе, а все их боты будут отключены.",
   "Theme": "Тема",
@@ -1166,7 +1248,13 @@
   "Upload profile picture": "Загрузить фото профиля",
   "Upload stalled for %'{seconds}' seconds, aborting.": "Загрузка остановилась на %'{seconds}' секунд, прервана.",
   "Uploaded files": "Загруженные файлы",
+<<<<<<< HEAD
+  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "Загрузка пользовательского эмодзи с этим именем перезапишет встроенный эмодзи. Продолжить? ",
   "Uploading {filename}…": "Загрузка {filename}…",
+  "Uploading…": "Загрузка…",
+=======
+  "Uploading {filename}…": "Загрузка {filename}…",
+>>>>>>> drc_main
   "Usage statistics": "Статистика использования",
   "Use full width on wide screens": "Использовать широкий формат отображения рабочей области",
   "Use html encoding (not recommended)": "Использовать кодировку HTML (не рекомендуется)",
@@ -1190,7 +1278,11 @@
   "User list style changed successfully!": "Стиль списка пользователей изменен успешно!",
   "User role": "Роль пользователя",
   "User(s) invited successfully.": "Пользователи успешно приглашены.",
+<<<<<<< HEAD
+  "User(s) join as": "Пользователь(-и) присоединяются в качестве",
+=======
   "User(s) join as": "Пользователь(-и) присоединяются как",
+>>>>>>> drc_main
   "Users": "Пользователи",
   "Users can always disable their personal read receipts.": "Пользователи всегда могут отключить свои личные подтверждения о прочтении.",
   "Vacationing": "В отпуске",
@@ -1207,15 +1299,26 @@
   "View message source": "Посмотреть исходный текст сообщения",
   "View messages sent": "Просмотр отправленных сообщений",
   "View messages with yourself": "Посмотреть сообщения с собой",
+<<<<<<< HEAD
+  "View private messages": "Показать личные сообщения",
+  "View profile": "Просмотр профиля",
+  "View read receipts": "Показать подтверждения о прочтении",
+=======
   "View profile": "Просмотр профиля",
   "View read receipts": "Показать подтверждения получения",
+>>>>>>> drc_main
   "View recent conversations": "Смотреть последние беседы",
   "View scheduled messages": "Показать запланированные сообщения",
   "View stream": "Просмотр канала",
   "View stream messages": "Показать сообщения канала",
+<<<<<<< HEAD
+  "View user card": "Просмотр карточки пользователя",
+  "View your profile": "Отрыть профиль пользователя",
+=======
   "View streams": "Просмотр каналов",
   "View user card": "Просмотр карточки пользователя",
   "View your profile": "Просмотр вашего профиля",
+>>>>>>> drc_main
   "Visual": "Визуальные",
   "Visual desktop notifications": "Визуальные оповещения на рабочем столе",
   "Waiting period (days)": "Период ожидания (дни)",
@@ -1268,8 +1371,13 @@
   "You and": "Вы и",
   "You and {display_reply_to}": "Вы и {display_reply_to}",
   "You and {recipients}": "Вы и {recipients}",
+<<<<<<< HEAD
+  "You are not allowed to send group private messages in this organization.": "Вам не разрешена отправка групповых личных сообщений в данной организации.",
+  "You are not allowed to send private messages in this organization.": "Вам не разрешена отправка личных сообщений в данной организации.",
+=======
   "You are about to disable all notifications for private messages, @&#8209;mentions and alerts, which may cause you to miss messages that require your timely attention. If you would like to temporarily disable all desktop notifications, consider <z-link>turning on \"Do not disturb\"</z-link> instead.": "Вы собираетесь отключить все оповещения о личных сообщениях, @&#8209;упоминания и сигналы, это может привести к тому, что вы пропустите сообщения, требующие оперативной реакции. Если вы хотите временно отключить все оповещения, рассмотрите в качестве альтернативы <z-link>включение режима \"Не беспокоить\"</z-link>.",
   "You are not allowed to send direct messages in this organization.": "Вам не разрешена отправка личных сообщений в данной организации.",
+>>>>>>> drc_main
   "You are not currently subscribed to this stream.": "Вы не подписаны на этот канал.",
   "You are not subscribed to any streams.": "Вы не подписаны ни на один канал.",
   "You are not subscribed to stream <z-stream-name></z-stream-name>": "Вы не подписаны на канал <z-stream-name></z-stream-name>",
@@ -1300,12 +1408,20 @@
   "You get": "Получается",
   "You have muted <z-stream-topic></z-stream-topic>.": "Вы заглушили <z-stream-topic></z-stream-topic>.",
   "You have no active bots.": "У вас нет активных ботов.",
+<<<<<<< HEAD
+  "You have no group private messages with {person} yet.": "У вас пока нет групповых личных сообщений с {person}.",
+  "You have no inactive bots.": "У вас нет неактивных ботов.",
+  "You have no private messages with these users yet.": "У вас пока нет личных сообщений с этими пользователями.",
+  "You have no private messages with {person} yet.": "У вас пока нет личных сообщений с {person}!",
+  "You have no private messages yet!": "У вас пока нет ни одного личного сообщения!",
+=======
   "You have no direct messages including {person} yet.": "У вас пока нет личной переписки с {person}.",
   "You have no direct messages with these users yet.": "У вас пока нет личной переписки с этими людьми.",
   "You have no direct messages with {person} yet.": "У вас пока нет личной переписки с {person}.",
   "You have no direct messages yet!": "У вас пока нет личных сообщений!",
   "You have no inactive bots.": "У вас нет неактивных ботов.",
   "You have no starred messages.": "У вас нет отмеченных сообщений.",
+>>>>>>> drc_main
   "You have no unread messages!": "У вас нет непрочитанных сообщений!",
   "You have not configured any topics yet.": "Вы пока не определили ни одной темы.",
   "You have not muted any users yet.": "Вы пока не заглушили ни одного пользователя.",
@@ -1313,6 +1429,10 @@
   "You have not uploaded any files.": "У вас нет загруженных файлов.",
   "You haven't been mentioned yet!": "Вас пока не упоминали!",
   "You haven't received any messages sent by {person} yet.": "Вы пока не получали сообщений от {person}.",
+<<<<<<< HEAD
+  "You haven't starred anything yet!": "У вас пока нет отмеченных сообщений!",
+=======
+>>>>>>> drc_main
   "You must be an organization administrator to create a stream without subscribing.": "Вы должны быть администратором, чтобы создавать каналы не подписываясь.",
   "You need to be running Zephyr mirroring in order to send messages!": "Зеркалирование Zephyr должно быть включено для возможности отправки сообщений!",
   "You searched for:": "Вы искали:",
@@ -1382,9 +1502,18 @@
   "{minutes} min to edit": "{minutes} мин. на изменение",
   "{minutes} minutes ago": "{minutes} мин. назад",
   "{modal_heading_text}": "{modal_heading_text}",
+<<<<<<< HEAD
+  "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, one {Это сообщение <z-link>прочел</z-link> {num_of_people} человек:} few {Это сообщение <z-link>прочло</z-link> {num_of_people} человек:} many {Это сообщение <z-link>прочло</z-link> {num_of_people} человек:} other {Это сообщение <z-link>прочло</z-link> {num_of_people} человек:}}",
+  "{seconds} sec to edit": "{seconds} секунд на изменение",
+  "{starred_status} this message": "{starred_status} это сообщение",
+  "{starred_status} this message (Ctrl + s)": "{starred_status} это сообщение (Ctrl + s)",
+  "{user_time} local time": "{user_time} местное время",
+  "{username} [said]({link_to_message}):": "{username} [сказал/а]({link_to_message}):",
+=======
   "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, one {Это сообщение <z-link>прочел</z-link> {num_of_people} человек:} few {Это сообщение <z-link>прочло</z-link> {num_of_people} человека:} many {Это сообщение <z-link>прочло</z-link> {num_of_people} человек:} other {Это сообщение <z-link>прочло</z-link> {num_of_people} человек:}}",
   "{seconds} sec to edit": "{seconds} секунд на редактирование",
   "{user_time} local time": "{user_time} местное время",
   "{username} [said]({link_to_message}):": "{username} [писал/а]({link_to_message}):",
+>>>>>>> drc_main
   "{username} reacted with {emoji_name}": "{username} добавил реакцию {emoji_name}"
 }

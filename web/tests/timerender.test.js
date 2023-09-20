@@ -287,8 +287,13 @@ run_test("format_time_modern_different_timezones", () => {
     assert.equal(timerender.format_time_modern(yesterday, today), "translated: Yesterday");
 
     process.env.TZ = "America/Juneau";
+<<<<<<< HEAD:frontend_tests/node_tests/timerender.js
+    let expected = "translated: 5/16/2017 at 11:12:53 PM AKDT (UTC-08:00)";
+    assert.equal(timerender.get_full_datetime(yesterday), expected);
+=======
     let expected = "translated: 5/16/2017 at 11:12:53 PM AKDT (UTC-08:00)";
     assert.equal(timerender.get_full_datetime_clarification(yesterday), expected);
+>>>>>>> drc_main:web/tests/timerender.test.js
     assert.equal(timerender.format_time_modern(yesterday, today), "Tuesday");
     process.env.TZ = utc_tz;
 
@@ -298,8 +303,13 @@ run_test("format_time_modern_different_timezones", () => {
     assert.equal(timerender.format_time_modern(yesterday, today), "Tuesday");
 
     process.env.TZ = "Asia/Brunei";
+<<<<<<< HEAD:frontend_tests/node_tests/timerender.js
+    expected = "translated: 5/17/2017 at 5:12:53 AM (UTC+08:00)";
+    assert.equal(timerender.get_full_datetime(yesterday), expected);
+=======
     expected = "translated: 5/17/2017 at 5:12:53 AM (UTC+08:00)";
     assert.equal(timerender.get_full_datetime_clarification(yesterday), expected);
+>>>>>>> drc_main:web/tests/timerender.test.js
     assert.equal(timerender.format_time_modern(yesterday, today), "translated: Yesterday");
     process.env.TZ = utc_tz;
 
@@ -309,9 +319,15 @@ run_test("format_time_modern_different_timezones", () => {
     assert.equal(timerender.format_time_modern(yesterday, today), "Friday");
 
     process.env.TZ = "America/Juneau";
+<<<<<<< HEAD:frontend_tests/node_tests/timerender.js
+    expected = "translated: 5/11/2017 at 11:12:53 PM AKDT (UTC-08:00)";
+    assert.equal(timerender.get_full_datetime(yesterday), expected);
+    assert.equal(timerender.format_time_modern(yesterday, today), "May 11");
+=======
     expected = "translated: 5/11/2017 at 11:12:53 PM AKDT (UTC-08:00)";
     assert.equal(timerender.get_full_datetime_clarification(yesterday), expected);
     assert.equal(timerender.format_time_modern(yesterday, today), "May 11");
+>>>>>>> drc_main:web/tests/timerender.test.js
     process.env.TZ = utc_tz;
 });
 
@@ -445,9 +461,13 @@ run_test("absolute_time_24_hour", () => {
 run_test("get_full_datetime", () => {
     const time = date_2017_PM;
 
+<<<<<<< HEAD:frontend_tests/node_tests/timerender.js
+    let expected = "translated: 5/18/2017 at 9:12:53 PM UTC";
+=======
     let expected = "translated: 5/18/2017 at 9:12:53 PM UTC";
     assert.equal(timerender.get_full_datetime_clarification(time), expected);
     expected = "translated: May 18, 2017 at 9:12:53 PM";
+>>>>>>> drc_main:web/tests/timerender.test.js
     assert.equal(timerender.get_full_datetime(time), expected);
 
     expected = "translated: 5/18/2017 at 9:12 PM UTC";
@@ -467,9 +487,13 @@ run_test("get_full_datetime", () => {
     // Test the GMT[+-]x:y logic.
     const previous_env_tz = process.env.TZ;
     process.env.TZ = "Asia/Kolkata";
+<<<<<<< HEAD:frontend_tests/node_tests/timerender.js
+    expected = "translated: 5/19/2017 at 2:42:53 AM (UTC+05:30)";
+=======
     expected = "translated: 5/19/2017 at 2:42:53 AM (UTC+05:30)";
     assert.equal(timerender.get_full_datetime_clarification(time), expected);
     expected = "translated: May 19, 2017 at 2:42:53 AM";
+>>>>>>> drc_main:web/tests/timerender.test.js
     assert.equal(timerender.get_full_datetime(time), expected);
     process.env.TZ = previous_env_tz;
 });

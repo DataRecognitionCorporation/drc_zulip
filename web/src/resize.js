@@ -19,7 +19,16 @@ function get_bottom_whitespace_height() {
 function get_new_heights() {
     const res = {};
     const viewport_height = message_viewport.height();
+<<<<<<< HEAD:static/js/resize.js
+    const top_navbar_height = $("#top_navbar").safeOuterHeight(true);
+    const right_sidebar_shortcuts_height = $(".right-sidebar-shortcuts").safeOuterHeight(true) || 0;
+
+    res.bottom_whitespace_height = viewport_height * 0.4;
+
+    res.main_div_min_height = viewport_height - top_navbar_height;
+=======
     const right_sidebar_shortcuts_height = $(".right-sidebar-shortcuts").outerHeight(true) ?? 0;
+>>>>>>> drc_main:web/src/resize.js
 
     res.stream_filters_max_height =
         viewport_height -
@@ -36,9 +45,15 @@ function get_new_heights() {
 
     const usable_height =
         viewport_height -
+<<<<<<< HEAD:static/js/resize.js
+        Number.parseInt($("#right-sidebar").css("marginTop"), 10) -
+        $("#userlist-header").safeOuterHeight(true) -
+        $("#user_search_section").safeOuterHeight(true) -
+=======
         Number.parseInt($("#right-sidebar").css("paddingTop"), 10) -
         ($("#userlist-header").outerHeight(true) ?? 0) -
         ($("#user_search_section").outerHeight(true) ?? 0) -
+>>>>>>> drc_main:web/src/resize.js
         right_sidebar_shortcuts_height;
 
     res.buddy_list_wrapper_max_height = Math.max(80, usable_height);

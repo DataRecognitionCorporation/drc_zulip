@@ -67,8 +67,14 @@
                 </div>
             </div>
         </div>
+<<<<<<< HEAD:static/templates/settings/account_settings.hbs
+        
+        {{#if page_params.is_admin}}
+        <div class="form-horizontal" id="privacy_settings_box">
+=======
 
         <div id="privacy_settings_box">
+>>>>>>> drc_main:web/templates/settings/account_settings.hbs
             <h3 class="inline-block">{{t "Privacy" }}</h3>
             <div class="alert-notification privacy-setting-status"></div>
             <div class="input-group">
@@ -136,6 +142,7 @@
                 </div>
             </div>
         </div>
+        {{/if}}
         <!-- Render /settings/api_key_modal.hbs after #api_key_button is clicked
         to avoid password being inserted by password manager too aggressively. -->
     </div>

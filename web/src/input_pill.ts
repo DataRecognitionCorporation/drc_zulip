@@ -7,6 +7,7 @@ import render_input_pill from "../templates/input_pill.hbs";
 import * as blueslip from "./blueslip";
 import type {EmojiRenderingDetails} from "./emoji";
 import * as keydown_util from "./keydown_util";
+import {page_params} from "./page_params";
 import * as ui_util from "./ui_util";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
@@ -156,6 +157,7 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                 display_value: item.display_value,
                 has_image,
                 deactivated: item.deactivated,
+                is_guest: page_params.is_guest,
             };
 
             if (has_image) {

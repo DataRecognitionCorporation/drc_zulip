@@ -137,6 +137,42 @@ export function initialize(): void {
         show_webathena: page_params.show_webathena,
     });
     $("#navbar-buttons").html(rendered_gear_menu);
+<<<<<<< HEAD:static/js/gear_menu.js
+    // update_org_settings_menu_item();
+
+    $('#gear-menu a[data-toggle="tab"]').on("show", (e) => {
+        // Save the position of our old tab away, before we switch
+        const old_tab = $(e.relatedTarget).attr("href");
+        scroll_positions.set(old_tab, message_viewport.scrollTop());
+    });
+    $('#gear-menu a[data-toggle="tab"]').on("shown", (e) => {
+        const target_tab = $(e.target).attr("href");
+        // Hide all our error messages when switching tabs
+        $(".alert").removeClass("show");
+
+        // Set the URL bar title to show the sub-page you're currently on.
+        let browser_url = target_tab;
+        if (browser_url === "#message_feed_container") {
+            browser_url = "";
+        }
+        hashchange.changehash(browser_url);
+
+        // After we show the new tab, restore its old scroll position
+        // (we apparently have to do this after setting the hash,
+        // because otherwise that action may scroll us somewhere.)
+        if (target_tab === "#message_feed_container") {
+            if (scroll_positions.has(target_tab)) {
+                message_viewport.scrollTop(scroll_positions.get(target_tab));
+            } else {
+                navigate.scroll_to_selected();
+            }
+        }
+    });
+
+    // The admin and settings pages are generated client-side through
+    // templates.
+=======
+>>>>>>> drc_main:web/src/gear_menu.ts
 }
 
 export function open(): void {

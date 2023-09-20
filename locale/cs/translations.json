@@ -39,7 +39,11 @@
   "<z-link>Upgrade</z-link> for more space.": "<z-link>Povýšit</z-link> kvůli více místa.",
   "<z-shortcut></z-shortcut> to add a new line": "<z-shortcut></z-shortcut> pro přidání nového řádku",
   "<z-shortcut></z-shortcut> to send": "<z-shortcut></z-shortcut> pro odeslání",
+<<<<<<< HEAD
+  "<z-user></z-user> will have the same properties as it did prior to deactivation, including role, owner and stream subscriptions.": "<z-user></z-user> bude mít stejné vlastnosti jako před vypnutím, včetně role, vlastníka a odběru datových proudů.",
+=======
   "<z-user></z-user> will have the same properties as it did prior to deactivation, including role, owner and stream subscriptions.": "<z-user></z-user> bude mít stejné vlastnosti jako před vypnutím, včetně role, vlastníka a odběru kanálů.",
+>>>>>>> drc_main
   "<z-user></z-user> will have the same role, stream subscriptions, user group memberships, and other settings and permissions as they did prior to deactivation.": "<z-user></z-user> bude mít stejnou roli, odebírání kanálů, členství ve skupinách uživatelů a další nastavení a oprávnění jako před vypnutím.",
   "A Topic Move already in progress.": "Přesun tématu již probíhá",
   "A deactivated bot cannot send messages, access data, or take any other action.": "Vypnutý robot nemůže odesílat zprávy, přistupovat k datům ani provádět žádné jiné činnosti.",
@@ -84,7 +88,11 @@
   "Add another user...": "Přidat dalšího uživatele...",
   "Add code playground": "Přidat hřiště s kódem",
   "Add emoji": "Přidat obrázeček",
+<<<<<<< HEAD
+  "Add emoji reaction": "Přidat reakci pomocí emoji",
+=======
   "Add emoji reaction": "Přidat odpověď pomocí obrázečku",
+>>>>>>> drc_main
   "Add extra emoji for members of the {realm_name} organization.": "Přidat další obrázeček pro členy organizace {realm_name}.",
   "Add global time": "Přidat celosvětový čas",
   "Add linkifier": "Přidat generátor odkazů",
@@ -164,7 +172,7 @@
   "Are you sure you want to revoke this invitation link created by <strong>{referred_by}</strong>?": "Opravdu chcete zrušit tento zvací odkaz vytvořený <strong>{referred_by}</strong>?",
   "Are you sure you want to send @-mention notifications to the <strong>{subscriber_count}</strong> users subscribed to #{stream_name}? If not, please edit your message to remove the <strong>@{wildcard_mention}</strong> mention.": "Jste si jisti, že chcete zasílat oznámení o @-zmínkách <strong>{subscriber_count}</strong> uživatelům odebírajícím #{stream_name}? Pokud ne, upravte prosím svou zprávu tak, abyste odstranili  zmínku <strong>@{wildcard_mention}</strong>.",
   "Are you sure you want to unstar all messages in <stream-topic></stream-topic>?  This action cannot be undone.": "Chcete odhvězdičkovat všechny ohvězdičkované zprávy v <stream-topic></stream-topic>?  Tento krok nelze vrátit zpět.",
-  "Are you sure you want to unstar all starred messages?  This action cannot be undone.": "Chcete odhvězdičkovat všechny ohvězdičkované zprávy? Tento krok nelze vrátit zpět.",
+  "Are you sure you want to unstar all starred messages?  This action cannot be undone.": "Opravdu chcete odhvězdičkovat všechny ohvězdičkované zprávy? Tento krok nelze vrátit zpět.",
   "Ask me later": "Zeptat se později",
   "At the office": "V kanceláři",
   "Audible": "Slyšitelné",
@@ -274,6 +282,10 @@
   "Currently viewing the entire stream.": "V současné době se zobrazuje celý kanál.",
   "Custom": "Vlastní",
   "Custom emoji": "Vlastní obrázeček",
+<<<<<<< HEAD
+  "Custom emoji added!": "Přidán vlastní obrázeček!",
+=======
+>>>>>>> drc_main
   "Custom language: {query}": "Vlastní jazyk: {query}",
   "Custom linkifier added!": "Přidán vlastní odkazovač!",
   "Custom playground added!": "Přidáno vlastní hřiště!",
@@ -411,7 +423,10 @@
   "Email message notifications": "E-mailová oznámení o zprávách",
   "Email notifications": "Oznámení elektronickou poštou",
   "Emails (one on each line or comma-separated)": "E-maily (jeden na každý řádek nebo oddělené čárkou)",
+<<<<<<< HEAD
+=======
   "Emoji": "Obrázečky",
+>>>>>>> drc_main
   "Emoji name": "Název obrázečku",
   "Emoji set changed successfully!": "Sada obrázečků úspěšně upravena!",
   "Emoji theme": "Motiv obrázečku",
@@ -667,7 +682,7 @@
   "Mobile": "Telefon",
   "Mobile message notifications": "Mobilní oznámení o zprávách",
   "Mobile notifications": "Telefonní oznámení",
-  "Mobile push notifications are not configured on this server.": "Telefonní krátká oznámení (zprávy) nejsou na tomto serveru nastaveny.",
+  "Mobile push notifications are not configured on this server.": "Oznámení po telefonu nejsou na tomto serveru nastaveny.",
   "Moderator": "Moderátor",
   "Moderators": "Moderátoři",
   "Monday": "Pondělí",
@@ -745,7 +760,7 @@
   "No custom emoji.": "Není vlastní obrázeček.",
   "No default streams match you current filter.": "Vašemu nynějšímu filtru neodpovídají žádné výchozí kanály.",
   "No description.": "Žádný popis.",
-  "No drafts.": "Žádné návrhy.",
+  "No drafts.": "Žádné návrhy textu.",
   "No exports.": "Žádná uložená data.",
   "No invites match your current filter.": "Vašemu nynějšímu filtru neodpovídají žádné pozvánky.",
   "No language set": "Nenastaven žádný jazyk",
@@ -807,6 +822,10 @@
   "Open-source project": "Projekt s otevřeným zdrojovým kódem",
   "Option already present.": "Volba již existuje.",
   "Optional": "Volitelné",
+<<<<<<< HEAD
+  "Or, to automatically linkify GitHub's <code>org/repo#1234</code> syntax:": "Nebo pro automatické vytváření odkazů GitHubu <code>org/repo#1234</code>:",
+=======
+>>>>>>> drc_main
   "Organization": "Organizace",
   "Organization administrators": "Správci organizace",
   "Organization administrators can change the announcement stream in the organization settings.": "Správci organizace mohou toto změnit oznamovací kanál v nastavení organizace.",
@@ -1049,10 +1068,14 @@
   "The stream description cannot contain newline characters.": "Popis kanálu nemůže obsahovat znaky pro nový řádek.",
   "Their password will be cleared from our systems, and any bots they maintain will be disabled.": "Jejich heslo bude vymazáno z našich systémů a všichni jimi spravovaní roboti budou vypnuti.",
   "Theme": "Vzhled",
+<<<<<<< HEAD
+  "There are no current alert words.": "Nyní nejsou žádná sledovaná slova.",
+=======
   "There are no current alert words.": "Nyní nejsou dostupná žádná sledovaná slova.",
   "There are no messages here.": "",
   "There are no streams you can view in this organization.": "",
   "There is a default emoji with this name. Do you want to override it with a custom emoji? The name <code>:{emoji_name}:</code> will no longer work to access the default emoji.": "",
+>>>>>>> drc_main
   "They administer the following bots:": "Spravují následující roboty:",
   "This Zulip server is running an old version and should be upgraded.": "Server Zulip běží ve staré verzi a měl by být povýšen.",
   "This action cannot be undone.": "Tento úkon nelze vrátit zpět.",
@@ -1166,7 +1189,13 @@
   "Upload profile picture": "Nahrát obrázek profilu",
   "Upload stalled for %'{seconds}' seconds, aborting.": "Nahrávání stojí po %'{seconds}' sekund. Ruší se.",
   "Uploaded files": "Nahrané soubory",
+<<<<<<< HEAD
+  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "Nahráním vlastního obrázečku s tímto názvem přepíšete vestavěné obrázečky. Pokračovat?",
   "Uploading {filename}…": "Nahrává se {filename}…",
+  "Uploading…": "Nahrávání...",
+=======
+  "Uploading {filename}…": "Nahrává se {filename}…",
+>>>>>>> drc_main
   "Usage statistics": "Statistiky využití",
   "Use full width on wide screens": "Na širokých obrazovkách použít celou šířku",
   "Use html encoding (not recommended)": "",
@@ -1236,7 +1265,7 @@
   "Who can access user's email address": "",
   "Who can access your email address": "",
   "Who can add bots": "Kdo může přidávat roboty",
-  "Who can add custom emoji": "Kdo může přidat vlastní emoji",
+  "Who can add custom emoji": "Kdo může přidat vlastní obrázečky",
   "Who can add users to streams": "Kdo může přidat uživatele do kanálů",
   "Who can create and manage user groups": "Kdo může vytvářet a spravovat uživatelské skupiny",
   "Who can create private streams": "Kdo může vytvářet soukromé kanály",
@@ -1351,11 +1380,15 @@
   "clear": "Smazat",
   "cookie": "cookie",
   "deprecated": "vyřazeno",
+<<<<<<< HEAD
+  "group private messages with {recipient}": "Skupinová soukromá zpráva s {recipient}",
+=======
   "direct messages with yourself": "",
   "direct messages with {recipient}": "",
   "does not apply to administrators": "",
   "does not apply to moderators and administrators": "",
   "group direct messages with {recipient}": "",
+>>>>>>> drc_main
   "he/him": "on/jemu",
   "in 1 hour": "za 1 hodinu",
   "in 20 minutes": "za 20 minut",
@@ -1385,6 +1418,6 @@
   "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, one {Tato zpráva byla <z-link>čtena</z-link> {num_of_people} osobou:} few {Tato zpráva byla <z-link>čtena</z-link> {num_of_people} lidmi:} many {Tato zpráva byla <z-link>čtena</z-link> {num_of_people} lidmi:} other {Tato zpráva byla <z-link>čtena</z-link> {num_of_people} lidmi:}}",
   "{seconds} sec to edit": "{seconds} sekund na upravení",
   "{user_time} local time": "{user_time} místní čas",
-  "{username} [said]({link_to_message}):": "{username} [said]({link_to_message}):",
+  "{username} [said]({link_to_message}):": "{username} [napsal]({link_to_message}):",
   "{username} reacted with {emoji_name}": "{username} odpověděl {emoji_name}"
 }

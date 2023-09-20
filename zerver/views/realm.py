@@ -165,8 +165,13 @@ def update_realm(
         raise JsonableError(_("Invalid language '{language}'").format(language=default_language))
     if authentication_methods is not None:
         if not user_profile.is_realm_owner:
+<<<<<<< HEAD
+            raise OrganizationOwnerRequiredError()
+        if True not in list(authentication_methods.values()):
+=======
             raise OrganizationOwnerRequiredError
         if True not in authentication_methods.values():
+>>>>>>> drc_main
             raise JsonableError(_("At least one authentication method must be enabled."))
     if video_chat_provider is not None and video_chat_provider not in {
         p["id"] for p in Realm.VIDEO_CHAT_PROVIDERS.values()
@@ -186,7 +191,11 @@ def update_realm(
     message_retention_days: Optional[int] = None
     if message_retention_days_raw is not None:
         if not user_profile.is_realm_owner:
+<<<<<<< HEAD
+            raise OrganizationOwnerRequiredError()
+=======
             raise OrganizationOwnerRequiredError
+>>>>>>> drc_main
         realm.ensure_not_on_limited_plan()
         message_retention_days = parse_message_retention_days(  # used by locals() below
             message_retention_days_raw, Realm.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
@@ -197,15 +206,26 @@ def update_realm(
         or invite_required is not None
         or create_multiuse_invite_group_id is not None
     ) and not user_profile.is_realm_owner:
+<<<<<<< HEAD
+        raise OrganizationOwnerRequiredError()
+=======
         raise OrganizationOwnerRequiredError
+>>>>>>> drc_main
 
     if (
         emails_restricted_to_domains is not None or disallow_disposable_email_addresses is not None
     ) and not user_profile.is_realm_owner:
+<<<<<<< HEAD
+        raise OrganizationOwnerRequiredError()
+
+    if waiting_period_threshold is not None and not user_profile.is_realm_owner:
+        raise OrganizationOwnerRequiredError()
+=======
         raise OrganizationOwnerRequiredError
 
     if waiting_period_threshold is not None and not user_profile.is_realm_owner:
         raise OrganizationOwnerRequiredError
+>>>>>>> drc_main
 
     if enable_spectator_access:
         realm.ensure_not_on_limited_plan()
@@ -369,7 +389,11 @@ def update_realm(
 
     if string_id is not None:
         if not user_profile.is_realm_owner:
+<<<<<<< HEAD
+            raise OrganizationOwnerRequiredError()
+=======
             raise OrganizationOwnerRequiredError
+>>>>>>> drc_main
 
         if realm.demo_organization_scheduled_deletion_date is None:
             raise JsonableError(_("Must be a demo organization."))
