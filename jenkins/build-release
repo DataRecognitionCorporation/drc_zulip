@@ -42,6 +42,7 @@ pipeline {
 
                             sh '''#!/bin/bash
                                 set -euo xtrace
+                                git config zulip.zulipRemote origin
 
                                 remote=origin
                                 git describe --always --tags --match='[0-9]*'
