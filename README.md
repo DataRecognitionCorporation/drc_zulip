@@ -103,7 +103,7 @@ vagrant ssh
 
 Run the dev environtment.
 ```
-./tools/run-dev.py
+./tools/run-dev
 ```
 
 ## Create Deploy Tarball
