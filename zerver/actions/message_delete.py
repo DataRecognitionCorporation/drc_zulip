@@ -1,10 +1,5 @@
 from typing import Iterable, List, TypedDict
 
-<<<<<<< HEAD
-from django.db import transaction
-
-=======
->>>>>>> drc_main
 from zerver.lib import retention
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id

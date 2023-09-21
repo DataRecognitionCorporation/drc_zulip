@@ -12,17 +12,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2022-11-17 16:38+0000\n"
-"PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: David Clubb, 2023\n"
-"Language-Team: Welsh (https://app.transifex.com/zulip/teams/53893/cy/)\n"
-=======
 "POT-Creation-Date: 2023-05-31 01:00+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>, 2022\n"
 "Language-Team: Welsh (http://app.transifex.com/zulip/zulip/language/cy/)\n"
->>>>>>> drc_main
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -184,17 +177,10 @@ msgstr ""
 #: corporate/lib/stripe.py:1015
 #, python-brace-format
 msgid ""
-<<<<<<< HEAD
-"Your organization's request for sponsored hosting has been approved! "
-"{emoji}.\n"
-msgstr ""
-"Mae cais eich sefydliad am westeio noddedig wedi'i gymeradwyo! {emoji}\n"
-=======
 "Your organization's request for sponsored hosting has been approved! You have been upgraded to {plan_name}, free of charge. {emoji}\n"
 "\n"
 "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, we would really appreciate it!"
 msgstr ""
->>>>>>> drc_main
 
 #: corporate/views/billing_page.py:45
 msgid "No payment method on file"
@@ -309,15 +295,7 @@ msgid ""
 "                        If this error is unexpected, you can\n"
 "                        <a href=\"mailto:%(support_email)s\">contact support</a>.\n"
 "                        "
-<<<<<<< HEAD
-msgstr ""
-"\n"
-"                    Os yw'r gwall hwn yn annisgwyl, gallwch chi\n"
-"                        <a href=\"mailto:%(support_email)s\">cysylltwch â chefnogaeth</a>.\n"
-"                        "
-=======
 msgstr "\n                    Os yw'r gwall hwn yn annisgwyl, gallwch chi\n                        <a href=\"mailto:%(support_email)s\">cysylltwch â chefnogaeth</a>.\n                        "
->>>>>>> drc_main
 
 #: templates/500.html:4 templates/500.html:21
 #: zerver/actions/scheduled_messages.py:411 zerver/middleware.py:433
@@ -329,28 +307,14 @@ msgid ""
 "\n"
 "                        Your Zulip chat cannot be loaded because the server is experiencing technical difficulties.\n"
 "                        "
-<<<<<<< HEAD
-msgstr ""
-"\n"
-"                        Ni ellir llwytho eich sgwrs Zulip oherwydd bod y gweinydd yn cael anawsterau technegol.\n"
-"                        "
-=======
 msgstr "\n                        Ni ellir llwytho eich sgwrs Zulip oherwydd bod y gweinydd yn cael anawsterau technegol.\n                        "
->>>>>>> drc_main
 
 #: templates/500.html:28
 msgid ""
 "\n"
 "                        This page will reload automatically when service is restored.\n"
 "                        "
-<<<<<<< HEAD
-msgstr ""
-"\n"
-"                       Bydd y dudalen hon yn ail-lwytho'n awtomatig pan fydd y gwasanaeth yn cael ei adfer.\n"
-"                        "
-=======
 msgstr "\n                       Bydd y dudalen hon yn ail-lwytho'n awtomatig pan fydd y gwasanaeth yn cael ei adfer.\n                        "
->>>>>>> drc_main
 
 #: templates/500.html:32
 #, python-format
@@ -358,14 +322,7 @@ msgid ""
 "\n"
 "                            In the meantime, you can <a href=\"mailto:%(support_email)s\">contact Zulip support</a>.\n"
 "                            "
-<<<<<<< HEAD
-msgstr ""
-"\n"
-"                            Yn y cyfamser, gallwch <a href=\"mailto:%(support_email)s\">cysylltwch â chefnogaeth Zulip</a>.\n"
-"                            "
-=======
 msgstr "\n                            Yn y cyfamser, gallwch <a href=\"mailto:%(support_email)s\">cysylltwch â chefnogaeth Zulip</a>.\n                            "
->>>>>>> drc_main
 
 #: templates/500.html:36
 #, python-format
@@ -374,15 +331,7 @@ msgid ""
 "                            In the meantime, you can <a href=\"mailto:%(support_email)s\">contact\n"
 "                            this server's administrators</a> for support.\n"
 "                            "
-<<<<<<< HEAD
-msgstr ""
-"\n"
-"                            Yn y cyfamser, gallwch <a href=\"mailto:%(support_email)s\">cysylltwch â\n"
-"                           gweinyddwyr y gweinydd hwn</a> am cefnogaeth.\n"
-"                            "
-=======
 msgstr "\n                            Yn y cyfamser, gallwch <a href=\"mailto:%(support_email)s\">cysylltwch â\n                           gweinyddwyr y gweinydd hwn</a> am cefnogaeth.\n                            "
->>>>>>> drc_main
 
 #: templates/500.html:44
 #, python-format
@@ -391,15 +340,7 @@ msgid ""
 "                            If you administer this server, you may want to check out the\n"
 "                            <a href=\"%(troubleshooting_url)s\">Zulip server troubleshooting guide</a>.\n"
 "                            "
-<<<<<<< HEAD
-msgstr ""
-"\n"
-"                            Os ydych yn gweinyddu'r gweinydd hwn, efallai y byddwch am edrych ar y\n"
-"                            <a href=\"%(troubleshooting_url)s\">Canllaw datrys problemau gweinydd Zulip</a>.\n"
-"                            "
-=======
 msgstr "\n                            Os ydych yn gweinyddu'r gweinydd hwn, efallai y byddwch am edrych ar y\n                            <a href=\"%(troubleshooting_url)s\">Canllaw datrys problemau gweinydd Zulip</a>.\n                            "
->>>>>>> drc_main
 
 #: templates/analytics/stats.html:6
 #, python-format
@@ -407,14 +348,7 @@ msgid ""
 "\n"
 "    Analytics for %(target_name)s | Zulip\n"
 "    "
-<<<<<<< HEAD
-msgstr ""
-"\n"
-"    Dadansoddeg ar gyfer %(target_name)s | Zulip\n"
-"    "
-=======
 msgstr "\n    Dadansoddeg ar gyfer %(target_name)s | Zulip\n    "
->>>>>>> drc_main
 
 #: templates/analytics/stats.html:18
 msgid "Analytics are fully available 24 hours after organization creation."
@@ -851,15 +785,7 @@ msgid ""
 "            You can find answers to frequently asked questions in the\n"
 "            <a href=\"/help/\">Zulip help center</a>.\n"
 "            "
-<<<<<<< HEAD
-msgstr ""
-"\n"
-"            Gallwch ddod o hyd i atebion i gwestiynau cyffredin yn y\n"
-"            <a href=\"/help/\">Canolfan gymorth Zulip</a>.\n"
-"            "
-=======
 msgstr "\n            Gallwch ddod o hyd i atebion i gwestiynau cyffredin yn y\n            <a href=\"/help/\">Canolfan gymorth Zulip</a>.\n            "
->>>>>>> drc_main
 
 #: templates/corporate/team.html:146
 msgid "Avatar"
@@ -910,18 +836,6 @@ msgstr "Llawlyfr"
 msgid "Most control"
 msgstr "Y rhan fwyaf o reolaeth"
 
-<<<<<<< HEAD
-#: templates/corporate/upgrade.html:158 templates/corporate/upgrade.html:223
-#: templates/corporate/upgrade.html:274
-msgid "Convert demo organization before upgrading."
-msgstr "Trosi sefydliad demo cyn uwchraddio."
-
-#: templates/corporate/upgrade.html:266
-msgid "Leave blank if your organization does not have a website."
-msgstr "Gadewch yn wag os nad oes gan eich sefydliad wefan."
-
-=======
->>>>>>> drc_main
 #: templates/corporate/zulipchat_migration_tos.html:3
 msgid ""
 "\n"
@@ -961,17 +875,9 @@ msgstr "E-bost"
 #: templates/zerver/register.html:209
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
-"rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr ""
-"Rwy'n cytuno i'r <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
-"rel=\"noopener noreferrer\">Telerau Gwasanaeth</a> ."
-=======
 "I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
 "target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/accounts_accept_terms.html:64
 msgid "Continue"
@@ -1031,13 +937,7 @@ msgstr "Rhag ofn, edrychwch ar eich ffolder Sbam."
 msgid ""
 "If this message does not go away, try <a id=\"reload-lnk\">reloading</a> the"
 " page."
-<<<<<<< HEAD
-msgstr ""
-"Os na fydd y neges hon yn diflannu, trio <a id=\"reload-lnk\">ail-"
-"lwytho'r</a> dudalen."
-=======
 msgstr "Os na fydd y neges hon yn diflannu, trio <a id=\"reload-lnk\">ail-lwytho'r</a> dudalen."
->>>>>>> drc_main
 
 #: templates/zerver/app/index.html:164
 msgid "Unable to connect to Zulip."
@@ -1076,18 +976,7 @@ msgid ""
 "                        you probably got the address wrong. If you got stuck here while trying\n"
 "                        to log in, this is most likely a server bug or misconfiguration.\n"
 "                        "
-<<<<<<< HEAD
-msgstr ""
-"\n"
-"                        Mae'n ymddangos eich bod wedi gorffen yma ar ddamwain. Mae'r wefan hon\n"
-"                        i fod yn gam canolradd yn y broses ddilysu\n"
-"                        ac ni ddylid ei gyrchu â llaw. Os daethoch yma yn uniongyrchol,\n"
-"                        mae'n debyg eich bod wedi cael y cyfeiriad yn anghywir. Os aethoch yn sownd yma tra'n ceisio\n"
-"                        mewngofnodi, mae hyn yn fwyaf tebygol o nam gweinydd neu gamgyfluniad.\n"
-"                        "
-=======
 msgstr "\n                        Mae'n ymddangos eich bod wedi gorffen yma ar ddamwain. Mae'r wefan hon\n                        i fod yn gam canolradd yn y broses ddilysu\n                        ac ni ddylid ei gyrchu â llaw. Os daethoch yma yn uniongyrchol,\n                        mae'n debyg eich bod wedi cael y cyfeiriad yn anghywir. Os aethoch yn sownd yma tra'n ceisio\n                        mewngofnodi, mae hyn yn fwyaf tebygol o nam gweinydd neu gamgyfluniad.\n                        "
->>>>>>> drc_main
 
 #: templates/zerver/billing_nav.html:4
 #: templates/zerver/development/integrations_dev_panel.html:19
@@ -1400,21 +1289,6 @@ msgstr "Cliciwch y botwm isod i gwblhau cofrestriad."
 msgid "Complete registration"
 msgstr "Gorffen cofrestru"
 
-<<<<<<< HEAD
-#: templates/zerver/emails/confirm_registration.source.html:23
-#: templates/zerver/emails/invitation.source.html:19
-#: templates/zerver/emails/realm_reactivation.source.html:19
-#: templates/zerver/emails/realm_reactivation.txt:13
-#, python-format
-msgid ""
-"Contact us any time at %(support_email)s if you run into trouble, have any "
-"feedback, or just want to chat!"
-msgstr ""
-"Cysylltwch â ni unrhyw bryd yn %(support_email)s os ydych chi'n mynd i "
-"drafferth, yn cael unrhyw adborth, neu ddim ond eisiau sgwrsio!"
-
-=======
->>>>>>> drc_main
 #: templates/zerver/emails/confirm_registration.subject.txt:2
 msgid "Create your Zulip organization"
 msgstr "Creu eich sefydliad Zulip"
@@ -1438,13 +1312,6 @@ msgstr "Cliciwch y ddolen isod i gwblhau cofrestriad."
 #: templates/zerver/emails/realm_reactivation.txt:14
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Contact us any time at %(support_email)s if you run into trouble,have any "
-"feedback, or just want to chat!"
-msgstr ""
-"Cysylltwch â ni unrhyw bryd yn %(support_email)s os ydych chi'n mynd i "
-"drafferth, yn cael unrhyw adborth, neu ddim ond eisiau sgwrsio!"
-=======
 "Do you have questions or feedback to share? Contact us at %(support_email)s "
 "— we'd love to help!"
 msgstr ""
@@ -1459,7 +1326,6 @@ msgid ""
 "If you have any questions, please contact this Zulip server's administrators"
 " at %(support_email)s."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/custom_email_base.pre.html:18
 #: templates/zerver/emails/digest.html:39
@@ -1514,14 +1380,8 @@ msgstr "Treuliad Zulip ar gyfer %(realm_name)s"
 
 #: templates/zerver/emails/digest.txt:12
 #, python-format
-<<<<<<< HEAD
-msgid "Click here to log in to Zulip and catch up: %(organization_uri)s."
-msgstr ""
-"Cliciwch yma i fewngofnodi i Zulip a dal i fyny: %(organization_uri)s."
-=======
 msgid "Click here to log in to Zulip and catch up: %(organization_url)s."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/digest.txt:15
 msgid "Manage email preferences:"
@@ -1603,19 +1463,9 @@ msgstr "Croeso i Zulip!"
 #: templates/zerver/emails/followup_day1.html:26
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"You've created a demo Zulip organization. Note that this organization will "
-"be automatically deleted in 30 days. Learn more about demo organizations <a "
-"href=\"https://zulip.com/help/demo-organizations\">here</a>!"
-msgstr ""
-"Rydych chi wedi creu sefydliad Zulip demo. Sylwch y bydd y sefydliad hwn yn "
-"cael ei ddileu yn awtomatig mewn 30 diwrnod. Dysgu mwy am sefydliadau demo "
-"<a href=\"https://zulip.com/help/demo-organizations\">yma</a> !"
-=======
 "You've joined the Zulip organization <b>%(realm_name)s</b>.\n"
 "    "
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.html:32
 #, python-format
@@ -1654,77 +1504,23 @@ msgstr ""
 #: templates/zerver/emails/followup_day1.html:49
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"(you'll need these to sign in to the <a href=\"%(apps_page_link)s\">mobile "
-"and desktop</a> apps)"
-msgstr ""
-"(bydd angen y rhain arnoch chi i fewngofnodi i'r apiau <a "
-"href=\"%(apps_page_link)s\">symudol a bwrdd gwaith</a> )"
-=======
 "If you are new to Zulip, check out our <a "
 "href=\"%(getting_user_started_link)s\">Getting started guide</a>!"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.html:51
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Check out our <a href=\"%(getting_started_link)s\">guide for admins</a>, "
-"become a Zulip pro with a few <a "
-"href=\"%(keyboard_shortcuts_link)s\">keyboard shortcuts</a>, or <a "
-"href=\"%(realm_uri)s\">dive right in</a>!"
-msgstr ""
-"Edrychwch ar ein <a href=\"%(getting_started_link)s\">canllaw edmygwyr</a> ,"
-" dewch yn pro Zulip gydag ychydig o <a "
-"href=\"%(keyboard_shortcuts_link)s\">lwybrau byr bysellfwrdd</a> , neu <a "
-"href=\"%(realm_uri)s\">blymiwch i mewn</a> !"
-=======
 "We also have a guide for <a "
 "href=\"%(getting_organization_started_link)s\">Setting up your "
 "organization</a>."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.html:57
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"<a href=\"%(getting_started_link)s\">Learn more</a> about Zulip, become a "
-"pro with a few <a href=\"%(keyboard_shortcuts_link)s\">keyboard "
-"shortcuts</a>, or <a href=\"%(realm_uri)s\">dive right in</a>!"
-msgstr ""
-"<a href=\"%(getting_started_link)s\">Dysgu mwy</a> am Zulip, dod yn pro "
-"gydag ychydig o <a href=\"%(keyboard_shortcuts_link)s\">lwybrau byr "
-"bysellfwrdd</a> , neu <a href=\"%(realm_uri)s\">blymio i mewn</a> !"
-
-#: templates/zerver/emails/followup_day1.source.html:48
-#: templates/zerver/emails/followup_day1.txt:36
-msgid "Cheers,"
-msgstr "Iechyd da,"
-
-#: templates/zerver/emails/followup_day1.source.html:49
-#: templates/zerver/emails/followup_day1.txt:37
-#: templates/zerver/emails/notify_change_in_email.source.html:14
-#: templates/zerver/emails/notify_change_in_email.txt:7
-msgid "Team Zulip"
-msgstr "Tîm Zulip"
-
-#: templates/zerver/emails/followup_day1.source.html:53
-msgid ""
-"PS: Follow us on <a href=\"https://twitter.com/zulip\">Twitter</a>, star us "
-"on <a href=\"https://github.com/zulip/zulip\">GitHub</a>, or chat with us "
-"live on the <a href=\"https://zulip.com/development-community/\">Zulip "
-"community server</a>!"
-msgstr ""
-"PS: Dilynwch ni ar <a href=\"https://twitter.com/zulip\">Trydar</a> , "
-"serenwch ni ar <a href=\"https://github.com/zulip/zulip\">GitHub</a> , neu "
-"sgwrsiwch â ni yn fyw ar <a href=\"https://zulip.com/development-"
-"community/\">weinydd cymunedol Zulip</a> !"
-=======
 "Questions? <a href=\"%(support_email)s\">Contact us</a> — we'd love to help!"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.subject.txt:2
 #, python-format
@@ -1739,20 +1535,10 @@ msgstr "%(realm_name)s ar Zulip: Manylion eich cyfrif newydd"
 #: templates/zerver/emails/followup_day1.txt:5
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"You've created a demo Zulip organization. Note that this organization will "
-"be automatically deleted in 30 days. Learn more about demo organizations "
-"here: https://zulip.com/help/demo-organizations"
-msgstr ""
-"Rydych chi wedi creu sefydliad Zulip demo. Sylwch y bydd y sefydliad hwn yn "
-"cael ei ddileu yn awtomatig mewn 30 diwrnod. Dysgu mwy am sefydliadau demo "
-"yma: https://zulip.com/help/demo-organizations"
-=======
 " Congratulations, you have created a new demo Zulip organization. Note that "
 "this organization will be automatically deleted in 30 days. Learn more about"
 " demo organizations here: %(demo_organizations_help_link)s!"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.txt:7
 #, python-format
@@ -1768,57 +1554,20 @@ msgstr "Rydych chi wedi ymuno â sefydliad Zulip %(realm_name)s."
 #: templates/zerver/emails/followup_day1.txt:14
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"(you'll need these to sign in to the mobile and desktop apps "
-"(%(apps_page_link)s))"
-msgstr ""
-"(bydd angen y rhain arnoch i fewngofnodi i'r apiau symudol a bwrdd gwaith "
-"(%(apps_page_link)s))"
-=======
 "You will use the following info to log into the Zulip web, mobile and "
 "desktop apps (%(apps_page_link)s):"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.txt:29
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Check out our guide (%(getting_started_link)s) for admins, become a Zulip "
-"pro with a few keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive "
-"right in to %(realm_uri)s!"
-msgstr ""
-"Edrychwch ar ein canllaw (%(getting_started_link)s) am edmygwyr, dewch yn "
-"pro Zulip gydag ychydig o lwybrau byr bysellfwrdd "
-"(%(keyboard_shortcuts_link)s), neu blymiwch i mewn i %(realm_uri)s!"
-=======
 "If you are new to Zulip, check out our Getting started guide "
 "(%(getting_user_started_link)s)!"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.txt:31
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Learn more (%(getting_started_link)s) about Zulip, become a pro with a few "
-"keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive right in to "
-"%(realm_uri)s!"
-msgstr ""
-"Dysgwch fwy (%(getting_started_link)s) am Zulip, dewch yn pro gydag ychydig "
-"o lwybrau byr bysellfwrdd (%(keyboard_shortcuts_link)s), neu blymiwch i mewn"
-" i %(realm_uri)s!"
-
-#: templates/zerver/emails/followup_day1.txt:39
-msgid ""
-"PS: Check us out on Twitter (@zulip), star us on GitHub "
-"(https://github.com/zulip/zulip), or chat with us live on the Zulip "
-"community server (https://zulip.com/development-community/)!"
-msgstr ""
-"PS: Gwiriwch ni ar Trydar (@zulip), serenwch ni ar GitHub "
-"(https://github.com/zulip/zulip), neu sgwrsiwch â ni yn fyw ar weinydd "
-"cymunedol Zulip (https://zulip.com/development-community/)!"
-=======
 " We also have a guide for Setting up your organization "
 "(%(getting_organization_started_link)s)."
 msgstr ""
@@ -1827,7 +1576,6 @@ msgstr ""
 #, python-format
 msgid "Questions? Contact us at %(support_email)s — we'd love to help!"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.html:9
 #: templates/zerver/emails/followup_day2.txt:1
@@ -1845,18 +1593,9 @@ msgstr ""
 #: templates/zerver/emails/followup_day2.html:13
 #: templates/zerver/emails/followup_day2.txt:3
 msgid ""
-<<<<<<< HEAD
-"I wanted to share one last thing with you: a few tips about topics, since "
-"mastering topics is a key part of being a Zulip power user."
-msgstr ""
-"Roeddwn i eisiau rhannu un peth olaf gyda chi: ychydig o awgrymiadau am "
-"bynciau, gan fod meistroli pynciau yn rhan allweddol o fod yn ddefnyddiwr "
-"pŵer Zulip."
-=======
 "Using topics, you can read Zulip one conversation at a time. You'll see each"
 " message in context, no matter how many different discussions are going on."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.html:16
 msgid "Streams and topics in the Zulip app"
@@ -1878,22 +1617,12 @@ msgstr "Enghreifftiau o bynciau byr"
 #: templates/zerver/emails/followup_day2.html:25
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Topics are like email subject lines. The big difference, though, is that "
-"they're really short and lightweight. Two or three words will do it. Don't "
-"overthink 'em&mdash;you can always edit the message later!"
-msgstr ""
-"Mae pynciau fel llinellau pwnc e-bost. Y gwahaniaeth mawr, serch hynny, yw "
-"eu bod yn wirioneddol fyr ac ysgafn. Bydd dau neu dri gair yn ei wneud. "
-"Peidiwch â gor-feddwl;  gallwch chi bob amser olygu'r neges yn nes ymlaen!"
-=======
 "Don't stress about picking the perfect name for your topic. If anything is "
 "out of place, it's easy to <a href=\"%(move_messages_link)s\">move "
 "messages</a>, <a href=\"%(rename_topics_link)s\">rename topics</a>, or even "
 "<a href=\"%(move_topic_to_different_stream_link)s\">move a topic to a "
 "different stream</a>."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.html:28
 #: templates/zerver/emails/followup_day2.txt:10
@@ -1901,48 +1630,6 @@ msgstr ""
 msgid "Go to Zulip"
 msgstr "Ewch i Zulip"
 
-<<<<<<< HEAD
-#: templates/zerver/emails/followup_day2.source.html:18
-#: templates/zerver/emails/followup_day2.txt:9
-msgid ""
-"Not recommended: \"What do people think of this new design mockup?\", \"I'm "
-"looking at Bug 345\", \"Is Acme Burgers open for lunch?\""
-msgstr ""
-"Heb ei argymell: \"Beth yw barn pobl am y ffug ddylunio newydd hwn?\", "
-"\"Rwy'n edrych ar Bug 345\", \"A yw Acme Burgers ar agor i ginio?\""
-
-#: templates/zerver/emails/followup_day2.source.html:21
-msgid "Example of a topic that is too long"
-msgstr "Enghraifft o bwnc sy'n rhy hir"
-
-#: templates/zerver/emails/followup_day2.source.html:23
-msgid ""
-"Why bother with topics? Well, two reasons: it makes conversations clearer "
-"(imagine if email didn't have them!), and it lets you more efficiently catch"
-" up on what's happened while you're away&mdash;read the topics that are "
-"relevant to you, and ignore the ones that aren't!"
-msgstr ""
-"Pam trafferthu gyda phynciau? Wel, dau reswm: mae'n gwneud sgyrsiau yn "
-"gliriach (dychmygwch os nad oedd e-bost ganddyn nhw!), Ac mae'n caniatáu "
-"ichi ddal i fyny yn fwy effeithlon yr hyn sydd wedi digwydd tra'ch bod chi i"
-" ffwrdd - darllenwch y pynciau sy'n berthnasol i chi, ac anwybyddwch y rhai "
-"nad ydyn nhw!"
-
-#: templates/zerver/emails/followup_day2.source.html:25
-msgid "Take it for a spin now."
-msgstr "Ewch ag ef am sbin nawr."
-
-#: templates/zerver/emails/followup_day2.source.html:27
-#: templates/zerver/emails/followup_day2.txt:16
-#: templates/zerver/emails/notify_new_login.source.html:40
-#: templates/zerver/emails/notify_new_login.txt:20
-msgid "Thanks,"
-msgstr "Diolch,"
-
-#: templates/zerver/emails/followup_day2.source.html:34
-msgid "Unsubscribe from welcome emails"
-msgstr "Dad-danysgrifio o negeseuon e-bost croeso"
-=======
 #: templates/zerver/emails/followup_day2.html:34
 #: templates/zerver/emails/followup_day2.txt:14
 #: templates/zerver/emails/onboarding_zulip_guide.html:40
@@ -1950,7 +1637,6 @@ msgstr "Dad-danysgrifio o negeseuon e-bost croeso"
 #, python-format
 msgid "Unsubscribe from welcome emails for %(realm_name)s"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
 msgid "Keep your conversations organized with topics"
@@ -1958,41 +1644,18 @@ msgstr ""
 
 #: templates/zerver/emails/followup_day2.txt:3
 msgid ""
-<<<<<<< HEAD
-"Topics are like email subject lines. The big difference, though, is that "
-"they're really short and lightweight. Two or three words will do it. Don't "
-"overthink 'em -- you can always edit the message later!"
-msgstr ""
-"Mae pynciau fel llinellau pwnc e-bost. Y gwahaniaeth mawr, serch hynny, yw "
-"eu bod yn wirioneddol fyr ac ysgafn. Bydd dau neu dri gair yn ei wneud. "
-"Peidiwch â gor-feddwl - gallwch chi bob amser olygu'r neges yn nes ymlaen!"
-=======
 "In Zulip, streams determine who gets a message. Topics tell you what the "
 "message is about."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.txt:7
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Why bother with topics? Well, two reasons: it makes conversations clearer "
-"(imagine if email didn't have them!), and it lets you more efficiently catch"
-" up on what's happened while you're away -- read the topics that are "
-"relevant to you, and ignore the ones that aren't!"
-msgstr ""
-"Pam trafferthu gyda phynciau? Wel, dau reswm: mae'n gwneud sgyrsiau yn "
-"gliriach (dychmygwch os nad oedd e-bost ganddyn nhw!), Ac ma'n gadael i chi "
-"ddal i fyny yn fwy effeithlon ar yr hyn sydd wedi digwydd tra'ch bod chi i "
-"ffwrdd - darllenwch y pynciau sy'n berthnasol i chi, ac anwybyddwch y rhai "
-"nad ydyn nhw!"
-=======
 "Don't stress about picking the perfect name for your topic. If anything is "
 "out of place, it's easy to move messages (%(move_messages_link)s), rename "
 "topics (%(rename_topics_link)s), or even move a topic to a different stream "
 "(%(move_topic_to_different_stream_link)s)."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/invitation.html:9
 #: templates/zerver/emails/invitation.txt:1
@@ -2192,13 +1855,8 @@ msgstr ""
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
-<<<<<<< HEAD
-msgid "Group PMs with %(huddle_display_name)s"
-msgstr "Grŵpio NP gydag %(huddle_display_name)s"
-=======
 msgid "Group DMs with %(huddle_display_name)s"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/missed_message.subject.txt:3
 #, python-format
@@ -2901,77 +2559,32 @@ msgid "Invalid email"
 msgstr "E-bost annilys"
 
 #: templates/zerver/invalid_email.html:15
-<<<<<<< HEAD
-msgid ""
-"\n"
-"        The email address you are trying to sign up with is not valid.\n"
-"        Please sign up using a valid email address.\n"
-"        "
-msgstr ""
-"\n"
-"Nid yw'r cyfeiriad e-bost rydych chi'n ceisio ymuno ag ef yn ddilys. \n"
-"Cofrestrwch gan ddefnyddio cyfeiriad e-bost dilys."
-=======
 msgid "Email not allowed"
 msgstr ""
 
 #: templates/zerver/invalid_email.html:21
 msgid "The email address you are trying to sign up with is not valid."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_email.html:24
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"\n"
-"        The organization you are trying to join, %(realm_name)s,\n"
-"        only allows users with email addresses within the\n"
-"        organization. Please sign up using appropriate email address.\n"
-"        "
-msgstr ""
-"\n"
-"Mae'r sefydliad rydych chi'n ceisio ymuno ag ef, %(realm_name)s, yn caniatáu i ddefnyddwyr sydd â chyfeiriadau e-bost yn y \n"
-"sefydliad. Cofrestrwch gan ddefnyddio cyfeiriad e-bost priodol."
-=======
 "The organization you are trying to join, <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a>, does not allow signups using "
 "emails with your email domain."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_email.html:27
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"The organization you are trying to join,\n"
-"        %(realm_name)s, does not allow signups using disposable email\n"
-"        addresses. Please sign up using a real email address.\n"
-"        "
-msgstr ""
-"Nid yw'r sefydliad rydych chi'n ceisio ymuno ag,\n"
-" %(realm_name)s, yn caniatáu mewngofnodi gan ddefnyddio cyfeiriadau e-bost tafladwy. \n"
-"Cofrestrwch gan ddefnyddio cyfeiriad e-bost go iawn."
-=======
 "The organization you are trying to join, <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a>, does not allow signups using "
 "disposable email addresses."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_email.html:30
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"The organization you are trying to join,\n"
-"        %(realm_name)s, does not allow signups using emails\n"
-"        that contains +. Please sign up using appropriate email address.\n"
-"        "
-msgstr ""
-"Nid yw'r sefydliad rydych chi'n ceisio ymuno ag,\n"
-" %(realm_name)s, yn caniatáu mewngofnodi gan ddefnyddio e-byst \n"
-"sy'n cynnwys +. Cofrestrwch gan ddefnyddio cyfeiriad e-bost priodol."
-=======
 "The organization you are trying to join, <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a>, does not allow signups using "
 "emails that contain \"+\"."
@@ -2984,7 +2597,6 @@ msgstr ""
 #: templates/zerver/invalid_email.html:35
 msgid "Please sign up using an allowed email address."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_realm.html:4
 #: templates/zerver/invalid_realm.html:12
@@ -3090,20 +2702,10 @@ msgstr ""
 #: templates/zerver/no_spare_licenses.html:16
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"\n"
-"    New members cannot join this organization because all Zulip licenses are currently in use. Please contact the person who\n"
-"    invited you and ask them to increase the number of licenses, then try again.\n"
-"    "
-msgstr ""
-"\n"
-"Ni all aelodau newydd ymuno â'r sefydliad hwn oherwydd bod holl drwyddedau Zulip yn cael eu defnyddio ar hyn o bryd. Cysylltwch â'r person a'ch gwahoddodd a gofyn iddynt gynyddu nifer y trwyddedau, yna ceisiwch eto."
-=======
 "New members cannot currently join <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a> because all Zulip Cloud licenses "
 "are in use."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/no_spare_licenses.html:19
 msgid ""
@@ -3244,11 +2846,6 @@ msgid ""
 "            <p>Enter your account details to complete registration.</p>\n"
 "            "
 msgstr ""
-<<<<<<< HEAD
-"\n"
-"<p>Rydych chi bron yno! Mae angen i chi wneud un peth olaf yn unig.</p>"
-=======
->>>>>>> drc_main
 
 #: templates/zerver/register.html:36
 msgid "Your organization"
@@ -3258,15 +2855,7 @@ msgstr ""
 msgid "Your account"
 msgstr "Eich cyfrif"
 
-<<<<<<< HEAD
-#: templates/zerver/register.html:127
-msgid "Import settings from existing Zulip account"
-msgstr "Mewnforio gosodiadau o'r cyfrif Zulip presennol"
-
-#: templates/zerver/register.html:135
-=======
 #: templates/zerver/register.html:92
->>>>>>> drc_main
 msgid "Don&rsquo;t import settings"
 msgstr "Peidiwch â mewnforio gosodiadau"
 
@@ -3408,17 +2997,6 @@ msgstr ""
 msgid "Unknown email unsubscribe request"
 msgstr "Cais dad-danysgrifio e-bost anhysbys"
 
-<<<<<<< HEAD
-#: templates/zerver/unsubscribe_link_error.html:12
-msgid ""
-"Hi there! It looks like you tried to unsubscribe from something,\n"
-"    but we don't recognize the URL."
-msgstr ""
-"Helo yno! Mae'n edrych fel eich bod wedi ceisio dad-danysgrifio o rywbeth, "
-"ond nid ydym yn adnabod yr URL."
-
-=======
->>>>>>> drc_main
 #: templates/zerver/unsubscribe_link_error.html:16
 msgid ""
 "Hi there! It looks like you tried to unsubscribe from something, but we "
@@ -3446,11 +3024,6 @@ msgid ""
 "                    <a href=\"%(realm_uri)s\">%(realm_name)s</a>.\n"
 "                    "
 msgstr ""
-<<<<<<< HEAD
-"\n"
-"Rydych chi wedi dad-danysgrifio yn llwyddiannus o e-byst%(subscription_type)s Zulip."
-=======
->>>>>>> drc_main
 
 #: templates/zerver/unsubscribe_success.html:27
 #, python-format
@@ -3460,12 +3033,6 @@ msgid ""
 "                    <a href=\"%(realm_uri)s/#settings/notifications\">notification settings</a>.\n"
 "                    "
 msgstr ""
-<<<<<<< HEAD
-"\n"
-"Gallwch ddadwneud y newid hwn neu adolygu eich dewisiadau yn eich\n"
-" <a href=\"%(realm_uri)s/#settings/notifications\">gosodiadau hysbysu Zulip</a> ."
-=======
->>>>>>> drc_main
 
 #: templates/zerver/unsupported_browser.html:4
 #: templates/zerver/unsupported_browser.html:15
@@ -3490,12 +3057,6 @@ msgid ""
 "                        like Firefox, Chrome, and Edge.\n"
 "                        "
 msgstr ""
-<<<<<<< HEAD
-"\n"
-"Mae Zulip yn cefnogi porwyr modern fel Firefox, \n"
-"Chrome, ac Edge."
-=======
->>>>>>> drc_main
 
 #: templates/zerver/unsupported_browser.html:28
 #, python-format
@@ -4527,29 +4088,12 @@ msgstr "Dadl 'angor' ar goll."
 msgid "Invalid anchor"
 msgstr "Angor annilys"
 
-<<<<<<< HEAD
-#: zerver/lib/onboarding.py:56
-#, python-brace-format
-msgid "We also have a guide for [Setting up your organization]({help_url})."
-msgstr ""
-"Mae gennym hefyd ganllaw ar gyfer [Sefydlu'ch sefydliad] ({help_url})."
-
-=======
->>>>>>> drc_main
 #: zerver/lib/onboarding.py:59
 #, python-brace-format
 msgid ""
-<<<<<<< HEAD
-"Note that this is a [demo organization]({demo_org_help_url}) and will be "
-"**automatically deleted** in 30 days."
-msgstr ""
-"Sylwch fod hwn yn [sefydliad demo] ({demo_org_help_url}) a bydd yn cael ei "
-"**ddileu yn awtomatig** mewn 30 diwrnod."
-=======
 "If you are new to Zulip, check out our [Using Zulip for a class "
 "guide]({getting_started_url})!"
 msgstr ""
->>>>>>> drc_main
 
 #: zerver/lib/onboarding.py:66
 #, python-brace-format
@@ -4603,17 +4147,9 @@ msgstr "Dyma ychydig o negeseuon rwy'n eu deall:"
 
 #: zerver/lib/onboarding.py:156
 msgid ""
-<<<<<<< HEAD
-"You can [download](/apps) the [mobile and desktop apps](/apps). Zulip also "
-"works great in a browser."
-msgstr ""
-"Gallwch [lawrlwytho] (/apiau) yr [apiau symudol a bwrdd gwaith] (/ apiau). "
-"Mae Zulip hefyd yn gweithio'n wych mewn porwr."
-=======
 "You can [download](/apps/) the [mobile and desktop apps](/apps/). Zulip also"
 " works great in a browser."
 msgstr ""
->>>>>>> drc_main
 
 #: zerver/lib/onboarding.py:161
 msgid ""
@@ -5283,29 +4819,13 @@ msgstr ""
 
 #: zerver/models.py:1315
 #, python-format
-<<<<<<< HEAD
-msgid ""
-"Group %(name)r in URL format string is not present in linkifier pattern."
-msgstr ""
-"Nid yw grŵp %(name)r yn llinyn fformat URL yn bresennol ym mhatrwm y "
-"cysylltydd."
-=======
 msgid "Group %(name)r in URL template is not present in linkifier pattern."
 msgstr ""
->>>>>>> drc_main
 
 #: zerver/models.py:1327
 #, python-format
-<<<<<<< HEAD
-msgid ""
-"Group %(name)r in linkifier pattern is not present in URL format string."
-msgstr ""
-"Nid yw grŵp %(name)r mewn patrwm cysylltydd yn bresennol yn llinyn fformat "
-"URL."
-=======
 msgid "Group %(name)r in linkifier pattern is not present in URL template."
 msgstr ""
->>>>>>> drc_main
 
 #: zerver/models.py:1405 zerver/views/realm_playgrounds.py:25
 msgid "Invalid characters in pygments language"
@@ -5879,16 +5399,9 @@ msgid "User has disabled typing notifications for stream messages"
 msgstr ""
 "Mae gan y defnyddiwr hysbysiadau teipio analluogi ar gyfer negeseuon ffrwd"
 
-<<<<<<< HEAD
-#: zerver/views/typing.py:52
-msgid "User has disabled typing notifications for private messages"
-msgstr ""
-"Maedefnyddiwr wedi annulluogi hysbysiadau teipio ar gyfer negeseuon preifat"
-=======
 #: zerver/views/typing.py:56
 msgid "User has disabled typing notifications for direct messages"
 msgstr ""
->>>>>>> drc_main
 
 #: zerver/views/upload.py:180
 msgid "<p>File not found.</p>"

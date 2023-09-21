@@ -15,17 +15,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2022-11-17 16:38+0000\n"
-"PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: André Koot <meneer@tken.net>, 2022\n"
-"Language-Team: Dutch (https://app.transifex.com/zulip/teams/53893/nl/)\n"
-=======
 "POT-Creation-Date: 2023-05-31 01:00+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: André Koot <meneer@tken.net>, 2017,2021\n"
 "Language-Team: Dutch (http://app.transifex.com/zulip/zulip/language/nl/)\n"
->>>>>>> drc_main
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1539,18 +1532,9 @@ msgstr ""
 #: templates/zerver/emails/followup_day2.html:13
 #: templates/zerver/emails/followup_day2.txt:3
 msgid ""
-<<<<<<< HEAD
-"I wanted to share one last thing with you: a few tips about topics, since "
-"mastering topics is a key part of being a Zulip power user."
-msgstr ""
-"Ik wil nog iets met jullie delen: een paar tips over onderwerpen, aangezien "
-"het beheersen van onderwerpen een belangrijk onderdeel is van krachtig Zulip"
-" gebruik."
-=======
 "Using topics, you can read Zulip one conversation at a time. You'll see each"
 " message in context, no matter how many different discussions are going on."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.html:16
 msgid "Streams and topics in the Zulip app"
@@ -1585,49 +1569,12 @@ msgstr ""
 msgid "Go to Zulip"
 msgstr "Naar Zulip"
 
-<<<<<<< HEAD
-#: templates/zerver/emails/followup_day2.source.html:18
-#: templates/zerver/emails/followup_day2.txt:9
-msgid ""
-"Not recommended: \"What do people think of this new design mockup?\", \"I'm "
-"looking at Bug 345\", \"Is Acme Burgers open for lunch?\""
-msgstr ""
-"Dit is echt minder: \"Wat vinden mensen van dit nieuwe design mock-up?\", "
-"\"Ik kijk naar Bug 345\", \"Is Acme Burgers open voor lunch?\""
-
-#: templates/zerver/emails/followup_day2.source.html:21
-msgid "Example of a topic that is too long"
-msgstr "Voorbeeld van een te lang onderwerp"
-
-#: templates/zerver/emails/followup_day2.source.html:23
-msgid ""
-"Why bother with topics? Well, two reasons: it makes conversations clearer "
-"(imagine if email didn't have them!), and it lets you more efficiently catch"
-" up on what's happened while you're away&mdash;read the topics that are "
-"relevant to you, and ignore the ones that aren't!"
-msgstr ""
-
-#: templates/zerver/emails/followup_day2.source.html:25
-msgid "Take it for a spin now."
-msgstr "Laten we beginnen."
-
-#: templates/zerver/emails/followup_day2.source.html:27
-#: templates/zerver/emails/followup_day2.txt:16
-#: templates/zerver/emails/notify_new_login.source.html:40
-#: templates/zerver/emails/notify_new_login.txt:20
-msgid "Thanks,"
-msgstr "Bedankt,"
-
-#: templates/zerver/emails/followup_day2.source.html:34
-msgid "Unsubscribe from welcome emails"
-=======
 #: templates/zerver/emails/followup_day2.html:34
 #: templates/zerver/emails/followup_day2.txt:14
 #: templates/zerver/emails/onboarding_zulip_guide.html:40
 #: templates/zerver/emails/onboarding_zulip_guide.txt:27
 #, python-format
 msgid "Unsubscribe from welcome emails for %(realm_name)s"
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
@@ -4866,14 +4813,6 @@ msgstr ""
 msgid "You must specify at least one email address."
 msgstr "Je moet minimaal één e-mailadres opgeven."
 
-<<<<<<< HEAD
-#: zerver/views/invite.py:72
-msgid "You must specify at least one stream for invitees to join."
-msgstr ""
-"Je moet ten minste één kanaal opgeven voordat genodigden kunnen deelnemen."
-
-=======
->>>>>>> drc_main
 #: zerver/views/invite.py:82
 msgid "Stream does not exist with id: {}. No invites were sent."
 msgstr ""

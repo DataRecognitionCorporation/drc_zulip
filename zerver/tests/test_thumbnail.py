@@ -74,21 +74,12 @@ class ThumbnailTest(ZulipTestCase):
             response = self.client_get("/thumbnail", {"url": url[1:], "size": "full"})
             self.assertEqual(response.status_code, 403)
 
-<<<<<<< HEAD
-        # Allow file access for web-public stream
-        self.login("iago")
-        self.make_stream("web-public-stream", is_web_public=True)
-        self.subscribe(self.example_user("hamlet"), "web-public-stream")
-        body = f"First message ...[zulip.txt](http://{host}" + uri + ")"
-        self.send_stream_message(self.example_user("hamlet"), "web-public-stream", body, "test")
-=======
             # Allow file access for web-public stream
             self.login("hamlet")
             self.make_stream("web-public-stream", is_web_public=True)
             self.subscribe(self.example_user("hamlet"), "web-public-stream")
             body = f"First message ...[zulip.txt](http://{host}" + url + ")"
             self.send_stream_message(self.example_user("hamlet"), "web-public-stream", body, "test")
->>>>>>> drc_main
 
             self.logout()
             response = self.client_get("/thumbnail", {"url": url[1:], "size": "full"})

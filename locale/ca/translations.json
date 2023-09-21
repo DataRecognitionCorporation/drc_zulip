@@ -1166,13 +1166,7 @@
   "Upload profile picture": "Puja una imatge de perfil",
   "Upload stalled for %'{seconds}' seconds, aborting.": "",
   "Uploaded files": "Fitxers pujats",
-<<<<<<< HEAD
-  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "",
   "Uploading {filename}…": "",
-  "Uploading…": "Pujant...",
-=======
-  "Uploading {filename}…": "",
->>>>>>> drc_main
   "Usage statistics": "",
   "Use full width on wide screens": "",
   "Use html encoding (not recommended)": "",

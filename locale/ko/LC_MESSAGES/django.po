@@ -4,26 +4,6 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-<<<<<<< HEAD
-# Kwoun younggil <zelord.kwoun@gmail.com>, 2022
-# Jeong, Yong-ick <yongick.jeong@gmail.com>, 2022
-# EUNJEUNG <rislove418@gmail.com>, 2022
-# F4D3C0D3 0x, 2022
-# Akash Nimare <svnitakash@gmail.com>, 2022
-# Wonha Ryu <wonha.ryu@gmail.com>, 2022
-# Harold Kim <root@stypr.com>, 2022
-# Leonardo YongUk Kim <dalinaum@gmail.com>, 2022
-# Yeonjeong Noh <nyj2800@hanmail.net>, 2022
-# sung yong kim <hikimsy@gmail.com>, 2022
-# Youngduck Kim <kfiekeofo@hanmail.net>, 2022
-# cozyplanes, 2022
-# 최진호 <jinho.choi.999@gmail.com>, 2022
-# 김진우, 2022
-# Ki Heo <reo119@marunet.co.kr>, 2022
-# Jihoon Lee <ulla4571@gmail.com>, 2022
-# 
-#, fuzzy
-=======
 # cozyplanes, 2018
 # EUNJEUNG <rislove418@gmail.com>, 2018
 # Greg Price <gnprice@gmail.com>, 2017
@@ -37,22 +17,14 @@
 # Wonha Ryu <wonha.ryu@gmail.com>, 2015
 # Yeonjeong Noh <nyj2800@hanmail.net>, 2018
 # Youngduck Kim <kfiekeofo@hanmail.net>, 2018
->>>>>>> drc_main
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2022-11-17 16:38+0000\n"
-"PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: Jihoon Lee <ulla4571@gmail.com>, 2022\n"
-"Language-Team: Korean (https://app.transifex.com/zulip/teams/53893/ko/)\n"
-=======
 "POT-Creation-Date: 2023-05-31 01:00+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: sung yong kim <hikimsy@gmail.com>, 2021\n"
 "Language-Team: Korean (http://app.transifex.com/zulip/zulip/language/ko/)\n"
->>>>>>> drc_main
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"

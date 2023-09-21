@@ -43,18 +43,7 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.initial_password import initial_password
 from zerver.lib.rate_limiter import is_local_addr
-<<<<<<< HEAD
-from zerver.lib.request import (
-    REQ,
-    RequestConfusingParamsError,
-    RequestNotes,
-    RequestVariableConversionError,
-    RequestVariableMissingError,
-    has_request_variables,
-)
-=======
 from zerver.lib.request import RequestNotes, RequestVariableMissingError
->>>>>>> drc_main
 from zerver.lib.response import json_response, json_success
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, dummy_handler, queries_captured
@@ -137,145 +126,6 @@ class DecoratorTestCase(ZulipTestCase):
         self.assertEqual(request_notes.client_name, "Unparsable")
         m.assert_called_once()
 
-<<<<<<< HEAD
-    def test_REQ_aliases(self) -> None:
-        @has_request_variables
-        def double(
-            request: HttpRequest,
-            x: int = REQ(whence="number", aliases=["x", "n"], json_validator=check_int),
-        ) -> HttpResponse:
-            return json_response(data={"number": x + x})
-
-        request = HostRequestMock(post_data={"bogus": "5555"})
-        with self.assertRaises(RequestVariableMissingError):
-            double(request)
-
-        request = HostRequestMock(post_data={"number": "3"})
-        self.assertEqual(orjson.loads(double(request).content).get("number"), 6)
-
-        request = HostRequestMock(post_data={"x": "4"})
-        self.assertEqual(orjson.loads(double(request).content).get("number"), 8)
-
-        request = HostRequestMock(post_data={"n": "5"})
-        self.assertEqual(orjson.loads(double(request).content).get("number"), 10)
-
-        request = HostRequestMock(post_data={"number": "6", "x": "7"})
-        with self.assertRaises(RequestConfusingParamsError) as cm:
-            double(request)
-        self.assertEqual(str(cm.exception), "Can't decide between 'number' and 'x' arguments")
-
-    def test_REQ_converter(self) -> None:
-        def my_converter(var_name: str, data: str) -> List[int]:
-            lst = orjson.loads(data)
-            if not isinstance(lst, list):
-                raise ValueError("not a list")
-            if 13 in lst:
-                raise JsonableError("13 is an unlucky number!")
-            return [int(elem) for elem in lst]
-
-        @has_request_variables
-        def get_total(
-            request: HttpRequest, numbers: Sequence[int] = REQ(converter=my_converter)
-        ) -> HttpResponse:
-            return json_response(data={"number": sum(numbers)})
-
-        request = HostRequestMock()
-
-        with self.assertRaises(RequestVariableMissingError):
-            get_total(request)
-
-        request.POST["numbers"] = "bad_value"
-        with self.assertRaises(RequestVariableConversionError) as cm:
-            get_total(request)
-        self.assertEqual(str(cm.exception), "Bad value for 'numbers': bad_value")
-
-        request.POST["numbers"] = orjson.dumps("{fun: unfun}").decode()
-        with self.assertRaises(JsonableError) as jsonable_error_cm:
-            get_total(request)
-        self.assertEqual(
-            str(jsonable_error_cm.exception), "Bad value for 'numbers': \"{fun: unfun}\""
-        )
-
-        request.POST["numbers"] = orjson.dumps([2, 3, 5, 8, 13, 21]).decode()
-        with self.assertRaises(JsonableError) as jsonable_error_cm:
-            get_total(request)
-        self.assertEqual(str(jsonable_error_cm.exception), "13 is an unlucky number!")
-
-        request.POST["numbers"] = orjson.dumps([1, 2, 3, 4, 5, 6]).decode()
-        result = get_total(request)
-        self.assertEqual(orjson.loads(result.content).get("number"), 21)
-
-    def test_REQ_validator(self) -> None:
-        @has_request_variables
-        def get_total(
-            request: HttpRequest, numbers: Sequence[int] = REQ(json_validator=check_list(check_int))
-        ) -> HttpResponse:
-            return json_response(data={"number": sum(numbers)})
-
-        request = HostRequestMock()
-
-        with self.assertRaises(RequestVariableMissingError):
-            get_total(request)
-
-        request.POST["numbers"] = "bad_value"
-        with self.assertRaises(JsonableError) as cm:
-            get_total(request)
-        self.assertEqual(str(cm.exception), 'Argument "numbers" is not valid JSON.')
-
-        request.POST["numbers"] = orjson.dumps([1, 2, "what?", 4, 5, 6]).decode()
-        with self.assertRaises(JsonableError) as cm:
-            get_total(request)
-        self.assertEqual(str(cm.exception), "numbers[2] is not an integer")
-
-        request.POST["numbers"] = orjson.dumps([1, 2, 3, 4, 5, 6]).decode()
-        result = get_total(request)
-        self.assertEqual(orjson.loads(result.content).get("number"), 21)
-
-    def test_REQ_str_validator(self) -> None:
-        @has_request_variables
-        def get_middle_characters(
-            request: HttpRequest, value: str = REQ(str_validator=check_string_fixed_length(5))
-        ) -> HttpResponse:
-            return json_response(data={"value": value[1:-1]})
-
-        request = HostRequestMock()
-
-        with self.assertRaises(RequestVariableMissingError):
-            get_middle_characters(request)
-
-        request.POST["value"] = "long_value"
-        with self.assertRaises(JsonableError) as cm:
-            get_middle_characters(request)
-        self.assertEqual(str(cm.exception), "value has incorrect length 10; should be 5")
-
-        request.POST["value"] = "valid"
-        result = get_middle_characters(request)
-        self.assertEqual(orjson.loads(result.content).get("value"), "ali")
-
-    def test_REQ_argument_type(self) -> None:
-        @has_request_variables
-        def get_payload(
-            request: HttpRequest, payload: Dict[str, Any] = REQ(argument_type="body")
-        ) -> HttpResponse:
-            return json_response(data={"payload": payload})
-
-        request = HostRequestMock()
-        request.body = b"\xde\xad\xbe\xef"
-        with self.assertRaises(JsonableError) as cm:
-            get_payload(request)
-        self.assertEqual(str(cm.exception), "Malformed payload")
-
-        request = HostRequestMock()
-        request.body = b"notjson"
-        with self.assertRaises(JsonableError) as cm:
-            get_payload(request)
-        self.assertEqual(str(cm.exception), "Malformed JSON")
-
-        request.body = b'{"a": "b"}'
-        self.assertEqual(orjson.loads(get_payload(request).content).get("payload"), {"a": "b"})
-
-=======
->>>>>>> drc_main
     def logger_output(self, output_string: str, type: str, logger: str) -> str:
         return f"{type.upper()}:zulip.zerver.{logger}:{output_string}"
 
@@ -560,13 +410,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         with mock.patch(
             "zerver.decorator.webhook_unsupported_events_logger.exception"
         ) as mock_exception:
-<<<<<<< HEAD
-            exception_msg = (
-                "The 'test_event' event isn't currently supported by the ClientName webhook"
-            )
-=======
             exception_msg = "The 'test_event' event isn't currently supported by the ClientName webhook; ignoring"
->>>>>>> drc_main
             with self.assertRaisesRegex(UnsupportedWebhookEventTypeError, exception_msg):
                 my_webhook_raises_exception(request)
 

@@ -197,9 +197,6 @@ function initialize_left_sidebar() {
     $("#left-sidebar-container").html(rendered_sidebar);
 }
 
-<<<<<<< HEAD:static/js/ui_init.js
-// DRC MODIFICATION - add is_geust
-=======
 export function update_invite_user_option() {
     if (
         !settings_data.user_can_invite_users_by_email() &&
@@ -211,7 +208,6 @@ export function update_invite_user_option() {
     }
 }
 
->>>>>>> drc_main:web/src/ui_init.js
 function initialize_right_sidebar() {
     const rendered_sidebar = render_right_sidebar({
         realm_rendered_description: page_params.realm_rendered_description,
@@ -220,11 +216,7 @@ function initialize_right_sidebar() {
 
 
     $("#right-sidebar-container").html(rendered_sidebar);
-<<<<<<< HEAD:static/js/ui_init.js
-
-=======
     update_invite_user_option();
->>>>>>> drc_main:web/src/ui_init.js
     if (page_params.is_spectator) {
         rendered_markdown.update_elements(
             $(".right-sidebar .realm-description .rendered_markdown"),

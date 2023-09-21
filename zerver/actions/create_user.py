@@ -140,12 +140,6 @@ def set_up_streams_for_new_human_user(
     user_was_invited = prereg_user is not None and (
         prereg_user.referred_by is not None or prereg_user.multiuse_invite is not None
     )
-<<<<<<< HEAD
-    # If the Preregistration object didn't explicitly list some streams (it happens when user
-    # directly signs up without any invitation), we add the default streams
-    if len(streams) == 0 and not user_was_invited:
-        streams = get_default_subs(user_profile)
-=======
 
     # If the Preregistration object didn't explicitly list some streams (it
     # happens when user directly signs up without any invitation), we add the
@@ -154,7 +148,6 @@ def set_up_streams_for_new_human_user(
     # which we verify in StreamSetupTest tests that check query counts.
     if len(streams) == 0 and not user_was_invited:
         streams = get_slim_realm_default_streams(realm.id)
->>>>>>> drc_main
 
     for default_stream_group in default_stream_groups:
         default_stream_group_streams = default_stream_group.streams.all()

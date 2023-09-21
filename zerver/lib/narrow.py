@@ -316,15 +316,9 @@ class NarrowBuilder:
 
         negated = term.get("negated", False)
 
-<<<<<<< HEAD
-        method_name = "by_" + operator.replace("-", "_")
-        method = getattr(self, method_name, None)
-        if method is None:
-=======
         if operator in self.by_method_map:
             method = self.by_method_map[operator]
         else:
->>>>>>> drc_main
             raise BadNarrowOperatorError("unknown operator " + operator)
 
         if negated:

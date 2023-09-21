@@ -1,9 +1,6 @@
 {
   "%'{file}' exceeds the maximum file size for attachments ({variable} MB).": "%'{file}' хавсралтад зориулсан файлын дээд хэмжээнээс хэтэрсэн байна ({variable} MB)",
-<<<<<<< HEAD
-=======
   "(attached file)": "(хавсралтад зориулсан файл)",
->>>>>>> drc_main
   "(forever)": "(үүрд)",
   "(hidden)": "(Нуусан)",
   "(no description)": "(тайлбар байхгүй)",
@@ -52,11 +49,7 @@
   "A stream with this name already exists": "Энэ нэр нь аль нэг stream дээр хэрэглэгдсэн байна.",
   "A user group needs to have a name": "Хэрэглэгчийн групп нь нэртэй байх шаардлагатай",
   "A user group with this name already exists": "Ийм нэртэй хэрэглэгчийн групп аль хэдийн байна",
-<<<<<<< HEAD
-  "A wide image for the upper left corner of the app.": "Програмын зүүн дээд буланд зориулсан өргөн зураг.",
-=======
   "A wide image (200×25 pixels) for the upper left corner of the app.": "Програмын зүүн дээд буланд зориулсан өргөн зураг (200×25 пиксел).",
->>>>>>> drc_main
   "API documentation": "API бичиг баримт",
   "API key": "API түлхүүр",
   "About Zulip": "Zulip-ийн тухай",
@@ -121,11 +114,7 @@
   "Admins, moderators and members": "Админ, модераторууд болон гишүүд",
   "Admins, moderators and members, but only admins can add generic bots": "Ботуудыг зөвхөн админ нэмэх боломжтой",
   "Admins, moderators, members and guests": "Админ, модератор, гишүүд болон зочид",
-<<<<<<< HEAD
-  "Advanced": "Ахисан түвшин",
-=======
   "Advanced": "Нарийвчилсан",
->>>>>>> drc_main
   "Advertise organization in the Zulip communities directory": "Оффис чатын бүлгүүлийн удирдлага дахь бүлгийг зарлах",
   "Alert word": "Анхааруулга үг",
   "Alert word \"{alert_word}\" removed successfully!": "\"{alert_word}\" анхааруулгын үг амжилттай устгагдлаа!",
@@ -134,12 +123,8 @@
   "Alert words allow you to be notified as if you were @-mentioned when certain words or phrases are used in Zulip. Alert words are not case sensitive.": "Alert words allow you to be notified as if you were @-mentioned when certain words or phrases are used in Zulip. Alert words are not case sensitive.",
   "Alerted messages": "Анхааруулсан мессежүүд",
   "All": "Бүгд",
-<<<<<<< HEAD
-  "All messages": "Нийт мэссэж",
-=======
   "All direct messages": "Бүх мессежүүд",
   "All messages": "Бүх мессежүүд",
->>>>>>> drc_main
   "All messages including muted streams": "All messages including muted streams",
   "All streams": "Бүх групп",
   "All time": "Бүх цаг",
@@ -165,10 +150,7 @@
   "Archive <z-link></z-link>?": "Идэвтэй <z-link></z-link>?",
   "Archive stream": "stream архивлах",
   "Archiving stream <z-stream></z-stream> will immediately unsubscribe everyone. This action cannot be undone.": "Архивын чат өрөө нь  <z-stream></z-stream>хүн бүрийн бүртгэлийг шууд цуцална. Энэ үйлдлийг буцаах боломжгүй.",
-<<<<<<< HEAD
-=======
   "Are you sure you want to continue?": "Та үргэлжлүүлэхдээ итгэлтэй байна уу?",
->>>>>>> drc_main
   "Are you sure you want to create stream ''''{stream_name}'''' and subscribe {count} users to it?": " ''''{stream_name}'''' ийм групп,  {count} тооны гишүүнтэй үүсгэхдээ итгэлтэй байна уу?",
   "Are you sure you want to deactivate this organization?": "Та энэ байгууллагыг идэвхгүй болгох гэж байгаадаа итгэлтэй байна уу?",
   "Are you sure you want to deactivate your account?": "Та энэ аккаунтыг идэвхгүй болгох гэж байгаадаа итгэлтэй байна уу?",
@@ -192,11 +174,8 @@
   "Author": "Бүтээгч",
   "Automated messages and emails": "Автомат мессеж, имэйл",
   "Automatic": "Автомат",
-<<<<<<< HEAD
-=======
   "Automatic (follows system settings)": "Автомат (системийн тохиргоог дагах)",
   "Automatically mark messages as read": "Мессежүүдийг уншсан гэж автоматаар тэмдэглэх",
->>>>>>> drc_main
   "Available on Zulip Cloud Standard. <z-link-upgrade>Upgrade</z-link-upgrade> or <z-link-sponsorship>request sponsorship</z-link-sponsorship> to access.": "Оффис чат Cloud Standard дээр ашиглах боломжтой. <z-link-upgrade>Сайжруулж</z-link-upgrade> эсвэл нэвтрэхийн тулд <z-link-sponsorship>ивээн тэтгэлэг хүсэх</z-link-sponsorship>.",
   "Avatar changes are disabled in this organization": "Энэ байгууллагад аватар өөрчлөх эрх нь хаалттай байна.",
   "Avatar from Gravatar": "Avatar from Gravatar",
@@ -218,18 +197,11 @@
   "By deactivating your account, you will be logged out immediately.": "Бүртгэлээ идэвхгүй болгосноор та шууд гарах болно.",
   "Cancel": "Болих",
   "Cancel compose": "Цуцлах",
-<<<<<<< HEAD
-  "Cancel compose and save draft": "Шинээр үүсгэх болон хадгалахыг цуцлах",
-  "Card": "Карт",
-  "Center the view around message ID <z-value></z-value>.": "Center the view around message ID <z-value></z-value>.",
-  "Change": "Өөрчлөлт",
-=======
   "Cancel compose and save draft": "Шинээр үүсгэх болон ноорог хадгалахыг цуцлах",
   "Card": "Карт",
   "Center the view around message ID <z-value></z-value>.": "Center the view around message ID <z-value></z-value>.",
   "Change": "Өөрчлөа",
   "Change avatar": "Аватарыг өөрчлөх",
->>>>>>> drc_main
   "Change color": "Өнгө өөрчлөх",
   "Change email": "Имэйл өөрчлөх",
   "Change group info": "Группын мэдээллийг өөрчлөх",
@@ -241,19 +213,11 @@
   "Choose members": "Гишүүдээ сонгох",
   "Choose subscribers": "Гишүүдээ сонгох",
   "Clear avatar": "Аватарыг арилгах",
-<<<<<<< HEAD
-  "Clear emoji image": "Эможи зургийг устгах",
-=======
   "Clear image": "Тодорхой зураг",
->>>>>>> drc_main
   "Clear profile picture": "Профайл зургийг устгах",
   "Click here to reveal.": "Энд дарж тодруулна уу.",
   "Click on the pencil (<z-pencil-icon></z-pencil-icon>) icon to edit and reschedule a message.": "Мессежийг харандааны (<z-pencil-icon></z-pencil-icon>)   зураг дээр дараад засах болон дахин төлөвлөх боломжтой.",
   "Click outside the input box to save. We'll automatically notify anyone that was added or removed.": "Хадгалахын тулд оруулах талбарын гадна талд товшино уу. Бид нэмсэн эсвэл хассан бүх хүнд автоматаар мэдэгдэх болно.",
-<<<<<<< HEAD
-  "Click to join video call": "Видео дуудлагад орох",
-=======
->>>>>>> drc_main
   "Click to view or download.": "Харах эсвэл татаж авахын тулд энд дарна уу.",
   "Close": "Хаах",
   "Close modal": "Модалыг хаах",
@@ -261,20 +225,11 @@
   "Code playgrounds": "Code playgrounds",
   "Code playgrounds are interactive in-browser development environments, such as <z-link-repl>replit</z-link-repl>, that are designed to make it convenient to edit and debug code. Zulip <z-link-code-blocks>code blocks</z-link-code-blocks> that are tagged with a programming language will have a button visible on hover that allows users to open the code block on the code playground site.": "Configure external code playgrounds for your Zulip organization. Code playgrounds are interactive in-browser development environments, such as <z-link-repl>replit</z-link-repl>, that are designed to make it convenient to edit and debug code. Zulip <z-link-code-blocks>code blocks</z-link-code-blocks> that are tagged with a programming language will have a button visible on hover that allows you to open the code block in the code playground site.",
   "Collapse compose": "Бичих талбарыг хураах",
-<<<<<<< HEAD
-  "Collapse message": "Мессеж харах",
-  "Collapse private messages": "",
-  "Collapse/show selected message": "Collapse/show selected message",
-  "Color scheme": "Өнгөт схем",
-  "Community": "Харилцаа холбоо",
-  "Commuting": "Ажилтай",
-=======
   "Collapse direct messages": "Хувийн чатуудыг харах",
   "Collapse message": "Мессеж харах",
   "Collapse/show selected message": "Collapse/show selected message",
   "Community": "Харилцаа холбоо",
   "Commuting": "Commuting",
->>>>>>> drc_main
   "Compact": "Товчхон",
   "Complete": "Дуусгах",
   "Complete the <z-link>organization profile</z-link> to brand and explain the purpose of this Zulip organization.": "Complete the <z-link>organization profile</z-link> to brand and explain the purpose of this Zulip organization.",
@@ -304,30 +259,18 @@
   "Copy mention syntax": "Дурдсан синтаксийг хуулах",
   "Copy version": "Хувилбарыг хуулах",
   "Copy zuliprc": "zuliprc-ийг хуулах",
-<<<<<<< HEAD
-  "Create": "Нээх",
-  "Create a stream": "stream үүсгэх",
-  "Create new stream": "Шинэ групп үүсгэх",
-=======
   "Could not resolve topic": "Шийдэх боломжгүй санаа",
   "Could not unresolve topic": "Санааг шийдэж чадсангүй",
   "Create": "Үүсгэх",
   "Create a stream": "stream үүсгэх",
   "Create new stream": "Шинэ stream үүсгэх",
   "Create new user group": "Шинэ хэрэглэгчийн групп үүсгэх",
->>>>>>> drc_main
   "Create stream": "stream үүсгэх",
   "Create user group": "Хэрэглэгчийн групп үүсгэх",
   "Creating group...": "Групп үүсгэж байна...",
   "Creating stream...": "stream үүсгэж байна...",
-<<<<<<< HEAD
-  "Current password": "Одоогийн нууц үг",
-  "Currently viewing all messages.": "Одоогоор бүх мессежийг үзэж байна.",
-  "Currently viewing all private messages.": "",
-=======
   "Currently viewing all direct messages.": "Одоогоор бүх хувийн чатуудыг үзэж байна.",
   "Currently viewing all messages.": "Одоогоор бүх мессежийг үзэж байна.",
->>>>>>> drc_main
   "Currently viewing the entire stream.": "Одоогоор чат өрөөг бүхэлд нь үзэж байна.",
   "Custom": "Тусгай",
   "Custom emoji": "Тусгай эможи",
@@ -380,20 +323,12 @@
   "Delete icon": "Таних тэмдэг устгах",
   "Delete linkifier?": "Холбоосыг устгах уу?",
   "Delete logo": "Лого устгах",
-<<<<<<< HEAD
-  "Delete message": "Мэссэж устгах",
-=======
   "Delete message": "Мессеж устгах",
->>>>>>> drc_main
   "Delete message?": "Мессеж устгах ?",
   "Delete profile picture": "Профайл зураг устгах",
   "Delete scheduled message": "Төлөвлөсөн мессежийг устгах",
   "Delete selected draft": "Сонгосон ноорогыг устгах",
-<<<<<<< HEAD
-  "Delete topic": "Хэлэлцэх сэдэв устгах",
-=======
   "Delete topic": "Сэдэв устгах",
->>>>>>> drc_main
   "Delete {user_group_name}?": "{user_group_name}-г устгах уу?",
   "Deleted": "Устсан",
   "Deleted option:": "Устгасан сонголт:",
@@ -481,11 +416,7 @@
   "Emoji set changed successfully!": "Эможи амжилттай өөрчлөгдсөн!",
   "Emoji theme": "Эможи загвар",
   "Enable message edit history": "Мессеж засварласан түүхийг идэвхжүүлэх",
-<<<<<<< HEAD
-  "Enable notifications": "Мэдэгдэл нээх",
-=======
   "Enable notifications": "Мэдэгдэлийг идэвхжүүлэх",
->>>>>>> drc_main
   "Enable read receipts": "Уншсан мэдэгдэл идэвхжүүлэх",
   "Enabled": "Идэвхтэй",
   "End of results from your <z-link>history</z-link>.": "End of results from your <z-link>history</z-link>.",
@@ -519,14 +450,8 @@
   "Exclude messages with topic <z-value></z-value>.": "Сэдэвтэй мессежийг хас <z-value></z-value>.",
   "Exit search": "Хайлтаас гарах",
   "Expand compose": "Зурвас бичих талбар томосгох",
-<<<<<<< HEAD
-  "Expand message": "Чатыг томруулж харах",
-  "Expand message (-)": "Мессежийг нээх (-)",
-  "Expand private messages": "",
-=======
   "Expand direct messages": "Хувийн чатыг өргөжүүлэх",
   "Expand message": "Чатыг томруулж харах",
->>>>>>> drc_main
   "Expires at": "Дуусах цаг",
   "Expires on {date} at {time}": "{date} -ны  {time} цагт дуусна",
   "Export failed": "Экспорт амжилтгүй боллоо",
@@ -563,10 +488,6 @@
   "Filter languages": "Хэлнүүдийг шүүх",
   "Filter linkifiers": "Линкүүдийг шүүх",
   "Filter members": "Гишүүдийг шүүх",
-<<<<<<< HEAD
-  "Filter muted topics": "Mute хийсэн сэдвүүдийг шүүх",
-=======
->>>>>>> drc_main
   "Filter muted users": "Mute хийсэн хэрэглэгчидийг шүүх",
   "Filter roles": "Эрхүүдийг шүүх",
   "Filter streams": "Группуудын шүүх",
@@ -579,29 +500,16 @@
   "First message": "Эхний мессеж",
   "First time? Read our <z-link>guidelines</z-link> for creating and naming streams.": "Групп үүсгэх, нэрлэх <z-link>заавар</z-link> харна уу.",
   "First time? Read our <z-link>guidelines</z-link> for creating user groups.": "Анх удаа хэрэглэнчийн гупп үүсгэх гэж байна уу? Тийм бол <z-link> эндээс </z-link>заавар харна уу.",
-<<<<<<< HEAD
-  "Fixed width": "Тогтмол өргөн",
-  "Fixed width mode": "Тогтмол өргөн горим",
-  "Fluid width": "Fluid width",
-  "Fluid width mode": "Fluid width mode",
-  "For example, to configure code playgrounds for languages like Python or JavaScript, you could specify the <i>Language</i> and <i>URL prefix</i> fields as:": "For example, to configure code playgrounds for languages like Python or JavaScript, you could specify the <i>Language</i> and <i>URL prefix</i> fields as:",
-  "Forgotten it?": "марсан уу?",
-=======
   "For example, to configure a code playground for code blocks tagged as Python, you can set:": "Жишээлбэл, Python гэж тэмдэглэгдсэн код блокуудын code playgroundsг тохируулахын тулд та дараахийг тохируулж болно:",
   "For more examples and technical details, see the <z-link>help center documentation</z-link> on adding code playgrounds.": "Дэлгэрэнгүй жишээ болон техникийн дэлгэрэнгүй мэдээллийг авахын тулд code playgrounds нэмэх талаар<z-link> тусламжийн төвийн баримт бичгийг </z-link>үзнэ үү.",
   "For more examples, see the <z-link>help center documentation</z-link> on adding linkifiers.": "Дэлгэрэнгүй жишээг <z-link>тусламжийн төвийн холбогч нэмэх тухай баримт бичгээс харна уу</z-link>.",
   "Forgot it?": "Мартсан уу?",
->>>>>>> drc_main
   "Forked from upstream at {zulip_merge_base}": "Forked from upstream at {zulip_merge_base}",
   "Friday": "Баасан гариг",
   "Full name": "Бүтэн нэр",
   "GIPHY attribution": "GIPHY аттрибут",
   "GIPHY integration": "GIPHY интеграци",
-<<<<<<< HEAD
-  "General": "Ерөнхий",
-=======
   "General": "Үндсэн",
->>>>>>> drc_main
   "Generate email address": "Имэйл хаяг үүсгэх",
   "Generate invite link": "Урилгын линк үүсгэх",
   "Generate new API key": "Шинэ API түлхүүр үүсгэх",
@@ -612,11 +520,8 @@
   "Go back through viewing history": "Үзсэн түүх рүү буцна уу",
   "Go forward through viewing history": "Түүхийг үзэх замаар урагшлах",
   "Go invisible": "Үл үзэгдэх болно",
-<<<<<<< HEAD
-=======
   "Go to #{display_recipient}": "#{display_recipient} руу очих",
   "Go to #{display_recipient} > {topic}": "#{display_recipient} > {topic} рүү очно уу",
->>>>>>> drc_main
   "Go to conversation": "Харилцан яриа руу оч",
   "Go to default view": "Go to default view",
   "Go to direct messages with {display_reply_to}": "{display_reply_to}-тай хувийн чатруу очих",
@@ -638,18 +543,11 @@
   "Hint": "Зөвлөгөө",
   "Hint (up to 80 characters)": "Зөвлөгөө (80 хүртэл тэмдэгт)",
   "Humans": "Humans",
-<<<<<<< HEAD
-  "Idle": "Идэвхгүй",
-  "Ignored deactivated users:": "Идэвхгүй болгосон хэрэглэгчдийг хаах:",
-  "Image": "Зураг",
-  "In a meeting": "Дуудлагатай",
-=======
   "Idle": "Idle",
   "If you don't know your password, you can <z-link>reset it</z-link>.": "Хэрэв та нууц үгээ мэдэхгүй бол <z-link>дахин тохируулж </z-link>болно.",
   "Ignored deactivated users:": "Идэвхгүй болгосон хэрэглэгчдийг хаах:",
   "Image": "Зураг",
   "In a meeting": "Уулзалтанд",
->>>>>>> drc_main
   "Inactive": "Идэвхгүй",
   "Inactive bots": "Идэвхгүй ботууд",
   "Include DMs": "DM оруулсан",
@@ -663,10 +561,6 @@
   "Integrations": "интеграц",
   "Interface": "Интерфэйс",
   "Invalid URL": "Буруу URL",
-<<<<<<< HEAD
-  "Invalid slash command. Check if you are missing a space after the command.": "Буруу slash команд. Командын дараа хоосон зай дутуу байгаа эсэхийг шалгана уу.",
-=======
->>>>>>> drc_main
   "Invalid stream ID": "Чат өрөөний ID буруу байна.",
   "Invalid time format: {timestamp}": "Буруу формат байна: {timestamp}",
   "Invalid user": "Буруу хэрэглэгч",
@@ -687,10 +581,7 @@
   "Inviting...": "Урьж байна...",
   "Italic": "Italic",
   "January": "1-р сар",
-<<<<<<< HEAD
-=======
   "Join video call.": "Видео дуудлагад нэгдэх",
->>>>>>> drc_main
   "Join {realm_name}": "{realm_name} нэгдэх",
   "Joined": "Нэгдсэн",
   "Joined {date_joined}": " {date_joined} нэгдсэн",
@@ -701,10 +592,6 @@
   "Keyboard shortcuts": "Keyboard shortcuts",
   "Label": "Label",
   "Language": "Хэл",
-<<<<<<< HEAD
-  "Language and time": "Хэл болон цаг",
-=======
->>>>>>> drc_main
   "Language for automated messages and invitation emails": "Автомат мессеж болон урилгын имэйлд зориулсан хэл",
   "Large number of subscribers": "Олон тооны гишүүд",
   "Last 10 days": "Сүүлийн 10 өдөр",
@@ -719,11 +606,7 @@
   "Learn more about starring messages <z-link>here</z-link>.": "Learn more about starring messages <z-link>here</z-link>.",
   "Leave {group_name}": " {group_name}-ээс гарах",
   "Let others see when I've read messages": "Хэрэв мессежийг би уншвал бусдад харуулах",
-<<<<<<< HEAD
-  "Let recipients see when I'm typing private messages": "Let recipients see when I'm typing private messages",
-=======
   "Let recipients see when I'm typing direct messages": "Намайг хувийн чат бичиж байх үед хүлээн авагчдад харагдуулна уу",
->>>>>>> drc_main
   "Let subscribers see when I'm typing messages in streams": "Let subscribers see when I'm typing messages in streams",
   "Light": "Цайвар",
   "Light theme": "Цагаан загвар",
@@ -741,10 +624,6 @@
   "Looking for our <z-integrations>integrations</z-integrations> or <z-api>API</z-api> documentation?": "Looking for our <z-integrations>integrations</z-integrations> or <z-api>API</z-api> documentation?",
   "MOVED": "MOVED",
   "Manage bot": "Ботыг удирдах",
-<<<<<<< HEAD
-  "Manage organization": "Байгууллагын тохиргоо",
-=======
->>>>>>> drc_main
   "Manage streams": "Группын удирдлага",
   "Manage this bot": "Энэ ботыг удирдах",
   "Manage this user": "Энэ хэрэглэгчийн удирдах",
@@ -752,12 +631,8 @@
   "Manage user groups": "Хэрэглэгчийн групп удирдах",
   "March": "3-р сар",
   "Mark all messages as read": "Бүх мессежийг уншсан болгох",
-<<<<<<< HEAD
-  "Mark as read": "Уншсанаар тэмдэглэх",
-=======
   "Mark all messages as read?": "Бүх мессежийг уншсан болгох уу?",
   "Mark as read": "Уншсан болгох",
->>>>>>> drc_main
   "Mark as resolved": "Шийдвэрлэсэн болгох",
   "Mark as unread from here": "Эндээс уншаагүй болгож тэмдэглэх",
   "Mark as unread from selected message": "Сонгосон мессежүүдээс уншаагүй болгож тэмдэглэх",
@@ -767,12 +642,7 @@
   "May": "5-р сар",
   "Me": "Би",
   "Member": "Гишүүн",
-<<<<<<< HEAD
-  "Members": "Элссэн хэрэглэгчид",
-  "Members can only view or manage invitations that you yourself sent.": "Гишүүд зөвхөн таны илгээсэн урилгыг харах эсвэл удирдах боломжтой.",
-=======
   "Members": "Гишүүд",
->>>>>>> drc_main
   "Mention a time-zone-aware time": "Mention a time-zone-aware time",
   "Mentioned in": "Mentioned in",
   "Mentions": "Дурьдагдсан",
@@ -781,10 +651,6 @@
   "Message #{stream_name}": "Мессеж #{stream_name}",
   "Message #{stream_name} > {topic_name}": "Мессеж #{stream_name} > {topic_name}",
   "Message actions": "Мессеж үйлдэл",
-<<<<<<< HEAD
-  "Message and topic editing": "",
-=======
->>>>>>> drc_main
   "Message deletion": "Мессежийг устгах",
   "Message edit history": "Мессеж зассан түүх",
   "Message editing": "Мессеж засварлаж байна",
@@ -796,13 +662,8 @@
   "Message {recipient_names}": "Мессеж {recipient_names}",
   "Message {recipient_name} ({recipient_status})": "Мессеж {recipient_name} ({recipient_status})",
   "Messages in all public streams": "Бүх нийтийн чат өрөөн дээрх мессежүүд",
-<<<<<<< HEAD
-  "Messages in this stream will be automatically deleted after {retention_days} days.": "Энэ групп дэх мессежүүд {retention_days} өдрийн дараа автоматаар устана.",
-  "Messages in this stream will be retained forever.": "Энэ групп дахь мессежүүд байнга хадгалагдах болно.",
-=======
   "Messages will not be automatically marked as read because this is not a conversation view. <z-link>Change setting</z-link>": "Энэ нь харилцан ярианы харагдац биш тул мессежийг уншсан гэж автоматаар тэмдэглэхгүй. <z-link>Тохиргоог өөрчлөх</z-link>",
   "Messages will not be automatically marked as read. <z-link>Change setting</z-link>": "Мессежүүд автоматаар уншсан гэж тэмдэглэгдэхгүй. <z-link>Тохиргоог өөрчлөх</z-link>",
->>>>>>> drc_main
   "Mobile": "Мобайл",
   "Mobile message notifications": "Мобайл мессежийн мэдэгдлүүд",
   "Mobile notifications": "Мобайл мэдэгдлүүд",
@@ -817,10 +678,7 @@
   "Move messages": "Мессежүүдийг зөөх",
   "Move messages or topic": "Мессеж эсвэл санааг зөөх ",
   "Move only this message": "Зөвхөн энэ мессеж зөөх",
-<<<<<<< HEAD
-=======
   "Move some messages?": "Зарим мессежийг зөөх үү?",
->>>>>>> drc_main
   "Move this and all following messages in this topic": "Энэ санаа болон дараах бүх мессежийг зөөнө үү",
   "Move topic": "Topic зөөх",
   "Moved ({last_edit_timestr})": "Moved ({last_edit_timestr})",
@@ -834,12 +692,7 @@
   "Mute user": "Mute user",
   "Muted": "Харилцаа хаагдсан",
   "Muted streams don't show up in \"All messages\" or generate notifications unless you are mentioned.": "Таныг дурдаагүй л бол дууг хаасан дамжуулалт \"Бүх мессеж\" хэсэгт харагдахгүй эсвэл мэдэгдэл үүсгэдэггүй.",
-<<<<<<< HEAD
-  "Muted topics": "Мэдэгдэхгүй сэдвүүд",
-  "Muted user": "Харилцаа хаагдсан ",
-=======
   "Muted user": "Muted user",
->>>>>>> drc_main
   "Muted users": "Muted users",
   "Name": "Нэр",
   "Name changes are disabled in this organization. Contact an administrator to change your name.": "Энэ байгууллагад нэрийн өөрчлөлтийг идэвхгүй болгосон. Нэрээ өөрчлөхийн тулд админтай холбогдоно уу.",
@@ -879,10 +732,6 @@
   "New option": "Шинэ боломж",
   "New password": "Шинэ нууц үг",
   "New password is too weak": "шинэ нууц үг хэтэрхий хялбар байна",
-<<<<<<< HEAD
-  "New private message": "Шинэ мессеж",
-=======
->>>>>>> drc_main
   "New stream announcements": "Шинэ дамжуулалтын мэдэгдэл",
   "New stream message": "Шинэ stream мессеж",
   "New task": "Шинэ таск",
@@ -919,19 +768,12 @@
   "No users match your current filter.": "Таны одоогийн хайлтанд таарах хэрэглэгч олдсонгүй.",
   "No, I'll catch up.": "No, I'll catch up.",
   "Nobody": "Nobody",
-<<<<<<< HEAD
-=======
   "Nobody in this Zulip organization will be able to see this email address.": "Энэ Оффис чат бүлгийн хэн ч энэ имэйл хаягийг харах боломжгүй.",
->>>>>>> drc_main
   "Non-profit (registered)": "Ашгийн бус (бүртгэгдсэн)",
   "None": "None",
   "Note that any bots that you maintain will be disabled.": "Таны хадгалсан бүх ботууд идэвхгүй болно гэдгийг анхаарна уу.",
   "Note that organizations are limited to five exports per week.": "Байгууллагууд долоо хоногт таван экспортоор хязгаарлагддаг гэдгийг анхаарна уу.",
   "Nothing to preview": "шалгах зүйл байхгүй",
-<<<<<<< HEAD
-  "Nothing's been sent here yet!": "Одоогоор энд юу ч илгээгдээгүй байна!",
-=======
->>>>>>> drc_main
   "Notification of account deactivation on {realm_name}": "{realm_name} дээрх аккаунт идэвхгүй болсон тухай мэдэгдэл",
   "Notification settings": "Мэдэгдэлийн тохиргоо",
   "Notification sound": "Мэдэгдлийн дуу",
@@ -949,42 +791,20 @@
   "One or more email addresses...": "Нэг эсвэл олон имэйл хаягууд...",
   "One or more of these users do not exist!": "Эдгээр хэрэглэгчдээс нэг буюу хэд хэдэн хэрэглэгч байхгүй байна!",
   "Only 2 custom profile fields can be displayed on the user card.": "Хэрэглэгчийн карт дээр зөвхөн 2 хувийн профайлын талбарыг харуулах боломжтой.",
-<<<<<<< HEAD
-  "Only full members belonging to the group, organization administrators and moderators can modify a group.": "Зөвхөн бүлэгт хамаарах бүрэн эрхт гишүүд, байгууллагын админууд болон модераторууд бүлгийг өөрчлөх боломжтой.",
-  "Only group members can add users to a group.": "Зөвхөн группын гишүүд группт хэрэглэгч нэмэх боломжтой.",
-  "Only group members, organization administrators and moderators can modify a group.": "Зөвхөн бүлгийн гишүүд, байгууллагын админууд болон модераторууд бүлгийг өөрчлөх боломжтой.",
-  "Only organization administrators and moderators can add custom emoji in this organization.": "Зөвхөн байгууллагын администраторууд болон модераторууд энэ байгууллагад эможи нэмэх боломжтой.",
-  "Only organization administrators and moderators can modify user groups in this organization.": "Зөвхөн байгууллагын админууд болон зохицуулагчид энэ байгууллагын хэрэглэгчийн бүлгийг өөрчлөх боломжтой.",
-  "Only organization administrators and moderators can post.": "Зөвхөн байгууллагын админ болон модераторууд пост оруулах боломжтой.",
-  "Only organization administrators can add bots to this organization.": "Зөвхөн байгууллагын админууд энэ байгууллагад бот нэмэх боломжтой.",
-  "Only organization administrators can add custom emoji in this organization.": "Зөвхөн байгууллагын админууд энэ байгууллагад эможи нэмэх боломжтой.",
-  "Only organization administrators can add generic bots.": "Зөвхөн байгууллагын администраторууд ерөнхий бот нэмж болно.",
-=======
   "Only group members can add users to a group.": "Зөвхөн группын гишүүд группт хэрэглэгч нэмэх боломжтой.",
   "Only in conversation views": "Зөвхөн харилцан ярианы харагдац",
->>>>>>> drc_main
   "Only organization administrators can edit these settings": "Зөвхөн байгууллагын админууд эдгээр тохиргоог засах боломжтой",
   "Only organization administrators can edit these settings.": "Зөвхөн байгууллагын админууд эдгээр тохиргоог засах боломжтой.",
   "Only organization owners can edit these settings.": "Зөвхөн байгууллагын эзэмшигчид эдгээр тохиргоог засах боломжтой.",
-<<<<<<< HEAD
-  "Only owners can change these settings.": "Зөвхөн админууд энэ тохиргоог өөрчлөх боломжтой.",
-  "Only owners can deactivate the organization.": "Зөвхөн эзэмшигчид нь байгууллагыг идэвхгүй болгох боломжтой.",
-  "Only stream members can add users to a private stream": "Зөвхөн stream-ийн гишүүд хувийн stream-руу хэрэглэгч нэмэх боломжтой",
-=======
   "Only organization owners may deactivate an organization.": "Бүлгийг зөвхөн бүлгийн админ идэвхгүй болгож болно.",
   "Only owners can change these settings.": "Зөвхөн админууд энэ тохиргоог өөрчлөх боломжтой.",
   "Only stream members can add users to a private stream": "Зөвхөн stream-ийн гишүүд хувийн stream-руу хэрэглэгч нэмэх боломжтой",
   "Only stream members can add users to a private stream.": "Зөвхөн чат өрөөний гишүүд хувийн чат өрөөрүү хэрэглэгч нэмэх боломжтой.",
->>>>>>> drc_main
   "Only subscribers to this stream can edit stream permissions.": "Зөвхөн энэ чат өрөөний дагагчид чат өрөөний зөвшөөрлийг засах боломжтой.",
   "Open": "Нээлттэй",
   "Open message menu": "Мессежийн менюг нээнэ",
   "Open reactions menu": "Reaction менюг нээнэ",
   "Open-source project": "Нээлттэй эхийн төсөл",
-<<<<<<< HEAD
-  "Operator": "оператор",
-=======
->>>>>>> drc_main
   "Option already present.": "Сонголт аль хэдийн байгаа.",
   "Optional": "Optional",
   "Organization": "Байгууллага",
@@ -1007,12 +827,8 @@
   "Other emails": "Бусад имэйлүүд",
   "Other permissions": "Бусад зөвшөөрөлүүд",
   "Other settings": "Бусад тохиргоонууд",
-<<<<<<< HEAD
-  "Out sick": "Өвдсөн",
-=======
   "Other users in this Zulip organization will be able to see this email address.": "Энэ Оффис чат бүлэг бусад хэрэглэгчид энэ имэйл хаягийг харах боломжтой болно.",
   "Out sick": "Өвчтэй",
->>>>>>> drc_main
   "Outgoing webhook message format": "Гарч буй  webhook мессежийн формат",
   "Override default emoji?": "Үндсэн эможийг өөрчлөх үү?",
   "Owner": "Эзэмшигч",
@@ -1039,14 +855,8 @@
   "Please just upload one file.": "Зөвхөн нэг файл оруулна уу.",
   "Please only use characters that are valid in an email address": "Зөвхөн имэйл хаягт хүчинтэй тэмдэгтүүдийг ашиглана уу",
   "Please re-enter your password to confirm your identity.": "Нууц үгээ дахин оруулна уу.",
-<<<<<<< HEAD
-  "Please specify a date or time.": "Огноо эсвэл цагийг зааж өгнө үү.",
-  "Please specify a stream": "группийг зааж өгнө үү",
-  "Please specify at least one valid recipient": "Дор хаяж нэг идэвхтэй хүлээн авагчийг зааж өгнө үү",
-=======
   "Please specify a stream.": "Группээ тодорхойлно уу.",
   "Please specify at least one valid recipient.": "Дор хаяж нэг хүчинтэй хүлээн авагчийг зааж өгнө үү.",
->>>>>>> drc_main
   "Political group": "Улс төрийн групп",
   "Posted by {full_name}": "{full_name} постод",
   "Press > for list of topics": "Press > for list of topics",
@@ -1059,26 +869,13 @@
   "Previous message": "Өмнөх мессеж",
   "Privacy": "Хувийн",
   "Privacy settings": "Хувийн тохиргоо",
-<<<<<<< HEAD
-  "Private messages": "Хувийн мэссэж",
-  "Private messages and mentions": "Private messages and mentions",
-  "Private messages are disabled in this organization.": "Энэ байгууллагад хувийн мессежийг идэвхгүй болгосон",
-  "Private messages disabled": "Хувийн мессежийг идэвхгүй болгосон",
-=======
->>>>>>> drc_main
   "Private, protected history": "Хувийн, хамгаалагдсан түүх",
   "Private, shared history": "Хувийн, хуваалцсан түүх",
   "Profile": "Профайл",
   "Pronouns": "төлөөний үг",
-<<<<<<< HEAD
-  "Public": "Нийтийн",
-  "Question": "Асуулт",
-  "Quote and reply or forward": "Quote and reply or forward",
-=======
   "Public": "Олон нийтийн",
   "Question": "Асуулт",
   "Quote and reply": "иш татсан болон хариулах",
->>>>>>> drc_main
   "Quote and reply to message": "Quote and reply to message",
   "Quoted original email (in replies)": "Иш татсан  имэйл (хариултаар)",
   "React to selected message with": "Сонгосон мессежд хариу үйлдэл үзүүлэх",
@@ -1092,14 +889,6 @@
   "Read receipts are not available for Notification Bot messages.": "Мэдэгдлийн ботын мессежүүдэд уншсан баримтыг ашиглах боломжгүй.",
   "Receives new stream announcements": "Шинэ чат өрөөний мэдэгдлүүдийг хүлээн авдаг",
   "Recent conversations": "Сүүлийн үеийн харилцан ярианууд",
-<<<<<<< HEAD
-  "Remind me about this": "Үүнийг надад сануул",
-  "Reminder not set!": "Сануулга тохируулагдаагүй!",
-  "Reminder set!": "Сануулга тохирууллаа!",
-  "Remove": "Арилгах",
-  "Remove from default": "Remove from default",
-  "Removed successfully.": "Амжилттай устгасан.",
-=======
   "Remove": "Арилгах",
   "Remove from default": "Remove from default",
   "Removed successfully.": "Амжилттай устгасан.",
@@ -1107,7 +896,6 @@
   "Rename topic to:": "Санааны нэрийг ийм болгох: ",
   "Reply @-mentioning sender": "",
   "Reply directly to sender": "",
->>>>>>> drc_main
   "Reply mentioning bot": "Дурдагдсаг ботд хариу өгөх",
   "Reply mentioning user": "Мэншиондсон хэрэглэгчид хариу бичих",
   "Reply to message": "Зурваст хариу бичих",
@@ -1155,12 +943,7 @@
   "Search all public streams in the organization.": "Байгууллагын бүх stream-ээс хайлт хийх.",
   "Search filters": "Хайлтын шүүлтүүрүүд",
   "Search for <z-value></z-value> in the topic or message content.": " Сэдэв эсвэл зурвасын агуулгаас хайлт хийх\" <z-value></z-value>",
-<<<<<<< HEAD
-  "Search operators": "Хайлтын операторууд",
-  "Search people": "Хэрэглэгч хайх",
-=======
   "Search people": "Хүмүүс хайх",
->>>>>>> drc_main
   "Search results": "Хайлтын үр дүн",
   "See how to configure email.": "Хэрхэн имэйл тохируулах тухай харах.",
   "Select a stream": "Нэг чат өрөөг сонгох",
@@ -1178,16 +961,9 @@
   "Send emails introducing Zulip to new users": "Шинэ хэрэглэгчдэд Zulip-ыг танилцуулсан имэйл илгээх",
   "Send later": "Дараа илгээх",
   "Send me Zulip's low-traffic newsletter (a few emails a year)": "Send me Zulip's low-traffic newsletter (a few emails a year)",
-<<<<<<< HEAD
-  "Send message": "Мэссэж илгээх.",
-  "Send mobile notifications even if I'm online": "Би онлайн байсан ч гар утасны мэдэгдэл илгээх",
-  "Send mobile notifications even if user is online": "Хэрэглэгч онлайн байсан ч гар утасны мэдэгдэл илгээх",
-  "Send private message": "Хувийн мэссэж бичих",
-=======
   "Send message": "Зурвас илгээх",
   "Send mobile notifications even if I'm online": "Би онлайн байсан ч гар утасны мэдэгдэл илгээх",
   "Send mobile notifications even if user is online": "Хэрэглэгч онлайн байсан ч гар утасны мэдэгдэл илгээх",
->>>>>>> drc_main
   "Send weekly digest emails to inactive users": "Идэвхгүй хэрэглэгчдэд долоо хоног бүр имэйл илгээх",
   "Sent!": "Илгээсэн!",
   "Sent! Your message is outside your current narrow.": "Sent! Your message is outside your current narrow.",
@@ -1237,10 +1013,6 @@
   "Stream creation": "Stream үүсгэх",
   "Stream description": "Stream -ын тодорхойлолт",
   "Stream email address:": "Чат өрөөний имэйл хаяг:",
-<<<<<<< HEAD
-  "Stream list": "Stream -ын жагсаалт",
-=======
->>>>>>> drc_main
   "Stream name": "Stream -ын нэр",
   "Stream permissions": "Stream эрхүүд",
   "Stream settings": "Групп тохиргоо",
@@ -1269,35 +1041,15 @@
   "Test desktop notification": "Дэлгэцийн мэдэгдэл турших",
   "The administrators provided the following comment:": "Техникийн албанаас тухайн мэдээллийг илгээсэн:",
   "The basics": "Үндсэн ойлголтууд",
-<<<<<<< HEAD
-  "The group description cannot contain newline characters.": "Бүлгийн тайлбар нь шинэ мөрийн тэмдэгт агуулж болохгүй.",
-  "The recipient {recipient} is not valid": "Хүлээн авагч {recipient} нь хүчингүй байна",
-  "The recipients {recipients} are not valid": "Хүлээн авагчид {recipients} нь хүчингүй байна",
-  "The sender's email address": "Илгээгчийн имэйл хаяг",
-=======
   "The group description cannot contain newline characters.": "Бүлгийн тайлбар нь newline тэмдэгт агуулж болохгүй.",
   "The recipient {recipient} is not valid.": "Хүлээн авагч {recipient} буруу байна.",
   "The recipients {recipients} are not valid.": "Хүлээн авагч {recipients} хүчингүй байна.",
   "The sender's email address": "Илгээгчийн имэйл хаяг",
   "The stream <b>#{stream_name}</b> does not exist. Manage your subscriptions <z-link>on your Streams page</z-link>.": "<b>#{stream_name} </b>чат өрөө байхгүй байна. <z-link>Өөрийн Чат өрөө хуудсан дээрх</z-link> дагагчидаа удирдаарай.",
->>>>>>> drc_main
   "The stream description cannot contain newline characters.": "Группын тайлбар нь шинэ мөрийн тэмдэгт агуулж болохгүй.",
   "Their password will be cleared from our systems, and any bots they maintain will be disabled.": "Тэдний нууц үгийг манай системээс устгах бөгөөд тэдний хадгалдаг бүх ботууд идэвхгүй болно.",
   "Theme": "Theme",
   "There are no current alert words.": "Одоогоор анхааруулах үг байхгүй байна.",
-<<<<<<< HEAD
-  "They administer the following bots:": "Тэд дараах роботуудыг удирддаг:",
-  "This Zulip server is running an old version and should be upgraded.": "Энэхүү Zulip сервер нь хуучин хувилбарыг ажиллуулж байгаа тул шинэчлэх шаардлагатай.",
-  "This action cannot be undone.": "Энэ үйлдлийг буцаах боломжгүй.",
-  "This action is permanent and cannot be undone. All users will permanently lose access to their Zulip accounts.": "Энэ үйлдэл өөрчлөгдөшгүй бөгөөд буцаах боломжгүй. Бүх хэрэглэгчид Zulip аккаунтдаа хандах эрхээ бүрмөсөн алдна.",
-  "This bot has been deactivated.": "Энэ бот идэвхгүй болсон.",
-  "This is a <b>private stream</b>. Only people who have been invited can access its content, but any subscriber can invite others.": "Энэ бол <b>private stream</b> юм. Зөвхөн уригдсан хүмүүс л групп -т хандах боломжтой, харин ямар ч элсэгч бусдыг урих боломжтой.",
-  "This is a <b>public stream</b>. Any member of the organization can join without an invitation or view content sent to this stream.": "Энэ бол <b>public stream</b>. Байгууллагын аль ч гишүүн урилгагүйгээр нэгдэх эсвэл энэ групп руу илгээсэн контентыг үзэх боломжтой.",
-  "This is a <b>web-public stream</b>. Any member of the organization can join without an invitation and anyone on the internet can read the content published.": "Энэ бол <b>web-public stream</b> юм. Байгууллагын аль ч гишүүн урилгагүйгээр элсэх боломжтой бөгөөд интернетэд байгаа хэн ч нийтэлсэн контентыг унших боломжтой.",
-  "This is a <z-link>demo organization</z-link> and will be automatically deleted in {days_remaining} days.": "Энэ нь <z-link>demo organization</z-link> бөгөөд {days_remaining} хоногийн дараа автоматаар устах болно.",
-  "This is a private stream": "Энэ бол хувийн групп",
-  "This is a web-public stream": "Энэ бол web-public групп",
-=======
   "There are no messages here.": "Энд ямар ч мессеж алга.",
   "There are no streams you can view in this organization.": "Энэ бүлэгт таны үзэх боломжтой чат өрөө байхгүй.",
   "There is a default emoji with this name. Do you want to override it with a custom emoji? The name <code>:{emoji_name}:</code> will no longer work to access the default emoji.": "Ийм нэртэй үндсэн эможи байдаг. Та үүнийг өөр эможигоор өөрчлөхийг хүсэж байна уу?<code> :{emoji_name}:</code> үндсэн эможи цаашид ажиллахгүй.",
@@ -1309,7 +1061,6 @@
   "This bot cannot be edited.": "Энэ ботыг засах боломжгүй.",
   "This bot has been deactivated.": "Энэ бот идэвхгүй болсон.",
   "This is a <z-link>demo organization</z-link> and will be automatically deleted in {days_remaining} days.": "Энэ нь <z-link>demo organization</z-link> бөгөөд {days_remaining} хоногийн дараа автоматаар устах болно.",
->>>>>>> drc_main
   "This is not a <z-link>publicly accessible</z-link> conversation.": "Энэ нь <z-link>олон нийтэд нээлттэй</z-link> харилцан яриа биш юм.",
   "This is what a Zulip notification looks like.": "Zulip мэдэгдэл ингэж харагдаж байна.",
   "This message could not be sent at the scheduled time.": "Энэ мессежийг товлосон цагт илгээх боломжгүй байна.",
@@ -1347,11 +1098,8 @@
   "Time format": "Цагийн формат",
   "Time limit for deleting messages": "Зурвас устгах хугацаа",
   "Time limit for editing messages": "Мессежийг засварлах хугацаа",
-<<<<<<< HEAD
-=======
   "Time limit for editing topics": "Санааг засварлах хугацаа",
   "Time limit for moving messages between streams": "Мессежийг чат өрөөнүүдийн хооронд шилжүүлэх цагийн хязгаар",
->>>>>>> drc_main
   "Time zone": "Цагийн бүс",
   "Time's up!": "Цаг дууслаа!",
   "Tip: You can also send \"/poll Some question\"": "Зөвлөмж: Та мөн \"/ санал асуулга Зарим асуулт\" илгээж болно.",
@@ -1365,12 +1113,8 @@
   "Toggle the gear menu": "Toggle the gear menu",
   "Toggle topic mute": "Toggle topic mute",
   "Tomorrow": "Маргааш",
-<<<<<<< HEAD
-  "Topic": "Topic",
-=======
   "Tomorrow at {time}": "Маргааш {time}",
   "Topic": "Сэдэв",
->>>>>>> drc_main
   "Topic muted": "Сэдэв mute хийгдсэн",
   "Topic settings": "Санааны тохиргоо",
   "Topics": "Хэлэлцэх сэдвүүд",
@@ -1393,33 +1137,20 @@
   "Unmute": "Mute-г унтраах",
   "Unmute stream": "Мэдэгдэлийг нээх",
   "Unmute this user": "Уг хэрэглэгчийн mute-г унтраах",
-<<<<<<< HEAD
-  "Unmute topic": "Мэдэгдэлийг нээх",
-=======
   "Unmute topic": "Сэдвийн mute-г унтраах",
   "Unmuted": "Дууг нээсэн",
->>>>>>> drc_main
   "Unpin stream from top": "Топ тэмдэглэгээтэй групп -г хасах",
   "Unread": "Уншаагүй болгох",
   "Unread count badge (appears in desktop sidebar and browser tab)": "Unread count badge (appears in desktop sidebar and browser tab)",
   "Unread messages": "Уншаагүй мессежүүд",
-<<<<<<< HEAD
-  "Unresolve topic": "Шийдэгдээгүй болгох",
-=======
   "Unresolve topic": "Шийдэгдээгүй сэдэв",
->>>>>>> drc_main
   "Unstar": "Онцлохыг болих",
   "Unstar all messages": "Бүх зурвасыг онцлохоо болих",
   "Unstar all messages in topic": "Сэдвийн бүх зурвасыг онцлохоо болих",
   "Unstar messages in topic": "Сэдвийн зурвасыг онцлохоо болих",
-<<<<<<< HEAD
-  "Unsubscribe": "гарах",
-  "Unsubscribe from {stream_name}": "{stream_name}-с гарах",
-=======
   "Unstar this message": "Энэ мессежийг онцлохоо болих",
   "Unsubscribe": "Гарах",
   "Unsubscribe from <z-link></z-link>": "<z-link></z-link>-ээс бүртгэлээ цуцлах",
->>>>>>> drc_main
   "Unsubscribed successfully!": "Амжилттай гарлаа!",
   "Up to {time_limit} after posting": "Up to {time_limit} after posting",
   "Update successful: Subdomains allowed for {domain}": "Амжилттай шинэчлэгдлээ: {domain}-д дэд домайн үүсгэх боломжтой боллоо",
@@ -1435,13 +1166,7 @@
   "Upload profile picture": "Профайл зураг хуулах",
   "Upload stalled for %'{seconds}' seconds, aborting.": "Upload stalled for %'{seconds}' seconds, aborting.",
   "Uploaded files": "Хуулсан файлууд",
-<<<<<<< HEAD
-  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "Иймд нэрээр emoji хуулбал ижил нэртэй хуучин emoji устана. Үргэлжлүүлэх үү?",
   "Uploading {filename}…": "{filename}-г байршуулж байна…",
-  "Uploading…": "Байршуулж байна…",
-=======
-  "Uploading {filename}…": "{filename}-г байршуулж байна…",
->>>>>>> drc_main
   "Usage statistics": "Ашиглалтын статистик",
   "Use full width on wide screens": "Өргөн дэлгэцийн өргөнийг бүрэн ашиглах",
   "Use html encoding (not recommended)": "HTML кодчилол ашиглах (зөвлөдөггүй)",
@@ -1450,11 +1175,7 @@
   "User": "Хэрэглэгч",
   "User ID": "Хэрэглэгчийн ID",
   "User group added!": "Хэрэглэгчийн бүлэг нэмэгдсэн!",
-<<<<<<< HEAD
-  "User group creation": "Хэрэглэгчийн бүлэг үүсгэх",
-=======
   "User group creation": "Хэрэглэгчийн групп үүсгэх",
->>>>>>> drc_main
   "User group description": "Хэрэглэгчийн группын тайлбар",
   "User group name": "Хэрэглэгчийн группын нэр",
   "User group settings": "Хэрэглэгчийн группын тохиргоо",
@@ -1466,21 +1187,13 @@
   "User is deactivated": "Хэрэглэгч deactivated",
   "User list": "Хэрэглэгчийн жагсаалт",
   "User list style": "Хэрэглэгчийн жагсаалтын загвар",
-<<<<<<< HEAD
-  "User list style changed successfully!": "Хэрэглэгчийн жагсаалтын хэв маяг амжилттай өөрчлөгдсөн!",
-=======
   "User list style changed successfully!": "Хэрэглэгчийн жагсаалтын загвар амжилттай өөрчлөгдсөн!",
->>>>>>> drc_main
   "User role": "Хэрэглэгчийн үүрэг",
   "User(s) invited successfully.": "Хэрэглэгч амжилттай уригдлаа.",
   "User(s) join as": "User(s) join as",
   "Users": "Хэрэглэгчид",
   "Users can always disable their personal read receipts.": "Хэрэглэгчид хувийн уншсан баримтаа үргэлж идэвхгүй болгох боломжтой.",
-<<<<<<< HEAD
-  "Vacationing": "Амралттай",
-=======
   "Vacationing": "Амарч байна",
->>>>>>> drc_main
   "Version {zulip_version}": "Хувилбар {zulip_version}",
   "Video call provider": "Video call provider",
   "View all streams": "Бүх чат өрөөг харах",
@@ -1494,14 +1207,6 @@
   "View message source": "Чатын эх сурвалжыг шалгах",
   "View messages sent": "Илгээсэн зурвасуудаа харах",
   "View messages with yourself": "Мессежүүдийг өөртэйгөө хамт үзэх",
-<<<<<<< HEAD
-  "View private messages": "Хувийн мэссэж харах",
-  "View profile": "Профайлаа үзэх",
-  "View read receipts": "Уншсан гэсэн мэдэгдэл харах",
-  "View recent conversations": "Сүүлийн үеийн харилцан яриаг үзэх",
-  "View stream": "Группыг харах",
-  "View stream messages": "Группын зурвасуудыг харах",
-=======
   "View profile": "Профайлаа үзэх",
   "View read receipts": "Хүлээн авсан гэсэн мэдэгдэл харах",
   "View recent conversations": "Сүүлийн үеийн харилцан яриаг үзэх",
@@ -1509,7 +1214,6 @@
   "View stream": "Группыг харах",
   "View stream messages": "Группын зурвасуудыг харах",
   "View streams": "Чат өрөөнүүдийг харах",
->>>>>>> drc_main
   "View user card": "Хэрэглэгчийн картыг үзэх",
   "View your profile": "Өөрийн профайлыг харах",
   "Visual": "Visual",
@@ -1549,11 +1253,7 @@
   "Why not <z-link>start a conversation with yourself</z-link>?": "Why not <z-link>start a conversation with yourself</z-link>?",
   "Why not <z-link>start the conversation</z-link>?": "Why not <z-link>start the conversation</z-link>?",
   "Word": "Үг",
-<<<<<<< HEAD
-  "Working remotely": "Алсаас ажиллаж байгаа",
-=======
   "Working remotely": "Зайнаас ажиллаж байна",
->>>>>>> drc_main
   "Working…": "Ажиллаж байна…",
   "Write": "Бичих",
   "Yes, please!": "Тийм!",
@@ -1577,23 +1277,15 @@
   "You are using an old version of the Zulip desktop app with known security bugs.": "Та Zulip -ын аюулгүй байдлын цоорхойтой хуучин хувилбарыг ашиглаж байна.",
   "You aren't subscribed to this stream and nobody has talked about that yet!": "Та уг групп -т хараахан элсээгүй байна, мөн хэн ч үүний талаар ярилцаагүй байна!",
   "You can also make <z-link>tables</z-link> with this <z-link>Markdown-ish table syntax</z-link>.": "You can also make <z-link>tables</z-link> with this <z-link>Markdown-ish table syntax</z-link>.",
-<<<<<<< HEAD
-  "You can combine search operators as needed.": "",
-  "You can fully access this community and participate in conversations by creating a Zulip account in this organization.": "Та энэ бүлэгт Оффис чат бүртгэл үүсгэснээр энэ нийгэмлэгт бүрэн нэвтэрч, харилцан ярианд оролцох боломжтой.",
-=======
   "You can combine search filters as needed.": "Шаардлагатай бол хайлтын шүүлтүүрийг нэгтгэж болно.",
   "You can fully access this community and participate in conversations by creating a Zulip account in this organization.": "Та энэ бүлэгт Оффис чат бүртгэл үүсгэснээр энэ нийгэмлэгт бүрэн нэвтэрч, харилцан ярианд оролцох боломжтой.",
   "You can no longer save changes to this message.": "Та энэ мессежийн өөрчлөлтийг цаашид хадгалах боломжгүй.",
   "You can only view or manage invitations that you sent.": "Та өөрийн илгээсэн урилгаа зөвхөн үзэг эсвэл удирдах боломжтой.",
->>>>>>> drc_main
   "You can reactivate deactivated users from <z-link>organization settings</z-link>.": "Та идэвхгүй болсон хэрэглэгчдийг <z-link>organization settings</z-link> -ээс дахин идэвхжүүлэх боломжтой.",
   "You can use email to send messages to Zulip streams.": "Оффис чатын чат өрөөрүү та мессеж илгээхээр имэйл ашиглах боломжтой.",
   "You cannot create a stream with no subscribers!": "Та элсэгчгүй групп үүсгэх боломжгүй!",
   "You cannot create a user group with no members!": "Та гишүүнгүй хэрэглэгчийн групп үүсгэх боломжгүй!",
   "You cannot send messages to deactivated users.": "Та deactivated хэрэглэгч рүү зурвас илгээх боломжгүй.",
-<<<<<<< HEAD
-  "You do not have permission to post in this stream.": "Танд энэ чат өрөөнд нийтлэх зөвшөөрөл байхгүй байна.",
-=======
   "You do not have permission to add other users to streams in this organization.": "Танд энэ бүлгийн чат өрөөнд өөр хэрэглэгч нэмэх зөвшөөрөл байхгүй.",
   "You do not have permission to move some of the messages in this topic. Contact a moderator to move all messages.": "Танд энэ санаан дах зарим мессежийг зөөх зөвшөөрөл байхгүй байна. Бүх мессежийг зөөхийн тулд зохицуулагчтай холбогдоно уу.",
   "You do not have permission to post in this stream.": "Танд энэ чат өрөөнд нийтлэх зөвшөөрөл байхгүй байна.",
@@ -1603,7 +1295,6 @@
   "You do not have permission to unresolve topics with messages older than {N, plural, one {# day} other {# days}} in this organization.": "Танд энэ бүлэгт {N, plural, one {# day} other {# days}}-с хуучин мессеж бүхий санаануудыг шийдвэрлэх зөвшөөрөл байхгүй байна.",
   "You do not have permission to unresolve topics with messages older than {N, plural, one {# hour} other {# hours}} in this organization.": "Танд энэ бүлэгт {N, plural, one {# hour} other {# hours}}-с хуучин мессеж бүхий санаануудыг шийдвэрлэх зөвшөөрөл байхгүй байна.",
   "You do not have permission to unresolve topics with messages older than {N, plural, one {# minute} other {# minutes}} in this organization.": "Танд энэ бүлэгт {N, plural, one {# minute} other {# minutes}}-с хуучин мессеж бүхий сэдвүүдийг шийдвэрлэх зөвшөөрөл байхгүй байна.",
->>>>>>> drc_main
   "You do not have permission to use wildcard mentions in this stream.": "Танд уг групп -т wildcard мэншион хийх эрх алга.",
   "You don't have any direct message conversations yet.": "Танд хараахан хувийн чатын харилцаа байхгүй байна.",
   "You get": "You get",
@@ -1622,10 +1313,6 @@
   "You have not uploaded any files.": "Та ямар ч файл оруулаагүй байна.",
   "You haven't been mentioned yet!": "Таныг меншион хийгээгүй байна!",
   "You haven't received any messages sent by {person} yet.": "Та {person}-с илгээсэн мессеж хараахан ирээгүй байна.",
-<<<<<<< HEAD
-  "You haven't starred anything yet!": "Танд одоогоор онцолсон зүйл байхгүй байна!",
-=======
->>>>>>> drc_main
   "You must be an organization administrator to create a stream without subscribing.": "Та групп -т элсэхгүйгээр групп үүсгэхийн тулд байгууллагын админ байх ёстой",
   "You need to be running Zephyr mirroring in order to send messages!": "Та зурвас илгээхийн тулд Zephyr mirror -ыг ажиллуулах хэрэгтэй",
   "You searched for:": "Таны хайсан хайлтууд:",
@@ -1636,14 +1323,11 @@
   "You're not subscribed to this stream. You will not be notified if other users reply to your message.": "Та уг групп -т элсээгүй байгаа тул бусад хэрэглэгч таны зурваст хариу бичсэн тохиодолд мэдэгдэл очихгүй байх болно",
   "Your API key:": "Таны API key:",
   "Your Zulip account on <z-link></z-link> has been deactivated, and you will no longer be able to log in.": "Таны Оффис чат бүртгэл <z-link></z-link> идэвхгүй болсон тул та цаашид нэвтрэх боломжгүй болно.",
-<<<<<<< HEAD
-=======
   "Your message has been scheduled for {deliver_at}.": "Таны мессежийг {deliver_at}-д илгээсэн.",
   "Your message is taking longer than expected to be sent. Sending…": "Таны мессеж илгээхэд удаан байна. Илгээж байна...",
   "Your message was sent to a stream you have muted.": "Таны дууг хаасан чат өрөөрүү таны мессежийг илгээсэн.",
   "Your message was sent to a topic you have muted.": "Таны дууг хаасан санааруу таны мессежийг илгээсэн.",
   "Your password": "Таны нууц үг",
->>>>>>> drc_main
   "Your status": "Таны төлөв",
   "Your time zone:": "Таны цагийн бүс:",
   "Zoom to message in conversation context": "Харилцан ярианы контекст дахь мессежийг томруулна уу",
@@ -1652,10 +1336,7 @@
   "Zulip Server {display_version}": "Оффис чат сервер  {display_version}",
   "Zulip Server {display_version} (modified)": "Оффис чат сервер  {display_version} (өөрчлөгдсөн)",
   "Zulip Server {display_version} (patched)": "Оффис чат сервер {display_version} (patched)",
-<<<<<<< HEAD
-=======
   "Zulip lets you mute topics and streams to avoid receiving notifications messages you are not interested in. Muting a stream effectively mutes all topics in that stream. You can also manually mute a topic in an unmuted stream, or unmute a topic in a muted stream. <z-link>Learn more.</z-link>": "Оффис чат нь танд сонирхолгүй мэдэгдлийн мессежийг хүлээн авахгүйн тулд санаа болон чат өрөөний дууг хаах боломжийг олгодог. Чат өрөөний дууг хаах нь тухайн чат өрөөний бүх санааг үр дүнтэйгээр хаадаг. Та мөн дууг нь хаасан чат өрөөний санааны дууг гараар хаах эсвэл дууг нь хаасан чат өрөөний дууг нээх боломжтой. <z-link>Илүү их судлах </z-link>",
->>>>>>> drc_main
   "Zulip needs to send email to confirm users' addresses and send notifications.": "Zulip хэрэглэгч, хаягийг баталгаажуулах болон мэдэгдэл хүргэхийн тулд имэйл илгээх хэрэгтэй.",
   "Zulip needs your permission to <z-link>enable desktop notifications.</z-link>": "Дэлгэцэнд мэдэгдэл хүргэхийн тулд <z-link> хандах эрхийг идэвхжүүлнэ үү.</z-link>",
   "Zulip's translations are contributed by our amazing community of volunteer translators. If you'd like to help, see the <z-link>Zulip translation guidelines</z-link>.": "Zulip-ын орчуулгыг манай сайн дурынхан орчуулсан болно. Хэрэв та тусламаар байвал, <z-link> холбоосыг үзээрэй. Орчуулгын зааварчилгаа </z-link>.",
@@ -1670,15 +1351,11 @@
   "clear": "цэвэрлэх",
   "cookie": "күүкий",
   "deprecated": "хэрэггүй болсон ",
-<<<<<<< HEAD
-  "group private messages with {recipient}": " {recipient}-тэй хувийн групп зурвас",
-=======
   "direct messages with yourself": "өөрлүүгээ хувийн чат илгээх",
   "direct messages with {recipient}": "{recipient}-тай шууд мессеж",
   "does not apply to administrators": "админуудад хамаарахгүй",
   "does not apply to moderators and administrators": "зохицуулагч болон админуудад хамаарахгүй",
   "group direct messages with {recipient}": "{recipient}-тэй хувийнн чат групп",
->>>>>>> drc_main
   "he/him": "Тэр",
   "in 1 hour": "1 цагийн дотор",
   "in 20 minutes": "20 минутын дотор",
@@ -1689,11 +1366,6 @@
   "more conversations": "илүү их харилцан яриа",
   "more topics": "бусад сэдвүүд",
   "or": "эсвэл",
-<<<<<<< HEAD
-  "private messages with yourself": "өөртөө хувийн зурвас үлдээх",
-  "private messages with {recipient}": "{recipient} -тай хувийн зурвас бичих",
-=======
->>>>>>> drc_main
   "she/her": "Тэр эмэгтэй/түүний",
   "they/them": "Тэд/тэдний",
   "{N, plural, one {Done! {N} message marked as read.} other {Done! {N} messages marked as read.}}": "{N, plural, one {Дууслаа! {N} мессежийг уншсан гэж тэмдэглэсэн.} other {Дууслаа! {N} мессежийг уншсан гэж тэмдэглэсэн.}}",
@@ -1712,11 +1384,6 @@
   "{modal_heading_text}": "{modal_heading_text}",
   "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, one {Энэ мессежийг {num_of_people}  хүмүүс <z-link>уншсан</z-link>байна} other {Энэ мессежийг {num_of_people}  хүмүүс <z-link>уншсан</z-link>байна}}",
   "{seconds} sec to edit": "{seconds} sec to edit",
-<<<<<<< HEAD
-  "{starred_status} this message": "{starred_status} уг мессеж",
-  "{starred_status} this message (Ctrl + s)": "{starred_status} уг мессеж (Ctrl + s)",
-=======
->>>>>>> drc_main
   "{user_time} local time": "{user_time} байршилын цаг",
   "{username} [said]({link_to_message}):": "{username} [said]({link_to_message}):",
   "{username} reacted with {emoji_name}": "{username} {emoji_name} дарлаа"

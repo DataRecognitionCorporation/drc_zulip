@@ -40,11 +40,7 @@ cp -a \
     tools/ci/production-pgroonga \
     tools/ci/production-upgrade-pg \
     tools/ci/generate-failure-message \
-<<<<<<< HEAD
-    package.json yarn.lock \
-=======
     package.json pnpm-lock.yaml \
->>>>>>> drc_main
     /tmp/production-build
 
 # Check that webpack bundles use only ES2019 syntax.

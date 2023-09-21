@@ -582,11 +582,7 @@ def send_custom_email(
                 context=context,
                 dry_run=options["dry_run"],
             )
-<<<<<<< HEAD
-        except EmailNotDeliveredError:
-            pass
-=======
->>>>>>> drc_main
+        # TODO: Stop emails again
 
         if options["dry_run"]:
             break

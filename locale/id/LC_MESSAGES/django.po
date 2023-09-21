@@ -11,17 +11,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2022-11-17 16:38+0000\n"
-"PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: Alya Abbott <alya@zulip.com>, 2022\n"
-"Language-Team: Indonesian (https://app.transifex.com/zulip/teams/53893/id/)\n"
-=======
 "POT-Creation-Date: 2023-05-31 01:00+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>, 2018\n"
 "Language-Team: Indonesian (http://app.transifex.com/zulip/zulip/language/id/)\n"
->>>>>>> drc_main
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -4796,15 +4789,6 @@ msgstr ""
 msgid "You must specify at least one email address."
 msgstr "Anda harus menentukan minimal satu alamat email."
 
-<<<<<<< HEAD
-#: zerver/views/invite.py:72
-msgid "You must specify at least one stream for invitees to join."
-msgstr ""
-"Anda harus memasukkan paling tidak satu siaran untuk yang diundang untuk "
-"bergabung."
-
-=======
->>>>>>> drc_main
 #: zerver/views/invite.py:82
 msgid "Stream does not exist with id: {}. No invites were sent."
 msgstr ""

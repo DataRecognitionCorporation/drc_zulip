@@ -156,15 +156,11 @@ def delete_user_group(
     user_profile: UserProfile,
     user_group_id: int = REQ(json_validator=check_int, path_only=True),
 ) -> HttpResponse:
-<<<<<<< HEAD
-    check_delete_user_group(user_group_id, user_profile)
-=======
     # For deletion, the user group's recursive subgroups and the user group itself are locked.
     with lock_subgroups_with_respect_to_supergroup(
         [user_group_id], user_group_id, acting_user=user_profile
     ) as context:
         check_delete_user_group(context.supergroup, acting_user=user_profile)
->>>>>>> drc_main
     return json_success(request)
 
 

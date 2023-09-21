@@ -58,8 +58,6 @@ class EventsEndpointTest(ZulipTestCase):
         result = self.client_post("/json/register", skip_user_agent=True)
         self.assert_json_success(result)
 
-<<<<<<< HEAD
-=======
     def test_narrows(self) -> None:
         user = self.example_user("hamlet")
         with mock.patch("zerver.lib.events.request_event_queue", return_value=None) as m:
@@ -73,7 +71,6 @@ class EventsEndpointTest(ZulipTestCase):
 
         self.assertEqual(m.call_args.kwargs["narrow"], [["stream", "devel"], ["is", "mentioned"]])
 
->>>>>>> drc_main
     def test_events_register_endpoint(self) -> None:
         # This test is intended to get minimal coverage on the
         # events_register code paths

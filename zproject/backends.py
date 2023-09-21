@@ -118,13 +118,10 @@ from zproject.settings_types import OIDCIdPConfigDict
 redis_client = get_redis_client()
 
 
-<<<<<<< HEAD
-=======
 def all_implemented_backend_names() -> List[str]:
     return list(AUTH_BACKEND_NAME_MAP.keys())
 
 
->>>>>>> drc_main
 # This first batch of methods is used by other code in Zulip to check
 # whether a given authentication backend is enabled for a given realm.
 # In each case, we both needs to check at the server level (via

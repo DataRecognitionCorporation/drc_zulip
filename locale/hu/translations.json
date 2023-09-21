@@ -117,13 +117,8 @@
   "Advanced": "Haladó",
   "Advertise organization in the Zulip communities directory": "",
   "Alert word": "Szófigyelő",
-<<<<<<< HEAD
-  "Alert word already exists!": "A figyelt szó már létezik!",
-  "Alert word removed successfully!": "A figyelt szót sikeresen eltávolítottuk!",
-=======
   "Alert word \"{alert_word}\" removed successfully!": "",
   "Alert word already exists!": "A figyelmeztető szó már létezik!",
->>>>>>> drc_main
   "Alert words": "Szófigyelés",
   "Alert words allow you to be notified as if you were @-mentioned when certain words or phrases are used in Zulip. Alert words are not case sensitive.": "A szófigyelés a beállított figyelt szavakat keresi a csevegésekben, és azokról olyan értesítést küld, mintha személyesen szólítottak volna meg a Zulipban a @ jellel. A figyelt szavaknál a kis- és nagybetűk különbsége nem számít.",
   "Alerted messages": "",
@@ -472,12 +467,8 @@
   "Failed!": "Sikertelen!",
   "Failed: A custom emoji with this name already exists.": "Hiba: ezzel a névvel már készült emoji.",
   "Failed: Emoji name is required.": "Sikertelen: a hangulatjel nevének kitöltése kötelező",
-<<<<<<< HEAD
-  "February": "február",
-=======
   "Failed: There is a default emoji with this name. Only administrators can override default emoji.": "",
   "February": "Február",
->>>>>>> drc_main
   "Field choices": "Sikertelen választások",
   "File": "Fájl",
   "File and image uploads have been disabled for this organization.": "Az állomány- és képfeltöltés ebben a szervezetben le van tiltva.",
@@ -1044,12 +1035,7 @@
   "Switch between tabs": "Lapok közötti váltás",
   "Switch to dark theme": "",
   "Switch to light theme": "",
-<<<<<<< HEAD
-  "Sync with computer": "Összehangolás a géppel",
-  "System bot": "Rendszer robot",
-=======
   "System bot": "Rendszet robot",
->>>>>>> drc_main
   "Task already exists": "A feladat már létezik",
   "Task list": "Feladatlista",
   "Test desktop notification": "Asztali értesítés tesztelése",
@@ -1180,13 +1166,7 @@
   "Upload profile picture": "Profilkép feltöltése",
   "Upload stalled for %'{seconds}' seconds, aborting.": "A feltöltés %'{seconds}' másodpercen át el volt akadva, és leállításra kerül.",
   "Uploaded files": "Feltöltött fájlok",
-<<<<<<< HEAD
-  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "Saját emoji feltöltése ezzel a névvel átírja az eredeti emojit. Folytatod?",
   "Uploading {filename}…": "{filename} feltöltése...",
-  "Uploading…": "Feltöltés...",
-=======
-  "Uploading {filename}…": "{filename} feltöltése...",
->>>>>>> drc_main
   "Usage statistics": "Használati statisztikák",
   "Use full width on wide screens": "Széles képernyőkön teljes szélesség használata",
   "Use html encoding (not recommended)": "",

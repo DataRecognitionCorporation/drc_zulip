@@ -230,15 +230,6 @@ li.show-more-topics {
         display: flex;
         align-items: center;
         white-space: nowrap;
-<<<<<<< HEAD:static/styles/left_sidebar.css
-
-        .stream-name {
-            flex: auto;
-            overflow-x: clip;
-            text-overflow: ellipsis;
-            min-width: 0;
-            padding-right: 2px;
-=======
 
         & .unread_count {
             margin-right: 15px;
@@ -250,7 +241,6 @@ li.show-more-topics {
                horizontally in addition to 15px margin. But 18px looks
                better centered. */
             margin-right: 18px;
->>>>>>> drc_main:web/styles/left_sidebar.css
         }
 
         &.stream-with-count {
@@ -258,8 +248,6 @@ li.show-more-topics {
         }
     }
 
-<<<<<<< HEAD:static/styles/left_sidebar.css
-=======
     .stream-with-count.hide_unread_counts {
         .masked_unread_count {
             display: inline;
@@ -304,7 +292,6 @@ li.show-more-topics {
         }
     }
 
->>>>>>> drc_main:web/styles/left_sidebar.css
     .inactive_stream:not(.active-filter) {
         opacity: 0.5;
     }
@@ -598,13 +585,8 @@ li.active-sub-filter {
 #stream_filters .narrow-filter.active-filter {
 
     .topic-list .filter-topics,
-<<<<<<< HEAD:static/styles/left_sidebar.css
-    >.bottom_left_row {
-        background-color: hsl(202, 56%, 91%);
-=======
     > .bottom_left_row {
         background-color: var(--color-background-active-narrow-filter);
->>>>>>> drc_main:web/styles/left_sidebar.css
         border-radius: 4px;
     }
 }
@@ -702,19 +684,12 @@ li.top_left_scheduled_messages {
 }
 
 .conversation-partners,
-<<<<<<< HEAD:static/styles/left_sidebar.css
-.topic-name {
-    flex: auto;
-    min-width: 0;
-    white-space: nowrap;
-=======
 .topic-name,
 .stream-name {
     flex: auto;
     min-width: 0;
     white-space: nowrap;
     overflow-x: hidden;
->>>>>>> drc_main:web/styles/left_sidebar.css
     overflow-x: clip;
     text-overflow: ellipsis;
     padding: 1px $before_unread_count_padding 1px 0;
@@ -810,24 +785,6 @@ li.top_left_scheduled_messages {
     padding: 1px 6px 0;
 }
 
-<<<<<<< HEAD:static/styles/left_sidebar.css
-/*
-    When you hover over list items, we hover
-    the relevant ellipsis-v(vertical 3 dots) in light gray.
-*/
-li.top_left_all_messages:hover .all-messages-sidebar-menu-icon,
-li.top_left_starred_messages:hover .starred-messages-sidebar-menu-icon,
-li.top_left_drafts:hover .drafts-sidebar-menu-icon,
-#stream_filters li:hover .stream-sidebar-menu-icon,
-#stream_folders li:hover .stream-sidebar-menu-icon,
-li.topic-list-item:hover .topic-sidebar-menu-icon {
-    display: inline;
-    cursor: pointer;
-    color: hsl(0, 0%, 53%);
-}
-
-=======
->>>>>>> drc_main:web/styles/left_sidebar.css
 ul.topic-list {
     list-style-type: none;
     font-weight: normal;

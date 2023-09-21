@@ -399,15 +399,9 @@ class PushBouncerNotificationTest(BouncerTestCase):
             logger.output,
             [
                 "INFO:zilencer.views:"
-<<<<<<< HEAD
-                f"Deduplicating push registrations for server id:{server.id} user id:{hamlet.id} uuid:{str(hamlet.uuid)} and tokens:{sorted([t.token for t in android_tokens[:]])}",
-                "INFO:zilencer.views:"
-                f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{hamlet.id}><uuid:{str(hamlet.uuid)}>: "
-=======
                 f"Deduplicating push registrations for server id:{server.id} user id:{hamlet.id} uuid:{hamlet.uuid} and tokens:{sorted(t.token for t in android_tokens)}",
                 "INFO:zilencer.views:"
                 f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{hamlet.id}><uuid:{hamlet.uuid}>: "
->>>>>>> drc_main
                 "2 via FCM devices, 1 via APNs devices",
             ],
         )

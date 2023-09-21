@@ -64,17 +64,6 @@ from zerver.models import (
     get_user,
 )
 from zerver.views.message_send import InvalidMirrorInputError
-<<<<<<< HEAD
-
-if sys.version_info < (3, 9):  # nocoverage
-    from backports import zoneinfo
-else:  # nocoverage
-    import zoneinfo
-
-if TYPE_CHECKING:
-    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
-=======
->>>>>>> drc_main
 
 
 class MessagePOSTTest(ZulipTestCase):

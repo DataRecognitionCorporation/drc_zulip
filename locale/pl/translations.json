@@ -200,12 +200,8 @@
   "Cancel compose and save draft": "",
   "Card": "",
   "Center the view around message ID <z-value></z-value>.": "",
-<<<<<<< HEAD
-  "Change": "Zmiana",
-=======
   "Change": "Zmień",
   "Change avatar": "",
->>>>>>> drc_main
   "Change color": "Zmień kolor",
   "Change email": "Zmień adres email",
   "Change group info": "",
@@ -1170,13 +1166,7 @@
   "Upload profile picture": "Prześlij zdjęcie profilowe",
   "Upload stalled for %'{seconds}' seconds, aborting.": "",
   "Uploaded files": "Przesłane pliki",
-<<<<<<< HEAD
-  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "",
   "Uploading {filename}…": "",
-  "Uploading…": "Przesyłanie...",
-=======
-  "Uploading {filename}…": "",
->>>>>>> drc_main
   "Usage statistics": "",
   "Use full width on wide screens": "",
   "Use html encoding (not recommended)": "",

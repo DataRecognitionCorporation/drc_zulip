@@ -393,7 +393,6 @@ input.text-error {
     display: block;
 }
 
-<<<<<<< HEAD:static/styles/portico/portico.css
 /* -- new footer -- */
 .footer {
     margin: 0;
@@ -483,8 +482,6 @@ input.text-error {
 
 /* -- end new footer -- */
 
-=======
->>>>>>> drc_main:web/styles/portico/portico.css
 .header-main {
     .logo {
         display: block;

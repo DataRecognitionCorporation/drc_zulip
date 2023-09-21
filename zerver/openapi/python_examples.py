@@ -442,12 +442,9 @@ def create_realm_profile_field(client: Client) -> None:
 
 @openapi_test_function("/realm/filters:post")
 def add_realm_filter(client: Client) -> None:
-<<<<<<< HEAD
-=======
     # TODO: Switch back to using client.add_realm_filter when python-zulip-api
     # begins to support url_template.
 
->>>>>>> drc_main
     # {code_example|start}
     # Add a filter to automatically linkify #<number> to the corresponding
     # issue in Zulip's server repo

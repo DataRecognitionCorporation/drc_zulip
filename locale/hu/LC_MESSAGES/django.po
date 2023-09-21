@@ -17,17 +17,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2022-11-17 16:38+0000\n"
-"PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: stuntsman, 2022\n"
-"Language-Team: Hungarian (https://app.transifex.com/zulip/teams/53893/hu/)\n"
-=======
 "POT-Creation-Date: 2023-05-31 01:00+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Eekain, 2021-2022\n"
 "Language-Team: Hungarian (http://app.transifex.com/zulip/zulip/language/hu/)\n"
->>>>>>> drc_main
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -186,17 +179,10 @@ msgstr "Valami gond van. Várj pár másodpercet és próbáld újra."
 #: corporate/lib/stripe.py:1015
 #, python-brace-format
 msgid ""
-<<<<<<< HEAD
-"Your organization's request for sponsored hosting has been approved! "
-"{emoji}.\n"
-msgstr ""
-"Szervezete szponzorált tárhelyre vonatkozó kérését elfogadták! {emoji}.\n"
-=======
 "Your organization's request for sponsored hosting has been approved! You have been upgraded to {plan_name}, free of charge. {emoji}\n"
 "\n"
 "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, we would really appreciate it!"
 msgstr ""
->>>>>>> drc_main
 
 #: corporate/views/billing_page.py:45
 msgid "No payment method on file"
@@ -894,17 +880,9 @@ msgstr "E-mail"
 #: templates/zerver/register.html:209
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
-"rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr ""
-"Elfogadom a <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
-"rel=\"noopener noreferrer\">Szolgáltatási feltételeket</a> ."
-=======
 "I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
 "target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/accounts_accept_terms.html:64
 msgid "Continue"
@@ -1318,21 +1296,6 @@ msgstr "Kattints az alábbi gombra a regisztráció befejezéséhez."
 msgid "Complete registration"
 msgstr "Regisztráció befejezése"
 
-<<<<<<< HEAD
-#: templates/zerver/emails/confirm_registration.source.html:23
-#: templates/zerver/emails/invitation.source.html:19
-#: templates/zerver/emails/realm_reactivation.source.html:19
-#: templates/zerver/emails/realm_reactivation.txt:13
-#, python-format
-msgid ""
-"Contact us any time at %(support_email)s if you run into trouble, have any "
-"feedback, or just want to chat!"
-msgstr ""
-"Keress bennünket a/az %(support_email)s címen ha problémába ütköztél, "
-"észrevételed van vagy csak beszélgetni szeretnél!"
-
-=======
->>>>>>> drc_main
 #: templates/zerver/emails/confirm_registration.subject.txt:2
 msgid "Create your Zulip organization"
 msgstr "Kezd el saját Zulip szerveződésed"
@@ -1356,13 +1319,6 @@ msgstr "Kattints az alábbi linkre a regisztráció befejezéséhez."
 #: templates/zerver/emails/realm_reactivation.txt:14
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Contact us any time at %(support_email)s if you run into trouble,have any "
-"feedback, or just want to chat!"
-msgstr ""
-"Keress bennünket a/az %(support_email)s címen ha problémába ütköztél, "
-"észrevételed van vagy csak beszélgetni szeretnél!"
-=======
 "Do you have questions or feedback to share? Contact us at %(support_email)s "
 "— we'd love to help!"
 msgstr ""
@@ -1377,7 +1333,6 @@ msgid ""
 "If you have any questions, please contact this Zulip server's administrators"
 " at %(support_email)s."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/custom_email_base.pre.html:18
 #: templates/zerver/emails/digest.html:39
@@ -1432,15 +1387,8 @@ msgstr "Zulip összefoglaló %(realm_name)s számára"
 
 #: templates/zerver/emails/digest.txt:12
 #, python-format
-<<<<<<< HEAD
-msgid "Click here to log in to Zulip and catch up: %(organization_uri)s."
-msgstr ""
-"Kattints ide a Zulip belépéshez és kerülj képbe mielőbb: "
-"%(organization_uri)s."
-=======
 msgid "Click here to log in to Zulip and catch up: %(organization_url)s."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/digest.txt:15
 msgid "Manage email preferences:"
@@ -1521,20 +1469,9 @@ msgstr "Üdvözlünk a Zulipban!"
 #: templates/zerver/emails/followup_day1.html:26
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"You've created a demo Zulip organization. Note that this organization will "
-"be automatically deleted in 30 days. Learn more about demo organizations <a "
-"href=\"https://zulip.com/help/demo-organizations\">here</a>!"
-msgstr ""
-"Létrehoztál egy bemutató Zulip szerveződést. Ne feledd, hogy eme szerveződés"
-" 30 nap után automatikusan törlődik. Tudj meg többet a bemutató "
-"szerveződésekről <a href=\"https://zulip.com/help/demo-"
-"organizations\">itt</a>!"
-=======
 "You've joined the Zulip organization <b>%(realm_name)s</b>.\n"
 "    "
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.html:32
 #, python-format
@@ -1543,21 +1480,7 @@ msgid ""
 "href=\"%(apps_page_link)s\">mobile and desktop</a> apps:"
 msgstr ""
 
-<<<<<<< HEAD
-#: templates/zerver/emails/followup_day1.source.html:18
-#, python-format
-msgid "You've joined the Zulip organization <b>%(realm_name)s</b>."
-msgstr "Beléptél a/az <b>%(realm_name)s</b> szervezetbe."
-
-#: templates/zerver/emails/followup_day1.source.html:23
-#: templates/zerver/emails/followup_day1.txt:15
-msgid "Your account details:"
-msgstr "Fiókod adatai:"
-
-#: templates/zerver/emails/followup_day1.source.html:25
-=======
 #: templates/zerver/emails/followup_day1.html:34
->>>>>>> drc_main
 #: templates/zerver/emails/followup_day1.txt:16
 #, python-format
 msgid "Organization URL: %(organization_url)s"
@@ -1587,72 +1510,22 @@ msgstr ""
 #: templates/zerver/emails/followup_day1.html:49
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"(you'll need these to sign in to the <a href=\"%(apps_page_link)s\">mobile "
-"and desktop</a> apps)"
-msgstr ""
-"(ezekre szükséged lesz a <a href=\"%(apps_page_link)s\">mobil- és "
-"asztali</a> alkalmazásokba való bejelentkezéshez)"
-=======
 "If you are new to Zulip, check out our <a "
 "href=\"%(getting_user_started_link)s\">Getting started guide</a>!"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.html:51
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Check out our <a href=\"%(getting_started_link)s\">guide for admins</a>, "
-"become a Zulip pro with a few <a "
-"href=\"%(keyboard_shortcuts_link)s\">keyboard shortcuts</a>, or <a "
-"href=\"%(realm_uri)s\">dive right in</a>!"
-msgstr ""
-"Nézd meg <a href=\"%(getting_started_link)s\">adminok számára szóló "
-"útmutatónkat</a>, válj profi Zulip felhasználóvá néhány <a "
-"href=\"%(keyboard_shortcuts_link)s\">billentyűparancs segítségével</a>, vagy"
-" <a href=\"%(realm_uri)s\">merülj alá most</a>!"
-=======
 "We also have a guide for <a "
 "href=\"%(getting_organization_started_link)s\">Setting up your "
 "organization</a>."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.html:57
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"<a href=\"%(getting_started_link)s\">Learn more</a> about Zulip, become a "
-"pro with a few <a href=\"%(keyboard_shortcuts_link)s\">keyboard "
-"shortcuts</a>, or <a href=\"%(realm_uri)s\">dive right in</a>!"
-msgstr ""
-"<a href=\"%(getting_started_link)s\">Tudj meg többet</a> a Zulipról, válj "
-"profi felhasználóvá néhány <a "
-"href=\"%(keyboard_shortcuts_link)s\">billentyűparancs segítségével</a>, vagy"
-" <a href=\"%(realm_uri)s\">merülj alá most</a>!"
-
-#: templates/zerver/emails/followup_day1.source.html:48
-#: templates/zerver/emails/followup_day1.txt:36
-msgid "Cheers,"
-msgstr "Üdvözlettel,"
-
-#: templates/zerver/emails/followup_day1.source.html:49
-#: templates/zerver/emails/followup_day1.txt:37
-#: templates/zerver/emails/notify_change_in_email.source.html:14
-#: templates/zerver/emails/notify_change_in_email.txt:7
-msgid "Team Zulip"
-msgstr "Zulip csapat"
-
-#: templates/zerver/emails/followup_day1.source.html:53
-msgid ""
-"PS: Follow us on <a href=\"https://twitter.com/zulip\">Twitter</a>, star us "
-"on <a href=\"https://github.com/zulip/zulip\">GitHub</a>, or chat with us "
-"live on the <a href=\"https://zulip.com/development-community/\">Zulip "
-"community server</a>!"
-=======
 "Questions? <a href=\"%(support_email)s\">Contact us</a> — we'd love to help!"
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/emails/followup_day1.subject.txt:2
@@ -1668,31 +1541,16 @@ msgstr "%(realm_name)sa Zulipon: az új fiókod részletei"
 #: templates/zerver/emails/followup_day1.txt:5
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"You've created a demo Zulip organization. Note that this organization will "
-"be automatically deleted in 30 days. Learn more about demo organizations "
-"here: https://zulip.com/help/demo-organizations"
-msgstr ""
-"Létrehoztál egy bemutató Zulip szerveződést. Ne feledd, hogy eme szerveződés"
-" 30 nap után automatikusan törlődik. Tudj meg többet a bemutató "
-"szerveződésekről itt: https://zulip.com/help/demo-organizations"
-=======
 " Congratulations, you have created a new demo Zulip organization. Note that "
 "this organization will be automatically deleted in 30 days. Learn more about"
 " demo organizations here: %(demo_organizations_help_link)s!"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.txt:7
 #, python-format
-<<<<<<< HEAD
-msgid "You've created the new Zulip organization %(realm_name)s."
-msgstr "Létrehoztad a/az %(realm_name)snevű Zulip szervezetet."
-=======
 msgid ""
 "Congratulations, you have created a new Zulip organization: %(realm_name)s."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.txt:10
 #, python-format
@@ -1702,44 +1560,8 @@ msgstr "Beléptél a/az %(realm_name)s nevű Zulip szervezetbe."
 #: templates/zerver/emails/followup_day1.txt:14
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"(you'll need these to sign in to the mobile and desktop apps "
-"(%(apps_page_link)s))"
-msgstr ""
-"(ezekre szükséged lesz, ha bejelentkezel a mobil és asztali alkalmazásokba "
-"(%(apps_page_link)s))"
-
-#: templates/zerver/emails/followup_day1.txt:30
-#, python-format
-msgid ""
-"Check out our guide (%(getting_started_link)s) for admins, become a Zulip "
-"pro with a few keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive "
-"right in to %(realm_uri)s!"
-msgstr ""
-"Olvasd el útmutatónkat (%(getting_started_link)s) adminok számára, válj "
-"Zulip mesterré pár gyorsbillentyű megismerésével "
-"(%(keyboard_shortcuts_link)s) vagy merülj alá a %(realm_uri)s címen!"
-
-#: templates/zerver/emails/followup_day1.txt:32
-#, python-format
-msgid ""
-"Learn more (%(getting_started_link)s) about Zulip, become a pro with a few "
-"keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive right in to "
-"%(realm_uri)s!"
-msgstr ""
-"Olvasd el útmutatónkat (%(getting_started_link)s) a Zulipról, válj Zulip "
-"mesterré pár gyorsbillentyű megismerésével (%(keyboard_shortcuts_link)s) "
-"vagy merülj alá a %(realm_uri)s címen!"
-
-#: templates/zerver/emails/followup_day1.txt:39
-msgid ""
-"PS: Check us out on Twitter (@zulip), star us on GitHub "
-"(https://github.com/zulip/zulip), or chat with us live on the Zulip "
-"community server (https://zulip.com/development-community/)!"
-=======
 "You will use the following info to log into the Zulip web, mobile and "
 "desktop apps (%(apps_page_link)s):"
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/emails/followup_day1.txt:29
@@ -1777,17 +1599,9 @@ msgstr ""
 #: templates/zerver/emails/followup_day2.html:13
 #: templates/zerver/emails/followup_day2.txt:3
 msgid ""
-<<<<<<< HEAD
-"I wanted to share one last thing with you: a few tips about topics, since "
-"mastering topics is a key part of being a Zulip power user."
-msgstr ""
-"Szerettem volna mégvalamit megosztani veled: egy pár tippet a témákról, "
-"hiszen ezek használatával válhatsz igazi Zulip mesterré."
-=======
 "Using topics, you can read Zulip one conversation at a time. You'll see each"
 " message in context, no matter how many different discussions are going on."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.html:16
 msgid "Streams and topics in the Zulip app"
@@ -1809,22 +1623,12 @@ msgstr "Példák rövid témákra"
 #: templates/zerver/emails/followup_day2.html:25
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Topics are like email subject lines. The big difference, though, is that "
-"they're really short and lightweight. Two or three words will do it. Don't "
-"overthink 'em&mdash;you can always edit the message later!"
-msgstr ""
-"A témák olyanok, mint az e-mailek esetén a tárgy. Nagy különbség azonban, "
-"hogy a témák mindig rövidek és egyszerűek. Két vagy három szó is elegendő. "
-"Ne gondold túl - bármikor módosíthatsz az üzeneten később!"
-=======
 "Don't stress about picking the perfect name for your topic. If anything is "
 "out of place, it's easy to <a href=\"%(move_messages_link)s\">move "
 "messages</a>, <a href=\"%(rename_topics_link)s\">rename topics</a>, or even "
 "<a href=\"%(move_topic_to_different_stream_link)s\">move a topic to a "
 "different stream</a>."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.html:28
 #: templates/zerver/emails/followup_day2.txt:10
@@ -1832,48 +1636,6 @@ msgstr ""
 msgid "Go to Zulip"
 msgstr "Tovább a Zulipba"
 
-<<<<<<< HEAD
-#: templates/zerver/emails/followup_day2.source.html:18
-#: templates/zerver/emails/followup_day2.txt:9
-msgid ""
-"Not recommended: \"What do people think of this new design mockup?\", \"I'm "
-"looking at Bug 345\", \"Is Acme Burgers open for lunch?\""
-msgstr ""
-"Nem ajánljuk: \"Emberek, mit gondoltok erről az új terv vázlatról?\", \"A "
-"345-ös hibát kezdtem nézegetni\", \"Nyitva van a sarki büfé ebédidőben?\""
-
-#: templates/zerver/emails/followup_day2.source.html:21
-msgid "Example of a topic that is too long"
-msgstr "Példa a túl hosszú témákra"
-
-#: templates/zerver/emails/followup_day2.source.html:23
-msgid ""
-"Why bother with topics? Well, two reasons: it makes conversations clearer "
-"(imagine if email didn't have them!), and it lets you more efficiently catch"
-" up on what's happened while you're away&mdash;read the topics that are "
-"relevant to you, and ignore the ones that aren't!"
-msgstr ""
-"Miért érdekeljen a témák kezelése? Nos, két okból: a témák köré épülő "
-"párbeszédek egyértelműbbek lesznek (képzeld el, ha az e-maileknek nem lenne "
-"tárgyuk!), és neked is segít hatékonyabban követni, hogy mi történt amíg nem"
-" láttad az üzeneteidet — a számodra fontos témákat elolvashatod, a többit "
-"pedig figyelmen kívül hagyhatod!"
-
-#: templates/zerver/emails/followup_day2.source.html:25
-msgid "Take it for a spin now."
-msgstr "Most próbáld ki te is."
-
-#: templates/zerver/emails/followup_day2.source.html:27
-#: templates/zerver/emails/followup_day2.txt:16
-#: templates/zerver/emails/notify_new_login.source.html:40
-#: templates/zerver/emails/notify_new_login.txt:20
-msgid "Thanks,"
-msgstr "Köszi,"
-
-#: templates/zerver/emails/followup_day2.source.html:34
-msgid "Unsubscribe from welcome emails"
-msgstr "Leiratkozás az üdvözlő e-mailekről"
-=======
 #: templates/zerver/emails/followup_day2.html:34
 #: templates/zerver/emails/followup_day2.txt:14
 #: templates/zerver/emails/onboarding_zulip_guide.html:40
@@ -1881,7 +1643,6 @@ msgstr "Leiratkozás az üdvözlő e-mailekről"
 #, python-format
 msgid "Unsubscribe from welcome emails for %(realm_name)s"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
 msgid "Keep your conversations organized with topics"
@@ -1889,41 +1650,18 @@ msgstr ""
 
 #: templates/zerver/emails/followup_day2.txt:3
 msgid ""
-<<<<<<< HEAD
-"Topics are like email subject lines. The big difference, though, is that "
-"they're really short and lightweight. Two or three words will do it. Don't "
-"overthink 'em -- you can always edit the message later!"
-msgstr ""
-"A témák olyanok, mint az e-mailek esetén a tárgy. Nagy különbség azonban, "
-"hogy a témák mindig rövidek és egyszerűek. Két vagy három szó is elegendő. "
-"Ne gondold túl - bármikor módosíthatsz az üzeneten később!"
-=======
 "In Zulip, streams determine who gets a message. Topics tell you what the "
 "message is about."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.txt:7
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Why bother with topics? Well, two reasons: it makes conversations clearer "
-"(imagine if email didn't have them!), and it lets you more efficiently catch"
-" up on what's happened while you're away -- read the topics that are "
-"relevant to you, and ignore the ones that aren't!"
-msgstr ""
-"Miért érdekeljen a témák kezelése? Nos, két okból: a témák köré épülő "
-"párbeszédek egyértelműbbek lesznek (képzeld el, ha az e-maileknek nem lenne "
-"tárgyuk!), és neked is segít hatékonyabban követni, hogy mi történt amíg nem"
-" láttad az üzeneteidet — a számodra fontos témákat elolvashatod, a többit "
-"pedig figyelmen kívül hagyhatod!"
-=======
 "Don't stress about picking the perfect name for your topic. If anything is "
 "out of place, it's easy to move messages (%(move_messages_link)s), rename "
 "topics (%(rename_topics_link)s), or even move a topic to a different stream "
 "(%(move_topic_to_different_stream_link)s)."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/invitation.html:9
 #: templates/zerver/emails/invitation.txt:1
@@ -2833,80 +2571,32 @@ msgid "Invalid email"
 msgstr "Érvénytelen email"
 
 #: templates/zerver/invalid_email.html:15
-<<<<<<< HEAD
-msgid ""
-"\n"
-"        The email address you are trying to sign up with is not valid.\n"
-"        Please sign up using a valid email address.\n"
-"        "
-msgstr ""
-"\n"
-"Az e-mail cím, amit használ, nem érvényes.\n"
-"Kérjük használjon érvényes e-mailt."
-=======
 msgid "Email not allowed"
 msgstr ""
 
 #: templates/zerver/invalid_email.html:21
 msgid "The email address you are trying to sign up with is not valid."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_email.html:24
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"\n"
-"        The organization you are trying to join, %(realm_name)s,\n"
-"        only allows users with email addresses within the\n"
-"        organization. Please sign up using appropriate email address.\n"
-"        "
-msgstr ""
-"\n"
-"        A/az %(realm_name)s szervezet, amibe belépni próbálsz,\n"
-"        csak a szervezeten belüli email címekkel engedi meg a\n"
-"        regisztrációt. Kérjük regisztrálj megfelelő email címről.\n"
-"        "
-=======
 "The organization you are trying to join, <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a>, does not allow signups using "
 "emails with your email domain."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_email.html:27
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"The organization you are trying to join,\n"
-"        %(realm_name)s, does not allow signups using disposable email\n"
-"        addresses. Please sign up using a real email address.\n"
-"        "
-msgstr ""
-"A/az %(realm_name)s szervezet, amibe,\n"
-"        belépni próbálsz, nem engedi eldobható email\n"
-"        címek használatát. Kérjük regisztrálj valós email címmel.\n"
-"        "
-=======
 "The organization you are trying to join, <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a>, does not allow signups using "
 "disposable email addresses."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_email.html:30
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"The organization you are trying to join,\n"
-"        %(realm_name)s, does not allow signups using emails\n"
-"        that contains +. Please sign up using appropriate email address.\n"
-"        "
-msgstr ""
-"A/az %(realm_name)s nem engedi meg\n"
-"         a + jelet tartalmazó e-mail címek használatát regisztrációnál. \n"
-"         Kérjük, megfelelő e-mail címmel regisztrálj."
-=======
 "The organization you are trying to join, <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a>, does not allow signups using "
 "emails that contain \"+\"."
@@ -2919,7 +2609,6 @@ msgstr ""
 #: templates/zerver/invalid_email.html:35
 msgid "Please sign up using an allowed email address."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_realm.html:4
 #: templates/zerver/invalid_realm.html:12
@@ -3021,21 +2710,10 @@ msgstr ""
 #: templates/zerver/no_spare_licenses.html:16
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"\n"
-"    New members cannot join this organization because all Zulip licenses are currently in use. Please contact the person who\n"
-"    invited you and ask them to increase the number of licenses, then try again.\n"
-"    "
-msgstr ""
-"\n"
-"Új tagok nem csatlakozhatnak ehhez a szerveződéshez, mert az összes Zulip licenszük már használt. Kérjük, szólj a tagnak, aki\n"
-"meghívott, hogy növeljék a licenszek számát, majd próbálkozz újra."
-=======
 "New members cannot currently join <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a> because all Zulip Cloud licenses "
 "are in use."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/no_spare_licenses.html:19
 msgid ""
@@ -3176,11 +2854,6 @@ msgid ""
 "            <p>Enter your account details to complete registration.</p>\n"
 "            "
 msgstr ""
-<<<<<<< HEAD
-"\n"
-"           <p> Már majdnem kész! Már csak egyetlen dolgot kell tenned.</p>"
-=======
->>>>>>> drc_main
 
 #: templates/zerver/register.html:36
 msgid "Your organization"
@@ -3330,17 +3003,6 @@ msgstr ""
 msgid "Unknown email unsubscribe request"
 msgstr "Ismeretlen email leiratkozási kérés"
 
-<<<<<<< HEAD
-#: templates/zerver/unsubscribe_link_error.html:12
-msgid ""
-"Hi there! It looks like you tried to unsubscribe from something,\n"
-"    but we don't recognize the URL."
-msgstr ""
-"Szia! Úgy tűnik, megpróbáltál leiratkozni valamiről, de nem ismerjük fel az "
-"URL-t."
-
-=======
->>>>>>> drc_main
 #: templates/zerver/unsubscribe_link_error.html:16
 msgid ""
 "Hi there! It looks like you tried to unsubscribe from something, but we "
@@ -3368,11 +3030,6 @@ msgid ""
 "                    <a href=\"%(realm_uri)s\">%(realm_name)s</a>.\n"
 "                    "
 msgstr ""
-<<<<<<< HEAD
-"\n"
-"                    Sikeresen leiratkoztál a Zulip %(subscription_type)s e-mailjeiről."
-=======
->>>>>>> drc_main
 
 #: templates/zerver/unsubscribe_success.html:27
 #, python-format
@@ -3382,13 +3039,6 @@ msgid ""
 "                    <a href=\"%(realm_uri)s/#settings/notifications\">notification settings</a>.\n"
 "                    "
 msgstr ""
-<<<<<<< HEAD
-"\n"
-"                   Visszavonhatod ezt a változtatást vagy\n"
-"                   megnézheted a beállításaidat a\n"
-"                   <a href=\"%(realm_uri)s/#settings/notifications\">Zulip értesítési beállításoknál.</a>"
-=======
->>>>>>> drc_main
 
 #: templates/zerver/unsupported_browser.html:4
 #: templates/zerver/unsupported_browser.html:15
@@ -3413,11 +3063,6 @@ msgid ""
 "                        like Firefox, Chrome, and Edge.\n"
 "                        "
 msgstr ""
-<<<<<<< HEAD
-"\n"
-"                       A Zulip modern böngészőkben működőképes, mint amilyen a Firefox, a Chrome vagy az Edge."
-=======
->>>>>>> drc_main
 
 #: templates/zerver/unsupported_browser.html:28
 #, python-format
@@ -4444,25 +4089,11 @@ msgstr "Érvénytelen anchor"
 #: zerver/lib/onboarding.py:59
 #, python-brace-format
 msgid ""
-<<<<<<< HEAD
-"Note that this is a [demo organization]({demo_org_help_url}) and will be "
-"**automatically deleted** in 30 days."
-msgstr ""
-"Vegye figyelembe, hogy ez egy [demószervezet]({demo_org_help_url}), és "
-"**automatikusan törlődik** 30 napon belül."
-
-#: zerver/lib/onboarding.py:73
-msgid "This is a private message from me, Welcome Bot."
-msgstr "Ez egy privát üzenet tőlem, Üdvözlő Robottól."
-
-#: zerver/lib/onboarding.py:75
-=======
 "If you are new to Zulip, check out our [Using Zulip for a class "
 "guide]({getting_started_url})!"
 msgstr ""
 
 #: zerver/lib/onboarding.py:66
->>>>>>> drc_main
 #, python-brace-format
 msgid ""
 "If you are new to Zulip, check out our [Getting started "
@@ -5421,15 +5052,6 @@ msgstr "Ismeretlen hotspot: {}"
 msgid "You must specify at least one email address."
 msgstr "Legalább egy e-mail cím megadása kötelező."
 
-<<<<<<< HEAD
-#: zerver/views/invite.py:72
-msgid "You must specify at least one stream for invitees to join."
-msgstr ""
-"Legalább egy üzenetfolyamot meg kell adnod, amihez a meghívottak csatlakozni"
-" tudnak."
-
-=======
->>>>>>> drc_main
 #: zerver/views/invite.py:82
 msgid "Stream does not exist with id: {}. No invites were sent."
 msgstr ""

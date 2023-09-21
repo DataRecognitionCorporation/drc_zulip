@@ -869,13 +869,6 @@
   "Previous message": "上一則訊息",
   "Privacy": "",
   "Privacy settings": "",
-<<<<<<< HEAD
-  "Private messages": "私人訊息",
-  "Private messages and mentions": "",
-  "Private messages are disabled in this organization.": "",
-  "Private messages disabled": "",
-=======
->>>>>>> drc_main
   "Private, protected history": "",
   "Private, shared history": "",
   "Profile": "",
@@ -971,10 +964,6 @@
   "Send message": "發送訊息",
   "Send mobile notifications even if I'm online": "",
   "Send mobile notifications even if user is online": "",
-<<<<<<< HEAD
-  "Send private message": "發送私訊",
-=======
->>>>>>> drc_main
   "Send weekly digest emails to inactive users": "",
   "Sent!": "",
   "Sent! Your message is outside your current narrow.": "",
@@ -1013,13 +1002,9 @@
   "Spoiler": "",
   "Star": "",
   "Star selected message": "標記此訊息",
-<<<<<<< HEAD
-  "Starred messages": "已標記訊息",
-=======
   "Star this message": "",
   "Starred messages": "已星標訊息",
   "Start a new topic or select one from the list.": "",
->>>>>>> drc_main
   "Start export of public data": "",
   "Status": "",
   "Stream": "頻道",
@@ -1181,13 +1166,7 @@
   "Upload profile picture": "",
   "Upload stalled for %'{seconds}' seconds, aborting.": "",
   "Uploaded files": "已上傳的檔案",
-<<<<<<< HEAD
-  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "",
   "Uploading {filename}…": "",
-  "Uploading…": "",
-=======
-  "Uploading {filename}…": "",
->>>>>>> drc_main
   "Usage statistics": "",
   "Use full width on wide screens": "",
   "Use html encoding (not recommended)": "",

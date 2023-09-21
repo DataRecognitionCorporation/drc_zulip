@@ -318,8 +318,6 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
     kwargs: Dict[str, Any] = dict(result.data_dict)
     # maybe_send_to_registration doesn't take these arguments, so delete them.
 
-<<<<<<< HEAD
-=======
     # These are the kwargs taken by maybe_send_to_registration. Remove anything
     # else from the dict.
     kwargs_to_pass = [
@@ -336,7 +334,6 @@ def register_remote_user(request: HttpRequest, result: ExternalAuthResult) -> Ht
         if key not in kwargs_to_pass:
             kwargs.pop(key, None)
 
->>>>>>> drc_main
     return maybe_send_to_registration(request, **kwargs)
 
 

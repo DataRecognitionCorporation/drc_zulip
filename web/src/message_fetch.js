@@ -52,19 +52,6 @@ function process_result(data, opts) {
         message_util.add_old_messages(messages, opts.msg_list);
     }
 
-<<<<<<< HEAD:static/js/message_fetch.js
-    if (
-        opts.msg_list === message_list.narrowed &&
-        message_lists.current === message_list.narrowed &&
-        message_list.narrowed.empty()
-    ) {
-        // Even after loading more messages, we have
-        // no messages to display in this narrow.
-        narrow_banner.show_empty_narrow_message();
-    }
-
-=======
->>>>>>> drc_main:web/src/message_fetch.js
     huddle_data.process_loaded_messages(messages);
     recent_view_ui.process_messages(messages);
     inbox_ui.update();

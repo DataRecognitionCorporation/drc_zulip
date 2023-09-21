@@ -7,10 +7,6 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
-<<<<<<< HEAD
-from zerver.lib.request import REQ, has_request_variables
-=======
->>>>>>> drc_main
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -107,12 +103,6 @@ def convert_lines_to_traceback_string(lines: Optional[List[str]]) -> str:
 
 def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
     """Handle either an exception type event or a message type event payload."""
-<<<<<<< HEAD
-    # We shouldn't support the officially deprecated Raven series of SDKs.
-    if int(event["version"]) < 7:
-        raise UnsupportedWebhookEventTypeError("Raven SDK")
-=======
->>>>>>> drc_main
 
     topic = event["title"]
     platform_name = event["platform"]

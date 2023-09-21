@@ -366,17 +366,12 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     const opts = {
         selected: default_tab,
         child_wants_focus: true,
-<<<<<<< HEAD:static/js/user_profile.js
-        values: values,
-        callback(name, key) {
-=======
         values: [
             {label: $t({defaultMessage: "Profile"}), key: "profile-tab"},
             {label: $t({defaultMessage: "Streams"}), key: "user-profile-streams-tab"},
             {label: $t({defaultMessage: "User groups"}), key: "user-profile-groups-tab"},
         ],
         callback(_name, key) {
->>>>>>> drc_main:web/src/user_profile.js
             $(".tabcontent").hide();
             $(`#${CSS.escape(key)}`).show();
             $("#user-profile-modal .modal__footer").hide();

@@ -53,11 +53,8 @@ export function add_settings_fields(sub) {
     sub.can_change_name_description = page_params.is_admin;
 
     sub.can_access_subscribers = stream_data.can_view_subscribers(sub);
-<<<<<<< HEAD:static/js/stream_settings_data.js
-=======
     sub.can_add_subscribers = stream_data.can_subscribe_others(sub);
     sub.can_remove_subscribers = stream_data.can_unsubscribe_others(sub);
->>>>>>> drc_main:web/src/stream_settings_data.js
 
     sub.preview_url = hash_util.by_stream_url(sub.stream_id);
     sub.is_old_stream = sub.stream_weekly_traffic !== null;

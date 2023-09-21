@@ -18,10 +18,6 @@ from zerver.lib.rate_limiter import (
     RateLimitedIPAddr,
     RateLimitedUser,
     RateLimiterLockingError,
-<<<<<<< HEAD
-    add_ratelimit_rule,
-=======
->>>>>>> drc_main
     get_tor_ips,
 )
 from zerver.lib.test_classes import ZulipTestCase

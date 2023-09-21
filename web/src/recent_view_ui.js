@@ -411,8 +411,6 @@ function format_conversation(conversation_data) {
             context.topic,
         );
 
-<<<<<<< HEAD:static/js/recent_topics_ui.js
-=======
         context.visibility_policy = user_topics.get_topic_visibility_policy(
             context.stream_id,
             context.topic,
@@ -422,7 +420,6 @@ function format_conversation(conversation_data) {
         context.development = page_params.development_environment;
         context.all_visibility_policies = user_topics.all_visibility_policies;
 
->>>>>>> drc_main:web/src/recent_view_ui.js
         // Since the css for displaying senders in reverse order is much simpler,
         // we provide our handlebars with senders in opposite order.
         // Display in most recent sender first order.
@@ -470,14 +467,9 @@ function format_conversation(conversation_data) {
         // Display in most recent sender first order.
         // To match the behavior for streams, we display the set of users who've actually
         // participated, with the most recent participants first. It could make sense to
-<<<<<<< HEAD:static/js/recent_topics_ui.js
-        // display the other recipients on the PM conversation with different styling,
-        // but it's important to not destroy the information of "who's actually talked".
-=======
         // display the other recipients on the direct message conversation with different
         // styling, but it's important to not destroy the information of "who's actually
         // talked".
->>>>>>> drc_main:web/src/recent_view_ui.js
         all_senders = recent_senders
             .get_pm_recent_senders(context.user_ids_string)
             .participants.reverse();

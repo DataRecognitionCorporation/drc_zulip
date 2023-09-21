@@ -57,12 +57,8 @@
   "Account & privacy": "Cyfrif a phreifatrwydd",
   "Action": "Gweithredu",
   "Actions": "Camau gweithredu",
-<<<<<<< HEAD
-  "Active": "Yn weithredol",
-=======
   "Active": "Egnïol",
   "Active an hour ago": "",
->>>>>>> drc_main
   "Active bots": "Bots gweithredol",
   "Active more than 2 weeks ago": "",
   "Active now": "Yn weithredol nawr",
@@ -350,10 +346,6 @@
   "Desktop message notifications": "Hysbysiadau neges bwrdd gwaith",
   "Detailed keyboard shortcuts documentation": "Dogfennaeth llwybr byr manwl",
   "Detailed message formatting documentation": "Dogfennaeth fformatio neges fanwl",
-<<<<<<< HEAD
-  "Detailed search operators documentation": "Dogfennaeth gweithredwyr chwilio fanwl",
-  "Disabled": "Analluogi",
-=======
   "Detailed search filters documentation": "",
   "Direct message": "",
   "Direct messages": "",
@@ -362,7 +354,6 @@
   "Direct messages disabled": "",
   "Disable notifications?": "",
   "Disabled": "Anabl",
->>>>>>> drc_main
   "Discard": "Gwared",
   "Dismiss for a week": "Diswyddo am wythnos",
   "Display availability to other users": "",
@@ -633,12 +624,7 @@
   "Looking for our <z-integrations>integrations</z-integrations> or <z-api>API</z-api> documentation?": "Chwilio am ein<z-integrations> integreiddiadau</z-integrations> neu dogfennaeth<z-api> API</z-api> ?",
   "MOVED": "SYMUDWYD",
   "Manage bot": "",
-<<<<<<< HEAD
-  "Manage organization": "Rheoli sefydliad",
-  "Manage streams": "Rheoli ffrwdiau",
-=======
   "Manage streams": "Rheoli nentydd",
->>>>>>> drc_main
   "Manage this bot": "",
   "Manage this user": "Rheoli'r defnyddiwr hwn",
   "Manage user": "Rheoli defnyddiwr",
@@ -707,12 +693,7 @@
   "Muted": "Wedi mudo",
   "Muted streams don't show up in \"All messages\" or generate notifications unless you are mentioned.": "Nid yw ffrydiau tawel yn ymddangos yn \"Pob neges\" nac yn cynhyrchu hysbysiadau oni bai eich bod yn cael eich crybwyll.",
   "Muted user": "Defnyddiwr tawel",
-<<<<<<< HEAD
-  "Muted users": "Defnyddwyr wedi'i tawel",
-  "N": "N.",
-=======
   "Muted users": "Defnyddwyr tawel",
->>>>>>> drc_main
   "Name": "Enw",
   "Name changes are disabled in this organization. Contact an administrator to change your name.": "Mae newidiadau enw yn anabl yn y sefydliad hwn. Cysylltwch â gweinyddwr i newid eich enw.",
   "Narrow to all direct messages": "",
@@ -1185,13 +1166,7 @@
   "Upload profile picture": "Llwythwch lun proffil",
   "Upload stalled for %'{seconds}' seconds, aborting.": "Llwythiad wedi'i oedi am % '{seconds}' eiliad, gan erthylu.",
   "Uploaded files": "Ffeiliau wedi'u llwytho i fyny",
-<<<<<<< HEAD
-  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "Bydd llwytho emoji arfer gyda'r enw hwn yn drech na'r emoji adeiledig. Parhau?",
   "Uploading {filename}…": "Llwytho {filename}…",
-  "Uploading…": "Llwytho ...",
-=======
-  "Uploading {filename}…": "Llwytho {filename}…",
->>>>>>> drc_main
   "Usage statistics": "Ystadegau defnydd",
   "Use full width on wide screens": "Defnyddiwch led llawn ar sgriniau llydan",
   "Use html encoding (not recommended)": "",

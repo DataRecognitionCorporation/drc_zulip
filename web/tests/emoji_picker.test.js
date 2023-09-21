@@ -49,13 +49,8 @@ run_test("initialize", () => {
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-smile-o", 163);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-star-o", popular_emoji_count);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-thumbs-o-up", 361);
-<<<<<<< HEAD:frontend_tests/node_tests/emoji_picker.js
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-lightbulb-o", 255);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-cutlery", 132);
-=======
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-lightbulb-o", 257);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-cutlery", 131);
->>>>>>> drc_main:web/tests/emoji_picker.test.js
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-flag", 269);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-cog", 1);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-leaf", 145);

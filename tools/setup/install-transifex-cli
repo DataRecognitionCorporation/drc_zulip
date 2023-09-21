@@ -8,30 +8,18 @@
 # glibc and musl (Alpine, Void, etc.) systems equally well.
 set -euo pipefail
 
-<<<<<<< HEAD
-version=1.6.4
-=======
 version=1.6.10
->>>>>>> drc_main
 arch="$(uname -m)"
 
 case $arch in
     x86_64)
         tarball="tx-linux-amd64.tar.gz"
-<<<<<<< HEAD
-        sha256=954207aba3da6139886922c8927c67098a51602c3d78558864f164a791c39e77
-=======
         sha256=dcc747ae863dd5a232b6a322f78b8621f43cd6032189ee89e979418cc24927f2
->>>>>>> drc_main
         ;;
 
     aarch64)
         tarball="tx-linux-arm64.tar.gz"
-<<<<<<< HEAD
-        sha256=2d0a115edef8e2fda6c1a431d28fe3541de073c35dc1ec677ffff0e6d1dd7a08
-=======
         sha256=05b152afed1971f3f7662bb775ca7da0b158d1c7d0bc9ca8c9d481f5ea34916c
->>>>>>> drc_main
         ;;
 esac
 
@@ -40,10 +28,7 @@ check_version() {
 }
 
 if ! check_version 2>/dev/null; then
-<<<<<<< HEAD
-=======
     set -x
->>>>>>> drc_main
     tmpdir="$(mktemp -d)"
     trap 'rm -r "$tmpdir"' EXIT
     cd "$tmpdir"

@@ -20,17 +20,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2022-11-17 16:38+0000\n"
-"PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: Ayan Raj <ayanujju351@gmail.com>, 2022\n"
-"Language-Team: Hindi (https://app.transifex.com/zulip/teams/53893/hi/)\n"
-=======
 "POT-Creation-Date: 2023-05-31 01:00+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Aruna Maurya, 2022\n"
 "Language-Team: Hindi (http://app.transifex.com/zulip/zulip/language/hi/)\n"
->>>>>>> drc_main
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1568,51 +1561,12 @@ msgstr ""
 msgid "Go to Zulip"
 msgstr ""
 
-<<<<<<< HEAD
-#: templates/zerver/emails/followup_day2.source.html:18
-#: templates/zerver/emails/followup_day2.txt:9
-msgid ""
-"Not recommended: \"What do people think of this new design mockup?\", \"I'm "
-"looking at Bug 345\", \"Is Acme Burgers open for lunch?\""
-msgstr ""
-
-#: templates/zerver/emails/followup_day2.source.html:21
-msgid "Example of a topic that is too long"
-msgstr ""
-
-#: templates/zerver/emails/followup_day2.source.html:23
-msgid ""
-"Why bother with topics? Well, two reasons: it makes conversations clearer "
-"(imagine if email didn't have them!), and it lets you more efficiently catch"
-" up on what's happened while you're away&mdash;read the topics that are "
-"relevant to you, and ignore the ones that aren't!"
-msgstr ""
-"विषयों से परेशान क्यों? खैर, दो कारण: यह बातचीत को स्पष्ट करता है (कल्पना "
-"करें कि क्या ईमेल उनके पास नहीं है!), और यह आपको अधिक कुशलता से पकड़ सकता है"
-" कि आपके दूर रहने के दौरान क्या हुआ है & mdash; आपके लिए प्रासंगिक विषयों को"
-" पढ़ें, और जो नहीं हैं  उन्हें अनदेखा करें !"
-
-#: templates/zerver/emails/followup_day2.source.html:25
-msgid "Take it for a spin now."
-msgstr ""
-
-#: templates/zerver/emails/followup_day2.source.html:27
-#: templates/zerver/emails/followup_day2.txt:16
-#: templates/zerver/emails/notify_new_login.source.html:40
-#: templates/zerver/emails/notify_new_login.txt:20
-msgid "Thanks,"
-msgstr ""
-
-#: templates/zerver/emails/followup_day2.source.html:34
-msgid "Unsubscribe from welcome emails"
-=======
 #: templates/zerver/emails/followup_day2.html:34
 #: templates/zerver/emails/followup_day2.txt:14
 #: templates/zerver/emails/onboarding_zulip_guide.html:40
 #: templates/zerver/emails/onboarding_zulip_guide.txt:27
 #, python-format
 msgid "Unsubscribe from welcome emails for %(realm_name)s"
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
@@ -1621,42 +1575,17 @@ msgstr ""
 
 #: templates/zerver/emails/followup_day2.txt:3
 msgid ""
-<<<<<<< HEAD
-"Topics are like email subject lines. The big difference, though, is that "
-"they're really short and lightweight. Two or three words will do it. Don't "
-"overthink 'em -- you can always edit the message later!"
-msgstr ""
-"विषय ईमेल विषय लाइनों की तरह हैं। हालांकि, बड़ा अंतर यह है कि वे वास्तव में "
-"छोटे और हल्के हैं। दो या तीन शब्द करेंगे। उन्हें उखाड़ फेंकें नहीं - आप "
-"हमेशा बाद में संदेश को संपादित कर सकते हैं!"
-=======
 "In Zulip, streams determine who gets a message. Topics tell you what the "
 "message is about."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.txt:7
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Why bother with topics? Well, two reasons: it makes conversations clearer "
-"(imagine if email didn't have them!), and it lets you more efficiently catch"
-" up on what's happened while you're away -- read the topics that are "
-"relevant to you, and ignore the ones that aren't!"
-msgstr ""
-"विषयों से परेशान क्यों? खैर, दो कारण: यह बातचीत को स्पष्ट करता है (कल्पना "
-"करें कि क्या ईमेल उनके पास नहीं है!), और यह आपको अधिक कुशलता से पकड़ सकता है"
-" कि आपके दूर रहने के दौरान क्या हुआ है & mdash; आपके लिए प्रासंगिक विषयों को"
-" पढ़ें, और जो नहीं हैं उन्हें अनदेखा करें !"
-
-#: templates/zerver/emails/followup_day2.txt:13
-msgid "Take it for a spin now:"
-=======
 "Don't stress about picking the perfect name for your topic. If anything is "
 "out of place, it's easy to move messages (%(move_messages_link)s), rename "
 "topics (%(rename_topics_link)s), or even move a topic to a different stream "
 "(%(move_topic_to_different_stream_link)s)."
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/emails/invitation.html:9

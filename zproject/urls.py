@@ -225,13 +225,7 @@ from zerver.views.zephyr import webathena_kerberos_login
 from zproject import dev_urls
 from zproject.legacy_urls import legacy_urls
 
-<<<<<<< HEAD
-from zerver.views.drc_scripts import drc_reports, drc_maintenance
-
-if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
-=======
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:  # nocoverage
->>>>>>> drc_main
     from two_factor.gateways.twilio.urls import urlpatterns as tf_twilio_urls
     from two_factor.urls import urlpatterns as tf_urls
 
@@ -824,11 +818,7 @@ urls += [
     path("policies/<slug:article>", policy_documentation_view),
 ]
 
-<<<<<<< HEAD
-if not settings.CORPORATE_ENABLED:
-=======
 if not settings.CORPORATE_ENABLED:  # nocoverage
->>>>>>> drc_main
     # This conditional behavior cannot be tested directly, since
     # urls.py is not readily reloaded in Django tests. See the block
     # comment inside apps_view for details.

@@ -26,11 +26,7 @@ def api_slack_webhook(
     stream: str = "slack",
     channels_map_to_topics: str = "1",
 ) -> HttpResponse:
-<<<<<<< HEAD
-    if channels_map_to_topics not in list(VALID_OPTIONS.values()):
-=======
     if channels_map_to_topics not in VALID_OPTIONS.values():
->>>>>>> drc_main
         raise JsonableError(_("Error: channels_map_to_topics parameter other than 0 or 1"))
 
     if channels_map_to_topics == VALID_OPTIONS["SHOULD_BE_MAPPED"]:

@@ -73,11 +73,5 @@ natsort
 # For spell check linter
 codespell
 
-<<<<<<< HEAD
-# Finds appropriate directories for data, config, cache, etc.
-platformdirs
-
-=======
->>>>>>> drc_main
 # For mocking time
 time-machine

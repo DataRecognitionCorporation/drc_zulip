@@ -13,19 +13,6 @@ from zerver.models import PushDeviceToken, Realm, UserPresence, UserProfile, que
 def get_presence_dicts_for_rows(
     all_rows: Sequence[Mapping[str, Any]], mobile_user_ids: Set[int], slim_presence: bool
 ) -> Dict[str, Dict[str, Any]]:
-<<<<<<< HEAD
-    # Note that datetime values have sub-second granularity, which is
-    # mostly important for avoiding test flakes, but it's also technically
-    # more precise for real users.
-    # We could technically do this sort with the database, but doing it
-    # here prevents us from having to assume the caller is playing nice.
-    all_rows = sorted(
-        all_rows,
-        key=lambda row: (row["user_profile_id"], row["timestamp"]),
-    )
-
-=======
->>>>>>> drc_main
     if slim_presence:
         # Stringify user_id here, since it's gonna be turned
         # into a string anyway by JSON, and it keeps mypy happy.
@@ -79,25 +66,7 @@ def user_presence_datetime_with_date_joined_default(
 def get_modern_user_presence_info(
     last_active_time: datetime.datetime, last_connected_time: datetime.datetime
 ) -> Dict[str, Any]:
-<<<<<<< HEAD
-    active_timestamp = None
-    for row in reversed(presence_rows):
-        if row["status"] == UserPresence.ACTIVE:
-            active_timestamp = datetime_to_timestamp(row["timestamp"])
-            break
-
-    idle_timestamp = None
-    for row in reversed(presence_rows):
-        if row["status"] == UserPresence.IDLE:
-            idle_timestamp = datetime_to_timestamp(row["timestamp"])
-            break
-
-    # Be stingy about bandwidth, and don't even include
-    # keys for entities that have None values.  JS
-    # code should just do a falsy check here.
-=======
     # TODO: Do further bandwidth optimizations to this structure.
->>>>>>> drc_main
     result = {}
     result["active_timestamp"] = datetime_to_timestamp(last_active_time)
     result["idle_timestamp"] = datetime_to_timestamp(last_connected_time)
@@ -107,30 +76,6 @@ def get_modern_user_presence_info(
 def get_legacy_user_presence_info(
     last_active_time: datetime.datetime, last_connected_time: datetime.datetime
 ) -> Dict[str, Any]:
-<<<<<<< HEAD
-    # The format of data here is for legacy users of our API,
-    # including old versions of the mobile app.
-    info_rows = []
-    for row in presence_rows:
-        client_name = row["client__name"]
-        status = UserPresence.status_to_string(row["status"])
-        dt = row["timestamp"]
-        timestamp = datetime_to_timestamp(dt)
-        push_enabled = row["user_profile__enable_offline_push_notifications"]
-        has_push_devices = row["user_profile_id"] in mobile_user_ids
-        pushable = push_enabled and has_push_devices
-
-        info = dict(
-            client=client_name,
-            status=status,
-            timestamp=timestamp,
-            pushable=pushable,
-        )
-
-        info_rows.append(info)
-
-    most_recent_info = info_rows[-1]
-=======
     """
     Reformats the modern UserPresence data structure so that legacy
     API clients can still access presence data.
@@ -143,7 +88,6 @@ def get_legacy_user_presence_info(
     # TODO: Look at whether we can drop to just the "aggregated" field
     # if no clients look at the rest.
     most_recent_info = format_legacy_presence_dict(last_active_time, last_connected_time)
->>>>>>> drc_main
 
     result = {}
 

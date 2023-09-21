@@ -1,9 +1,6 @@
 {
   "%'{file}' exceeds the maximum file size for attachments ({variable} MB).": "%'{file}' excede o tamanho máximo de arquivos para anexos ({variable} MB).",
-<<<<<<< HEAD
-=======
   "(attached file)": "",
->>>>>>> drc_main
   "(forever)": "(pra sempre)",
   "(hidden)": "(escondido)",
   "(no description)": "(sem descrição)",
@@ -11,11 +8,6 @@
   "(you)": "(você)",
   "({message_retention_days} days)": "({message_retention_days} dias)",
   "/dark (Switch to the dark theme)": "/escuro (Mudar para tema escuro)",
-<<<<<<< HEAD
-  "/fixed-width (Toggle fixed width mode)": "",
-  "/fluid-width (Toggle fluid width mode)": "",
-=======
->>>>>>> drc_main
   "/light (Switch to light theme)": "",
   "/me is excited (Display action text)": "/me está animado (Mostrar texto de ação)",
   "/poll Where should we go to lunch today? (Create a poll)": "/poll Onde vamos almoçar hoje? (Criar uma enquete)",
@@ -36,10 +28,6 @@
   "<b>Total messages</b>: {total_messages}": "<b>Mensagens totais</b>: {total_messages} ",
   "<p><strong>{file_name}</strong> will be removed from the messages where it was shared. This action cannot be undone.</p>": "<p><strong>{file_name}</strong> será removido das mensagens onde foi compartilhado. Essa ação não pode ser desfeita.</p>",
   "<p>Stream will be announced in <b>#{notifications_stream}</b>.</p>": "<p>Canal será anunciado em <b>#{notifications_stream}</b>.</p>",
-<<<<<<< HEAD
-  "<p>The stream <b>{stream_name}</b> does not exist.</p><p>Manage your subscriptions <z-link>on your Streams page</z-link>.</p>": "<p>O canal<b>{stream_name}</b> não existe.</p> <p>Gerencie seus canais inscritos em <z-link>sua página de Canais</z-link>.</p>",
-=======
->>>>>>> drc_main
   "<p>You are searching for messages that are sent by more than one person, which is not possible.</p>": "",
   "<p>You are searching for messages that belong to more than one stream, which is not possible.</p>": "<p>Você está procurando por mensagens que pertencem a mais de um canal, o que não é possível.</p>",
   "<p>You are searching for messages that belong to more than one topic, which is not possible.</p>": "",
@@ -116,13 +104,9 @@
   "Added successfully!": "Adicionado com sucesso!",
   "Added successfully.": "Adicionado com sucesso.",
   "Administrator": "Administrador",
-<<<<<<< HEAD
-  "Administrators can delete any message.": "Administradores podem deletar qualquer mensagem.",
-=======
   "Administrators and moderators this Zulip organization will be able to see this email address.": "",
   "Administrators can delete any message.": "Administradores podem deletar qualquer mensagem.",
   "Administrators of this Zulip organization will be able to see this email address.": "",
->>>>>>> drc_main
   "Admins": "Administradores",
   "Admins and moderators": "Administradores e moderadores",
   "Admins only": "Apenas administradores",
@@ -142,14 +126,7 @@
   "All direct messages": "",
   "All messages": "Todas as mensagens",
   "All messages including muted streams": "",
-<<<<<<< HEAD
-  "All private messages": "Todas as mensagens privadas",
-  "All private messages (P)": "Todas mensagens privadas (P)",
-  "All stream subscribers can post.": "",
-  "All streams": "Todos os canais",
-=======
   "All streams": "Todos os fluxos",
->>>>>>> drc_main
   "All time": "Período integral",
   "All unreads": "Todas não lidas",
   "Allow creating web-public streams (visible to anyone on the Internet)": "",
@@ -166,20 +143,11 @@
   "An API key can be used to programmatically access a Zulip account. Anyone with access to your API key has the ability to read your messages, send messages on your behalf, and otherwise impersonate you on Zulip, so you should guard your API key as carefully as you guard your password. <br /> We recommend creating bots and using the bots' accounts and API keys to access the Zulip API, unless the task requires access to your account.": "Uma chave API pode ser usada para acessar programaticamente uma conta Zulip. Qualquer pessoa com acesso à sua chave de API tem a capacidade de ler suas mensagens, enviar mensagens em seu nome e se passar por você no Zulip, portanto, você deve proteger sua chave API com o mesmo cuidado que protege sua senha.<br />Recomendamos criar bots e usar as contas e chaves API dos bots para acessar a API do Zulip, a menos que a tarefa exija acesso à sua conta.",
   "An hour ago": "Uma hora atrás",
   "An unknown error occurred.": "Ocorreu um erro desconhecido.",
-<<<<<<< HEAD
-  "Announce stream": "Canal de avisos",
-  "Any member of this organization can add custom emoji.": "Qualquer membro desta organização pode adicionar emojis personalizados.",
-=======
   "Announce new stream in": "",
->>>>>>> drc_main
   "Any organization administrator can conduct an export.": "Qualquer administrador da organização pode conduzir uma exportação.",
   "Any time": "A qualquer momento",
   "April": "Abril",
-<<<<<<< HEAD
-  "Archive <z-link></z-link>{stream}?": "",
-=======
   "Archive <z-link></z-link>?": "",
->>>>>>> drc_main
   "Archive stream": "Arquivar canal",
   "Archiving stream <z-stream></z-stream> will immediately unsubscribe everyone. This action cannot be undone.": "",
   "Are you sure you want to continue?": "",
@@ -188,11 +156,7 @@
   "Are you sure you want to deactivate your account?": "",
   "Are you sure you want to delete all drafts?  This action cannot be undone.": "",
   "Are you sure you want to delete your profile picture?": "Tem certeza de que quer apagar a sua foto de perfil?",
-<<<<<<< HEAD
-  "Are you sure you want to mention all <strong>{count}</strong> people in this stream? <br /> This will send email and mobile push notifications to most of those <strong>{count}</strong> users. <br /> If you don't want to do that, please edit your message to remove the <strong>@{mention}</strong> mention.": "",
-=======
   "Are you sure you want to mark all messages as read? This action cannot be undone.": "",
->>>>>>> drc_main
   "Are you sure you want to mute <b>{user_name}</b>?  Messages sent by muted users will never trigger notifications, will be marked as read, and will be hidden.": "",
   "Are you sure you want to permanently delete <b>{topic_name}</b>?": "",
   "Are you sure you want to resend the invitation to <z-email></z-email>?": "",
@@ -236,12 +200,8 @@
   "Cancel compose and save draft": "",
   "Card": "",
   "Center the view around message ID <z-value></z-value>.": "",
-<<<<<<< HEAD
-  "Change": "mudança",
-=======
   "Change": "Alteração",
   "Change avatar": "",
->>>>>>> drc_main
   "Change color": "Alterar cor",
   "Change email": "Alterar e-mail",
   "Change group info": "",
@@ -268,10 +228,6 @@
   "Collapse direct messages": "",
   "Collapse message": "",
   "Collapse/show selected message": "Recolher/mostrar mensagem selecionada",
-<<<<<<< HEAD
-  "Color scheme": "Esquema de cores",
-=======
->>>>>>> drc_main
   "Community": "Comunidade",
   "Commuting": "",
   "Compact": "",
@@ -308,20 +264,12 @@
   "Create": "Criar",
   "Create a stream": "",
   "Create new stream": "Criar novo canal",
-<<<<<<< HEAD
-  "Create stream": "Criar canal",
-  "Create user group": "",
-  "Creating group...": "",
-  "Creating stream...": "Criando canal...",
-  "Current password": "Senha atual",
-=======
   "Create new user group": "",
   "Create stream": "Criar fluxo",
   "Create user group": "",
   "Creating group...": "",
   "Creating stream...": "Criando fluxo...",
   "Currently viewing all direct messages.": "",
->>>>>>> drc_main
   "Currently viewing all messages.": "",
   "Currently viewing the entire stream.": "",
   "Custom": "Personalizado",
@@ -331,15 +279,11 @@
   "Custom playground added!": "",
   "Custom profile fields": "Personalizar campos de perfil",
   "Custom time": "",
-<<<<<<< HEAD
-  "Cycle between stream narrows": "Ciclo entre limites de canais",
-=======
   "Cycle between stream narrows": "Ciclo entre limites de fluxos",
   "DIRECT MESSAGES": "",
   "DM": "",
   "DMs, mentions, and alerts": "",
   "Dark": "",
->>>>>>> drc_main
   "Dark theme": "",
   "Dark theme logo": "",
   "Data exports": "",
@@ -361,12 +305,8 @@
   "Default for stream": "",
   "Default is {language}. Use 'text' to disable highlighting.": "",
   "Default language for code blocks": "",
-<<<<<<< HEAD
-  "Default streams": "Canais padrão",
-=======
   "Default streams": "Fluxos padrão",
   "Default streams for this organization": "",
->>>>>>> drc_main
   "Default user settings": "Configurações de usuário padrão",
   "Default view": "",
   "Delay before sending message notification emails": "",
@@ -452,10 +392,7 @@
   "Edit selected draft": "Editar rascunho selecionado",
   "Edit selected message or view source": "",
   "Edit status": "",
-<<<<<<< HEAD
-=======
   "Edit stream name and description": "",
->>>>>>> drc_main
   "Edit topic": "Editar assunto",
   "Edit user": "Editar usuário",
   "Edit your last message": "Editar sua última mensagem",
@@ -487,13 +424,8 @@
   "Enter sends when composing a message": "",
   "Error": "Erro",
   "Error adding subscription": "Erro ao adicionar inscrição",
-<<<<<<< HEAD
-  "Error checking subscription": "Erro ao verificar inscrição",
-  "Error creating stream": "Erro ao criar canal",
-=======
   "Error checking subscription.": "",
   "Error creating stream": "Erro ao criar fluxo",
->>>>>>> drc_main
   "Error creating user group.": "",
   "Error deleting message": "Erro ao excluir mensagem",
   "Error fetching message edit history": "Erro ao buscar o histórico de edição de mensagens",
@@ -557,12 +489,8 @@
   "Filter linkifiers": "",
   "Filter members": "",
   "Filter muted users": "",
-<<<<<<< HEAD
-  "Filter streams": "Filtrar canais",
-=======
   "Filter roles": "",
   "Filter streams": "Filtrar fluxos",
->>>>>>> drc_main
   "Filter subscribers": "",
   "Filter topics": "",
   "Filter topics (t)": "",
@@ -610,11 +538,7 @@
   "Hide muted message again": "",
   "Hide notice": "",
   "Hide password": "Esconder senha",
-<<<<<<< HEAD
-  "Hide starred message count": "Esconder contagem de mensagens favoritadas",
-=======
   "Hide starred message count": "Esconder contagem de mensagens marcadas com estrela",
->>>>>>> drc_main
   "High contrast mode": "Modo de alto contraste",
   "Hint": "Dica",
   "Hint (up to 80 characters)": "Dica (até 80 caracteres)",
@@ -639,11 +563,8 @@
   "Invalid URL": "URL inválido",
   "Invalid stream ID": "",
   "Invalid time format: {timestamp}": "Formato de horas inválido: {timestamp}",
-<<<<<<< HEAD
-=======
   "Invalid user": "Usuário inválido",
   "Invalid users": "",
->>>>>>> drc_main
   "Invitation expires after": "",
   "Invitations": "Convites",
   "Invitations are required for joining this organization": "",
@@ -767,21 +688,12 @@
   "Must be invited by a subscriber; new subscribers can view complete message history; hidden from non-administrator users": "",
   "Mute stream": "Silenciar fluxo",
   "Mute this user": "",
-<<<<<<< HEAD
-  "Mute topic": "Silenciar tópico",
-  "Mute user": "Silenciar usuário",
-=======
   "Mute topic": "Silenciar assunto",
   "Mute user": "Silenciar usuário",
   "Muted": "Silenciado",
->>>>>>> drc_main
   "Muted streams don't show up in \"All messages\" or generate notifications unless you are mentioned.": "",
   "Muted user": "",
   "Muted users": "Usuários silenciados",
-<<<<<<< HEAD
-  "N": "N",
-=======
->>>>>>> drc_main
   "Name": "Nome",
   "Name changes are disabled in this organization. Contact an administrator to change your name.": "",
   "Narrow to all direct messages": "",
@@ -932,11 +844,7 @@
   "Personal": "",
   "Personal settings": "Configurações pessoais",
   "Pin stream to top": "Fixar canal no topo",
-<<<<<<< HEAD
-  "Pin stream to top of left sidebar": "Fixar fluxo no topo da barra lateral esquerda",
-=======
   "Pin stream to top of left sidebar": "Fixar canal no topo da barra lateral esquerda",
->>>>>>> drc_main
   "Pinned": "Fixo",
   "Plans and pricing": "Planos e preços",
   "Play sound": "Tocar som",
@@ -981,12 +889,6 @@
   "Read receipts are not available for Notification Bot messages.": "Confirmações de leitura não estão disponivel para mensagens do Bot de Notificações.",
   "Receives new stream announcements": "",
   "Recent conversations": "Conversas recentes",
-<<<<<<< HEAD
-  "Remind me about this": "Alerte-me sobre isso",
-  "Reminder not set!": "Lembrete não definido!",
-  "Reminder set!": "Lembrete definido!",
-=======
->>>>>>> drc_main
   "Remove": "Remover",
   "Remove from default": "Remover do padrão",
   "Removed successfully.": "",
@@ -1193,11 +1095,7 @@
   "This will delete the <z-profile-field-name></z-profile-field-name> profile field for <z-count></z-count> users.": "",
   "Thursday": "Quinta",
   "Time": "",
-<<<<<<< HEAD
-  "Time format": "Formato de tempo",
-=======
   "Time format": "Formato de horas",
->>>>>>> drc_main
   "Time limit for deleting messages": "",
   "Time limit for editing messages": "",
   "Time limit for editing topics": "",
@@ -1240,10 +1138,7 @@
   "Unmute stream": "Cancelar o silenciamento do fluxo",
   "Unmute this user": "",
   "Unmute topic": "Cancelar o silenciamento do tópico",
-<<<<<<< HEAD
-=======
   "Unmuted": "",
->>>>>>> drc_main
   "Unpin stream from top": "Desfixar canal do topo",
   "Unread": "Não lido",
   "Unread count badge (appears in desktop sidebar and browser tab)": "",
@@ -1271,13 +1166,7 @@
   "Upload profile picture": "Enviar imagem de perfil",
   "Upload stalled for %'{seconds}' seconds, aborting.": "",
   "Uploaded files": "Arquivos enviados",
-<<<<<<< HEAD
-  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "",
   "Uploading {filename}…": "",
-  "Uploading…": "Enviando...",
-=======
-  "Uploading {filename}…": "",
->>>>>>> drc_main
   "Usage statistics": "Estatísticas de uso",
   "Use full width on wide screens": "Utilizar largura completa em telas largas",
   "Use html encoding (not recommended)": "",
@@ -1321,10 +1210,7 @@
   "View profile": "",
   "View read receipts": "Ver confirmação de leitura",
   "View recent conversations": "Ver conversas recentes",
-<<<<<<< HEAD
-=======
   "View scheduled messages": "",
->>>>>>> drc_main
   "View stream": "Visualizar fluxo",
   "View stream messages": "Visualizar mensagens do fluxo",
   "View streams": "",
@@ -1421,15 +1307,9 @@
   "You have no inactive bots.": "Você não tem bots inativos.",
   "You have no starred messages.": "",
   "You have no unread messages!": "Você não possui mensagens não lidas!",
-<<<<<<< HEAD
-  "You have not muted any topics yet.": "Você não silenciou nenhum tópico ainda.",
-  "You have not muted any users yet.": "Você não silenciou nenhum usuário ainda.",
-  "You have not sent any private messages to yourself yet!": "Você ainda não enviou nenhuma mensagem privada para você mesmo!",
-=======
   "You have not configured any topics yet.": "",
   "You have not muted any users yet.": "Você não silenciou nenhum usuário ainda.",
   "You have not sent any direct messages to yourself yet!": "",
->>>>>>> drc_main
   "You have not uploaded any files.": "Você não enviou nenhum arquivo.",
   "You haven't been mentioned yet!": "Você ainda não foi mencionado!",
   "You haven't received any messages sent by {person} yet.": "",
@@ -1504,11 +1384,6 @@
   "{modal_heading_text}": "",
   "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, one {} many {} other {}}",
   "{seconds} sec to edit": "",
-<<<<<<< HEAD
-  "{starred_status} this message": "",
-  "{starred_status} this message (Ctrl + s)": "",
-=======
->>>>>>> drc_main
   "{user_time} local time": "{user_time} hora local",
   "{username} [said]({link_to_message}):": "{username} [disse]({link_to_message}):",
   "{username} reacted with {emoji_name}": "{username} reagiu com {emoji_name}"

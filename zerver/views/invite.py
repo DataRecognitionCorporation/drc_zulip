@@ -14,11 +14,7 @@ from zerver.actions.invites import (
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
 )
-<<<<<<< HEAD
-from zerver.decorator import require_member_or_admin, require_realm_admin
-=======
 from zerver.decorator import require_member_or_admin
->>>>>>> drc_main
 from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -40,14 +36,10 @@ def check_role_based_permissions(
         invited_as == PreregistrationUser.INVITE_AS["REALM_OWNER"]
         and not user_profile.is_realm_owner
     ):
-<<<<<<< HEAD
-        raise OrganizationOwnerRequiredError()
-=======
         raise OrganizationOwnerRequiredError
 
     if require_admin and not user_profile.is_realm_admin:
         raise JsonableError(_("Must be an organization administrator"))
->>>>>>> drc_main
 
 
 @require_member_or_admin
@@ -67,22 +59,6 @@ def invite_users_backend(
     ),
     stream_ids: List[int] = REQ(json_validator=check_list(check_int)),
 ) -> HttpResponse:
-<<<<<<< HEAD
-    if not user_profile.can_invite_others_to_realm():
-        # Guest users case will not be handled here as it will
-        # be handled by the decorator above.
-        raise JsonableError(_("Insufficient permission"))
-    check_if_owner_required(invite_as, user_profile)
-    if (
-        invite_as
-        in [
-            PreregistrationUser.INVITE_AS["REALM_ADMIN"],
-            PreregistrationUser.INVITE_AS["MODERATOR"],
-        ]
-        and not user_profile.is_realm_admin
-    ):
-        raise JsonableError(_("Must be an organization administrator"))
-=======
     if not user_profile.can_invite_users_by_email():
         # Guest users case will not be handled here as it will
         # be handled by the decorator above.
@@ -97,7 +73,6 @@ def invite_users_backend(
     ]
     check_role_based_permissions(invite_as, user_profile, require_admin=require_admin)
 
->>>>>>> drc_main
     if not invitee_emails_raw:
         raise JsonableError(_("You must specify at least one email address."))
 

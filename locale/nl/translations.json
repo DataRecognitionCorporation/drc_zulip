@@ -1,9 +1,6 @@
 {
   "%'{file}' exceeds the maximum file size for attachments ({variable} MB).": "%'{file}' overschrijdt de maximale bestandsgrootte voor bijlagen ({variable} MB).",
-<<<<<<< HEAD
-=======
   "(attached file)": "",
->>>>>>> drc_main
   "(forever)": "(altijd)",
   "(hidden)": "(verborgen)",
   "(no description)": "(geen beschrijving)",
@@ -11,11 +8,6 @@
   "(you)": "(jij)",
   "({message_retention_days} days)": "({message_retention_days} dagen)",
   "/dark (Switch to the dark theme)": "/dark (Schakel naar donkere modus)",
-<<<<<<< HEAD
-  "/fixed-width (Toggle fixed width mode)": "/fixed-width (Omschakelen vast breedte modus)",
-  "/fluid-width (Toggle fluid width mode)": "/fixed-width (Omschakelen flexibele breedte modus)",
-=======
->>>>>>> drc_main
   "/light (Switch to light theme)": "/light (Schakel naar lichte modus)",
   "/me is excited (Display action text)": "/me is opgewonden (Tonen actietekst)",
   "/poll Where should we go to lunch today? (Create a poll)": "/ poll Waar gaan we vandaag lunchen? (Maak een peiling)",
@@ -36,10 +28,6 @@
   "<b>Total messages</b>: {total_messages}": "<b>Totaal aantal berichten</b>: {total_messages}",
   "<p><strong>{file_name}</strong> will be removed from the messages where it was shared. This action cannot be undone.</p>": "<p><strong>{file_name}</strong> zal worden verwijderd uit de berichten waar het werd gedeeld. Deze actie kan niet ongedaan worden gemaakt.</p>",
   "<p>Stream will be announced in <b>#{notifications_stream}</b>.</p>": "<p>Kanaal wordt aangekondigd over <b>#{notifications_stream}</b>.</p>",
-<<<<<<< HEAD
-  "<p>The stream <b>{stream_name}</b> does not exist.</p><p>Manage your subscriptions <z-link>on your Streams page</z-link>.</p>": "<p>Het kanaal<b>{stream_name}</b> bestaat niet.</p><p>Beheer je abonnementen <z-link>op je Kanalenpagina</z-link>.</p>",
-=======
->>>>>>> drc_main
   "<p>You are searching for messages that are sent by more than one person, which is not possible.</p>": "<p>Je zoekt naar berichten die door meer dan één persoon zijn verzonden, wat niet mogelijk is.</p>",
   "<p>You are searching for messages that belong to more than one stream, which is not possible.</p>": "<p>YJe zoekt naar berichten die tot meer dan één kanaal behoren, wat niet mogelijk is.</p>",
   "<p>You are searching for messages that belong to more than one topic, which is not possible.</p>": "<p>Je zoekt naar berichten die bij meer dan één onderwerp horen, wat niet mogelijk is.</p>",
@@ -61,11 +49,7 @@
   "A stream with this name already exists": "Er bestaat al een kanaal met deze naam",
   "A user group needs to have a name": "Een gebruikersgroep moet een naam hebben",
   "A user group with this name already exists": "Een gebruikersgroep met deze naam bestaat al",
-<<<<<<< HEAD
-  "A wide image for the upper left corner of the app.": "Een brede afbeelding voor de linkerbovenhoek van de app",
-=======
   "A wide image (200×25 pixels) for the upper left corner of the app.": "",
->>>>>>> drc_main
   "API documentation": "API-documentatie",
   "API key": "API key",
   "About Zulip": "Over Zulip",
@@ -103,10 +87,6 @@
   "Add emoji reaction": "Voeg een emoji reactie toe",
   "Add extra emoji for members of the {realm_name} organization.": "Extra emoji toevoegen voor leden van de {realm_name} organisatie.",
   "Add global time": "Globale tijd toevoegen",
-<<<<<<< HEAD
-  "Add global time<br />Everyone sees global times in their own time zone.": "Globale tijd toevoegen<br />Iedereen ziet globale tijden in zijn eigen tijdzone.",
-=======
->>>>>>> drc_main
   "Add linkifier": "Toevoegen linkifier",
   "Add members": "Leden toevoegen",
   "Add member…": "Toevoegen lid…",
@@ -124,15 +104,6 @@
   "Added successfully!": "Succesvol toegevoegd!",
   "Added successfully.": "Succesvol toegevoegd!",
   "Administrator": "Beheerder",
-<<<<<<< HEAD
-  "Administrators can delete any message.": "Beheerders kunnen elk bericht verwijderen.",
-  "Admins": "Beheerders",
-  "Admins and moderators": "Beheerders en moderators",
-  "Admins only": "Alleen beheerders",
-  "Admins, moderators and full members": "Beheerders, moderators en volwaardige leden",
-  "Admins, moderators and members": "Beheerders, moderators en leden",
-  "Admins, moderators and members, but only admins can add generic bots": "Beheerders, moderators en leden, maar alleen Beheerders kunnen generieke bots toevoegen",
-=======
   "Administrators and moderators this Zulip organization will be able to see this email address.": "",
   "Administrators can delete any message.": "Beheerders kunnen elk bericht verwijderen.",
   "Administrators of this Zulip organization will be able to see this email address.": "",
@@ -142,7 +113,6 @@
   "Admins, moderators and full members": "Admins, moderators en volwaardige leden",
   "Admins, moderators and members": "Admins, moderators en leden",
   "Admins, moderators and members, but only admins can add generic bots": "Admins, moderators en leden, maar alleen admins kunnen generieke bots toevoegen",
->>>>>>> drc_main
   "Admins, moderators, members and guests": "Beheerders, moderators, leden en gasten",
   "Advanced": "gevorderd",
   "Advertise organization in the Zulip communities directory": "Adverteer de organisatie in de Zulip communities directory",
@@ -156,12 +126,6 @@
   "All direct messages": "",
   "All messages": "Alle berichten",
   "All messages including muted streams": "Alle berichten, inclusief gedempte kanalen",
-<<<<<<< HEAD
-  "All private messages": "Alle privéberichten",
-  "All private messages (P)": "Alle privéberichten (P)",
-  "All stream subscribers can post.": "Alle kanaal-abonnees kunnen posten.",
-=======
->>>>>>> drc_main
   "All streams": "Alle kanalen",
   "All time": "Alle",
   "All unreads": "Alle ongelezen",
@@ -236,12 +200,8 @@
   "Cancel compose and save draft": "",
   "Card": "",
   "Center the view around message ID <z-value></z-value>.": "",
-<<<<<<< HEAD
-  "Change": "Verandering",
-=======
   "Change": "Wijzigen",
   "Change avatar": "",
->>>>>>> drc_main
   "Change color": "Wijzigen kleur",
   "Change email": "Wijzigen e-mailadres",
   "Change group info": "",
@@ -1206,13 +1166,7 @@
   "Upload profile picture": "",
   "Upload stalled for %'{seconds}' seconds, aborting.": "",
   "Uploaded files": "Bestanden",
-<<<<<<< HEAD
-  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "",
   "Uploading {filename}…": "",
-  "Uploading…": "Uploaden...",
-=======
-  "Uploading {filename}…": "",
->>>>>>> drc_main
   "Usage statistics": "",
   "Use full width on wide screens": "",
   "Use html encoding (not recommended)": "",

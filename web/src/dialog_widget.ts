@@ -240,17 +240,10 @@ export function submit_api_request(
     void request_method({
         url,
         data,
-<<<<<<< HEAD:static/js/dialog_widget.js
-        success(response_data) {
-            close_modal();
-            if (success_continuation !== undefined) {
-                success_continuation(response_data);
-=======
         success(response_data, textStatus, jqXHR) {
             close_modal();
             if (success_continuation !== undefined) {
                 success_continuation(response_data, textStatus, jqXHR);
->>>>>>> drc_main:web/src/dialog_widget.ts
             }
         },
         error(xhr, error_type, xhn) {

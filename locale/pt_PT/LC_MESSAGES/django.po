@@ -12,17 +12,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2022-11-17 16:38+0000\n"
-"PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: João Alves <suri.cata.ja@gmail.com>, 2022\n"
-"Language-Team: Portuguese (Portugal) (https://app.transifex.com/zulip/teams/53893/pt_PT/)\n"
-=======
 "POT-Creation-Date: 2023-05-31 01:00+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: João Alves <suri.cata.ja@gmail.com>, 2021-2022\n"
 "Language-Team: Portuguese (Portugal) (http://app.transifex.com/zulip/zulip/language/pt_PT/)\n"
->>>>>>> drc_main
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -860,17 +853,9 @@ msgstr "E-mail"
 #: templates/zerver/register.html:209
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
-"rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr ""
-"Concordo com as <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
-"rel=\"noopener noreferrer\">Condições do Serviço</a>."
-=======
 "I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
 "target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/accounts_accept_terms.html:64
 msgid "Continue"
@@ -1487,19 +1472,9 @@ msgstr ""
 #: templates/zerver/emails/followup_day1.html:49
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"<a href=\"%(getting_started_link)s\">Learn more</a> about Zulip, become a "
-"pro with a few <a href=\"%(keyboard_shortcuts_link)s\">keyboard "
-"shortcuts</a>, or <a href=\"%(realm_uri)s\">dive right in</a>!"
-msgstr ""
-"<a href=\"%(getting_started_link)s\">Saiba mais</a> sobre o Zulip, torne-se "
-"um pro com alguns <a href=\"%(keyboard_shortcuts_link)s\">atalhos de "
-"teclado</a>, ou <a href=\"%(realm_uri)s\">mergulhe de cabeça</a>!"
-=======
 "If you are new to Zulip, check out our <a "
 "href=\"%(getting_user_started_link)s\">Getting started guide</a>!"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.html:51
 #, python-format
@@ -1617,37 +1592,10 @@ msgid ""
 "different stream</a>."
 msgstr ""
 
-<<<<<<< HEAD
-#: templates/zerver/emails/followup_day2.source.html:17
-#: templates/zerver/emails/followup_day2.txt:7
-msgid "Good topics: design mockup, Bug 345, acme burgers"
-msgstr "Bons temas: rascunho de design, Bug 345, hambúrgueres caseiros"
-
-#: templates/zerver/emails/followup_day2.source.html:18
-#: templates/zerver/emails/followup_day2.txt:9
-msgid ""
-"Not recommended: \"What do people think of this new design mockup?\", \"I'm "
-"looking at Bug 345\", \"Is Acme Burgers open for lunch?\""
-msgstr ""
-"Não recomendado: \"O que acham deste rascunho de design?\", \"Estou a ver o "
-"bug 345\", \"Alguém quer almoçar hambúrgueres caseiros?\""
-
-#: templates/zerver/emails/followup_day2.source.html:21
-msgid "Example of a topic that is too long"
-msgstr "Exemplo de um tema demasiado longo"
-
-#: templates/zerver/emails/followup_day2.source.html:23
-msgid ""
-"Why bother with topics? Well, two reasons: it makes conversations clearer "
-"(imagine if email didn't have them!), and it lets you more efficiently catch"
-" up on what's happened while you're away&mdash;read the topics that are "
-"relevant to you, and ignore the ones that aren't!"
-=======
 #: templates/zerver/emails/followup_day2.html:28
 #: templates/zerver/emails/followup_day2.txt:10
 #: templates/zerver/portico-header-dropdown.html:3
 msgid "Go to Zulip"
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/emails/followup_day2.html:34
@@ -1659,29 +1607,7 @@ msgid "Unsubscribe from welcome emails for %(realm_name)s"
 msgstr ""
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
-<<<<<<< HEAD
-msgid "One last thing: using topics like a pro"
-msgstr "Mais uma coisa: usar temas como um pro"
-
-#: templates/zerver/emails/followup_day2.txt:5
-msgid ""
-"Topics are like email subject lines. The big difference, though, is that "
-"they're really short and lightweight. Two or three words will do it. Don't "
-"overthink 'em -- you can always edit the message later!"
-msgstr ""
-"Os Temas são como a linha de assunto de um e-mail. A grande diferença, "
-"contudo, é serem curtos e leves. Duas ou três palavras chegam. E sem pensar "
-"muito — pode sempre editar a mensagem mais tarde!"
-
-#: templates/zerver/emails/followup_day2.txt:11
-msgid ""
-"Why bother with topics? Well, two reasons: it makes conversations clearer "
-"(imagine if email didn't have them!), and it lets you more efficiently catch"
-" up on what's happened while you're away -- read the topics that are "
-"relevant to you, and ignore the ones that aren't!"
-=======
 msgid "Keep your conversations organized with topics"
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/emails/followup_day2.txt:3
@@ -2311,71 +2237,6 @@ msgstr "Integrações"
 msgid "Desktop & mobile apps"
 msgstr "Apps de desktop e móvel"
 
-<<<<<<< HEAD
-#: templates/zerver/footer.html:20
-msgid "Business"
-msgstr "Negócios"
-
-#: templates/zerver/footer.html:23
-msgid "Education"
-msgstr "Educação"
-
-#: templates/zerver/footer.html:26
-msgid "Research"
-msgstr "Investigação"
-
-#: templates/zerver/footer.html:29
-msgid "Events and conferences"
-msgstr "Eventos e conferências"
-
-#: templates/zerver/footer.html:32
-msgid "Open source projects"
-msgstr "Projectos open source"
-
-#: templates/zerver/footer.html:35
-msgid "Communities"
-msgstr "Comunidades"
-
-#: templates/zerver/footer.html:40
-msgid "Customer stories"
-msgstr "Relatos de clientes"
-
-#: templates/zerver/footer.html:43
-msgid "Company"
-msgstr "Empresa"
-
-#: templates/zerver/footer.html:46
-msgid "Technical University of Munich"
-msgstr "Universidade Técnica de Munique"
-
-#: templates/zerver/footer.html:49
-msgid "University of California San Diego"
-msgstr "Universidade da California San Diego"
-
-#: templates/zerver/footer.html:52
-msgid "Lean theorem prover community"
-msgstr "comunidade do assistente de prova de teoremas Lean"
-
-#: templates/zerver/footer.html:55
-msgid "Asciidoctor open-source community"
-msgstr "comunidade open source Asciidoctor"
-
-#: templates/zerver/footer.html:58
-msgid "Rust language community"
-msgstr "comunidade da linguagem Rust"
-
-#: templates/zerver/footer.html:69
-msgid "Accounts"
-msgstr "Contas"
-
-#: templates/zerver/footer.html:76
-msgid "New organization"
-msgstr "Nova organização"
-
-#: templates/zerver/footer.html:78
-msgid "Terms of Service"
-msgstr "Condições do Serviço"
-=======
 #: templates/zerver/footer.html:16 templates/zerver/portico-header.html:50
 msgid "New organization"
 msgstr "Nova organização"
@@ -2387,7 +2248,6 @@ msgstr "Nova organização"
 #: templates/zerver/portico-header.html:39
 msgid "Log in"
 msgstr "Iniciar Sessão"
->>>>>>> drc_main
 
 #: templates/zerver/footer.html:22
 msgid "Solutions"
@@ -2647,16 +2507,6 @@ msgstr ""
 msgid "Invalid or expired login session."
 msgstr ""
 
-<<<<<<< HEAD
-#: templates/zerver/log_into_subdomain_token_invalid.html:13
-#: templates/zerver/login.html:5 templates/zerver/login.html:128
-#: templates/zerver/portico-header.html:33
-#: templates/zerver/portico-header.html:39
-msgid "Log in"
-msgstr "Iniciar sessão"
-
-=======
->>>>>>> drc_main
 #: templates/zerver/login.html:18
 msgid "Log in to Zulip"
 msgstr "Iniciar sessão no Zulip"
@@ -3082,13 +2932,6 @@ msgid ""
 "                        like Firefox, Chrome, and Edge.\n"
 "                        "
 msgstr ""
-<<<<<<< HEAD
-"\n"
-"                        O Zulip suporta navegadores modernos como o Firefox,\n"
-"                        Chrome, e Edge.\n"
-"                        "
-=======
->>>>>>> drc_main
 
 #: templates/zerver/unsupported_browser.html:28
 #, python-format

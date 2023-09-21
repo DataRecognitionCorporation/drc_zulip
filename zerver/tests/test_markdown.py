@@ -22,12 +22,8 @@ from zerver.actions.users import change_user_is_active
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.camo import get_camo_url
 from zerver.lib.create_user import create_user
-<<<<<<< HEAD
-from zerver.lib.emoji import get_emoji_url
-=======
 from zerver.lib.emoji import codepoint_to_name, get_emoji_url
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
->>>>>>> drc_main
 from zerver.lib.exceptions import JsonableError, MarkdownRenderingError
 from zerver.lib.markdown import (
     POSSIBLE_EMOJI_RE,

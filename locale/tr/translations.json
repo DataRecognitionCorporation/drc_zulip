@@ -62,9 +62,6 @@
   "Active bots": "Faal botlar",
   "Active more than 2 weeks ago": "",
   "Active now": "Şu an faal",
-<<<<<<< HEAD
-  "Active users": "Aktif kullanıcılar",
-=======
   "Active users": "Faal kullanıcılar",
   "Active yesterday": "",
   "Active {days_old} days ago": "",
@@ -72,7 +69,6 @@
   "Active {last_active_date}": "",
   "Active {minutes} minutes ago": "",
   "Activity unknown": "",
->>>>>>> drc_main
   "Add": "Ekle",
   "Add GIF": "GIF Ekle",
   "Add a new alert word": "Yeni bir uyarı kelimesi ekle",
@@ -723,12 +719,7 @@
   "Narrow to stream from topic view": "",
   "Narrow to topic or DM conversation": "",
   "Narrow to unread messages.": "Okunmamış iletilere süz.",
-<<<<<<< HEAD
-  "Narrow to your private messages with {display_reply_to}": "{display_reply_to} ile özel iletilerinize süzün",
-  "Narrow to {message_recipient}": "{message_recipient} olarak süz",
-=======
   "Narrow to {message_recipient}": "{message_recipient} 'a süz",
->>>>>>> drc_main
   "Narrowing": "Süzme",
   "Navigation": "Navigasyon",
   "Never": "Asla",
@@ -804,19 +795,9 @@
   "Only in conversation views": "Sadece konuşma görünümü içindeyken",
   "Only organization administrators can edit these settings": "Bu ayarları yalnızca organizasyon yöneticileri düzenleyebilir",
   "Only organization administrators can edit these settings.": "Bu ayarları sadece organizasyon yöneticileri değiştirebilir.",
-<<<<<<< HEAD
-  "Only organization administrators can modify user groups in this organization.": "Bu organizasyonda sadece organizasyon yöneticileri kullanıcı gruplarını düzenleyebilir.",
-  "Only organization administrators can post.": "Sadece organizasyon yöneticileri paylaşabilir.",
-  "Only organization full members can add custom emoji in this organization.": "Bu organizasyonda yalnızca tam üyeler özel emoji ekleyebilir.",
-  "Only organization full members can post.": "Sadece organizasyon tam üyeleri ileti gönderebilir.",
-  "Only organization owners can edit these settings.": "Sadece organizasyon yöneticileri bu ayarları düzenleyebilir.",
-  "Only owners can change these settings.": "",
-  "Only owners can deactivate the organization.": "Sadece organizasyon yöneticileri organizasyonu devre dışı yapabilir.",
-=======
   "Only organization owners can edit these settings.": "Sadece organizasyon sahipleri bu ayarları düzenleyebilir.",
   "Only organization owners may deactivate an organization.": "",
   "Only owners can change these settings.": "",
->>>>>>> drc_main
   "Only stream members can add users to a private stream": "Sadece kanal üyeleri özel kanallara kullanıcı ekleyebilir",
   "Only stream members can add users to a private stream.": "",
   "Only subscribers to this stream can edit stream permissions.": "",
@@ -846,12 +827,8 @@
   "Other emails": "Diğer e-postalar",
   "Other permissions": "Diğer izinler",
   "Other settings": "Diğer ayarlar",
-<<<<<<< HEAD
-  "Out sick": "Hasta",
-=======
   "Other users in this Zulip organization will be able to see this email address.": "",
   "Out sick": "Tatilde",
->>>>>>> drc_main
   "Outgoing webhook message format": "Dışarı yönlü webhook ileti biçimi",
   "Override default emoji?": "",
   "Owner": "Organizasyon Yöneticisi",
@@ -989,14 +966,7 @@
   "Send mobile notifications even if user is online": "",
   "Send weekly digest emails to inactive users": "Aktif olamayan kullanıcılara haftalık özet gönder",
   "Sent!": "Gönderildi!",
-<<<<<<< HEAD
-  "Sent! Scroll down to view your message.": "Gönderildi! iletinizi görmek için aşağıya doğru kaydırın.",
-  "Sent! Your message is outside your current narrow.": "Gönderildi! İletiniz aktif süzmenin dışında.",
-  "Sent! Your message was sent to a stream you have muted.": "Gönderildi! İletiniz daha önce susturmuş olduğunuz kanala gönderilmiştir.",
-  "Sent! Your message was sent to a topic you have muted.": "Gönderildi! İletiniz daha önce susturmuş olduğunuz konuya gönderilmiştir.",
-=======
   "Sent! Your message is outside your current narrow.": "Gönderildi! İletiniz aktif kanalın dışında.",
->>>>>>> drc_main
   "Sent! Your recent message is outside the current search.": "Gönderildi! Önceki iletiniz aktif aramanın dışındadır.",
   "September": "Eylül",
   "Set a status": "Durum belirle",
@@ -1196,13 +1166,7 @@
   "Upload profile picture": "Profil resmi yükle",
   "Upload stalled for %'{seconds}' seconds, aborting.": "Yükleme {saniye} saniye durakladı, iptal ediliyor.",
   "Uploaded files": "Yüklenmiş dosyalar",
-<<<<<<< HEAD
-  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "Bu adla özel bir emoji yüklemek, yerleşik emojiyi geçersiz kılar. Devam et?",
   "Uploading {filename}…": "{filename} yükleniyor…",
-  "Uploading…": "Yükleniyor...",
-=======
-  "Uploading {filename}…": "{filename} yükleniyor…",
->>>>>>> drc_main
   "Usage statistics": "Kullanım istatistikleri",
   "Use full width on wide screens": "Geniş ekranlar için tam genişlik kullan",
   "Use html encoding (not recommended)": "",

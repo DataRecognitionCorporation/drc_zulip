@@ -222,20 +222,7 @@ def write_log_line(
         error_data = repr(error_content)
         if len(error_data) > 200:
             error_data = "[content more than 200 characters]"
-<<<<<<< HEAD
-        logger.info("status=%3d, data=%s, uid=%s", status_code, error_data, requestor_for_logs)
-
-
-class RequestContext(MiddlewareMixin):
-    def __call__(self, request: HttpRequest) -> HttpResponseBase:
-        set_request(request)
-        try:
-            return self.get_response(request)
-        finally:
-            unset_request()
-=======
         logger.info("status=%3d, data=%s, uid=%s", status_code, error_data, requester_for_logs)
->>>>>>> drc_main
 
 
 # We take advantage of `has_request_variables` being called multiple times
@@ -372,13 +359,6 @@ class LogRequests(MiddlewareMixin):
 
 
 class JsonErrorHandler(MiddlewareMixin):
-<<<<<<< HEAD
-    def __init__(self, get_response: Callable[[HttpRequest], HttpResponseBase]) -> None:
-        super().__init__(get_response)
-        ignore_logger("zerver.middleware.json_error_handler")
-
-=======
->>>>>>> drc_main
     def process_exception(
         self, request: HttpRequest, exception: Exception
     ) -> Optional[HttpResponse]:

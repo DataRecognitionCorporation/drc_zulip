@@ -19,17 +19,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2022-11-17 16:38+0000\n"
-"PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: 林恩衍, 2023\n"
-"Language-Team: Chinese (Taiwan) (https://app.transifex.com/zulip/teams/53893/zh_TW/)\n"
-=======
 "POT-Creation-Date: 2023-05-31 01:00+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>, 2021-2022\n"
 "Language-Team: Chinese (Taiwan) (http://app.transifex.com/zulip/zulip/language/zh_TW/)\n"
->>>>>>> drc_main
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -53,15 +46,6 @@ msgstr "公開頻道"
 msgid "Private streams"
 msgstr "私人頻道"
 
-<<<<<<< HEAD
-#: analytics/views/stats.py:281
-msgid "Private messages"
-msgstr "私訊"
-
-#: analytics/views/stats.py:282
-msgid "Group private messages"
-msgstr "群組私訊"
-=======
 #: analytics/views/stats.py:296
 msgid "Direct messages"
 msgstr ""
@@ -69,7 +53,6 @@ msgstr ""
 #: analytics/views/stats.py:297
 msgid "Group direct messages"
 msgstr ""
->>>>>>> drc_main
 
 #: analytics/views/stats.py:318
 msgid "Unknown chart name: {}"
@@ -179,16 +162,10 @@ msgstr "發生錯誤。請稍待數秒後再試一次。"
 #: corporate/lib/stripe.py:1015
 #, python-brace-format
 msgid ""
-<<<<<<< HEAD
-"Your organization's request for sponsored hosting has been approved! "
-"{emoji}.\n"
-msgstr "貴組織申請贊助伺服器代管已通過！{emoji}\n"
-=======
 "Your organization's request for sponsored hosting has been approved! You have been upgraded to {plan_name}, free of charge. {emoji}\n"
 "\n"
 "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, we would really appreciate it!"
 msgstr ""
->>>>>>> drc_main
 
 #: corporate/views/billing_page.py:45
 msgid "No payment method on file"
@@ -871,17 +848,9 @@ msgstr "Email"
 #: templates/zerver/register.html:209
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
-"rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr ""
-"我同意<a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" rel=\"noopener "
-"noreferrer\">服務條款</a>。"
-=======
 "I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
 "target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/accounts_accept_terms.html:64
 msgid "Continue"
@@ -1602,56 +1571,6 @@ msgstr ""
 msgid "Go to Zulip"
 msgstr "回到 Zulip"
 
-<<<<<<< HEAD
-#: templates/zerver/emails/followup_day2.source.html:23
-msgid ""
-"Why bother with topics? Well, two reasons: it makes conversations clearer "
-"(imagine if email didn't have them!), and it lets you more efficiently catch"
-" up on what's happened while you're away&mdash;read the topics that are "
-"relevant to you, and ignore the ones that aren't!"
-msgstr ""
-"為何要為主題困擾？兩個理由：讓對談更清晰（想像一下如果 email 沒這東西！），且讓您在離開時，能更有效的知曉當前發生了什麼 &mdash; "
-"閱讀有關聯您的主題，忽略那些沒的！"
-
-#: templates/zerver/emails/followup_day2.source.html:25
-msgid "Take it for a spin now."
-msgstr ""
-
-#: templates/zerver/emails/followup_day2.source.html:27
-#: templates/zerver/emails/followup_day2.txt:16
-#: templates/zerver/emails/notify_new_login.source.html:40
-#: templates/zerver/emails/notify_new_login.txt:20
-msgid "Thanks,"
-msgstr "感謝，"
-
-#: templates/zerver/emails/followup_day2.source.html:34
-msgid "Unsubscribe from welcome emails"
-msgstr ""
-
-#: templates/zerver/emails/followup_day2.subject.txt:1
-msgid "One last thing: using topics like a pro"
-msgstr "最後一件事：使用主題要像個專業人士"
-
-#: templates/zerver/emails/followup_day2.txt:5
-msgid ""
-"Topics are like email subject lines. The big difference, though, is that "
-"they're really short and lightweight. Two or three words will do it. Don't "
-"overthink 'em -- you can always edit the message later!"
-msgstr "主題就像是 email 的主旨。 最大的不同處是，比較簡短跟輕量。兩到三個詞就可以敘述完。不要當成 -- 可以永遠編輯的訊息！"
-
-#: templates/zerver/emails/followup_day2.txt:11
-msgid ""
-"Why bother with topics? Well, two reasons: it makes conversations clearer "
-"(imagine if email didn't have them!), and it lets you more efficiently catch"
-" up on what's happened while you're away -- read the topics that are "
-"relevant to you, and ignore the ones that aren't!"
-msgstr ""
-"為何要為主題困擾？兩個理由：讓對談更清晰（想像一下如果 email 沒這東西！），且讓您在離開時，能更有效的知曉當前發生了什麼 -- "
-"閱讀有關聯您的主題，忽略那些沒的！"
-
-#: templates/zerver/emails/followup_day2.txt:13
-msgid "Take it for a spin now:"
-=======
 #: templates/zerver/emails/followup_day2.html:34
 #: templates/zerver/emails/followup_day2.txt:14
 #: templates/zerver/emails/onboarding_zulip_guide.html:40
@@ -1662,7 +1581,6 @@ msgstr ""
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
 msgid "Keep your conversations organized with topics"
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/emails/followup_day2.txt:3
@@ -2258,13 +2176,6 @@ msgstr "Email 地址"
 msgid "Find accounts"
 msgstr "查詢帳號"
 
-<<<<<<< HEAD
-#: templates/zerver/footer.html:4
-msgid "Product"
-msgstr "產品"
-
-=======
->>>>>>> drc_main
 #: templates/zerver/footer.html:6
 msgid "Product"
 msgstr "產品"
@@ -2285,17 +2196,6 @@ msgstr ""
 msgid "Self-hosting"
 msgstr ""
 
-<<<<<<< HEAD
-#: templates/zerver/footer.html:11
-msgid "Desktop &amp; mobile apps"
-msgstr "桌電和行動裝置應用程式"
-
-#: templates/zerver/footer.html:12
-msgid "Security"
-msgstr "安全性"
-
-=======
->>>>>>> drc_main
 #: templates/zerver/footer.html:13
 msgid "Security"
 msgstr "安全性"
@@ -2304,75 +2204,11 @@ msgstr "安全性"
 msgid "Integrations"
 msgstr "整合"
 
-<<<<<<< HEAD
-#: templates/zerver/footer.html:17
-msgid "Solutions"
-msgstr "解決方案"
-
-#: templates/zerver/footer.html:20
-msgid "Business"
-msgstr "商務選購"
-
-#: templates/zerver/footer.html:23
-msgid "Education"
-msgstr "教育"
-
-#: templates/zerver/footer.html:26
-msgid "Research"
-msgstr "研究用途"
-
-#: templates/zerver/footer.html:29
-msgid "Events and conferences"
-msgstr "活動與研討會"
-
-#: templates/zerver/footer.html:32
-msgid "Open source projects"
-msgstr "開源專案"
-
-#: templates/zerver/footer.html:35
-msgid "Communities"
-msgstr "社群"
-
-#: templates/zerver/footer.html:40
-msgid "Customer stories"
-msgstr "使用者回饋"
-
-#: templates/zerver/footer.html:43
-msgid "Company"
-msgstr ""
-
-#: templates/zerver/footer.html:46
-msgid "Technical University of Munich"
-msgstr ""
-
-#: templates/zerver/footer.html:49
-msgid "University of California San Diego"
-msgstr ""
-
-#: templates/zerver/footer.html:52
-msgid "Lean theorem prover community"
-msgstr ""
-
-#: templates/zerver/footer.html:55
-msgid "Asciidoctor open-source community"
-msgstr ""
-
-#: templates/zerver/footer.html:58
-msgid "Rust language community"
-msgstr ""
-
-#: templates/zerver/footer.html:69
-msgid "Accounts"
-msgstr "帳號"
-
-#: templates/zerver/footer.html:76
-=======
 #: templates/zerver/footer.html:15
 msgid "Desktop & mobile apps"
 msgstr "桌面 & 行動應用"
 
 #: templates/zerver/footer.html:16 templates/zerver/portico-header.html:50
->>>>>>> drc_main
 msgid "New organization"
 msgstr "新組織"
 
@@ -2452,19 +2288,7 @@ msgstr ""
 msgid "Contributing"
 msgstr ""
 
-<<<<<<< HEAD
-#: templates/zerver/footer.html:130
-msgid "For contributors"
-msgstr ""
-
-#: templates/zerver/footer.html:132
-msgid "GitHub"
-msgstr "GitHub"
-
-#: templates/zerver/footer.html:135
-=======
 #: templates/zerver/footer.html:68
->>>>>>> drc_main
 msgid "Contributing guide"
 msgstr ""
 
@@ -2476,15 +2300,9 @@ msgstr ""
 msgid "Translation"
 msgstr ""
 
-<<<<<<< HEAD
-#: templates/zerver/footer.html:148
-msgid "About us"
-msgstr "關於我們"
-=======
 #: templates/zerver/footer.html:78
 msgid "GitHub"
 msgstr "GitHub"
->>>>>>> drc_main
 
 #: templates/zerver/footer.html:83
 msgid "About us"
@@ -2618,31 +2436,9 @@ msgstr ""
 #: templates/zerver/invalid_email.html:24
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"\n"
-"        The organization you are trying to join, %(realm_name)s,\n"
-"        only allows users with email addresses within the\n"
-"        organization. Please sign up using appropriate email address.\n"
-"        "
-msgstr ""
-"\n"
-"        您嘗試加入該組織，%(realm_name)s，\n"
-"        只允許有 email 的使用者加入組織。\n"
-"        請使用合適的 email 註冊。\n"
-"        "
-
-#: templates/zerver/invalid_email.html:34
-#, python-format
-msgid ""
-"The organization you are trying to join,\n"
-"        %(realm_name)s, does not allow signups using disposable email\n"
-"        addresses. Please sign up using a real email address.\n"
-"        "
-=======
 "The organization you are trying to join, <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a>, does not allow signups using "
 "emails with your email domain."
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/invalid_email.html:27
@@ -2916,32 +2712,7 @@ msgstr ""
 msgid "Your organization"
 msgstr ""
 
-<<<<<<< HEAD
-#: templates/zerver/register.html:44
-msgid "Organization name"
-msgstr "組織名稱"
-
-#: templates/zerver/register.html:52
-msgid "Shorter is better than longer."
-msgstr ""
-
-#: templates/zerver/register.html:67
-msgid "Organization type"
-msgstr ""
-
-#: templates/zerver/register.html:72
-msgid "Organization URL"
-msgstr "組織網址"
-
-#: templates/zerver/register.html:79
-#, python-format
-msgid "Use %(external_host)s"
-msgstr "使用 %(external_host)s"
-
-#: templates/zerver/register.html:108
-=======
 #: templates/zerver/register.html:66
->>>>>>> drc_main
 msgid "Your account"
 msgstr "您的帳號"
 
@@ -3383,15 +3154,7 @@ msgstr "無效的 recipients 資料類型"
 msgid "Recipient lists may contain emails or user IDs, but not both."
 msgstr "接收者清單可包含 emails 或是使用者 IDs，但不能兩個同時存在。"
 
-<<<<<<< HEAD
-#: zerver/actions/message_send.py:1210
-msgid "Reminders can only be set for streams."
-msgstr "只能為頻道設定提醒。"
-
-#: zerver/actions/message_send.py:1277
-=======
 #: zerver/actions/message_send.py:1195
->>>>>>> drc_main
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream ID {stream_id}, "
@@ -5052,13 +4815,6 @@ msgstr "未知的 hotspot: {}"
 msgid "You must specify at least one email address."
 msgstr ""
 
-<<<<<<< HEAD
-#: zerver/views/invite.py:72
-msgid "You must specify at least one stream for invitees to join."
-msgstr "您必須指定至少一個頻道讓被邀請者加入。"
-
-=======
->>>>>>> drc_main
 #: zerver/views/invite.py:82
 msgid "Stream does not exist with id: {}. No invites were sent."
 msgstr "不存在頻道 id：{}。邀請未發送。"
@@ -5684,15 +5440,7 @@ msgstr "{} 不是有效的 hostname"
 msgid "Missing user_id or user_uuid"
 msgstr "未填寫 user_id 或 user_uuid"
 
-<<<<<<< HEAD
-#: zilencer/views.py:163
-msgid "Specify only one of user_id or user_uuid"
-msgstr "只能指定 user_id 或 user_uuid 中的一個"
-
-#: zilencer/views.py:300
-=======
 #: zilencer/views.py:370
->>>>>>> drc_main
 msgid "Invalid property {}"
 msgstr "無效的屬性 {}"
 

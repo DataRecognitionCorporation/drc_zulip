@@ -4,37 +4,20 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-<<<<<<< HEAD
-# alia alian <mytempmail1396@gmail.com>, 2022
-# shahriar nazemi <shahriar.nazemi@gmail.com>, 2022
-# mohammad talaei <mohammadtalaei76@gmail.com>, 2022
-# abolfazl test <abolfazlgroup@gmail.com>, 2022
-# Mehdi Hamidi, 2022
-# 
-#, fuzzy
-=======
 # abolfazl test <abolfazlgroup@gmail.com>, 2019
 # Mehdi Hamidi, 2021
 # mohammad talaei <mohammadtalaei76@gmail.com>, 2019
 # Reza Askari, 2023
 # Shahin Azad <me@5hah.in>, 2018
 # shahriar nazemi <shahriar.nazemi@gmail.com>, 2020
->>>>>>> drc_main
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2022-11-17 16:38+0000\n"
-"PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: Mehdi Hamidi, 2022\n"
-"Language-Team: Persian (https://app.transifex.com/zulip/teams/53893/fa/)\n"
-=======
 "POT-Creation-Date: 2023-05-31 01:00+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Reza Askari, 2023\n"
 "Language-Team: Persian (http://app.transifex.com/zulip/zulip/language/fa/)\n"
->>>>>>> drc_main
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -1246,21 +1229,6 @@ msgstr "بر روی دکمه زیر کلیک کنید تا ثبت نام کام�
 msgid "Complete registration"
 msgstr "تکمیل ثبت نام"
 
-<<<<<<< HEAD
-#: templates/zerver/emails/confirm_registration.source.html:23
-#: templates/zerver/emails/invitation.source.html:19
-#: templates/zerver/emails/realm_reactivation.source.html:19
-#: templates/zerver/emails/realm_reactivation.txt:13
-#, python-format
-msgid ""
-"Contact us any time at %(support_email)s if you run into trouble, have any "
-"feedback, or just want to chat!"
-msgstr ""
-"در هر زمانی اگر با مشکلی مواجه شدید یا نظراتی داشتید یا می خواستید گفتگو "
-"کنید با ما از طریق %(support_email)s در ارتباط باشید!"
-
-=======
->>>>>>> drc_main
 #: templates/zerver/emails/confirm_registration.subject.txt:2
 msgid "Create your Zulip organization"
 msgstr ""
@@ -1284,13 +1252,6 @@ msgstr "بر روی لینک زیر کلیک کنید تا ثبت نام شما 
 #: templates/zerver/emails/realm_reactivation.txt:14
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Contact us any time at %(support_email)s if you run into trouble,have any "
-"feedback, or just want to chat!"
-msgstr ""
-"در هر زمانی اگر به مشکلی برخورد کرده اید، پیشنهادی دارید یا صرفا قصد گفت‌وگو"
-" دارید از طریق %(support_email)s با ما در تماس باشید! "
-=======
 "Do you have questions or feedback to share? Contact us at %(support_email)s "
 "— we'd love to help!"
 msgstr ""
@@ -1305,7 +1266,6 @@ msgid ""
 "If you have any questions, please contact this Zulip server's administrators"
 " at %(support_email)s."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/custom_email_base.pre.html:18
 #: templates/zerver/emails/digest.html:39
@@ -1479,39 +1439,17 @@ msgstr ""
 #: templates/zerver/emails/followup_day1.html:49
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Check out our <a href=\"%(getting_started_link)s\">guide for admins</a>, "
-"become a Zulip pro with a few <a "
-"href=\"%(keyboard_shortcuts_link)s\">keyboard shortcuts</a>, or <a "
-"href=\"%(realm_uri)s\">dive right in</a>!"
-msgstr ""
-"<a href=\"%(getting_started_link)s\">راهنما برای ادمین ها</a>ی ما را مطالعه "
-"کنید و با چند <a href=\"%(keyboard_shortcuts_link)s\">میانبر صفحه کلید</a> "
-"یک حرفه ای در Zulip شوید یا <a href=\"%(realm_uri)s\">مستقیم به اینجا "
-"بروید</a>! "
-=======
 "If you are new to Zulip, check out our <a "
 "href=\"%(getting_user_started_link)s\">Getting started guide</a>!"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.html:51
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"<a href=\"%(getting_started_link)s\">Learn more</a> about Zulip, become a "
-"pro with a few <a href=\"%(keyboard_shortcuts_link)s\">keyboard "
-"shortcuts</a>, or <a href=\"%(realm_uri)s\">dive right in</a>!"
-msgstr ""
-"درباره Zulip <a href=\"%(getting_started_link)s\">بیشتر بدانید</a>، با چند "
-"<a href=\"%(keyboard_shortcuts_link)s\">میانبر صفحه کلید</a> یک حرفه ای در "
-"Zulip شوید یا <a href=\"%(realm_uri)s\">مستقیم به اینجا بروید</a>! "
-=======
 "We also have a guide for <a "
 "href=\"%(getting_organization_started_link)s\">Setting up your "
 "organization</a>."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.html:57
 #, python-format
@@ -1558,35 +1496,8 @@ msgstr ""
 #: templates/zerver/emails/followup_day1.txt:29
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Check out our guide (%(getting_started_link)s) for admins, become a Zulip "
-"pro with a few keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive "
-"right in to %(realm_uri)s!"
-msgstr ""
-"راهنمای ما برای ادمین ها (%(getting_started_link)s) را مطالعه کنید و با چند "
-"میانبر صفحه کلید (%(keyboard_shortcuts_link)s) یک حرفه ای در Zulip شوید یا "
-"مستقیم به %(realm_uri)s بروید! "
-
-#: templates/zerver/emails/followup_day1.txt:32
-#, python-format
-msgid ""
-"Learn more (%(getting_started_link)s) about Zulip, become a pro with a few "
-"keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive right in to "
-"%(realm_uri)s!"
-msgstr ""
-"درباره Zulip بیشتر بدانید (%(getting_started_link)s) و با چند میانبر صفحه "
-"کلید (%(keyboard_shortcuts_link)s) یک حرفه ای شوید یا مستقیم به "
-"%(realm_uri)s بروید!"
-
-#: templates/zerver/emails/followup_day1.txt:39
-msgid ""
-"PS: Check us out on Twitter (@zulip), star us on GitHub "
-"(https://github.com/zulip/zulip), or chat with us live on the Zulip "
-"community server (https://zulip.com/development-community/)!"
-=======
 "If you are new to Zulip, check out our Getting started guide "
 "(%(getting_user_started_link)s)!"
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/emails/followup_day1.txt:31
@@ -1617,18 +1528,9 @@ msgstr ""
 #: templates/zerver/emails/followup_day2.html:13
 #: templates/zerver/emails/followup_day2.txt:3
 msgid ""
-<<<<<<< HEAD
-"I wanted to share one last thing with you: a few tips about topics, since "
-"mastering topics is a key part of being a Zulip power user."
-msgstr ""
-"آخرین نکته ای که می خواهم با شما به اشتراک بگذارم: برای مسلط شدن به موضوع "
-"ها، یادگیری نکاتی در این‌باره یک بخش کلیدی است که کمک می کند یک کاربر "
-"قدرتمند Zulip باشید."
-=======
 "Using topics, you can read Zulip one conversation at a time. You'll see each"
 " message in context, no matter how many different discussions are going on."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.html:16
 msgid "Streams and topics in the Zulip app"
@@ -1650,22 +1552,12 @@ msgstr "مثال هایی از موضوعات کوتاه"
 #: templates/zerver/emails/followup_day2.html:25
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Topics are like email subject lines. The big difference, though, is that "
-"they're really short and lightweight. Two or three words will do it. Don't "
-"overthink 'em&mdash;you can always edit the message later!"
-msgstr ""
-"موضوعات همانند خطوط عنوان در ایمیل هستند. تفاوت اصلی اما این است که موضوع ها"
-" واقعا کوتاه و مختصر هستند یعنی دو تا سه کلمه. نیازی نیست بیش از حد به آن "
-"فکر کنید؛ هر زمان بخواهیدمی توانید بعدا آن را ویرایش کنید!"
-=======
 "Don't stress about picking the perfect name for your topic. If anything is "
 "out of place, it's easy to <a href=\"%(move_messages_link)s\">move "
 "messages</a>, <a href=\"%(rename_topics_link)s\">rename topics</a>, or even "
 "<a href=\"%(move_topic_to_different_stream_link)s\">move a topic to a "
 "different stream</a>."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.html:28
 #: templates/zerver/emails/followup_day2.txt:10
@@ -1673,47 +1565,6 @@ msgstr ""
 msgid "Go to Zulip"
 msgstr "رفتن به Zulip "
 
-<<<<<<< HEAD
-#: templates/zerver/emails/followup_day2.source.html:18
-#: templates/zerver/emails/followup_day2.txt:9
-msgid ""
-"Not recommended: \"What do people think of this new design mockup?\", \"I'm "
-"looking at Bug 345\", \"Is Acme Burgers open for lunch?\""
-msgstr ""
-"توصیه نمی شود: \"مردم در مورد این طراحی اولیه جدید چه فکر می کنند؟\"، \"در "
-"حال بررسی باگ 345 هستم\"، \"آیا همبرگرهای فلان جا برای ناهار باز هستند؟\""
-
-#: templates/zerver/emails/followup_day2.source.html:21
-msgid "Example of a topic that is too long"
-msgstr "مثالی از یک موضوع که خیلی طولانی است"
-
-#: templates/zerver/emails/followup_day2.source.html:23
-msgid ""
-"Why bother with topics? Well, two reasons: it makes conversations clearer "
-"(imagine if email didn't have them!), and it lets you more efficiently catch"
-" up on what's happened while you're away&mdash;read the topics that are "
-"relevant to you, and ignore the ones that aren't!"
-msgstr ""
-"چرا خودمان را با انتخاب موضوع اذیت کنیم؟ دو دلیل دارد: گفتگوها را شفاف تر می"
-" کند (حالتی که ایمیل عنوان ندارد را تصور کنید!) و اینکه امکان می دهد وقتی "
-"مدتی نبوده اید اتفاقاتی را که نبوده اید را راحت تر دنبال کنید—موضوعاتی که به"
-" شما ارتباط دارد را می خوانید و بقيه را نادیده می گیرید! "
-
-#: templates/zerver/emails/followup_day2.source.html:25
-msgid "Take it for a spin now."
-msgstr "اکنون از این برای چرخش استفاده کنید."
-
-#: templates/zerver/emails/followup_day2.source.html:27
-#: templates/zerver/emails/followup_day2.txt:16
-#: templates/zerver/emails/notify_new_login.source.html:40
-#: templates/zerver/emails/notify_new_login.txt:20
-msgid "Thanks,"
-msgstr "ممنون، "
-
-#: templates/zerver/emails/followup_day2.source.html:34
-msgid "Unsubscribe from welcome emails"
-msgstr "لغو ایمیل خوش آمد گویی"
-=======
 #: templates/zerver/emails/followup_day2.html:34
 #: templates/zerver/emails/followup_day2.txt:14
 #: templates/zerver/emails/onboarding_zulip_guide.html:40
@@ -1721,7 +1572,6 @@ msgstr "لغو ایمیل خوش آمد گویی"
 #, python-format
 msgid "Unsubscribe from welcome emails for %(realm_name)s"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
 msgid "Keep your conversations organized with topics"
@@ -1729,40 +1579,18 @@ msgstr ""
 
 #: templates/zerver/emails/followup_day2.txt:3
 msgid ""
-<<<<<<< HEAD
-"Topics are like email subject lines. The big difference, though, is that "
-"they're really short and lightweight. Two or three words will do it. Don't "
-"overthink 'em -- you can always edit the message later!"
-msgstr ""
-"موضوعات شبیه خطوط عنوان در ایمیل هستند. تفاوت بطزگ این دو این است که موضوع "
-"ها واقعا سبک و کوتاه هستند، مثلا دو یا سه کلمه. البته نیازی به فکر کردن زیاد"
-" به موضوع ها نیست‌‌—بعدا هرزمان می توانید پیام را ویرایش کنید!"
-=======
 "In Zulip, streams determine who gets a message. Topics tell you what the "
 "message is about."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.txt:7
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Why bother with topics? Well, two reasons: it makes conversations clearer "
-"(imagine if email didn't have them!), and it lets you more efficiently catch"
-" up on what's happened while you're away -- read the topics that are "
-"relevant to you, and ignore the ones that aren't!"
-msgstr ""
-"چرا خودمان را با انتخاب موضوع اذیت کنیم؟ دو دلیل دارد: گفتگوها را شفاف تر می"
-" کند (حالتی که ایمیل عنوان ندارد را تصور کنید!) و اینکه امکان می دهد وقتی "
-"مدتی نبوده اید اتفاقاتی را که نبوده اید را راحت تر دنبال کنید—موضوعاتی که به"
-" شما ارتباط دارد را می خوانید و بقيه را نادیده می گیرید! "
-=======
 "Don't stress about picking the perfect name for your topic. If anything is "
 "out of place, it's easy to move messages (%(move_messages_link)s), rename "
 "topics (%(rename_topics_link)s), or even move a topic to a different stream "
 "(%(move_topic_to_different_stream_link)s)."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/invitation.html:9
 #: templates/zerver/emails/invitation.txt:1
@@ -2605,74 +2433,32 @@ msgid "Invalid email"
 msgstr "ایمیل نامعتبر "
 
 #: templates/zerver/invalid_email.html:15
-<<<<<<< HEAD
-msgid ""
-"\n"
-"        The email address you are trying to sign up with is not valid.\n"
-"        Please sign up using a valid email address.\n"
-"        "
-msgstr ""
-"\n"
-"ایمیلی که می خواهید با آن ثبت نام کنید معتبر نیست. لطفا با یک آدرس ایمیل معتبر ثبت نام کنید. "
-=======
 msgid "Email not allowed"
 msgstr ""
 
 #: templates/zerver/invalid_email.html:21
 msgid "The email address you are trying to sign up with is not valid."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_email.html:24
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"\n"
-"        The organization you are trying to join, %(realm_name)s,\n"
-"        only allows users with email addresses within the\n"
-"        organization. Please sign up using appropriate email address.\n"
-"        "
-msgstr ""
-"\n"
-"سازمانی که قصد عضویت در آن را دارید، %(realm_name)s،\n"
-"تنها به کاربرانی اجازه می دهد که آدرس ایمیلشان در سازمان باشد. لطفا با یک آدرس ایمیل مناسب ثبت نام کنید. "
-=======
 "The organization you are trying to join, <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a>, does not allow signups using "
 "emails with your email domain."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_email.html:27
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"The organization you are trying to join,\n"
-"        %(realm_name)s, does not allow signups using disposable email\n"
-"        addresses. Please sign up using a real email address.\n"
-"        "
-msgstr ""
-"سازمانی که قصد عضویت در آن را دارید، \n"
-"%(realm_name)s، ثبت نام با آدرس ایمیل های غیرقابل انتشار را اجازه نمی‌دهد. لطفا با یک آدرس ایمیل مناسب ثبت نام کنید. "
-=======
 "The organization you are trying to join, <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a>, does not allow signups using "
 "disposable email addresses."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_email.html:30
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"The organization you are trying to join,\n"
-"        %(realm_name)s, does not allow signups using emails\n"
-"        that contains +. Please sign up using appropriate email address.\n"
-"        "
-msgstr ""
-"سازمانی که قصد عضویت در آن را دارید، %(realm_name)s، ثبت نام با آدرس ایمیل "
-"های دارای + را نمی دهد. لطفا با یک آدرس ایمیل مناسب ثبت نام کنید. "
-=======
 "The organization you are trying to join, <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a>, does not allow signups using "
 "emails that contain \"+\"."
@@ -2685,7 +2471,6 @@ msgstr ""
 #: templates/zerver/invalid_email.html:35
 msgid "Please sign up using an allowed email address."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_realm.html:4
 #: templates/zerver/invalid_realm.html:12

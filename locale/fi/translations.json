@@ -150,10 +150,7 @@
   "Archive <z-link></z-link>?": "Arkistoi <z-link></z-link>?",
   "Archive stream": "Arkistoi kanava",
   "Archiving stream <z-stream></z-stream> will immediately unsubscribe everyone. This action cannot be undone.": "Kanavan <z-stream></z-stream> arkistointi poistaa kaikkien tilaukset. Tätä ei voi perua.",
-<<<<<<< HEAD
-=======
   "Are you sure you want to continue?": "Jatketaanko?",
->>>>>>> drc_main
   "Are you sure you want to create stream ''''{stream_name}'''' and subscribe {count} users to it?": "Oletko varma, että haluat luoda kanavan ''''{stream_name}'''' ja asettaa {count} käyttäjää tilaajaksi siihen?",
   "Are you sure you want to deactivate this organization?": "Oletko varma, että haluat poistaa tämän organisaation käytöstä?",
   "Are you sure you want to deactivate your account?": "Oletko varma, että haluat poistaa tilisi käytöstä?",
@@ -210,12 +207,6 @@
   "Change group info": "Muuta ryhmän infoja",
   "Change password": "Vaihda salasana",
   "Change send shortcut": "Vaihda lähetä pikanäppäin",
-<<<<<<< HEAD
-  "Change stream info": "Muuta kanavan tietoja",
-  "Change stream permissions": "Muuta kanavan käyttöoikeuksia",
-  "Change stream permissions for #{stream_name}": "Muuta kanavan {stream_name} käyttöoikeuksia",
-=======
->>>>>>> drc_main
   "Check all": "Valitse kaikki",
   "Check your email ({email}) to confirm the new address.": "Tarkista sähköpostisi ({email}) ja vahvista uusi osoite.",
   "Choose avatar": "Valitse avatar",
@@ -368,11 +359,7 @@
   "Display availability to other users": "Näytä saatavuus muille käyttäjille",
   "Display my availability to other users": "Näytä tavoitettavuuteni muille käyttäjille",
   "Display names of reacting users when few users have reacted to a message": "Näytä reagoivien käyttäjien nimet reaktioiden vieressä kun reagoivia ihmisiä on vähän",
-<<<<<<< HEAD
-  "Display on user card": "Näytä käyttäjän kortti",
-=======
   "Display on user card": "Näytä käyttäjän kortilla",
->>>>>>> drc_main
   "Display settings": "Näytön asetukset",
   "Do you still want to move the latest {total_messages_allowed_to_move, plural, one {message} other {# messages}}?": "Siirretäänkö viimeisimmät {total_messages_allowed_to_move, plura, one {viesti} other {# viestiä}}?",
   "Do you want to add everyone?": "Haluatko lisätä kaikki?",
@@ -675,13 +662,8 @@
   "Message {recipient_names}": "Kirjoita viesti {recipient_names}",
   "Message {recipient_name} ({recipient_status})": "Kirjoita viesti {recipient_name} ({recipient_status})",
   "Messages in all public streams": "Viestit julkisissa kanavissa",
-<<<<<<< HEAD
-  "Messages in this stream will be automatically deleted after {retention_days} days.": "Viestit tällä kanavalla tullaan poistamaan automaattisesti {retention_days} päivän kuluttua.",
-  "Messages in this stream will be retained forever.": "Viestit kanavalla säilytetään ikuisesti.",
-=======
   "Messages will not be automatically marked as read because this is not a conversation view. <z-link>Change setting</z-link>": "Viestejä ei automaattisesti merkitä luetuiksi koska tämä ei ole keskustelunäkumä. <z-link>Muuta asetuksia</z-link>",
   "Messages will not be automatically marked as read. <z-link>Change setting</z-link>": "Viestejä ei automaattisesti merkitä luetuiksi. <z-link>Vaihda asetuksia</z-link>",
->>>>>>> drc_main
   "Mobile": "Mobiili",
   "Mobile message notifications": "Mobiili-ilmoitukset viesteistä",
   "Mobile notifications": "Mobiili-ilmoitukset",
@@ -708,23 +690,13 @@
   "Mute this user": "Mykistä tämä käyttäjä",
   "Mute topic": "Mykistä aihe",
   "Mute user": "Mykistä käyttäjä",
-<<<<<<< HEAD
-  "Muted streams don't show up in \"All messages\" or generate notifications unless you are mentioned.": "Mykistetyt kanavat eivät näy \"Kaikki viestit\" listalla tai luo ilmoituksia ellei sinua ole mainittu.",
-  "Muted topics": "Mykistetyt aiheet",
-=======
   "Muted": "Mykistetty",
   "Muted streams don't show up in \"All messages\" or generate notifications unless you are mentioned.": "Mykistetyt kanavat eivät näy \"Kaikki viestit\" listalla tai luo ilmoituksia ellei sinua ole mainittu.",
->>>>>>> drc_main
   "Muted user": "Mykistetyt käyttäjät",
   "Muted users": "Mykistetyt käyttäjät",
   "Name": "Nimi",
-<<<<<<< HEAD
-  "Name changes are disabled in this organization. Contact an administrator to change your name.": "Nimen vaihtaminen on poissa käytöstä tässä organisaatiossa. Ota yhteyttä järjestelmänvalvojaan vaihtaaksesi nimesi.",
-  "Narrow to all private messages": "Rajaa hakua kaikkiin yksityisviesteihin",
-=======
   "Name changes are disabled in this organization. Contact an administrator to change your name.": "Nimen vaihtaminen on pois käytöstä tässä organisaatiossa. Järjestelmänvalvojat voivat vaihtaa nimesi.",
   "Narrow to all direct messages": "",
->>>>>>> drc_main
   "Narrow to all unmuted messages": "Rajaa hakua kaikkiin ei-mykistettyihin viesteihin",
   "Narrow to current compose box recipient": "Rajaa hakua kirjoitettavan viestin vastaanottajaan",
   "Narrow to direct messages that include <z-value></z-value>.": "",
@@ -1130,12 +1102,7 @@
   "Time limit for moving messages between streams": "",
   "Time zone": "Aikavyöhyke",
   "Time's up!": "Aika päättyi!",
-<<<<<<< HEAD
-  "Tip: You can also send \"/poll Some question\"": "Vihje: voit myös lähettää \"/poll Kysymyksesi\"",
-  "To": "Vastaanottaja",
-=======
   "Tip: You can also send \"/poll Some question\"": "Vihje: Voit myös lähettää \"/poll Kysymyksesi\"",
->>>>>>> drc_main
   "To add syntax highlighting to a multi-line code block, add the language's <b>first</b> <z-link>Pygments short name</z-link> after the first set of back-ticks. You can also make a code block by indenting each line with 4 spaces.": "Jos haluat lisätä syntaksin korostuksen moniriviseen koodilohkoon, lisää kielen <b>ensimmäinen</b><z-link> Pygments-lyhytnimi</z-link> ensimmäisen gravis merkkijoukon eli koodirivin aloittavan merkkijonon jälkeen. Voit myös tehdä koodilohkon sisentämällä jokaiselle riville 4 välilyöntiä.",
   "To invite users, please <z-link-billing>increase the number of licenses</z-link-billing> or <z-link-help-page>deactivate inactive users</z-link-help-page>.": "Kutsu käyttäjiä <z-link-billing>lisäämällä lisenssien määrää</z-link-billing> tai <z-link-help-page>poistamalla ei-aktiiviset käyttäjät</z-link-help-page>.",
   "To preserve your reading state, this view does not mark messages as read.": "Lukutilan säilyttämiseksi tämä näkymä ei merkitse viestejä luetuiksi.",
@@ -1170,12 +1137,8 @@
   "Unmute": "Poista mykistys",
   "Unmute stream": "Peru kanavan mykistys",
   "Unmute this user": "Poista mykistys tästä käyttäjästä",
-<<<<<<< HEAD
-  "Unmute topic": "Peru aiheen mykistys",
-=======
   "Unmute topic": "Poista aiheen mykistys",
   "Unmuted": "",
->>>>>>> drc_main
   "Unpin stream from top": "Irroita kanava yläosasta",
   "Unread": "Lukemattomat",
   "Unread count badge (appears in desktop sidebar and browser tab)": "Lukemattomien määrä -merkki (näkyy työpöydän sivupalkissa ja selaimen välilehdessä)",
@@ -1185,14 +1148,9 @@
   "Unstar all messages": "Poista tähti kaikista viesteistä",
   "Unstar all messages in topic": "Poista tähti kaikista aiheen viesteistä",
   "Unstar messages in topic": "Poista tähti aiheen viesteistä",
-<<<<<<< HEAD
-  "Unsubscribe": "Peru tilaus",
-  "Unsubscribe from {stream_name}": "Peru tilaus {stream_name} kanavalta",
-=======
   "Unstar this message": "",
   "Unsubscribe": "Poista tilaus",
   "Unsubscribe from <z-link></z-link>": "",
->>>>>>> drc_main
   "Unsubscribed successfully!": "Tilaus poistettu onnistuneesti!",
   "Up to {time_limit} after posting": "{time_limit} asti viestin lähettämisestä",
   "Update successful: Subdomains allowed for {domain}": "Päivitys onnistui: Aliverkkotunnukset ovat sallittuja {domain} verkkotunnukselle",
@@ -1208,13 +1166,7 @@
   "Upload profile picture": "Lataa profiilikuva",
   "Upload stalled for %'{seconds}' seconds, aborting.": "Lataus on ollut pysähtyneenä %'{seconds}' sekuntia, ja se keskeytetään.",
   "Uploaded files": "Lähetetyt tiedostot",
-<<<<<<< HEAD
-  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "Mukautetun emojin lataaminen tällä nimellä korvaa olemassa olevan emojin. Haluatko jatkaa?",
   "Uploading {filename}…": "Ladataan {filename}…",
-  "Uploading…": "Lähetetään...",
-=======
-  "Uploading {filename}…": "Ladataan {filename}…",
->>>>>>> drc_main
   "Usage statistics": "Käyttötilastot",
   "Use full width on wide screens": "Käytä täyttä leveyttä laajakuvanäytöillä",
   "Use html encoding (not recommended)": "",

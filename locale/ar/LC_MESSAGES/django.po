@@ -872,23 +872,12 @@ msgstr "بريد الالكتروني"
 #: templates/zerver/register.html:209
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
-"rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr ""
-"أوافق على <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
-"rel=\"noopener noreferrer\">شروط الخدمة</a>"
-
-#: templates/zerver/accounts_accept_terms.html:61
-msgid "Accept"
-=======
 "I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
 "target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
 msgstr ""
 
 #: templates/zerver/accounts_accept_terms.html:64
 msgid "Continue"
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/accounts_home.html:5
@@ -2564,82 +2553,32 @@ msgid "Invalid email"
 msgstr "بريد إلكتروني غير صالح"
 
 #: templates/zerver/invalid_email.html:15
-<<<<<<< HEAD
-msgid ""
-"\n"
-"        The email address you are trying to sign up with is not valid.\n"
-"        Please sign up using a valid email address.\n"
-"        "
-msgstr ""
-"\n"
-"        عنوان البريد الإلكتروني الذي تحاول التسجيل به غير صالح.\n"
-"        رجاءً سجل باستخدام بريد إلكتروني صالح.\n"
-"        "
-=======
 msgid "Email not allowed"
 msgstr ""
 
 #: templates/zerver/invalid_email.html:21
 msgid "The email address you are trying to sign up with is not valid."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_email.html:24
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"\n"
-"        The organization you are trying to join, %(realm_name)s,\n"
-"        only allows users with email addresses within the\n"
-"        organization. Please sign up using appropriate email address.\n"
-"        "
-msgstr ""
-"\n"
-"        المنظمة التي تحاول الانضمام إليها، %(realm_name)s،\n"
-"        تسمح فقط للمستخدمين الذين لديهم بريد إلكتروني داخل\n"
-"        المنظمة. رجاءً سجل بإستخدام عنوان بريد إلكتروني مناسب.\n"
-"        "
-=======
 "The organization you are trying to join, <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a>, does not allow signups using "
 "emails with your email domain."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_email.html:27
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"The organization you are trying to join,\n"
-"        %(realm_name)s, does not allow signups using disposable email\n"
-"        addresses. Please sign up using a real email address.\n"
-"        "
-msgstr ""
-"المنظمة التي تحاول الانضمام إليها،\n"
-"        %(realm_name)s، لا تسمح بالتسجيل باستخدام بريد إلكتروني مؤقت\n"
-"        رجاءً قم بالتسجيل باستخدام بريد إلكتروني حقيقي.\n"
-"        "
-=======
 "The organization you are trying to join, <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a>, does not allow signups using "
 "disposable email addresses."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_email.html:30
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"The organization you are trying to join,\n"
-"        %(realm_name)s, does not allow signups using emails\n"
-"        that contains +. Please sign up using appropriate email address.\n"
-"        "
-msgstr ""
-"المنظمة التي تحاول الانضمام إليها،\n"
-"        %(realm_name)s، لا تسمح بالتسجيل باستخدام بريد إلكتروني\n"
-"        يحتوي على +. رجاءً قم بالتسجيل باستخدام بريد إلكتروني مناسب.\n"
-"        "
-=======
 "The organization you are trying to join, <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a>, does not allow signups using "
 "emails that contain \"+\"."
@@ -2652,7 +2591,6 @@ msgstr ""
 #: templates/zerver/invalid_email.html:35
 msgid "Please sign up using an allowed email address."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_realm.html:4
 #: templates/zerver/invalid_realm.html:12
@@ -2701,11 +2639,7 @@ msgstr ""
 #: templates/zerver/login.html:111 templates/zerver/register.html:133
 #: templates/zerver/register.html:146 templates/zerver/reset_confirm.html:31
 msgid "Password"
-<<<<<<< HEAD
-msgstr ""
-=======
 msgstr "كلمة السر"
->>>>>>> drc_main
 
 #: templates/zerver/login.html:143
 #, python-format
@@ -2904,43 +2838,12 @@ msgid ""
 "            <p>Enter your account details to complete registration.</p>\n"
 "            "
 msgstr ""
-<<<<<<< HEAD
-"\n"
-"            <p>أنت&rsquo;re على وشك الانتهاء! نحن نحتاج منك فقط أن تفعل أمرًا أخيرًا.</p>\n"
-"            "
-=======
->>>>>>> drc_main
 
 #: templates/zerver/register.html:36
 msgid "Your organization"
 msgstr ""
 
-<<<<<<< HEAD
-#: templates/zerver/register.html:44
-msgid "Organization name"
-msgstr ""
-
-#: templates/zerver/register.html:52
-msgid "Shorter is better than longer."
-msgstr ""
-
-#: templates/zerver/register.html:67
-msgid "Organization type"
-msgstr "نوع المنظمة"
-
-#: templates/zerver/register.html:72
-msgid "Organization URL"
-msgstr "Organization URL"
-
-#: templates/zerver/register.html:79
-#, python-format
-msgid "Use %(external_host)s"
-msgstr ""
-
-#: templates/zerver/register.html:108
-=======
 #: templates/zerver/register.html:66
->>>>>>> drc_main
 msgid "Your account"
 msgstr "الحساب الخاص بك"
 
@@ -2972,11 +2875,7 @@ msgstr "يُستخدم هذا لتطبيقات الجوال والأدوات ا�
 
 #: templates/zerver/register.html:158
 msgid "Password strength"
-<<<<<<< HEAD
-msgstr ""
-=======
 msgstr "قوة كلمة السر"
->>>>>>> drc_main
 
 #: templates/zerver/register.html:167
 msgid "What are you interested in?"
@@ -3012,11 +2911,7 @@ msgstr ""
 
 #: templates/zerver/reset_confirm.html:52
 msgid "Confirm password"
-<<<<<<< HEAD
-msgstr ""
-=======
 msgstr "تأكيد كلمة السر"
->>>>>>> drc_main
 
 #: templates/zerver/reset_confirm.html:72
 msgid "Sorry, the link you provided is invalid or has already been used."
@@ -3027,11 +2922,7 @@ msgid " New password successfully set"
 msgstr ""
 
 #: templates/zerver/reset_done.html:13
-<<<<<<< HEAD
-msgid "We've reset your password!"
-=======
 msgid "You've set a new password!"
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/reset_done.html:17
@@ -3097,17 +2988,6 @@ msgstr ""
 msgid "Unknown email unsubscribe request"
 msgstr ""
 
-<<<<<<< HEAD
-#: templates/zerver/unsubscribe_link_error.html:12
-msgid ""
-"Hi there! It looks like you tried to unsubscribe from something,\n"
-"    but we don't recognize the URL."
-msgstr ""
-"أهلًا! يبدو أنك حاولت إلغاء الاشتراك من شيء ما،\n"
-"    لكننا لم نتعرف على عنوان URL."
-
-=======
->>>>>>> drc_main
 #: templates/zerver/unsubscribe_link_error.html:16
 msgid ""
 "Hi there! It looks like you tried to unsubscribe from something, but we "
@@ -3135,12 +3015,6 @@ msgid ""
 "                    <a href=\"%(realm_uri)s\">%(realm_name)s</a>.\n"
 "                    "
 msgstr ""
-<<<<<<< HEAD
-"\n"
-"                 لقد قمت بإلغاء الاشتراك من %(subscription_type)s رسائل البريد الإلكتروني الخاصة بـ\"زوليب\" بنجاح.\n"
-"                    "
-=======
->>>>>>> drc_main
 
 #: templates/zerver/unsubscribe_success.html:27
 #, python-format
@@ -3150,15 +3024,6 @@ msgid ""
 "                    <a href=\"%(realm_uri)s/#settings/notifications\">notification settings</a>.\n"
 "                    "
 msgstr ""
-<<<<<<< HEAD
-"\n"
-"                    يمكنك التراجع عن هذا التغيير أو مراجعة\n"
-"                    تفضيلاتك بخصوص\n"
-"                    <a href=\"%(realm_uri)s/#settings/notifications\">إعدادات إشعارات\n"
-"                    \"زوليب\"</a>.\n"
-"                    "
-=======
->>>>>>> drc_main
 
 #: templates/zerver/unsupported_browser.html:4
 #: templates/zerver/unsupported_browser.html:15
@@ -3184,13 +3049,6 @@ msgid ""
 "                        like Firefox, Chrome, and Edge.\n"
 "                        "
 msgstr ""
-<<<<<<< HEAD
-"\n"
-"                        يدعم \"زوليب\" المتصفحات الحديثة مثل Firefox\n"
-"                        و Chrome و Edge.\n"
-"                        "
-=======
->>>>>>> drc_main
 
 #: templates/zerver/unsupported_browser.html:28
 #, python-format
@@ -3320,13 +3178,8 @@ msgstr ""
 msgid "Direct messages cannot be moved to streams."
 msgstr ""
 
-<<<<<<< HEAD
-#: zerver/actions/message_edit.py:91
-msgid "Private messages cannot have topics."
-=======
 #: zerver/actions/message_edit.py:98
 msgid "Direct messages cannot have topics."
->>>>>>> drc_main
 msgstr ""
 
 #: zerver/actions/message_edit.py:101
@@ -3490,13 +3343,8 @@ msgstr ""
 "حاول الروبوت الخاص بك {bot_identity} إرسال رسالة إلى الغرفة {stream_name}. "
 "الغرفة موجودة ولكن ليس فيها أي مشتركين."
 
-<<<<<<< HEAD
-#: zerver/actions/message_send.py:1338
-msgid "Private messages are disabled in this organization."
-=======
 #: zerver/actions/message_send.py:1265
 msgid "Direct messages are disabled in this organization."
->>>>>>> drc_main
 msgstr ""
 
 #: zerver/actions/message_send.py:1342
@@ -3636,13 +3484,6 @@ msgstr "ID المستخدم غير صالح {}"
 msgid "User group '{}' already exists."
 msgstr "مجموعة المستخدمين '{}' موجودة بالفعل."
 
-<<<<<<< HEAD
-#: zerver/actions/user_topics.py:59 zerver/views/muting.py:56
-msgid "Topic is not muted"
-msgstr ""
-
-=======
->>>>>>> drc_main
 #: zerver/decorator.py:250
 msgid "This API is not available to incoming webhook bots."
 msgstr "الـ API هذا غير صالح لروبوتات الويب هوك الواردة."
@@ -3776,13 +3617,8 @@ msgstr ""
 msgid "Token"
 msgstr ""
 
-<<<<<<< HEAD
-#: zerver/forms.py:535
-msgid "Add up to 10 comma-separated email addresses."
-=======
 #: zerver/forms.py:578
 msgid "Tip: You can enter multiple email addresses with commas between them."
->>>>>>> drc_main
 msgstr ""
 
 #: zerver/forms.py:584
@@ -4225,17 +4061,9 @@ msgstr "مذيع غير صالح"
 #: zerver/lib/onboarding.py:59
 #, python-brace-format
 msgid ""
-<<<<<<< HEAD
-"Note that this is a [demo organization]({demo_org_help_url}) and will be "
-"**automatically deleted** in 30 days."
-msgstr ""
-"لاحظ أن هذه [مؤسسة تجريبية]({demo_org_help_url}) وسيتم **حذفها تلقائيًا** في"
-" غضون 30 يومًا."
-=======
 "If you are new to Zulip, check out our [Using Zulip for a class "
 "guide]({getting_started_url})!"
 msgstr ""
->>>>>>> drc_main
 
 #: zerver/lib/onboarding.py:66
 #, python-brace-format
@@ -4289,17 +4117,9 @@ msgstr ""
 
 #: zerver/lib/onboarding.py:156
 msgid ""
-<<<<<<< HEAD
-"You can [download](/apps) the [mobile and desktop apps](/apps). Zulip also "
-"works great in a browser."
-msgstr ""
-"يمكنك [تنزيل](/apps) [تطبيقات الجوال وسطح المكتب](/apps). يعمل \"زوليب\" "
-"أيضًا بشكل رائع في المتصفح."
-=======
 "You can [download](/apps/) the [mobile and desktop apps](/apps/). Zulip also"
 " works great in a browser."
 msgstr ""
->>>>>>> drc_main
 
 #: zerver/lib/onboarding.py:161
 msgid ""
@@ -4636,27 +4456,7 @@ msgstr "بيانات المشترك غير متوفرة لهذه الغرفة"
 msgid "Unable to retrieve subscribers for private stream"
 msgstr "تعذر استرداد المشتركين للغرفة الخاصة"
 
-<<<<<<< HEAD
-#: zerver/lib/upload.py:128 zerver/lib/upload.py:144 zerver/lib/upload.py:238
-msgid "Could not decode image; did you upload an image file?"
-msgstr "تعذر فك تشفير الصورة؛ هل قمت بتحميل ملف صورة؟"
-
-#: zerver/lib/upload.py:130 zerver/lib/upload.py:146 zerver/lib/upload.py:240
-msgid "Image size exceeds limit."
-msgstr ""
-
-#: zerver/lib/upload.py:168
-msgid "Corrupt animated image."
-msgstr ""
-
-#: zerver/lib/upload.py:177
-msgid "Unknown animated image format."
-msgstr ""
-
-#: zerver/lib/upload.py:373
-=======
 #: zerver/lib/upload/__init__.py:31
->>>>>>> drc_main
 msgid "Upload would exceed your organization's upload quota."
 msgstr "قد يتجاوز التحميل حصة التحميل الخاصة بمنظمتك."
 
@@ -5158,13 +4958,8 @@ msgstr ""
 msgid "Bad event queue ID: {queue_id}"
 msgstr ""
 
-<<<<<<< HEAD
-#: zerver/views/auth.py:484
-msgid "Auth key for this subdomain not found."
-=======
 #: zerver/views/auth.py:550
 msgid "JWT authentication is not enabled for this organization"
->>>>>>> drc_main
 msgstr ""
 
 #: zerver/views/auth.py:553
@@ -5179,19 +4974,7 @@ msgstr "رمز ويب JSON سيء"
 msgid "No email specified in JSON web token claims"
 msgstr ""
 
-<<<<<<< HEAD
-#: zerver/views/auth.py:500
-msgid "No organization specified in JSON web token claims"
-msgstr "لا توجد منظمة محددة في مطالبات رمز ويب JSON"
-
-#: zerver/views/auth.py:507
-msgid "Wrong subdomain"
-msgstr ""
-
-#: zerver/views/auth.py:955
-=======
 #: zerver/views/auth.py:1082
->>>>>>> drc_main
 msgid "Subdomain required"
 msgstr ""
 
@@ -5303,19 +5086,7 @@ msgstr ""
 msgid "No such topic '{}'"
 msgstr "لا يوجد مثل هذا الموضوع '{}'"
 
-<<<<<<< HEAD
-#: zerver/views/message_send.py:165
-msgid "Invalid time format"
-msgstr ""
-
-#: zerver/views/message_send.py:174
-msgid "Time must be in the future."
-msgstr ""
-
-#: zerver/views/message_send.py:263
-=======
 #: zerver/views/message_send.py:201
->>>>>>> drc_main
 msgid "Missing sender"
 msgstr ""
 
@@ -5331,19 +5102,7 @@ msgstr ""
 msgid "Zephyr mirroring is not allowed in this organization"
 msgstr "لا يسمح بالنسخ المتطابق لـ Zephyr في هذه المنظمة"
 
-<<<<<<< HEAD
-#: zerver/views/message_send.py:293
-msgid "Missing deliver_at in a request for delayed message delivery"
-msgstr "deliver_at مفقود في طلب تسليم الرسائل المتأخرة"
-
-#: zerver/views/muting.py:42 zerver/views/muting.py:47
-msgid "Topic already muted"
-msgstr ""
-
-#: zerver/views/muting.py:99
-=======
 #: zerver/views/muted_users.py:16
->>>>>>> drc_main
 msgid "Cannot mute self"
 msgstr "لا يمكنك كتم نفسك"
 
@@ -5439,13 +5198,8 @@ msgstr ""
 msgid "You must upload exactly one file."
 msgstr ""
 
-<<<<<<< HEAD
-#: zerver/views/realm_emoji.py:42
-msgid "Only administrators can override built-in emoji."
-=======
 #: zerver/views/realm_emoji.py:40
 msgid "Only administrators can override default emoji."
->>>>>>> drc_main
 msgstr ""
 
 #: zerver/views/realm_emoji.py:46 zerver/views/realm_icon.py:27

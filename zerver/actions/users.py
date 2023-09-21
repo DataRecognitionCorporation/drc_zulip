@@ -21,13 +21,9 @@ from zerver.lib.create_user import create_user
 from zerver.lib.message import get_last_message_id
 from zerver.lib.send_email import clear_scheduled_emails
 from zerver.lib.sessions import delete_user_sessions
-<<<<<<< HEAD
-from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
-=======
 from zerver.lib.stream_subscription import bulk_get_subscriber_peer_info
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import get_streams_for_user, stream_to_dict
->>>>>>> drc_main
 from zerver.lib.user_counts import realm_user_count_by_role
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import get_active_bots_owned_by_user

@@ -43,11 +43,7 @@ from django.core.validators import MinLengthValidator, RegexValidator, validate_
 from django.db import models, transaction
 from django.db.backends.base.base import BaseDatabaseWrapper
 from django.db.models import CASCADE, Exists, F, OuterRef, Q, QuerySet, Sum
-<<<<<<< HEAD
-from django.db.models.functions import Upper
-=======
 from django.db.models.functions import Lower, Upper
->>>>>>> drc_main
 from django.db.models.signals import post_delete, post_save, pre_delete
 from django.db.models.sql.compiler import SQLCompiler
 from django.utils.timezone import now as timezone_now
@@ -84,13 +80,10 @@ from zerver.lib.cache import (
     user_profile_cache_key,
 )
 from zerver.lib.exceptions import JsonableError, RateLimitedError
-<<<<<<< HEAD
-=======
 from zerver.lib.per_request_cache import (
     flush_per_request_cache,
     return_same_value_during_entire_request,
 )
->>>>>>> drc_main
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import (
@@ -2915,35 +2908,10 @@ def bulk_get_streams(realm: Realm, stream_names: Set[str]) -> Dict[str, Any]:
         )
         return get_active_streams(realm).extra(where=[where_clause], params=(list(stream_names),))
 
-<<<<<<< HEAD
-    def stream_name_to_cache_key(stream_name: str) -> str:
-        return get_stream_cache_key(stream_name, realm.id)
-
-    def stream_to_lower_name(stream: Stream) -> str:
-        return stream.name.lower()
-
-    return bulk_cached_fetch(
-        stream_name_to_cache_key,
-        fetch_streams_by_name,
-        [stream_name.lower() for stream_name in stream_names],
-        id_fetcher=stream_to_lower_name,
-    )
-
-
-def get_huddle_recipient(user_profile_ids: Set[int]) -> Recipient:
-    # The caller should ensure that user_profile_ids includes
-    # the sender.  Note that get_huddle hits the cache, and then
-    # we hit another cache to get the recipient.  We may want to
-    # unify our caching strategy here.
-    huddle = get_or_create_huddle(list(user_profile_ids))
-    assert huddle.recipient is not None
-    return huddle.recipient
-=======
     if not stream_names:
         return {}
     streams = list(fetch_streams_by_name(stream_names))
     return {stream.name.lower(): stream for stream in streams}
->>>>>>> drc_main
 
 
 def get_huddle_user_ids(recipient: Recipient) -> ValuesQuerySet["Subscription", int]:

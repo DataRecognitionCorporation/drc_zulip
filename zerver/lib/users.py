@@ -147,20 +147,12 @@ def check_bot_creation_policy(user_profile: UserProfile, bot_type: int) -> None:
     if user_profile.realm.bot_creation_policy == Realm.BOT_CREATION_EVERYONE:
         return
     if user_profile.realm.bot_creation_policy == Realm.BOT_CREATION_ADMINS_ONLY:
-<<<<<<< HEAD
-        raise OrganizationAdministratorRequiredError()
-=======
         raise OrganizationAdministratorRequiredError
->>>>>>> drc_main
     if (
         user_profile.realm.bot_creation_policy == Realm.BOT_CREATION_LIMIT_GENERIC_BOTS
         and bot_type == UserProfile.DEFAULT_BOT
     ):
-<<<<<<< HEAD
-        raise OrganizationAdministratorRequiredError()
-=======
         raise OrganizationAdministratorRequiredError
->>>>>>> drc_main
 
 
 def check_valid_bot_type(user_profile: UserProfile, bot_type: int) -> None:
@@ -231,11 +223,7 @@ def access_bot_by_id(user_profile: UserProfile, user_id: int) -> UserProfile:
         # default, because it can be abused to send spam. Requiring an
         # owner is intended to ensure organizational responsibility
         # for use of this permission.
-<<<<<<< HEAD
-        raise OrganizationOwnerRequiredError()
-=======
         raise OrganizationOwnerRequiredError
->>>>>>> drc_main
 
     return target
 

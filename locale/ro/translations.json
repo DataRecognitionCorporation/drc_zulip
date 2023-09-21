@@ -550,15 +550,9 @@
   "In a meeting": "În ședință",
   "Inactive": "",
   "Inactive bots": "Boți inactivi",
-<<<<<<< HEAD
-  "Include PMs": "",
-  "Include content of private messages in desktop notifications": "Include și continutul mesajelor private în notificările pe desktop",
-  "Include message content in message notification emails": "Includeți conținutul mesajului în e-mailurile de notificare a mesajelor",
-=======
   "Include DMs": "",
   "Include content of direct messages in desktop notifications": "",
   "Include message content in message notification emails": "Includeți conținutul mesajului în e-mailurile de notificare",
->>>>>>> drc_main
   "Include muted": "Include cele fără alertă sonoră",
   "Include organization name in subject of message notification emails": "Includeți numele organizației în subiectul e-mailurilor de notificare a mesajelor",
   "Incoming webhooks can only send messages.": "Hook-urile primite doar pot trimite mesaje.",
@@ -624,12 +618,8 @@
   "Linkifiers make it easy to refer to issues or tickets in third party issue trackers, like GitHub, Salesforce, Zendesk, and others. For instance, you can add a linkifier that automatically turns #2468 into a link to the GitHub issue in the Zulip repository with:": "",
   "Loading…": "",
   "Local time": "Ora locală",
-<<<<<<< HEAD
-  "Log in": "Autentificare",
-=======
   "Log in": "Intră",
   "Log in to browse more streams": "",
->>>>>>> drc_main
   "Log out": "Deconectare",
   "Looking for our <z-integrations>integrations</z-integrations> or <z-api>API</z-api> documentation?": "În căutarea noastră<z-integrations> integrări</z-integrations> sau<z-api> API</z-api> documentație?",
   "MOVED": "MUTAT",
@@ -726,15 +716,8 @@
   "Narrow to next unread direct message": "",
   "Narrow to next unread topic": "Restrânge la următorul subiect necitit",
   "Narrow to starred messages.": "Restrângeți la mesajele marcate cu stea.",
-<<<<<<< HEAD
-  "Narrow to stream": "Limitează la hub",
-  "Narrow to stream &quot;{display_recipient}&quot;": "Restrângeți pentru a transmite în flux „{display_recipient}”",
-  "Narrow to stream &quot;{display_recipient}&quot;, topic &quot;{topic}&quot;": "Restrânge la fluxul „{display_recipient}”, subiectul „{topic}”",
-  "Narrow to topic or PM conversation": "Restrânge la subiect sau conversația MP",
-=======
   "Narrow to stream from topic view": "",
   "Narrow to topic or DM conversation": "",
->>>>>>> drc_main
   "Narrow to unread messages.": "Limitat la mesaje necitite.",
   "Narrow to {message_recipient}": "Îngustă la {message_recipient}",
   "Narrowing": "Restrangere",
@@ -844,12 +827,8 @@
   "Other emails": "Alte e-mailuri",
   "Other permissions": "Alte permisiuni",
   "Other settings": "Alte setări",
-<<<<<<< HEAD
-  "Out sick": "Afară bolnav",
-=======
   "Other users in this Zulip organization will be able to see this email address.": "",
   "Out sick": "Afară, bolnav",
->>>>>>> drc_main
   "Outgoing webhook message format": "Formatul mesajelor trimise webhook",
   "Override default emoji?": "",
   "Owner": "Autor",
@@ -890,13 +869,6 @@
   "Previous message": "Mesaj anterior",
   "Privacy": "Confidențialitate",
   "Privacy settings": "Setările de confidențialitate",
-<<<<<<< HEAD
-  "Private messages": "Mesaje private",
-  "Private messages and mentions": "Mesaje private și menționări",
-  "Private messages are disabled in this organization.": "Mesajele private sunt dezactivate în această organizație.",
-  "Private messages disabled": "Mesajele private sunt dezactivate",
-=======
->>>>>>> drc_main
   "Private, protected history": "Istorie privată, protejată",
   "Private, shared history": "Istorie privată, comună",
   "Profile": "Profil",
@@ -1130,12 +1102,7 @@
   "Time limit for moving messages between streams": "",
   "Time zone": "Fus orar",
   "Time's up!": "Gata, timpul s-a terminat!",
-<<<<<<< HEAD
-  "Tip: You can also send \"/poll Some question\"": "Sfat: Puteți trimite și \"/poll O întrebare\"",
-  "To": "Către",
-=======
   "Tip: You can also send \"/poll Some question\"": "Sugestie: Scrie \"/poll Numele chestionarului tău aici\" pentru a face un chestionar",
->>>>>>> drc_main
   "To add syntax highlighting to a multi-line code block, add the language's <b>first</b> <z-link>Pygments short name</z-link> after the first set of back-ticks. You can also make a code block by indenting each line with 4 spaces.": "Pentru a adăuga evidențierea de sintaxă la un bloc de cod cu mai multe linii, adăugați <b>prima</b> limbă<z-link> Pygments nume scurt</z-link> după primul set de back-tick-uri. De asemenea, puteți face un bloc de cod prin indentarea fiecărei linii cu 4 spații.",
   "To invite users, please <z-link-billing>increase the number of licenses</z-link-billing> or <z-link-help-page>deactivate inactive users</z-link-help-page>.": "Pentru a invita utilizatori, vă rugăm<z-link-billing> mărirea numărului de licențe</z-link-billing> sau<z-link-help-page> dezactivați utilizatorii inactivi</z-link-help-page> .",
   "To preserve your reading state, this view does not mark messages as read.": "",
@@ -1199,13 +1166,7 @@
   "Upload profile picture": "Încarcă imaginea profilului",
   "Upload stalled for %'{seconds}' seconds, aborting.": "Încărcarea a fost blocată timp de %'{seconds}' secunde, se anulează.",
   "Uploaded files": "Fișiere urcate",
-<<<<<<< HEAD
-  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "Încărcarea unui emoji personalizat cu acest nume va înlocui emoji-ul încorporat. Continua?",
   "Uploading {filename}…": "Se încarcă {filename}...",
-  "Uploading…": "Încărcare...",
-=======
-  "Uploading {filename}…": "Se încarcă {filename}...",
->>>>>>> drc_main
   "Usage statistics": "Statistici de utilizare",
   "Use full width on wide screens": "Folosește toată lățimea pentru ecrane late",
   "Use html encoding (not recommended)": "",
@@ -1310,12 +1271,8 @@
   "You are about to disable all notifications for private messages, @&#8209;mentions and alerts, which may cause you to miss messages that require your timely attention. If you would like to temporarily disable all desktop notifications, consider <z-link>turning on \"Do not disturb\"</z-link> instead.": "",
   "You are not allowed to send direct messages in this organization.": "",
   "You are not currently subscribed to this stream.": "Acum nu ești abonat la acest hub",
-<<<<<<< HEAD
-  "You are not subscribed to stream {stream_name}": "Nu sunteți abonat la fluxul {stream}",
-=======
   "You are not subscribed to any streams.": "",
   "You are not subscribed to stream <z-stream-name></z-stream-name>": "",
->>>>>>> drc_main
   "You are sending a message to a resolved topic. You can send as-is or unresolve the topic first.": "",
   "You are using an old version of the Zulip desktop app with known security bugs.": "Folosiți o versiune veche a aplicației Zulip pentru desktop cu erori de securitate cunoscute.",
   "You aren't subscribed to this stream and nobody has talked about that yet!": "Nu ești abonat la acest hub și nimeni nu a vorbit încă despre asta!",

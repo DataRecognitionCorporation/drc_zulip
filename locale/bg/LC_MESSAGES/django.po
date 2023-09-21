@@ -14,17 +14,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2022-11-17 16:38+0000\n"
-"PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: Veselin Georgiev <vvgeorgievv@gmail.com>, 2022\n"
-"Language-Team: Bulgarian (https://app.transifex.com/zulip/teams/53893/bg/)\n"
-=======
 "POT-Creation-Date: 2023-05-31 01:00+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Veselin Georgiev <vvgeorgievv@gmail.com>, 2018\n"
 "Language-Team: Bulgarian (http://app.transifex.com/zulip/zulip/language/bg/)\n"
->>>>>>> drc_main
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -2693,32 +2686,7 @@ msgstr ""
 msgid "Your organization"
 msgstr ""
 
-<<<<<<< HEAD
-#: templates/zerver/register.html:44
-msgid "Organization name"
-msgstr "Име на организацията"
-
-#: templates/zerver/register.html:52
-msgid "Shorter is better than longer."
-msgstr "По-късо е по-добре дълго."
-
-#: templates/zerver/register.html:67
-msgid "Organization type"
-msgstr ""
-
-#: templates/zerver/register.html:72
-msgid "Organization URL"
-msgstr "URL адрес на организацията"
-
-#: templates/zerver/register.html:79
-#, python-format
-msgid "Use %(external_host)s"
-msgstr "Изполвай %(external_host)s"
-
-#: templates/zerver/register.html:108
-=======
 #: templates/zerver/register.html:66
->>>>>>> drc_main
 msgid "Your account"
 msgstr ""
 

@@ -196,13 +196,8 @@ export function start(msg_type, opts) {
     if (reload_state.is_in_progress()) {
         return;
     }
-<<<<<<< HEAD:static/js/compose_actions.js
-    notifications.clear_compose_notifications();
-
-=======
     compose_banner.clear_message_sent_banners();
     expand_compose_box();
->>>>>>> drc_main:web/src/compose_actions.js
 
     opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
 

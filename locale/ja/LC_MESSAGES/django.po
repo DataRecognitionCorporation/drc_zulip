@@ -4,24 +4,6 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-<<<<<<< HEAD
-# Guy Kouakou <kkfguy@gmail.com>, 2022
-# Tim Abbott <tabbott@kandralabs.com>, 2022
-# Rintan, 2022
-# Tonalidade Hidrica, 2022
-# YorimiMOCHIDA, 2022
-# Kouhei Sutou <kou@cozmixng.org>, 2022
-# Greg Price <gnprice@gmail.com>, 2022
-# Chellaram Shanti <sc-transifex@shanti.im>, 2022
-# sigmy <ripsigma@gmail.com>, 2022
-# Akash Nimare <svnitakash@gmail.com>, 2022
-# vados <t3hmrman@gmail.com>, 2022
-# Tetsuya Morimoto <tetsuya.morimoto@gmail.com>, 2022
-# stmkza <stmkza@stmkza.net>, 2022
-# Taiki Choda, 2023
-# 
-#, fuzzy
-=======
 # Aoi Okubo, 2023
 # oribe1115, 2023
 # Greg Price <gnprice@gmail.com>, 2017
@@ -34,22 +16,14 @@
 # Tim Abbott <tabbott@kandralabs.com>, 2018,2021
 # YorimiMOCHIDA, 2020
 # sigmy <ripsigma@gmail.com>, 2020
->>>>>>> drc_main
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2022-11-17 16:38+0000\n"
-"PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: Taiki Choda, 2023\n"
-"Language-Team: Japanese (https://app.transifex.com/zulip/teams/53893/ja/)\n"
-=======
 "POT-Creation-Date: 2023-05-31 01:00+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Aoi Okubo, 2023\n"
 "Language-Team: Japanese (http://app.transifex.com/zulip/zulip/language/ja/)\n"
->>>>>>> drc_main
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -191,16 +165,10 @@ msgstr "エラーが発生しました。少し待ってからもう一度試し
 #: corporate/lib/stripe.py:1015
 #, python-brace-format
 msgid ""
-<<<<<<< HEAD
-"Your organization's request for sponsored hosting has been approved! "
-"{emoji}.\n"
-msgstr "あなたの組織のスポンサードホスティングリクエストは承認されました{emoji}\n"
-=======
 "Your organization's request for sponsored hosting has been approved! You have been upgraded to {plan_name}, free of charge. {emoji}\n"
 "\n"
 "If you could {begin_link}list Zulip as a sponsor on your website{end_link}, we would really appreciate it!"
 msgstr ""
->>>>>>> drc_main
 
 #: corporate/views/billing_page.py:45
 msgid "No payment method on file"
@@ -238,13 +206,6 @@ msgid ""
 "Your plan is already on {licenses} licenses in the current billing period."
 msgstr ""
 
-<<<<<<< HEAD
-#: corporate/views/billing_page.py:218
-msgid "You cannot decrease the licenses in the current billing period."
-msgstr "現在の支払い期間のライセンスは下げられません"
-
-=======
->>>>>>> drc_main
 #: corporate/views/billing_page.py:236
 msgid "You cannot decrease the licenses in the current billing period."
 msgstr "現在の支払い期間のライセンスは下げられません"
@@ -895,17 +856,9 @@ msgstr "メール"
 #: templates/zerver/register.html:209
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
-"rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr ""
-"<a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" rel=\"noopener "
-"noreferrer\">サービス利用規約</a>に同意します。"
-=======
 "I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
 "target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/accounts_accept_terms.html:64
 msgid "Continue"
@@ -1487,18 +1440,9 @@ msgstr "Zulipへようこそ！"
 #: templates/zerver/emails/followup_day1.html:26
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"You've created a demo Zulip organization. Note that this organization will "
-"be automatically deleted in 30 days. Learn more about demo organizations <a "
-"href=\"https://zulip.com/help/demo-organizations\">here</a>!"
-msgstr ""
-"デモのZulip組織を作成しました。デモ組織は、30日後に自動的に削除されますのでご注意ください。デモ組織の詳細については、<a "
-"href=\"https://zulip.com/help/demo-organizations\">こちら</a>をご覧ください。"
-=======
 "You've joined the Zulip organization <b>%(realm_name)s</b>.\n"
 "    "
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.html:32
 #, python-format
@@ -1537,75 +1481,23 @@ msgstr ""
 #: templates/zerver/emails/followup_day1.html:49
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"(you'll need these to sign in to the <a href=\"%(apps_page_link)s\">mobile "
-"and desktop</a> apps)"
-msgstr ""
-"（これらの情報は<a href=\"%(apps_page_link)s\">モバイル・デスクトップアプリ</a>にログインする際に必要になります）"
-=======
 "If you are new to Zulip, check out our <a "
 "href=\"%(getting_user_started_link)s\">Getting started guide</a>!"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.html:51
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Check out our <a href=\"%(getting_started_link)s\">guide for admins</a>, "
-"become a Zulip pro with a few <a "
-"href=\"%(keyboard_shortcuts_link)s\">keyboard shortcuts</a>, or <a "
-"href=\"%(realm_uri)s\">dive right in</a>!"
-msgstr ""
-"<a href=\"%(getting_started_link)s\">管理者向けガイド</a>を確認、<a "
-"href=\"%(keyboard_shortcuts_link)s\">キーボードショートカット</a>を覚えてZulipのプロになる、または<a "
-"href=\"%(realm_uri)s\">組織に移動する</a>"
-=======
 "We also have a guide for <a "
 "href=\"%(getting_organization_started_link)s\">Setting up your "
 "organization</a>."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.html:57
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"<a href=\"%(getting_started_link)s\">Learn more</a> about Zulip, become a "
-"pro with a few <a href=\"%(keyboard_shortcuts_link)s\">keyboard "
-"shortcuts</a>, or <a href=\"%(realm_uri)s\">dive right in</a>!"
-msgstr ""
-"Zulipについて<a href=\"%(getting_started_link)s\">詳しく学ぶ</a>、<a "
-"href=\"%(keyboard_shortcuts_link)s\">キーボードショートカット</a>を覚えてZulipのプロになる、または<a "
-"href=\"%(realm_uri)s\">組織に移動する</a>"
-
-#: templates/zerver/emails/followup_day1.source.html:48
-#: templates/zerver/emails/followup_day1.txt:36
-msgid "Cheers,"
-msgstr "ありがとう、"
-
-#: templates/zerver/emails/followup_day1.source.html:49
-#: templates/zerver/emails/followup_day1.txt:37
-#: templates/zerver/emails/notify_change_in_email.source.html:14
-#: templates/zerver/emails/notify_change_in_email.txt:7
-msgid "Team Zulip"
-msgstr "チームZulip"
-
-#: templates/zerver/emails/followup_day1.source.html:53
-msgid ""
-"PS: Follow us on <a href=\"https://twitter.com/zulip\">Twitter</a>, star us "
-"on <a href=\"https://github.com/zulip/zulip\">GitHub</a>, or chat with us "
-"live on the <a href=\"https://zulip.com/development-community/\">Zulip "
-"community server</a>!"
-msgstr ""
-"補足： ぜひ、<a href=\"https://twitter.com/zulip\">Twitter</a>でフォローでのフォロー、 <a "
-"href=\"https://github.com/zulip/zulip\">GitHub</a>でのスター、 <a "
-"href=\"https://zulip.com/development-"
-"community/\">Zulipコミュニティサーバー</a>でのライブチャットをしましょう！"
-=======
 "Questions? <a href=\"%(support_email)s\">Contact us</a> — we'd love to help!"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.subject.txt:2
 #, python-format
@@ -1620,19 +1512,10 @@ msgstr "Zulip上の%(realm_name)s：新しいアカウントの詳細"
 #: templates/zerver/emails/followup_day1.txt:5
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"You've created a demo Zulip organization. Note that this organization will "
-"be automatically deleted in 30 days. Learn more about demo organizations "
-"here: https://zulip.com/help/demo-organizations"
-msgstr ""
-"デモのZulip組織を作成しました。デモ組織は、30日後に自動的に削除されますのでご注意ください。デモ組織の詳細については、https://zulip.com/help/demo-"
-"organizations をご覧ください。"
-=======
 " Congratulations, you have created a new demo Zulip organization. Note that "
 "this organization will be automatically deleted in 30 days. Learn more about"
 " demo organizations here: %(demo_organizations_help_link)s!"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day1.txt:7
 #, python-format
@@ -1648,40 +1531,8 @@ msgstr "Zulip組織 %(realm_name)s に参加しました。"
 #: templates/zerver/emails/followup_day1.txt:14
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"(you'll need these to sign in to the mobile and desktop apps "
-"(%(apps_page_link)s))"
-msgstr "（これらの情報はモバイル・デスクトップアプリ（%(apps_page_link)s）にログインする際に必要になります）"
-
-#: templates/zerver/emails/followup_day1.txt:30
-#, python-format
-msgid ""
-"Check out our guide (%(getting_started_link)s) for admins, become a Zulip "
-"pro with a few keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive "
-"right in to %(realm_uri)s!"
-msgstr ""
-"管理者向けガイド（%(getting_started_link)s）を確認、キーボードショートカット（%(keyboard_shortcuts_link)s）を覚えてZulipのプロになる、または"
-" %(realm_uri)s で組織に移動する"
-
-#: templates/zerver/emails/followup_day1.txt:32
-#, python-format
-msgid ""
-"Learn more (%(getting_started_link)s) about Zulip, become a pro with a few "
-"keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive right in to "
-"%(realm_uri)s!"
-msgstr ""
-"Zulipについて学ぶ（%(getting_started_link)s）、キーボードショートカット（%(keyboard_shortcuts_link)s）を覚えてZulipのプロになる、または"
-" %(realm_uri)s で組織に移動する"
-
-#: templates/zerver/emails/followup_day1.txt:39
-msgid ""
-"PS: Check us out on Twitter (@zulip), star us on GitHub "
-"(https://github.com/zulip/zulip), or chat with us live on the Zulip "
-"community server (https://zulip.com/development-community/)!"
-=======
 "You will use the following info to log into the Zulip web, mobile and "
 "desktop apps (%(apps_page_link)s):"
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/emails/followup_day1.txt:29
@@ -1743,20 +1594,12 @@ msgstr "ショートトピックの例"
 #: templates/zerver/emails/followup_day2.html:25
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Topics are like email subject lines. The big difference, though, is that "
-"they're really short and lightweight. Two or three words will do it. Don't "
-"overthink 'em&mdash;you can always edit the message later!"
-msgstr ""
-"トピックはメールの件名のようなものです。しかし、大きな違いがあり、トピックはとても短くて簡潔なものです。２～３語で十分です。考えすぎないようにしましょう。いつでも後からメッセージを編集できます。"
-=======
 "Don't stress about picking the perfect name for your topic. If anything is "
 "out of place, it's easy to <a href=\"%(move_messages_link)s\">move "
 "messages</a>, <a href=\"%(rename_topics_link)s\">rename topics</a>, or even "
 "<a href=\"%(move_topic_to_different_stream_link)s\">move a topic to a "
 "different stream</a>."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.html:28
 #: templates/zerver/emails/followup_day2.txt:10
@@ -1764,43 +1607,6 @@ msgstr ""
 msgid "Go to Zulip"
 msgstr "Zulipへ移動"
 
-<<<<<<< HEAD
-#: templates/zerver/emails/followup_day2.source.html:18
-#: templates/zerver/emails/followup_day2.txt:9
-msgid ""
-"Not recommended: \"What do people think of this new design mockup?\", \"I'm "
-"looking at Bug 345\", \"Is Acme Burgers open for lunch?\""
-msgstr ""
-"推奨されないトピック：「新しいデザインのモックアップについてどう思うか」「バグ345に注目しています」「Acmeバーガーはランチをやっていますか？」"
-
-#: templates/zerver/emails/followup_day2.source.html:21
-msgid "Example of a topic that is too long"
-msgstr "長すぎるトピックの例"
-
-#: templates/zerver/emails/followup_day2.source.html:23
-msgid ""
-"Why bother with topics? Well, two reasons: it makes conversations clearer "
-"(imagine if email didn't have them!), and it lets you more efficiently catch"
-" up on what's happened while you're away&mdash;read the topics that are "
-"relevant to you, and ignore the ones that aren't!"
-msgstr ""
-"どうしてトピックが必要なのか？それには二つの理由があります。まず、会話を明確にするため（メールに件名がなかったらどうなるか想像してみてください）、そして離席中に起きた出来事に効率的に追いつくためです。自分の関係のあるトピックだけを読み、ほかを無視することができます。"
-
-#: templates/zerver/emails/followup_day2.source.html:25
-msgid "Take it for a spin now."
-msgstr "試しにいきましょう"
-
-#: templates/zerver/emails/followup_day2.source.html:27
-#: templates/zerver/emails/followup_day2.txt:16
-#: templates/zerver/emails/notify_new_login.source.html:40
-#: templates/zerver/emails/notify_new_login.txt:20
-msgid "Thanks,"
-msgstr "ありがとう、"
-
-#: templates/zerver/emails/followup_day2.source.html:34
-msgid "Unsubscribe from welcome emails"
-msgstr "ウエルカムメールを受け取らない"
-=======
 #: templates/zerver/emails/followup_day2.html:34
 #: templates/zerver/emails/followup_day2.txt:14
 #: templates/zerver/emails/onboarding_zulip_guide.html:40
@@ -1808,7 +1614,6 @@ msgstr "ウエルカムメールを受け取らない"
 #, python-format
 msgid "Unsubscribe from welcome emails for %(realm_name)s"
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
 msgid "Keep your conversations organized with topics"
@@ -1816,35 +1621,18 @@ msgstr ""
 
 #: templates/zerver/emails/followup_day2.txt:3
 msgid ""
-<<<<<<< HEAD
-"Topics are like email subject lines. The big difference, though, is that "
-"they're really short and lightweight. Two or three words will do it. Don't "
-"overthink 'em -- you can always edit the message later!"
-msgstr ""
-"トピックはメールの件名のようなものです。しかし、大きな違いがあり、トピックはとても短くて簡潔なものです。２～３語で十分です。考えすぎないようにしましょう。いつでも後からメッセージを編集できます。"
-=======
 "In Zulip, streams determine who gets a message. Topics tell you what the "
 "message is about."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.txt:7
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"Why bother with topics? Well, two reasons: it makes conversations clearer "
-"(imagine if email didn't have them!), and it lets you more efficiently catch"
-" up on what's happened while you're away -- read the topics that are "
-"relevant to you, and ignore the ones that aren't!"
-msgstr ""
-"どうしてトピックが必要なのか？それには二つの理由があります。まず、会話を明確にするため（メールに件名がなかったらどうなるか想像してみてください）、そして離席中に起きた出来事に効率的に追いつくためです。自分の関係のあるトピックだけを読み、ほかを無視することができます。"
-=======
 "Don't stress about picking the perfect name for your topic. If anything is "
 "out of place, it's easy to move messages (%(move_messages_link)s), rename "
 "topics (%(rename_topics_link)s), or even move a topic to a different stream "
 "(%(move_topic_to_different_stream_link)s)."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/invitation.html:9
 #: templates/zerver/emails/invitation.txt:1
@@ -2632,26 +2420,6 @@ msgstr "プライバシーポリシー"
 msgid "Website attributions"
 msgstr "帰属表記"
 
-<<<<<<< HEAD
-#: templates/zerver/footer.html:155
-msgid "Sponsor Zulip"
-msgstr "スポンサーになる"
-
-#: templates/zerver/footer.html:171
-msgid "Policies"
-msgstr "ポリシー"
-
-#: templates/zerver/footer.html:179
-msgid ""
-"\n"
-"                Powered by <a href=\"https://zulip.com\" class=\"coloured-text\">Zulip</a>\n"
-"                "
-msgstr ""
-"\n"
-"                Powered by <a href=\"https://zulip.com\" class=\"coloured-text\">Zulip</a>"
-
-=======
->>>>>>> drc_main
 #: templates/zerver/insecure_desktop_app.html:4
 #: templates/zerver/insecure_desktop_app.html:15
 msgid "Update required"
@@ -2730,78 +2498,32 @@ msgid "Invalid email"
 msgstr "不正なメールアドレス"
 
 #: templates/zerver/invalid_email.html:15
-<<<<<<< HEAD
-msgid ""
-"\n"
-"        The email address you are trying to sign up with is not valid.\n"
-"        Please sign up using a valid email address.\n"
-"        "
-msgstr ""
-"\n"
-"        登録しようとしているメールアドレスは正しくありません。\n"
-"        正しいメールアドレスを使用して登録してください。\n"
-"        "
-=======
 msgid "Email not allowed"
 msgstr ""
 
 #: templates/zerver/invalid_email.html:21
 msgid "The email address you are trying to sign up with is not valid."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_email.html:24
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"\n"
-"        The organization you are trying to join, %(realm_name)s,\n"
-"        only allows users with email addresses within the\n"
-"        organization. Please sign up using appropriate email address.\n"
-"        "
-msgstr ""
-"\n"
-"        参加しようとしている組織 %(realm_name)s は\n"
-"        組織内のメールアドレスを持っている人のみを許可しています。\n"
-"        適切なメールアドレスを使用して登録してください。\n"
-"        "
-=======
 "The organization you are trying to join, <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a>, does not allow signups using "
 "emails with your email domain."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_email.html:27
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"The organization you are trying to join,\n"
-"        %(realm_name)s, does not allow signups using disposable email\n"
-"        addresses. Please sign up using a real email address.\n"
-"        "
-msgstr ""
-"参加しようとしている組織 %(realm_name)s は使い捨てメールアドレスを使った登録を許可していません。\n"
-"本当のメールアドレスを使用して登録してください。"
-=======
 "The organization you are trying to join, <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a>, does not allow signups using "
 "disposable email addresses."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_email.html:30
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"The organization you are trying to join,\n"
-"        %(realm_name)s, does not allow signups using emails\n"
-"        that contains +. Please sign up using appropriate email address.\n"
-"        "
-msgstr ""
-"参加しようとしている組織 %(realm_name)s は「+」を含んだメールアドレスでの登録を許可していません。\n"
-"適切なメールアドレスを使用して登録してください。"
-=======
 "The organization you are trying to join, <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a>, does not allow signups using "
 "emails that contain \"+\"."
@@ -2814,7 +2536,6 @@ msgstr ""
 #: templates/zerver/invalid_email.html:35
 msgid "Please sign up using an allowed email address."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_realm.html:4
 #: templates/zerver/invalid_realm.html:12
@@ -2916,20 +2637,10 @@ msgstr ""
 #: templates/zerver/no_spare_licenses.html:16
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"\n"
-"    New members cannot join this organization because all Zulip licenses are currently in use. Please contact the person who\n"
-"    invited you and ask them to increase the number of licenses, then try again.\n"
-"    "
-msgstr ""
-"\n"
-"全てのZulipライセンスが使用中のため、この組織には現在、新規の参加ができません。招待者にライセンス数の追加を依頼してから、再度お試しください。"
-=======
 "New members cannot currently join <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a> because all Zulip Cloud licenses "
 "are in use."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/no_spare_licenses.html:19
 msgid ""
@@ -3068,12 +2779,6 @@ msgid ""
 "            <p>Enter your account details to complete registration.</p>\n"
 "            "
 msgstr ""
-<<<<<<< HEAD
-"\n"
-"            <p>あと一歩です。最後に一つだけお願いします。</p>\n"
-"            "
-=======
->>>>>>> drc_main
 
 #: templates/zerver/register.html:36
 msgid "Your organization"
@@ -3222,17 +2927,6 @@ msgstr "メールアドレスの登録を解除できませんでした"
 msgid "Unknown email unsubscribe request"
 msgstr "購読解除リクエストのメールアドレスがみつかりません"
 
-<<<<<<< HEAD
-#: templates/zerver/unsubscribe_link_error.html:12
-msgid ""
-"Hi there! It looks like you tried to unsubscribe from something,\n"
-"    but we don't recognize the URL."
-msgstr ""
-"申し訳ございません。\n"
-"何らかの登録を解除しようとされたようですが、URLを認識できませんでした。"
-
-=======
->>>>>>> drc_main
 #: templates/zerver/unsubscribe_link_error.html:16
 msgid ""
 "Hi there! It looks like you tried to unsubscribe from something, but we "
@@ -3262,12 +2956,6 @@ msgid ""
 "                    <a href=\"%(realm_uri)s\">%(realm_name)s</a>.\n"
 "                    "
 msgstr ""
-<<<<<<< HEAD
-"\n"
-"                    Zulipの %(subscription_type)sメールを購読解除しました。\n"
-"                    "
-=======
->>>>>>> drc_main
 
 #: templates/zerver/unsubscribe_success.html:27
 #, python-format
@@ -3277,13 +2965,6 @@ msgid ""
 "                    <a href=\"%(realm_uri)s/#settings/notifications\">notification settings</a>.\n"
 "                    "
 msgstr ""
-<<<<<<< HEAD
-"\n"
-"                    <a href=\"%(realm_uri)s/#settings/notifications\">Zulip通知設定</a>でこの変更を確認、または\n"
-"                    元に戻すことができます。\n"
-"                    "
-=======
->>>>>>> drc_main
 
 #: templates/zerver/unsupported_browser.html:4
 #: templates/zerver/unsupported_browser.html:15
@@ -3309,13 +2990,6 @@ msgid ""
 "                        like Firefox, Chrome, and Edge.\n"
 "                        "
 msgstr ""
-<<<<<<< HEAD
-"\n"
-"                        ZulipはFirefoxやChrome、Edgeなどの\n"
-"                        モダンブラウザをサポートします。\n"
-"                        "
-=======
->>>>>>> drc_main
 
 #: templates/zerver/unsupported_browser.html:28
 #, python-format
@@ -3482,15 +3156,12 @@ msgstr ""
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}."
 msgstr "{user}がこのトピックを{old_location}に移動しました"
-<<<<<<< HEAD
-=======
 
 #: zerver/actions/message_edit.py:1035
 #, python-brace-format
 msgid ""
 "[A message]({message_link}) was moved here from {old_location} by {user}."
 msgstr ""
->>>>>>> drc_main
 
 #: zerver/actions/message_edit.py:1039
 #, python-brace-format
@@ -3511,15 +3182,9 @@ msgstr "このメッセージを編集する権限がありません"
 msgid "The time limit for editing this message has passed"
 msgstr "このメッセージを編集できる時間制限が過ぎました"
 
-<<<<<<< HEAD
-#: zerver/actions/message_edit.py:969
-msgid "The time limit for editing this message's topic has passed"
-msgstr "このメッセージのトピックを編集可能な期限を過ぎました"
-=======
 #: zerver/actions/message_edit.py:1214
 msgid "The time limit for editing this message's topic has passed."
 msgstr ""
->>>>>>> drc_main
 
 #: zerver/actions/message_edit.py:1248 zerver/actions/message_send.py:1428
 msgid "You do not have permission to use wildcard mentions in this stream."
@@ -4296,14 +3961,6 @@ msgstr "引数'anchor'がありません"
 msgid "Invalid anchor"
 msgstr "不正なアンカー"
 
-<<<<<<< HEAD
-#: zerver/lib/onboarding.py:56
-#, python-brace-format
-msgid "We also have a guide for [Setting up your organization]({help_url})."
-msgstr "[組織の新規設定]({help_url}) のガイドもご用意しています。"
-
-=======
->>>>>>> drc_main
 #: zerver/lib/onboarding.py:59
 #, python-brace-format
 msgid ""
@@ -4370,13 +4027,7 @@ msgid ""
 "Go to [Profile settings](#settings/profile) to add a [profile "
 "picture](/help/change-your-profile-picture) and edit your [profile "
 "information](/help/edit-your-profile)."
-<<<<<<< HEAD
-msgstr ""
-"[プロフィール設定](#settings/profile)で[プロフィール画像](/help/change-your-profile-"
-"picture)の追加や、[プロフィール情報](/help/edit-your-profile)の編集ができます。"
-=======
 msgstr "[プロフィール設定](#settings/profile)で[プロフィール画像](/help/change-your-profile-picture)の追加や、[プロフィール情報](/help/edit-your-profile)の編集ができます。"
->>>>>>> drc_main
 
 #: zerver/lib/onboarding.py:167
 msgid ""
@@ -4394,13 +4045,7 @@ msgstr ""
 msgid ""
 "In Zulip, streams [determine who gets a message](/help/streams-and-topics). "
 "They are similar to channels in other chat apps."
-<<<<<<< HEAD
-msgstr ""
-"Zulipではストリームで、[誰がメッセージを受け取るか決める](/help/streams-and-"
-"topics)ことができます。これは他のチャットサービスでの「チャンネル」に該当します。"
-=======
 msgstr "Zulipではストリームで、[誰がメッセージを受け取るか決める](/help/streams-and-topics)ことができます。これは他のチャットサービスでの「チャンネル」に該当します。"
->>>>>>> drc_main
 
 #: zerver/lib/onboarding.py:181
 msgid "[Browse and subscribe to streams](#streams/all)."

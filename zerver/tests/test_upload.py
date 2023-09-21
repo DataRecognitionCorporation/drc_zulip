@@ -70,22 +70,13 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # Download file via API
         self.logout()
-<<<<<<< HEAD
-        response = self.api_get(self.example_user("desdemona"), uri)
-=======
         response = self.api_get(self.example_user("hamlet"), url)
->>>>>>> drc_main
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.getvalue(), b"zulip!")
 
         # Files uploaded through the API should be accessible via the web client
-<<<<<<< HEAD
-        self.login("desdemona")
-        self.assert_streaming_content(self.client_get(uri), b"zulip!")
-=======
         self.login("hamlet")
         self.assertEqual(self.client_get(url).getvalue(), b"zulip!")
->>>>>>> drc_main
 
     def test_mobile_api_endpoint(self) -> None:
         """
@@ -112,15 +103,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         response = self.client_get(url, {"api_key": "invalid"})
         self.assertEqual(response.status_code, 401)
 
-<<<<<<< HEAD
-        response = self.client_get(uri, {"api_key": get_api_key(user_profile)})
-        self.assertEqual(response.status_code, 403)
-        # self.assert_streaming_content(response, b"zulip!")
-=======
         response = self.client_get(url, {"api_key": get_api_key(user_profile)})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.getvalue(), b"zulip!")
->>>>>>> drc_main
 
     def test_file_too_big_failure(self) -> None:
         """
@@ -242,41 +227,23 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_post("/json/user_uploads", {"file": fp})
         url = self.assert_json_success(result)["uri"]
 
-<<<<<<< HEAD
-        add_ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file")
-        # Deny file access for non-web-public stream
-        self.subscribe(self.example_user("desdemona"), "Denmark")
-        host = self.example_user("hamlet").realm.host
-        body = f"First message ...[zulip.txt](http://{host}" + uri + ")"
-        self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
-=======
         with ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file"):
             # Deny file access for non-web-public stream
             self.subscribe(self.example_user("hamlet"), "Denmark")
             host = self.example_user("hamlet").realm.host
             body = f"First message ...[zulip.txt](http://{host}" + url + ")"
             self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
->>>>>>> drc_main
 
             self.logout()
             response = self.client_get(url)
             self.assertEqual(response.status_code, 403)
 
-<<<<<<< HEAD
-        # Allow file access for web-public stream
-        self.login("desdemona")
-        self.make_stream("web-public-stream", is_web_public=True)
-        self.subscribe(self.example_user("desdemona"), "web-public-stream")
-        body = f"First message ...[zulip.txt](http://{host}" + uri + ")"
-        self.send_stream_message(self.example_user("desdemona"), "web-public-stream", body, "test")
-=======
             # Allow file access for web-public stream
             self.login("hamlet")
             self.make_stream("web-public-stream", is_web_public=True)
             self.subscribe(self.example_user("hamlet"), "web-public-stream")
             body = f"First message ...[zulip.txt](http://{host}" + url + ")"
             self.send_stream_message(self.example_user("hamlet"), "web-public-stream", body, "test")
->>>>>>> drc_main
 
             self.logout()
             response = self.client_get(url)
@@ -384,91 +351,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             f"http://{hamlet.realm.host}/user_uploads/{hamlet.realm_id}/ff/gg/abc.py"
         )
         self.assertEqual(response.status_code, 404)
-<<<<<<< HEAD
-        self.assert_in_response("File not found.", response)
-
-    def test_delete_old_unclaimed_attachments(self) -> None:
-        # Upload some files and make them older than a week
-        desdemona = self.example_user("desdemona")
-        self.login("desdemona")
-        d1 = StringIO("zulip!")
-        d1.name = "dummy_1.txt"
-        result = self.client_post("/json/user_uploads", {"file": d1})
-        response_dict = self.assert_json_success(result)
-        d1_path_id = re.sub("/user_uploads/", "", response_dict["uri"])
-
-        d2 = StringIO("zulip!")
-        d2.name = "dummy_2.txt"
-        result = self.client_post("/json/user_uploads", {"file": d2})
-        response_dict = self.assert_json_success(result)
-        d2_path_id = re.sub("/user_uploads/", "", response_dict["uri"])
-
-        d3 = StringIO("zulip!")
-        d3.name = "dummy_3.txt"
-        result = self.client_post("/json/user_uploads", {"file": d3})
-        d3_path_id = re.sub("/user_uploads/", "", result.json()["uri"])
-
-        two_week_ago = timezone_now() - datetime.timedelta(weeks=2)
-        # This Attachment will have a message linking to it:
-        d1_attachment = Attachment.objects.get(path_id=d1_path_id)
-        d1_attachment.create_time = two_week_ago
-        d1_attachment.save()
-        self.assertEqual(str(d1_attachment), "<Attachment: dummy_1.txt>")
-        # This Attachment won't have any messages.
-        d2_attachment = Attachment.objects.get(path_id=d2_path_id)
-        d2_attachment.create_time = two_week_ago
-        d2_attachment.save()
-        # This Attachment will have a message that gets archived. The file
-        # should not be deleted until the message is deleted from the archive.
-        d3_attachment = Attachment.objects.get(path_id=d3_path_id)
-        d3_attachment.create_time = two_week_ago
-        d3_attachment.save()
-
-        # Send message referring only dummy_1
-        self.subscribe(desdemona, "Denmark")
-        body = (
-            f"Some files here ...[zulip.txt](http://{desdemona.realm.host}/user_uploads/"
-            + d1_path_id
-            + ")"
-        )
-        self.send_stream_message(desdemona, "Denmark", body, "test")
-
-        # Send message referecing dummy_3 - it will be archived next.
-        body = (
-            f"Some more files here ...[zulip.txt](http://{desdemona.realm.host}/user_uploads/"
-            + d3_path_id
-            + ")"
-        )
-        message_id = self.send_stream_message(desdemona, "Denmark", body, "test")
-        d3_local_path = get_local_file_path(d3_path_id)
-        assert d3_local_path is not None
-        self.assertTrue(os.path.exists(d3_local_path))
-
-        do_delete_messages(desdemona.realm, [Message.objects.get(id=message_id)])
-        # dummy_2 should not exist in database or the uploads folder
-        do_delete_old_unclaimed_attachments(2)
-        self.assertTrue(not Attachment.objects.filter(path_id=d2_path_id).exists())
-        with self.assertLogs(level="WARNING") as warn_log:
-            self.assertTrue(not delete_message_image(d2_path_id))
-        self.assertEqual(
-            warn_log.output,
-            ["WARNING:root:dummy_2.txt does not exist. Its entry in the database will be removed."],
-        )
-
-        # dummy_3 file should still exist, because the attachment has been moved to the archive.
-        self.assertTrue(os.path.exists(d3_local_path))
-
-        # After the archive gets emptied, do_delete_old_unclaimed_attachments should result
-        # in deleting the file, since it is now truly no longer referenced.
-        with self.settings(ARCHIVED_DATA_VACUUMING_DELAY_DAYS=0):
-            clean_archived_data()
-        do_delete_old_unclaimed_attachments(2)
-        self.assertFalse(os.path.exists(d3_local_path))
-        self.assertTrue(not Attachment.objects.filter(path_id=d3_path_id).exists())
-        self.assertTrue(not ArchivedAttachment.objects.filter(path_id=d3_path_id).exists())
-=======
         self.assert_in_response("This file does not exist or has been deleted.", response)
->>>>>>> drc_main
 
     def test_attachment_url_without_upload(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -732,39 +615,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
     #     user_3 = create_user(user3_email, test_subdomain)
     #     host = user_3.realm.host
 
-<<<<<<< HEAD
-    #     # Send a message from @zulip.com -> @uploadtest.example.com
-    #     self.login_user(user_2)
-    #     fp = StringIO("zulip!")
-    #     fp.name = "zulip.txt"
-    #     result = self.client_post("/json/user_uploads", {"file": fp})
-    #     uri = self.assert_json_success(result)["uri"]
-    #     fp_path_id = re.sub("/user_uploads/", "", uri)
-    #     body = f"First message ...[zulip.txt](http://{host}/user_uploads/" + fp_path_id + ")"
-    #     with self.settings(CROSS_REALM_BOT_EMAILS={user_2.email, user_3.email}):
-    #         internal_send_private_message(
-    #             sender=get_system_bot(user_2.email, user_2.realm_id),
-    #             recipient_user=user_1,
-    #             content=body,
-    #         )
-
-    #     self.login_user(user_1)
-    #     response = self.client_get(uri, subdomain=test_subdomain)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assert_streaming_content(response, b"zulip!")
-    #     self.logout()
-
-    #     # Confirm other cross-realm users can't read it.
-    #     self.login_user(user_3)
-    #     response = self.client_get(uri, subdomain=test_subdomain)
-    #     self.assertEqual(response.status_code, 403)
-    #     self.assert_in_response("You are not authorized to view this file.", response)
-
-    #     # Verify that cross-realm access to files for spectators is denied.
-    #     self.logout()
-    #     response = self.client_get(uri, subdomain=test_subdomain)
-    #     self.assertEqual(response.status_code, 403)
-=======
         # Send a message from @zulip.com -> @uploadtest.example.com
         self.login_user(user_2)
         fp = StringIO("zulip!")
@@ -796,7 +646,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.logout()
         response = self.client_get(url, subdomain=test_subdomain)
         self.assertEqual(response.status_code, 403)
->>>>>>> drc_main
 
     def test_file_download_authorization_invite_only(self) -> None:
         desdemona = self.example_user("desdemona")
@@ -922,13 +771,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             assert_cannot_access_file(unsubscribed_user)
 
     def test_multiple_message_attachment_file_download(self) -> None:
-<<<<<<< HEAD
-        desdemona = self.example_user("desdemona")
-        for i in range(0, 5):
-=======
         hamlet = self.example_user("hamlet")
         for i in range(5):
->>>>>>> drc_main
             stream_name = f"test-subscribe {i}"
             self.make_stream(
                 stream_name,
@@ -1007,35 +851,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             content_disposition: str = "",
             download: bool = False,
         ) -> None:
-<<<<<<< HEAD
-            with self.settings(SENDFILE_BACKEND="django_sendfile.backends.nginx"):
-                _get_sendfile.cache_clear()  # To clearout cached version of backend from djangosendfile
-                self.login("desdemona")
-                fp = StringIO("zulip!")
-                fp.name = name
-                result = self.client_post("/json/user_uploads", {"file": fp})
-                uri = self.assert_json_success(result)["uri"]
-                fp_path_id = re.sub("/user_uploads/", "", uri)
-                fp_path = os.path.split(fp_path_id)[0]
-                if download:
-                    uri = uri.replace("/user_uploads/", "/user_uploads/download/")
-                response = self.client_get(uri)
-                _get_sendfile.cache_clear()
-                assert settings.LOCAL_UPLOADS_DIR is not None
-                test_run, worker = os.path.split(os.path.dirname(settings.LOCAL_UPLOADS_DIR))
-                self.assertEqual(
-                    response["X-Accel-Redirect"],
-                    "/serve_uploads/" + fp_path + "/" + name_str_for_test,
-                )
-                if content_disposition != "":
-                    self.assertIn("attachment;", response["Content-disposition"])
-                    self.assertIn(content_disposition, response["Content-disposition"])
-                else:
-                    self.assertIn("inline;", response["Content-disposition"])
-                self.assertEqual(
-                    set(response["Cache-Control"].split(", ")), {"private", "immutable"}
-                )
-=======
             self.login("hamlet")
             fp = StringIO("zulip!")
             fp.name = name
@@ -1059,7 +874,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             else:
                 self.assertIn("inline;", response["Content-disposition"])
             self.assertEqual(set(response["Cache-Control"].split(", ")), {"private", "immutable"})
->>>>>>> drc_main
 
         check_xsend_links("zulip.txt", "zulip.txt", 'filename="zulip.txt"')
         check_xsend_links(

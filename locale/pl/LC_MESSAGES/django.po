@@ -21,17 +21,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2022-11-17 16:38+0000\n"
-"PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: Marcin Mazur <m.mazur@nowaera.pl>, 2022\n"
-"Language-Team: Polish (https://app.transifex.com/zulip/teams/53893/pl/)\n"
-=======
 "POT-Creation-Date: 2023-05-31 01:00+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: Mateusz Galazka <wilchuvevo@pm.me>, 2021\n"
 "Language-Team: Polish (http://app.transifex.com/zulip/zulip/language/pl/)\n"
->>>>>>> drc_main
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -846,17 +839,9 @@ msgstr "Adres email"
 #: templates/zerver/register.html:209
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
-"rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr ""
-"Akceptuję <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
-"rel=\"noopener noreferrer\">Warunki korzystania z usługi</a>."
-=======
 "I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
 "target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/accounts_accept_terms.html:64
 msgid "Continue"
@@ -1551,18 +1536,9 @@ msgstr ""
 #: templates/zerver/emails/followup_day2.html:13
 #: templates/zerver/emails/followup_day2.txt:3
 msgid ""
-<<<<<<< HEAD
-"I wanted to share one last thing with you: a few tips about topics, since "
-"mastering topics is a key part of being a Zulip power user."
-msgstr ""
-"Chciałem podzielić się ostatnią rzeczą z Tobą: kilka podpowiedzi w kwestii "
-"tematów, ponieważ zarządzanie tematami należy do zaawansowanych użytkowników"
-" Zulipa."
-=======
 "Using topics, you can read Zulip one conversation at a time. You'll see each"
 " message in context, no matter how many different discussions are going on."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/emails/followup_day2.html:16
 msgid "Streams and topics in the Zulip app"
@@ -2737,32 +2713,7 @@ msgstr ""
 msgid "Your organization"
 msgstr ""
 
-<<<<<<< HEAD
-#: templates/zerver/register.html:44
-msgid "Organization name"
-msgstr "Nazwa organizacji"
-
-#: templates/zerver/register.html:52
-msgid "Shorter is better than longer."
-msgstr ""
-
-#: templates/zerver/register.html:67
-msgid "Organization type"
-msgstr "Rodzaj organizacji"
-
-#: templates/zerver/register.html:72
-msgid "Organization URL"
-msgstr "Adres URL organizacji"
-
-#: templates/zerver/register.html:79
-#, python-format
-msgid "Use %(external_host)s"
-msgstr "Użyj %(external_host)s"
-
-#: templates/zerver/register.html:108
-=======
 #: templates/zerver/register.html:66
->>>>>>> drc_main
 msgid "Your account"
 msgstr "Twoje konto"
 

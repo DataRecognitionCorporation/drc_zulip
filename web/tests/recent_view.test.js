@@ -133,10 +133,6 @@ mock_esm("../src/pm_list", {
     update_private_messages: noop,
     handle_narrow_deactivated: noop,
 });
-<<<<<<< HEAD:frontend_tests/node_tests/recent_topics.js
-mock_esm("../../static/js/recent_senders", {
-    get_topic_recent_senders: () => [2, 1],
-=======
 mock_esm("../src/recent_senders", {
     get_topic_recent_senders: () => [2, 1],
     get_pm_recent_senders(user_ids_string) {
@@ -144,7 +140,6 @@ mock_esm("../src/recent_senders", {
             participants: user_ids_string.split(",").map((user_id) => Number.parseInt(user_id, 10)),
         };
     },
->>>>>>> drc_main:web/tests/recent_view.test.js
 });
 mock_esm("../src/stream_data", {
     is_muted: () =>

@@ -49,11 +49,7 @@
   "A stream with this name already exists": "Ток са овим именом већ постоји",
   "A user group needs to have a name": "Корисничка група мора да има назив",
   "A user group with this name already exists": "Већ постоји корисничка група са овим називом",
-<<<<<<< HEAD
-  "A wide image for the upper left corner of the app.": "Широка слика за горњи леви угао апликације.",
-=======
   "A wide image (200×25 pixels) for the upper left corner of the app.": "Широка слика (200×25 пиксела) за горњи леви угао апликације.",
->>>>>>> drc_main
   "API documentation": "АПИ документација",
   "API key": "АПИ кључ",
   "About Zulip": "О Зулипу",
@@ -130,12 +126,6 @@
   "All direct messages": "Све директне поруке",
   "All messages": "Све поруке",
   "All messages including muted streams": "Све поруке укључујући утишане токове",
-<<<<<<< HEAD
-  "All private messages": "Све приватне поруке",
-  "All private messages (P)": "Све приватне поруке (P)",
-  "All stream subscribers can post.": "Сви чланови тока могу да пишу.",
-=======
->>>>>>> drc_main
   "All streams": "Сви токови",
   "All time": "Све време",
   "All unreads": "Све непрочитано",
@@ -157,11 +147,7 @@
   "Any organization administrator can conduct an export.": "Сваки администратор организације може да изврши извоз.",
   "Any time": "Било када",
   "April": "Април",
-<<<<<<< HEAD
-  "Archive <z-link></z-link>{stream}?": "Архивирај <z-link></z-link>{stream}?",
-=======
   "Archive <z-link></z-link>?": "Архивирај <z-link></z-link>?",
->>>>>>> drc_main
   "Archive stream": "Архивирај ток",
   "Archiving stream <z-stream></z-stream> will immediately unsubscribe everyone. This action cannot be undone.": "Архивирање тока <z-stream></z-stream> ће моментално ишчланити све. Ова акција се не може поништити.",
   "Are you sure you want to continue?": "",
@@ -227,11 +213,7 @@
   "Choose members": "Изабери чланове",
   "Choose subscribers": "Изаберите чланове",
   "Clear avatar": "Уклони аватар",
-<<<<<<< HEAD
-  "Clear emoji image": "Уклоните слику емотикона",
-=======
   "Clear image": "Уклони слику",
->>>>>>> drc_main
   "Clear profile picture": "Уклоните слику профила",
   "Click here to reveal.": "Кликните овде да би сте открили.",
   "Click on the pencil (<z-pencil-icon></z-pencil-icon>) icon to edit and reschedule a message.": "",
@@ -243,13 +225,8 @@
   "Code playgrounds": "Игралиште за код",
   "Code playgrounds are interactive in-browser development environments, such as <z-link-repl>replit</z-link-repl>, that are designed to make it convenient to edit and debug code. Zulip <z-link-code-blocks>code blocks</z-link-code-blocks> that are tagged with a programming language will have a button visible on hover that allows users to open the code block on the code playground site.": "Игралишта за код су интерактивна развојна окружења у оквиру прегледача, попут <z-link-repl>replit</z-link-repl>, која су дизајнирана да би се олакшала измена и исправка кода. Зулипови <z-link-code-blocks>блокови кода</z-link-code-blocks> који су означени са програмским језиком ће додати дугме при преласку мишем које ће омогућити корисницима да блок кода отворе на сајту игралишта за код.",
   "Collapse compose": "Сакупи писање",
-<<<<<<< HEAD
-  "Collapse message": "Сакупи поруку",
-  "Collapse private messages": "Сакупи приватне поруке",
-=======
   "Collapse direct messages": "Сакупи директне поруке",
   "Collapse message": "Сакупи поруку",
->>>>>>> drc_main
   "Collapse/show selected message": "Сакупи/прикажи изабране поруке",
   "Community": "Заједница",
   "Commuting": "У превозу",
@@ -338,19 +315,11 @@
   "Delete alert word": "Обриши реч за упозорење",
   "Delete all drafts": "Обриши све нацрте",
   "Delete code playground?": "Обрисати игралиште за код?",
-<<<<<<< HEAD
-  "Delete custom profile field?": "Обрисати прилагођено поље профила?",
-  "Delete data export?": "Обрисати извоз података?",
-  "Delete draft": "Обриши нацрт",
-  "Delete file": "Обриши датотеку",
-  "Delete file?": "Обрисати датотеку?",
-=======
   "Delete custom profile field?": "Обриши прилагођено поље профила?",
   "Delete data export?": "Обриши извоз података?",
   "Delete draft": "Обриши нацрт",
   "Delete file": "Обриши датотеку",
   "Delete file?": "Обриши датотеку?",
->>>>>>> drc_main
   "Delete icon": "Обриши иконицу",
   "Delete linkifier?": "Обрисати линкификатор?",
   "Delete logo": "Обриши лого",
@@ -389,11 +358,7 @@
   "Dismiss for a week": "Одбаци на недељу дана",
   "Display availability to other users": "Прикажи доступност осталим корисницима",
   "Display my availability to other users": "Прикажи моју доступност осталим корисницима",
-<<<<<<< HEAD
-  "Display names of reacting users when few users have reacted to a message": "Прикажи имена корисника који су реаговали када је неколико корисника реаговало на поруку",
-=======
   "Display names of reacting users when few users have reacted to a message": "Прикажи имена који су реаговали када је неколико корисника реаговало на поруку",
->>>>>>> drc_main
   "Display on user card": "Прикажи на картици корисника",
   "Display settings": "Подешавања приказа",
   "Do you still want to move the latest {total_messages_allowed_to_move, plural, one {message} other {# messages}}?": "",
@@ -485,14 +450,8 @@
   "Exclude messages with topic <z-value></z-value>.": "Изузми поруке са темом <z-value></z-value>.",
   "Exit search": "Изађи из претраге",
   "Expand compose": "Рашири поље за писање",
-<<<<<<< HEAD
-  "Expand message": "Рашири поруку",
-  "Expand message (-)": "Рашири поруку (-)",
-  "Expand private messages": "Рашири приватне поруке",
-=======
   "Expand direct messages": "Рашири директне поруке",
   "Expand message": "Рашири поруку",
->>>>>>> drc_main
   "Expires at": "Истиче у",
   "Expires on {date} at {time}": "",
   "Export failed": "Извоз није успео",
@@ -524,19 +483,11 @@
   "Filter default streams": "Филтрирај предефинисане токове",
   "Filter emoji": "Филтрирај емотиконе",
   "Filter exports": "Филтрирај извозе",
-<<<<<<< HEAD
-  "Filter groups": "Филтрирај групе",
-=======
   "Filter groups": "Групе филтера",
->>>>>>> drc_main
   "Filter invites": "Филтрирај позивнице",
   "Filter languages": "Филтрирај језике",
   "Filter linkifiers": "Филтрирај линкификаторе",
   "Filter members": "Филтрирај чланове",
-<<<<<<< HEAD
-  "Filter muted topics": "Филтрирај утишане теме",
-=======
->>>>>>> drc_main
   "Filter muted users": "Филтрирај утишане кориснике",
   "Filter roles": "Филтрирај улоге",
   "Filter streams": "Филтрирај токове",
@@ -549,32 +500,18 @@
   "First message": "Филтрирај поруке",
   "First time? Read our <z-link>guidelines</z-link> for creating and naming streams.": "Први пут сте овде? Прочитајте наше <z-link>смернице</z-link> за креирање и именовање токова.",
   "First time? Read our <z-link>guidelines</z-link> for creating user groups.": "Први пут сте овде? Прочитајте наше <z-link>смернице</z-link> за прављење корисничких група.",
-<<<<<<< HEAD
-  "Fixed width": "Фиксна ширина",
-  "Fixed width mode": "Мод фиксне ширине",
-  "Fluid width": "Флексибилна ширина",
-  "Fluid width mode": "Мод флексибилне ширине",
-  "For example, to configure code playgrounds for languages like Python or JavaScript, you could specify the <i>Language</i> and <i>URL prefix</i> fields as:": "На пример, да би сте подесили игралиште за код за језике као што су Python или JavaScript, могли би сте да у поља <i>Језик</i> и <i>Префикс адресе</i> наведете:",
-  "Forgotten it?": "Заборавили сте је?",
-=======
   "For example, to configure a code playground for code blocks tagged as Python, you can set:": "На пример, да би сте подесили игралиште за код за блокове кода означене као Python, можете подесити:",
   "For more examples and technical details, see the <z-link>help center documentation</z-link> on adding code playgrounds.": "За више примера и техничке детаље, погледајте <z-link>документацију центра помоћи</z-link> за додавање игралишта за код.",
   "For more examples, see the <z-link>help center documentation</z-link> on adding linkifiers.": "За више примера, погледајте <z-link>документацију центра помоћи</z-link> за додавање линкифајера.",
   "Forgot it?": "",
->>>>>>> drc_main
   "Forked from upstream at {zulip_merge_base}": "Рашчлањено из вишег тока од {zulip_merge_base}",
   "Friday": "Петак",
   "Full name": "Име и презиме",
   "GIPHY attribution": "GIPHY приписивање",
   "GIPHY integration": "GIPHY интеграција",
   "General": "Опште",
-<<<<<<< HEAD
-  "Generate email address": "Генериши адресу е-поште",
-  "Generate invite link": "генериши везу позивнице",
-=======
   "Generate email address": "Генериши адресе е-поште",
   "Generate invite link": "Генериши везу позивнице",
->>>>>>> drc_main
   "Generate new API key": "Генериши нови АПИ кључ",
   "Generate stream email address": "Генериши адресу е-поште тока",
   "Generating link...": "Веза се генерише...",
@@ -583,12 +520,6 @@
   "Go back through viewing history": "Иди уназад кроз историју прегледа",
   "Go forward through viewing history": "Иди унапред кроз историју прегледа",
   "Go invisible": "Буди невидљив",
-<<<<<<< HEAD
-  "Go to conversation": "Иди на разговор",
-  "Go to default view": "Иди на предефинисани приказ",
-  "Got it": "Разумем",
-  "Got it!": "Разумем!",
-=======
   "Go to #{display_recipient}": "",
   "Go to #{display_recipient} > {topic}": "",
   "Go to conversation": "Иди на разговор",
@@ -596,7 +527,6 @@
   "Go to direct messages with {display_reply_to}": "",
   "Got it": "Имам га",
   "Got it!": "Имам га!",
->>>>>>> drc_main
   "Government": "Државна управа",
   "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena": "Дозволите Зулипу Керберос тикете који су потребни да би се покренула ваша Zephyr копија путем Webathena-е",
   "Guest": "Гост",
@@ -620,13 +550,8 @@
   "In a meeting": "На састанку сам",
   "Inactive": "Неактиван",
   "Inactive bots": "Неактивни ботови",
-<<<<<<< HEAD
-  "Include PMs": "Укључујући директне",
-  "Include content of private messages in desktop notifications": "Прикажи садржај приватних порука у обавештењима на рачунару",
-=======
   "Include DMs": "Укључујући директне",
   "Include content of direct messages in desktop notifications": "Укључи садржај директних порука у обавештењима на рачунару",
->>>>>>> drc_main
   "Include message content in message notification emails": "Прикажи садржај поруке у е-порукама обавештења",
   "Include muted": "Укључујући пригушене",
   "Include organization name in subject of message notification emails": "Прикажи назив организације у наслову е-порука обавештења",
@@ -681,11 +606,7 @@
   "Learn more about starring messages <z-link>here</z-link>.": "Сазнајте више о означавању порука са звездицом <z-link>овде</z-link>.",
   "Leave {group_name}": "Напусти {group_name}",
   "Let others see when I've read messages": "Нека остали виде када сам прочитао поруке",
-<<<<<<< HEAD
-  "Let recipients see when I'm typing private messages": "Нека примаоци виде када куцам приватне поруке",
-=======
   "Let recipients see when I'm typing direct messages": "Нека примаоци виде када куцкам директне поруке",
->>>>>>> drc_main
   "Let subscribers see when I'm typing messages in streams": "Нека чланови виде када куцам поруке у токовима",
   "Light": "Светла",
   "Light theme": "Светла тема",
@@ -730,10 +651,6 @@
   "Message #{stream_name}": "Пошаљите поруку на #{stream_name}",
   "Message #{stream_name} > {topic_name}": "Пошаљите поруку на #{stream_name} > {topic_name}",
   "Message actions": "Акције над поруком",
-<<<<<<< HEAD
-  "Message and topic editing": "Измена порука и тема",
-=======
->>>>>>> drc_main
   "Message deletion": "Брисање порука",
   "Message edit history": "Историја измене порука",
   "Message editing": "Измена порука",
@@ -745,13 +662,8 @@
   "Message {recipient_names}": "Пошаљите поруку {recipient_names}",
   "Message {recipient_name} ({recipient_status})": "Пошаљите поруку {recipient_name} ({recipient_status})",
   "Messages in all public streams": "Поруке у свим јавним токовима",
-<<<<<<< HEAD
-  "Messages in this stream will be automatically deleted after {retention_days} days.": "Поруке у овом току ће аутоматски бити обрисане након {retention_days} дана.",
-  "Messages in this stream will be retained forever.": "Поруке у овом току ће бити заувек сачуване.",
-=======
   "Messages will not be automatically marked as read because this is not a conversation view. <z-link>Change setting</z-link>": "",
   "Messages will not be automatically marked as read. <z-link>Change setting</z-link>": "",
->>>>>>> drc_main
   "Mobile": "Телефон",
   "Mobile message notifications": "Обавештења поруком на телефону",
   "Mobile notifications": "Обавештења на телефону",
@@ -782,12 +694,7 @@
   "Muted streams don't show up in \"All messages\" or generate notifications unless you are mentioned.": "Утишани токови се не приказују у \"Свим порукама\" нити производе обавештења осим ако нисте поменути.",
   "Muted user": "Утишани корисник",
   "Muted users": "Утишани корисници",
-<<<<<<< HEAD
-  "N": "Х",
-  "Name": "Назив",
-=======
   "Name": "Име и презиме",
->>>>>>> drc_main
   "Name changes are disabled in this organization. Contact an administrator to change your name.": "Промене имена су онемогућена у овој организацији. Контактирајте администратора да би сте променили ваше име.",
   "Narrow to all direct messages": "Сузи избор на све директне поруке",
   "Narrow to all unmuted messages": "Сузи избор на све неутишане поруке",
@@ -850,12 +757,8 @@
   "No restrictions": "Без ограничења",
   "No scheduled messages.": "",
   "No search results": "Нема резултата претраге",
-<<<<<<< HEAD
-  "No stream subscriptions.": "Нема чланства у токовима.",
-=======
   "No search results.": "",
   "No stream subscriptions.": "Нема чланства тока.",
->>>>>>> drc_main
   "No streams": "Нема токова",
   "No topics are marked as resolved.": "Ниједна тема није означена као решена.",
   "No topics match your current filter.": "Ниједна тема се не поклапа са тренутним филтером.",
@@ -871,10 +774,6 @@
   "Note that any bots that you maintain will be disabled.": "Имајте на уму да ће сви ботови које ви одржавате бити онемогућени.",
   "Note that organizations are limited to five exports per week.": "Имајте на уму да су организације ограничене на пет извоза недељно.",
   "Nothing to preview": "Ништа за преглед",
-<<<<<<< HEAD
-  "Nothing's been sent here yet!": "Овде још ништа није послато!",
-=======
->>>>>>> drc_main
   "Notification of account deactivation on {realm_name}": "Обавештење о деактивирању налога на {realm_name}",
   "Notification settings": "Подешавања обавештења",
   "Notification sound": "Звук обавештења",
@@ -892,30 +791,13 @@
   "One or more email addresses...": "Једна или више адреса е-поште",
   "One or more of these users do not exist!": "Један или више од ових корисника не постоји!",
   "Only 2 custom profile fields can be displayed on the user card.": "Само 2 прилагођена поља профила могу бити приказана на картици корисника.",
-<<<<<<< HEAD
-  "Only full members belonging to the group, organization administrators and moderators can modify a group.": "Само пуни чланови који припадају овој групи, администратори организације и модератори могу да уређују групу.",
-  "Only group members can add users to a group.": "Само чланови групе могу да додају кориснике у групу.",
-  "Only group members, organization administrators and moderators can modify a group.": "Само чланови групе, администратори организације и модератори могу да уређују групу.",
-  "Only organization administrators and moderators can add custom emoji in this organization.": "Само администратори организације и модератори могу да додају прилагођене емотиконе у ову организацију.",
-  "Only organization administrators and moderators can modify user groups in this organization.": "Само администратори организације и модератори могу да уређују групе корисника у овој организацији.",
-  "Only organization administrators and moderators can post.": "Само администратори организације и модератори могу да пишу.",
-  "Only organization administrators can add bots to this organization.": "Само администратори организације могу да додају ботове у ову организацију.",
-  "Only organization administrators can add custom emoji in this organization.": "Само администратори организације могу да додају прилагођене емотиконе у ову организацију.",
-  "Only organization administrators can add generic bots.": "Само администратори организације могу да додају генеричке ботове.",
-=======
   "Only group members can add users to a group.": "Само чланови групе могу да додају кориснике у групу.",
   "Only in conversation views": "Само у приказима разговора",
->>>>>>> drc_main
   "Only organization administrators can edit these settings": "Само администратори организације могу да уређују ова подешавања",
   "Only organization administrators can edit these settings.": "Само администратори организације могу да уређују ова подешавања.",
   "Only organization owners can edit these settings.": "Само власници организације могу да уређују ова подешавања.",
-<<<<<<< HEAD
-  "Only owners can change these settings.": "Само власници могу да мењају ова подешавања.",
-  "Only owners can deactivate the organization.": "Само власници могу да деактивирају организацију.",
-=======
   "Only organization owners may deactivate an organization.": "Само власници организације могу да деактивирају организацију.",
   "Only owners can change these settings.": "Само власници могу да мењају ова подешавања.",
->>>>>>> drc_main
   "Only stream members can add users to a private stream": "Само чланови тока могу да додају кориснике у приватни ток.",
   "Only stream members can add users to a private stream.": "",
   "Only subscribers to this stream can edit stream permissions.": "Само чланови овог тока могу да уређују дозволе тока.",
@@ -953,11 +835,6 @@
   "Owner: {name}": "Власник: {name}",
   "Owners": "Власници",
   "Owners only": "Само власници",
-<<<<<<< HEAD
-  "PMs, mentions, and alerts": "Личне, помињања и упозорења",
-  "PRIVATE MESSAGES": "ПРИВАТНЕ ПОРУКЕ",
-=======
->>>>>>> drc_main
   "Participants": "Учесници",
   "Participated": "У којима учествујем",
   "Password": "Лозинка",
@@ -998,11 +875,7 @@
   "Pronouns": "Заменице",
   "Public": "Јавно",
   "Question": "Питање",
-<<<<<<< HEAD
-  "Quote and reply or forward": "Цитирај и одговори или проследи",
-=======
   "Quote and reply": "Цитирај и одговори",
->>>>>>> drc_main
   "Quote and reply to message": "Цитирај и одговори на поруку",
   "Quoted original email (in replies)": "Цитирана оригинална е-порука (у одговорима)",
   "React to selected message with": "Реагуј на изабрану поруку са",
@@ -1016,14 +889,6 @@
   "Read receipts are not available for Notification Bot messages.": "Потврде читања нису доступне за поруке од Бота обавештења.",
   "Receives new stream announcements": "Примај најаве нових токова",
   "Recent conversations": "Недавни разговори",
-<<<<<<< HEAD
-  "Remind me about this": "Подсети ме за ово",
-  "Reminder not set!": "Подсетник није подешен!",
-  "Reminder set!": "Подсетник је подешен!",
-  "Remove": "Уклони",
-  "Remove from default": "Уклони из предефинисаних",
-  "Removed successfully.": "Успешно уклоњено.",
-=======
   "Remove": "Уклони",
   "Remove from default": "Уклони из предефинисаних",
   "Removed successfully.": "Успешно уклоњено.",
@@ -1031,7 +896,6 @@
   "Rename topic to:": "",
   "Reply @-mentioning sender": "",
   "Reply directly to sender": "",
->>>>>>> drc_main
   "Reply mentioning bot": "Одговори поменутом боту",
   "Reply mentioning user": "Одговори поменутом кориснику",
   "Reply to message": "Одговори на поруку",
@@ -1100,10 +964,6 @@
   "Send message": "Пошаљи поруку",
   "Send mobile notifications even if I'm online": "Пошаљи обавештење на телефон чак и када сам на мрежи",
   "Send mobile notifications even if user is online": "Пошаљи обавештење на телефон чак и када је корисник на мрежи",
-<<<<<<< HEAD
-  "Send private message": "Пошаљи приватну поруку",
-=======
->>>>>>> drc_main
   "Send weekly digest emails to inactive users": "Шаљи недељне сумарне извештаје неактивним корисницима",
   "Sent!": "Послато!",
   "Sent! Your message is outside your current narrow.": "Послато! Ваша порука је изван вашег тренутног скупа.",
@@ -1127,11 +987,7 @@
   "Show previews of linked websites": "Прикажи преглед вебсајта у поруци са везом",
   "Show previews of uploaded and linked images": "Прикажи преглед постављених и слика преко везе",
   "Show starred message count": "Прикажи број порука са звездицом",
-<<<<<<< HEAD
-  "Show status text": "Прикажи статус",
-=======
   "Show status text": "Прикажи текст статуса",
->>>>>>> drc_main
   "Show/change your API key": "Прикажи/измени ваш АПИ кључ",
   "Sign up": "Региструјте се",
   "Silent mentions do not trigger notifications.": "Тиха помињања не окидају обавештења.",
@@ -1157,10 +1013,6 @@
   "Stream creation": "Креирање тока",
   "Stream description": "Опис тока",
   "Stream email address:": "Адреса е-поште тока:",
-<<<<<<< HEAD
-  "Stream list": "Списак токова",
-=======
->>>>>>> drc_main
   "Stream name": "Назив тока",
   "Stream permissions": "Дозволе тока",
   "Stream settings": "Подешавања тока",
@@ -1190,16 +1042,10 @@
   "The administrators provided the following comment:": "Администратор је доставио следећи коментар:",
   "The basics": "Основе",
   "The group description cannot contain newline characters.": "Опис групе не може да садржи карактере за нови ред.",
-<<<<<<< HEAD
-  "The recipient {recipient} is not valid": "Прималац {recipient} није исправан",
-  "The recipients {recipients} are not valid": "Примаоци {recipients} нису исправни",
-  "The sender's email address": "Адреса е-поште пошиљаоца",
-=======
   "The recipient {recipient} is not valid.": "Прималац {recipient} није исправан.",
   "The recipients {recipients} are not valid.": "Примаоци {recipients} нису исправни.",
   "The sender's email address": "Адреса е-поште пошиљаоца",
   "The stream <b>#{stream_name}</b> does not exist. Manage your subscriptions <z-link>on your Streams page</z-link>.": "Ток <b>#{stream_name}</b> не постоји. Управљајте вашим претплатама <z-link>на страници ваших Токова</z-link>.",
->>>>>>> drc_main
   "The stream description cannot contain newline characters.": "Опис тока не сме садржати карактере за нови ред.",
   "Their password will be cleared from our systems, and any bots they maintain will be disabled.": "Њихове лозинке ће бити обрисане из нашег система, и сви ботови које они одржавају ће бити онемогућени.",
   "Theme": "Тема",
@@ -1243,13 +1089,8 @@
   "This stream has {count} subscribers.": "Овај ток има {count} чланова.",
   "This user does not exist!": "Овај корисник не постоји!",
   "This user has been deactivated.": "Овај корисник је деактивиран.",
-<<<<<<< HEAD
-  "This will clear the <z-field-name></z-field-name> profile field for 1 user.": "Ово ће очистити <z-field-name></z-field-name> поље профила за 1 корисника.",
-  "This will clear the <z-field-name></z-field-name> profile field for <z-count></z-count> users.": "Ово ће очистити <z-field-name></z-field-name> поље профила за <z-count></z-count> корисника.",
-=======
   "This will clear the <z-field-name></z-field-name> profile field for 1 user.": "Ово ће обрисати <z-field-name></z-field-name> поље профила за 1 корисника.",
   "This will clear the <z-field-name></z-field-name> profile field for <z-count></z-count> users.": "Ово ће обрисати <z-field-name></z-field-name> поље профила за <z-count></z-count> корисника.",
->>>>>>> drc_main
   "This will delete the <z-profile-field-name></z-profile-field-name> profile field for 1 user.": "Ово ће обрисати <z-profile-field-name></z-profile-field-name> поље профила за 1 корисника.",
   "This will delete the <z-profile-field-name></z-profile-field-name> profile field for <z-count></z-count> users.": "Ово ће обрисати <z-profile-field-name></z-profile-field-name> поље профила за <z-count></z-count> корисника.",
   "Thursday": "Четвртак",
@@ -1257,11 +1098,8 @@
   "Time format": "Формат времена",
   "Time limit for deleting messages": "Временско ограничење за брисање порука",
   "Time limit for editing messages": "Временско ограничење за измену порука",
-<<<<<<< HEAD
-=======
   "Time limit for editing topics": "Временско ограничење за измену тема",
   "Time limit for moving messages between streams": "Временско ограничење за премештање токова између токова",
->>>>>>> drc_main
   "Time zone": "Временска зона",
   "Time's up!": "Време је истекло!",
   "Tip: You can also send \"/poll Some question\"": "Савет: Можете такође послати \"/poll Неко питање\"",
@@ -1328,13 +1166,7 @@
   "Upload profile picture": "Постави слику профила",
   "Upload stalled for %'{seconds}' seconds, aborting.": "Постављање заустављено %'{seconds}' секунди, прекидамо.",
   "Uploaded files": "Постављене датотеке",
-<<<<<<< HEAD
-  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "Постављање прилагођеног емотикона са овим називом ће приморати коришћење истог уместо уграђеног. Наставити?",
   "Uploading {filename}…": "Постављање {filename}…",
-  "Uploading…": "Постављање…",
-=======
-  "Uploading {filename}…": "Постављање {filename}…",
->>>>>>> drc_main
   "Usage statistics": "Статистика употребе",
   "Use full width on wide screens": "Користи пуну ширину на широким екранима",
   "Use html encoding (not recommended)": "Користи html кодирање (не препоручује се)",
@@ -1375,16 +1207,6 @@
   "View message source": "Прикажи поруку изворно",
   "View messages sent": "Прикажи послате поруке",
   "View messages with yourself": "Прегледај поруке са самим собом",
-<<<<<<< HEAD
-  "View private messages": "Прикажи приватне поруке",
-  "View profile": "Прикажи профил",
-  "View read receipts": "Прикажи потврде читања",
-  "View recent conversations": "Прегледај недавне разговоре",
-  "View stream": "Прикажи ток",
-  "View stream messages": "Прикажи поруке тока",
-  "View user card": "Прегледај картицу корисника",
-  "View your profile": "Прикажи твој профил",
-=======
   "View profile": "Прикажи профил",
   "View read receipts": "Прикажи потврде читања",
   "View recent conversations": "Прегледај недавне разговоре",
@@ -1394,7 +1216,6 @@
   "View streams": "",
   "View user card": "Прегледај картицу корисника",
   "View your profile": "Прикажи свој профил",
->>>>>>> drc_main
   "Visual": "Визуелно",
   "Visual desktop notifications": "Визуелна обавештења на рачунару",
   "Waiting period (days)": "Период чекања (дана)",
@@ -1447,13 +1268,8 @@
   "You and": "Ви и",
   "You and {display_reply_to}": "Ви и {display_reply_to}",
   "You and {recipients}": "Ви и {recipients}",
-<<<<<<< HEAD
-  "You are not allowed to send group private messages in this organization.": "У овој организацији вам није дозвољено да шаљете групне приватне поруке.",
-  "You are not allowed to send private messages in this organization.": "У овој организацији вам није дозвољено да шаљете приватне поруке.",
-=======
   "You are about to disable all notifications for private messages, @&#8209;mentions and alerts, which may cause you to miss messages that require your timely attention. If you would like to temporarily disable all desktop notifications, consider <z-link>turning on \"Do not disturb\"</z-link> instead.": "",
   "You are not allowed to send direct messages in this organization.": "Није вам дозвољено да шаљете директне поруке у овој организацији.",
->>>>>>> drc_main
   "You are not currently subscribed to this stream.": "Тренутно нисте учлањени у овај ток.",
   "You are not subscribed to any streams.": "",
   "You are not subscribed to stream <z-stream-name></z-stream-name>": "",
@@ -1461,24 +1277,14 @@
   "You are using an old version of the Zulip desktop app with known security bugs.": "Користите стару верзију Зулип апликације за рачунар која садржи познате безбедоносне пропусте.",
   "You aren't subscribed to this stream and nobody has talked about that yet!": "Нисте учлањени у овај ток и нико још није говорио на ову тему!",
   "You can also make <z-link>tables</z-link> with this <z-link>Markdown-ish table syntax</z-link>.": "Такође можете направити <z-link>табеле</z-link> са овом <z-link>Markdown синтаксом за табеле</z-link>.",
-<<<<<<< HEAD
-  "You can combine search operators as needed.": "Можете комбиновати операторе претраге према потреби.",
-=======
   "You can combine search filters as needed.": "Можете комбиновати филтере претраге према потреби.",
->>>>>>> drc_main
   "You can fully access this community and participate in conversations by creating a Zulip account in this organization.": "Можете потпуно приступити заједници и учествовати у разговорима креирањем Зулип налога у овој организацији.",
   "You can no longer save changes to this message.": "",
   "You can only view or manage invitations that you sent.": "Можете само прегледати или управљати позивницама које ви пошаљете.",
   "You can reactivate deactivated users from <z-link>organization settings</z-link>.": "Можете поново активирати деактивиране кориснике кроз <z-link>подешавања организације</z-link>.",
-<<<<<<< HEAD
-  "You can use email to send messages to Zulip streams.": "Можете користити е-пошту за слање порука у Зулип токове.",
-  "You cannot create a stream with no subscribers!": "Не можете креирати ток без чланова!",
-  "You cannot create a user_group with no members!": "Не можете направити групу корисника без чланова!",
-=======
   "You can use email to send messages to Zulip streams.": "Можете користити е-поруке за слање порука у Зулип токове.",
   "You cannot create a stream with no subscribers!": "Не можете креирати ток без чланова!",
   "You cannot create a user group with no members!": "Не можете направити групу корисника без чланова!",
->>>>>>> drc_main
   "You cannot send messages to deactivated users.": "Не можете слати поруке деактивираним корисницима.",
   "You do not have permission to add other users to streams in this organization.": "",
   "You do not have permission to move some of the messages in this topic. Contact a moderator to move all messages.": "",
@@ -1494,20 +1300,12 @@
   "You get": "Добијате",
   "You have muted <z-stream-topic></z-stream-topic>.": "Утишали сте <z-stream-topic></z-stream-topic>.",
   "You have no active bots.": "Немате активних ботова.",
-<<<<<<< HEAD
-  "You have no group private messages with {person} yet.": "Још увек немате групне приватне поруке са {person}.",
-  "You have no inactive bots.": "Немате неактивних ботова.",
-  "You have no private messages with these users yet.": "Још увек немате приватне поруке са овим корисницима.",
-  "You have no private messages with {person} yet.": "Још увек немате приватне поруке са {person}.",
-  "You have no private messages yet!": "За сада немате ниједну приватну поруку!",
-=======
   "You have no direct messages including {person} yet.": "",
   "You have no direct messages with these users yet.": "Још увек немате директне поруке са овим корисницима.",
   "You have no direct messages with {person} yet.": "Још увек немате директне поруке са {person}.",
   "You have no direct messages yet!": "Још увек немате директних порука!",
   "You have no inactive bots.": "Немате неактивних ботова.",
   "You have no starred messages.": "",
->>>>>>> drc_main
   "You have no unread messages!": "Немате непрочитаних порука!",
   "You have not configured any topics yet.": "",
   "You have not muted any users yet.": "Још увек нисте утишали ниједног корисника.",
@@ -1515,10 +1313,6 @@
   "You have not uploaded any files.": "Још увек нисте поставили ниједну датотеку.",
   "You haven't been mentioned yet!": "Још увек нисте поменути!",
   "You haven't received any messages sent by {person} yet.": "Још увек нисте примили ниједну поруку од {person}.",
-<<<<<<< HEAD
-  "You haven't starred anything yet!": "За сада нисте додали звездицу било чему!",
-=======
->>>>>>> drc_main
   "You must be an organization administrator to create a stream without subscribing.": "МОрате бити администратор организације да би сте направили ток без учлањивања.",
   "You need to be running Zephyr mirroring in order to send messages!": "Морате да покренете Zephyr дуплирање да би сте слали поруке!",
   "You searched for:": "Тражили сте:",
@@ -1529,14 +1323,11 @@
   "You're not subscribed to this stream. You will not be notified if other users reply to your message.": "Нисте учлањени у овај ток. Нећете бити обавештени ако вас други корисници помену у својим порукама.",
   "Your API key:": "Ваш АПИ кључ",
   "Your Zulip account on <z-link></z-link> has been deactivated, and you will no longer be able to log in.": "Ваш Зулип налог на <z-link></z-link> је деактивиран, и више нисте у могућности да се пријавите.",
-<<<<<<< HEAD
-=======
   "Your message has been scheduled for {deliver_at}.": "",
   "Your message is taking longer than expected to be sent. Sending…": "",
   "Your message was sent to a stream you have muted.": "",
   "Your message was sent to a topic you have muted.": "",
   "Your password": "Ваша лозинка",
->>>>>>> drc_main
   "Your status": "Ваш статус",
   "Your time zone:": "Ваша временска зона",
   "Zoom to message in conversation context": "Пребаци се на поруку у контекст разговора",
@@ -1545,10 +1336,7 @@
   "Zulip Server {display_version}": "Зулип сервер {display_version}",
   "Zulip Server {display_version} (modified)": "Зулип сервер {display_version} (измењен)",
   "Zulip Server {display_version} (patched)": "Зулип сервер {display_version} (закрпљен)",
-<<<<<<< HEAD
-=======
   "Zulip lets you mute topics and streams to avoid receiving notifications messages you are not interested in. Muting a stream effectively mutes all topics in that stream. You can also manually mute a topic in an unmuted stream, or unmute a topic in a muted stream. <z-link>Learn more.</z-link>": "",
->>>>>>> drc_main
   "Zulip needs to send email to confirm users' addresses and send notifications.": "Зулип мора да пошаље е-поруку да би потврдио корисничку адресу и слао обавештења.",
   "Zulip needs your permission to <z-link>enable desktop notifications.</z-link>": "Зулипу је потребна ваша дозвола да би <z-link>омогућио приказ обавештења на рачунару</z-link>.",
   "Zulip's translations are contributed by our amazing community of volunteer translators. If you'd like to help, see the <z-link>Zulip translation guidelines</z-link>.": "Зулип преводи су допринос наше предивне заједнице преводиоца волонтера. Ако желите да помогнете, погледајте <z-link>водич за превод Зулипа</z-link>.",
@@ -1563,15 +1351,11 @@
   "clear": "очисти",
   "cookie": "колачић",
   "deprecated": "застарело",
-<<<<<<< HEAD
-  "group private messages with {recipient}": "групиши приватне поруке са {recipient}",
-=======
   "direct messages with yourself": "директне поруке са самим собом",
   "direct messages with {recipient}": "директне поруке са {recipient}",
   "does not apply to administrators": "не примењује се на администраторе",
   "does not apply to moderators and administrators": "не примењује се на модераторе и администраторе",
   "group direct messages with {recipient}": "групне директне поруке са {recipient}",
->>>>>>> drc_main
   "he/him": "он/њега",
   "in 1 hour": "за 1 сат",
   "in 20 minutes": "за 20 минута",
@@ -1582,19 +1366,10 @@
   "more conversations": "више разговора",
   "more topics": "више тема",
   "or": "или",
-<<<<<<< HEAD
-  "private messages with yourself": "приватне поруке са самим собом",
-  "private messages with {recipient}": "приватне поруке са {recipient}",
-  "she/her": "она/њу",
-  "they/them": "они/њих",
-  "{N, plural, one {Done! {N} message marked as read.} other {Done! {N} messages marked as read.}}": "{N, plural, one {Завршено! {N} порука означена као прочитана.} few {Завршено! {N} порука означено као прочитано.} other {Завршено! {N} порука означено као прочитано.}}",
-  "{N, plural, one {Done! {N} message marked as unread.} other {Done! {N} messages marked as unread.}}": "{N, plural, one {Завршено! {N} порука означена као непрочитана.} few {Завршено! {N} порука означено као непрочитано.} other {Завршено! {N} порука означено као непрочитано.}}",
-=======
   "she/her": "она/њу",
   "they/them": "они/њих",
   "{N, plural, one {Done! {N} message marked as read.} other {Done! {N} messages marked as read.}}": "{N, plural, one {Завршено! {N} порука означена као прочитана.} few {Завршено! {N} порука означено као прочитано.} other {Завршено! {N} порука означено као прочитано.}}",
   "{N, plural, one {Done! {N} message marked as unread.} other {Done! {N} messages marked as unread.}}": "{N, plural, one {Завршено! {N} порука означена као прочитана.} few {Завршено! {N} порука означено као прочитано.} other {Завршено! {N} порука означено као прочитано.}}",
->>>>>>> drc_main
   "{N, plural, one {Working… {N} message marked as read so far.} other {Working… {N} messages marked as read so far.}}": "{N, plural, one {Извршава се... {N} порука означена као прочитана до сада.} few {Извршава се... {N} порука означено као прочитано до сада.} other {Извршава се... {N} порука означено као прочитано до сада.}}",
   "{N, plural, one {Working… {N} message marked as unread so far.} other {Working… {N} messages marked as unread so far.}}": "{N, plural, one {Извршава се... {N} порука означена као непрочитана до сада.} few {Извршава се... {N} порука означено као непрочитано до сада.} other {Извршава се... {N} порука означено као непрочитано до сада.}}",
   "{comma_separated_usernames} and {last_username} reacted with {emoji_name}": "{comma_separated_usernames} и {last_username} су реаговали са {emoji_name}",
@@ -1607,15 +1382,8 @@
   "{minutes} min to edit": "{minutes} минута за измену",
   "{minutes} minutes ago": "{minutes} минута раније",
   "{modal_heading_text}": "{modal_heading_text}",
-<<<<<<< HEAD
-  "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, one {Ова порука је <z-link>прочитана</z-link> од стране {num_of_people} особе.} few {Ова порука је <z-link>прочитана</z-link> од стране {num_of_people} људи.} other {Ова порука је <z-link>прочитана</z-link> од стране {num_of_people} људи.}}",
-  "{seconds} sec to edit": "{seconds} за измену",
-  "{starred_status} this message": "{starred_status}",
-  "{starred_status} this message (Ctrl + s)": "{starred_status} (Ctrl + s)",
-=======
   "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, one {Ова порука је <z-link>прочитана</z-link> од стране {num_of_people} особе:} few {Ова порука је <z-link>прочитана</z-link> од стране {num_of_people} људи:} other {Ова порука је <z-link>прочитана</z-link> од стране {num_of_people} људи:}}",
   "{seconds} sec to edit": "{seconds} за измену",
->>>>>>> drc_main
   "{user_time} local time": "{user_time} локално време",
   "{username} [said]({link_to_message}):": "{username} [је рекао]({link_to_message}):",
   "{username} reacted with {emoji_name}": "{username} је реаговао са {emoji_name}"

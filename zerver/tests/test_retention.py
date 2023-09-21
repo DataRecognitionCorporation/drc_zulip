@@ -659,13 +659,8 @@ class MoveMessageToArchiveGeneral(MoveMessageToArchiveBase):
         cordelia = self.lear_user("cordelia")
         king = self.lear_user("king")
 
-<<<<<<< HEAD
-        zulip_msg_ids = [self.send_personal_message(iago, othello) for i in range(0, 3)]
-        lear_msg_ids = [self.send_personal_message(cordelia, king) for i in range(0, 3)]
-=======
         zulip_msg_ids = [self.send_personal_message(iago, othello) for i in range(3)]
         lear_msg_ids = [self.send_personal_message(cordelia, king) for i in range(3)]
->>>>>>> drc_main
         msg_ids = zulip_msg_ids + lear_msg_ids
         usermsg_ids = self._get_usermessage_ids(msg_ids)
 

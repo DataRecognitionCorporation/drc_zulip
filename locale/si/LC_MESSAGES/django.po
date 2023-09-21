@@ -4,31 +4,17 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-<<<<<<< HEAD
-# Transifex Bot <>, 2022
-# හෙළබස සමූහය, 2022
-# 
-#, fuzzy
-=======
 # HelaBasa Group <transifex-helabasa-group@yalu.lk>, 2021
 # HelaBasa Group <transifex-helabasa-group@yalu.lk>, 2022
 # HelaBasa Group <transifex-helabasa-group@yalu.lk>, 2022
->>>>>>> drc_main
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2022-11-17 16:38+0000\n"
-"PO-Revision-Date: 2022-11-17 23:30+0000\n"
-"Last-Translator: හෙළබස සමූහය, 2022\n"
-"Language-Team: Sinhala (https://app.transifex.com/zulip/teams/53893/si/)\n"
-=======
 "POT-Creation-Date: 2023-05-31 01:00+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
 "Last-Translator: HelaBasa Group <transifex-helabasa-group@yalu.lk>, 2022\n"
 "Language-Team: Sinhala (http://app.transifex.com/zulip/zulip/language/si/)\n"
->>>>>>> drc_main
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -850,17 +836,9 @@ msgstr "වි-තැපෑල"
 #: templates/zerver/register.html:209
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
-"rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr ""
-"<a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" rel=\"noopener "
-"noreferrer\">සේවා නියම</a> වලට මම එකඟ වෙමි."
-=======
 "I agree to the <a href=\"%(root_domain_url)s/policies/terms\" "
 "target=\"_blank\" rel=\"noopener noreferrer\">Terms of Service</a>."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/accounts_accept_terms.html:64
 msgid "Continue"
@@ -916,15 +894,7 @@ msgstr ""
 msgid "Just in case, take a look at your Spam folder."
 msgstr "ඔබගේ අයාචිත තැපැල් බහාලුම ද බලන්න."
 
-<<<<<<< HEAD
-#: templates/zerver/app/index.html:74
-msgid "Loading..."
-msgstr "පූරණය වෙමින්..."
-
-#: templates/zerver/app/index.html:77
-=======
 #: templates/zerver/app/index.html:121
->>>>>>> drc_main
 msgid ""
 "If this message does not go away, try <a id=\"reload-lnk\">reloading</a> the"
 " page."
@@ -1449,11 +1419,7 @@ msgstr "සංවිධානයේ ඒ.ස.නි.: %(organization_url)s"
 #: templates/zerver/emails/followup_day1.html:37
 #: templates/zerver/emails/followup_day1.txt:20
 #, python-format
-<<<<<<< HEAD
-msgid "Username: %(ldap_username)s"
-=======
 msgid "Your username: %(ldap_username)s"
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/emails/followup_day1.html:39
@@ -1478,24 +1444,8 @@ msgid ""
 "href=\"%(getting_user_started_link)s\">Getting started guide</a>!"
 msgstr ""
 
-<<<<<<< HEAD
-#: templates/zerver/emails/followup_day1.source.html:48
-#: templates/zerver/emails/followup_day1.txt:36
-msgid "Cheers,"
-msgstr ""
-
-#: templates/zerver/emails/followup_day1.source.html:49
-#: templates/zerver/emails/followup_day1.txt:37
-#: templates/zerver/emails/notify_change_in_email.source.html:14
-#: templates/zerver/emails/notify_change_in_email.txt:7
-msgid "Team Zulip"
-msgstr "සුලිප් කණ්ඩායම"
-
-#: templates/zerver/emails/followup_day1.source.html:53
-=======
 #: templates/zerver/emails/followup_day1.html:51
 #, python-format
->>>>>>> drc_main
 msgid ""
 "We also have a guide for <a "
 "href=\"%(getting_organization_started_link)s\">Setting up your "
@@ -1616,47 +1566,12 @@ msgstr ""
 msgid "Go to Zulip"
 msgstr "සුලිප් වෙත යන්න"
 
-<<<<<<< HEAD
-#: templates/zerver/emails/followup_day2.source.html:18
-#: templates/zerver/emails/followup_day2.txt:9
-msgid ""
-"Not recommended: \"What do people think of this new design mockup?\", \"I'm "
-"looking at Bug 345\", \"Is Acme Burgers open for lunch?\""
-msgstr ""
-
-#: templates/zerver/emails/followup_day2.source.html:21
-msgid "Example of a topic that is too long"
-msgstr ""
-
-#: templates/zerver/emails/followup_day2.source.html:23
-msgid ""
-"Why bother with topics? Well, two reasons: it makes conversations clearer "
-"(imagine if email didn't have them!), and it lets you more efficiently catch"
-" up on what's happened while you're away&mdash;read the topics that are "
-"relevant to you, and ignore the ones that aren't!"
-msgstr ""
-
-#: templates/zerver/emails/followup_day2.source.html:25
-msgid "Take it for a spin now."
-msgstr ""
-
-#: templates/zerver/emails/followup_day2.source.html:27
-#: templates/zerver/emails/followup_day2.txt:16
-#: templates/zerver/emails/notify_new_login.source.html:40
-#: templates/zerver/emails/notify_new_login.txt:20
-msgid "Thanks,"
-msgstr "ස්තූතියි,"
-
-#: templates/zerver/emails/followup_day2.source.html:34
-msgid "Unsubscribe from welcome emails"
-=======
 #: templates/zerver/emails/followup_day2.html:34
 #: templates/zerver/emails/followup_day2.txt:14
 #: templates/zerver/emails/onboarding_zulip_guide.html:40
 #: templates/zerver/emails/onboarding_zulip_guide.txt:27
 #, python-format
 msgid "Unsubscribe from welcome emails for %(realm_name)s"
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
@@ -2304,75 +2219,11 @@ msgstr "ආරක්‍ෂාව"
 msgid "Integrations"
 msgstr "අනුකලන"
 
-<<<<<<< HEAD
-#: templates/zerver/footer.html:17
-msgid "Solutions"
-msgstr ""
-
-#: templates/zerver/footer.html:20
-msgid "Business"
-msgstr ""
-
-#: templates/zerver/footer.html:23
-msgid "Education"
-msgstr "අධ්යාපනය"
-
-#: templates/zerver/footer.html:26
-msgid "Research"
-msgstr ""
-
-#: templates/zerver/footer.html:29
-msgid "Events and conferences"
-msgstr ""
-
-#: templates/zerver/footer.html:32
-msgid "Open source projects"
-msgstr ""
-
-#: templates/zerver/footer.html:35
-msgid "Communities"
-msgstr ""
-
-#: templates/zerver/footer.html:40
-msgid "Customer stories"
-msgstr ""
-
-#: templates/zerver/footer.html:43
-msgid "Company"
-msgstr "සමාගම"
-
-#: templates/zerver/footer.html:46
-msgid "Technical University of Munich"
-msgstr "මියුනිච් කාර්මික සරසවිය"
-
-#: templates/zerver/footer.html:49
-msgid "University of California San Diego"
-msgstr "කැලිෆෝනියා සැන් ඩියාගෝ සරසවිය"
-
-#: templates/zerver/footer.html:52
-msgid "Lean theorem prover community"
-msgstr ""
-
-#: templates/zerver/footer.html:55
-msgid "Asciidoctor open-source community"
-msgstr ""
-
-#: templates/zerver/footer.html:58
-msgid "Rust language community"
-msgstr "රස්ට් භාෂා ප්‍රජාව"
-
-#: templates/zerver/footer.html:69
-msgid "Accounts"
-msgstr "ගිණුම්"
-
-#: templates/zerver/footer.html:76
-=======
 #: templates/zerver/footer.html:15
 msgid "Desktop & mobile apps"
 msgstr ""
 
 #: templates/zerver/footer.html:16 templates/zerver/portico-header.html:50
->>>>>>> drc_main
 msgid "New organization"
 msgstr "නව සංවිධානය"
 
@@ -2608,17 +2459,6 @@ msgstr ""
 #: templates/zerver/invalid_email.html:30
 #, python-format
 msgid ""
-<<<<<<< HEAD
-"The organization you are trying to join,\n"
-"        %(realm_name)s, does not allow signups using emails\n"
-"        that contains +. Please sign up using appropriate email address.\n"
-"        "
-msgstr ""
-"ඔබ එක් වීමට උත්සාහ කරන %(realm_name)s සංවිධානයට, \n"
-"        + අඩංගු වි-තැපැල් භාවිතයෙන් ලියාපදිංචි වීමට ඉඩ නොදේ\n"
-"        උචිත වි-තැපැල් ලිපිනයක් භාවිතා කර ලියාපදිංචි වන්න.\n"
-"        "
-=======
 "The organization you are trying to join, <a "
 "href=\"%(realm_uri)s\">%(realm_name)s</a>, does not allow signups using "
 "emails that contain \"+\"."
@@ -2631,7 +2471,6 @@ msgstr ""
 #: templates/zerver/invalid_email.html:35
 msgid "Please sign up using an allowed email address."
 msgstr ""
->>>>>>> drc_main
 
 #: templates/zerver/invalid_realm.html:4
 #: templates/zerver/invalid_realm.html:12
@@ -2728,21 +2567,6 @@ msgid "No licenses available"
 msgstr ""
 
 #: templates/zerver/no_spare_licenses.html:12
-<<<<<<< HEAD
-msgid "This organization cannot accept new members right now."
-msgstr ""
-
-#: templates/zerver/no_spare_licenses.html:15
-msgid ""
-"\n"
-"    New members cannot join this organization because all Zulip licenses are currently in use. Please contact the person who\n"
-"    invited you and ask them to increase the number of licenses, then try again.\n"
-"    "
-msgstr ""
-
-#: templates/zerver/portico-header-dropdown.html:3
-msgid "Go to Zulip"
-=======
 msgid "Organization cannot accept new members right now"
 msgstr ""
 
@@ -2758,7 +2582,6 @@ msgstr ""
 msgid ""
 "Please contact the person who invited you and ask them to increase the "
 "number of licenses, then try again."
->>>>>>> drc_main
 msgstr ""
 
 #: templates/zerver/rate_limit_exceeded.html:4
@@ -2899,44 +2722,11 @@ msgstr ""
 msgid "Your organization"
 msgstr ""
 
-<<<<<<< HEAD
-#: templates/zerver/register.html:44
-msgid "Organization name"
-msgstr "සංවිධානයේ නම"
-
-#: templates/zerver/register.html:52
-msgid "Shorter is better than longer."
-msgstr ""
-
-#: templates/zerver/register.html:67
-msgid "Organization type"
-msgstr "සංවිධානයේ වර්ගය"
-
-#: templates/zerver/register.html:72
-msgid "Organization URL"
-msgstr "සංවිධානයේ ඒ.ස.නි."
-
-#: templates/zerver/register.html:79
-#, python-format
-msgid "Use %(external_host)s"
-msgstr ""
-
-#: templates/zerver/register.html:108
-msgid "Your account"
-msgstr "ඔබගේ ගිණුම"
-
-#: templates/zerver/register.html:127
-msgid "Import settings from existing Zulip account"
-msgstr ""
-
-#: templates/zerver/register.html:135
-=======
 #: templates/zerver/register.html:66
 msgid "Your account"
 msgstr "ඔබගේ ගිණුම"
 
 #: templates/zerver/register.html:92
->>>>>>> drc_main
 msgid "Don&rsquo;t import settings"
 msgstr ""
 

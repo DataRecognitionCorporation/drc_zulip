@@ -21,11 +21,7 @@ from zerver.lib.email_mirror_helpers import (
 )
 from zerver.lib.email_notifications import convert_html_to_markdown
 from zerver.lib.exceptions import JsonableError, RateLimitedError
-<<<<<<< HEAD
-from zerver.lib.message import normalize_body, truncate_topic
-=======
 from zerver.lib.message import normalize_body, truncate_content, truncate_topic
->>>>>>> drc_main
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedObject
 from zerver.lib.send_email import FromAddress
@@ -167,21 +163,13 @@ def construct_zulip_body(
 
     if not body.endswith("\n"):
         body += "\n"
-<<<<<<< HEAD
-    body += extract_and_upload_attachments(message, realm, sender)
-=======
->>>>>>> drc_main
     if not body.rstrip():
         body = "(No email body)"
 
     preamble = ""
     if show_sender:
         from_address = str(message.get("From", ""))
-<<<<<<< HEAD
-        body = f"From: {from_address}\n{body}"
-=======
         preamble = f"From: {from_address}\n"
->>>>>>> drc_main
 
     postamble = extract_and_upload_attachments(message, realm, sender)
     if postamble != "":

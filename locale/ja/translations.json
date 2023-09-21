@@ -1,9 +1,6 @@
 {
   "%'{file}' exceeds the maximum file size for attachments ({variable} MB).": "%'{file}'は添付ファイルの上限サイズ（{variable} MB）を超えています。",
-<<<<<<< HEAD
-=======
   "(attached file)": "",
->>>>>>> drc_main
   "(forever)": "(永久)",
   "(hidden)": "（非表示）",
   "(no description)": "(説明がありません)",
@@ -129,12 +126,6 @@
   "All direct messages": "すべてのダイレクトメッセージ",
   "All messages": "すべてのメッセージ",
   "All messages including muted streams": "ミュートしたストリームを含むすべてのメッセージ",
-<<<<<<< HEAD
-  "All private messages": "すべてのプライベートメッセージ",
-  "All private messages (P)": "",
-  "All stream subscribers can post.": "すべてのストリームのフォロワーが投稿可能です",
-=======
->>>>>>> drc_main
   "All streams": "すべてのストリーム",
   "All time": "全期間",
   "All unreads": "すべての未読メッセージ",
@@ -165,11 +156,7 @@
   "Are you sure you want to deactivate your account?": "本当にアカウントを停止状態にしますか？",
   "Are you sure you want to delete all drafts?  This action cannot be undone.": "本当にすべての下書きを削除しますか？この操作は戻せません。",
   "Are you sure you want to delete your profile picture?": "本当にプロファイル写真を削除しますか？",
-<<<<<<< HEAD
-  "Are you sure you want to mention all <strong>{count}</strong> people in this stream? <br /> This will send email and mobile push notifications to most of those <strong>{count}</strong> users. <br /> If you don't want to do that, please edit your message to remove the <strong>@{mention}</strong> mention.": "本当に<strong>{count}</strong>人を述べますか？<br />そうすると<strong>{count}</strong>人の大半にメール通知やモバイル通知が飛びます。<br />欲しくなければ、メッセージを編集し<strong>@{mention}</strong>を消してください。",
-=======
   "Are you sure you want to mark all messages as read? This action cannot be undone.": "",
->>>>>>> drc_main
   "Are you sure you want to mute <b>{user_name}</b>?  Messages sent by muted users will never trigger notifications, will be marked as read, and will be hidden.": "本当に<b>{user_name}</b>をミュートしますか？ミュートしたユーザーは非表示になり，メッセージの通知や既読表示は行われません。",
   "Are you sure you want to permanently delete <b>{topic_name}</b>?": "本当に<b>{topic_name}</b>を完全に削除しますか？",
   "Are you sure you want to resend the invitation to <z-email></z-email>?": "本当に<z-email></z-email>への招待をもう一同送りますか？",
@@ -238,13 +225,8 @@
   "Code playgrounds": "コードプレイグラウンド",
   "Code playgrounds are interactive in-browser development environments, such as <z-link-repl>replit</z-link-repl>, that are designed to make it convenient to edit and debug code. Zulip <z-link-code-blocks>code blocks</z-link-code-blocks> that are tagged with a programming language will have a button visible on hover that allows users to open the code block on the code playground site.": "",
   "Collapse compose": "",
-<<<<<<< HEAD
-  "Collapse message": "メッセージを折り畳む",
-  "Collapse private messages": "プライベートメッセージを折り畳む",
-=======
   "Collapse direct messages": "ダイレクトメッセージを折り畳む",
   "Collapse message": "メッセージを折り畳む",
->>>>>>> drc_main
   "Collapse/show selected message": "選択したメッセージを折り畳む/表示",
   "Community": "コミュニティー",
   "Commuting": "通勤中",
@@ -363,10 +345,6 @@
   "Desktop & mobile apps": "デスクトップアプリとモバイルアプリ",
   "Desktop message notifications": "デスクトップでのメッセージ通知",
   "Detailed keyboard shortcuts documentation": "キーボードショートカットの詳細なドキュメント",
-<<<<<<< HEAD
-  "Detailed message formatting documentation": "メッセージの記述方法の詳細資料",
-  "Detailed search operators documentation": "検索オペレーターの詳細なドキュメント",
-=======
   "Detailed message formatting documentation": "メッセージの記述方法の詳細ドキュメント",
   "Detailed search filters documentation": "検索フィルターの詳細なドキュメント",
   "Direct message": "ダイレクトメッセージ",
@@ -375,7 +353,6 @@
   "Direct messages are disabled in this organization.": "この組織では、ダイレクトメッセージが無効化されています。",
   "Direct messages disabled": "ダイレクトメッセージが無効化されています",
   "Disable notifications?": "通知をオフにしますか？",
->>>>>>> drc_main
   "Disabled": "無効",
   "Discard": "破棄",
   "Dismiss for a week": "１週間非表示にする",
@@ -467,13 +444,9 @@
   "Estimated messages per week": "推定週間メッセージ数",
   "Event or conference": "イベント・会議",
   "Everyone": "全員",
-<<<<<<< HEAD
-  "Everyone sees this in their own time zone.": "",
-=======
   "Everyone on the internet": "",
   "Everyone sees global times in their own time zone.": "",
   "Everyone sees this in their own time zone.": "タイムゾーンの設定により表示されます。",
->>>>>>> drc_main
   "Exclude messages with topic <z-value></z-value>.": "トピック<z-value></z-value>でのメッセージを除外",
   "Exit search": "検索から出る",
   "Expand compose": "",
@@ -577,19 +550,11 @@
   "In a meeting": "会議中",
   "Inactive": "非アクティブ",
   "Inactive bots": "非アクティブなボット",
-<<<<<<< HEAD
-  "Include PMs": "",
-  "Include content of private messages in desktop notifications": "デスクトップ通知にプライベートメッセージの内容を含める",
-  "Include message content in message notification emails": "通知メールにメッセージ内容を含める",
-  "Include muted": "ミュート済みのメッセージを含める",
-  "Include organization name in subject of message notification emails": "新規メッセージ受信の通知メールのタイトルに組織名を含める",
-=======
   "Include DMs": "ダイレクトメッセージを含める",
   "Include content of direct messages in desktop notifications": "DM内容をデスクトップ通知に含む   ",
   "Include message content in message notification emails": "通知メールにメッセージ内容を含める",
   "Include muted": "ミュート済みのメッセージを含める",
   "Include organization name in subject of message notification emails": "新規メッセージ受信を知らせる通知メールのタイトルに組織名を含める",
->>>>>>> drc_main
   "Incoming webhooks can only send messages.": "Incoming webhook はメッセージだけ送信できます。",
   "Initiate a search": "検索開始",
   "Insert new line": "改行",
@@ -598,11 +563,8 @@
   "Invalid URL": "不正なURL",
   "Invalid stream ID": "無効なストリーム ID",
   "Invalid time format: {timestamp}": "無効な時刻フォーマットです: {timestamp}",
-<<<<<<< HEAD
-=======
   "Invalid user": "",
   "Invalid users": "",
->>>>>>> drc_main
   "Invitation expires after": "",
   "Invitations": "招待",
   "Invitations are required for joining this organization": "この組織への参加には招待が必要",
@@ -630,10 +592,6 @@
   "Keyboard shortcuts": "キーボードショートカット",
   "Label": "ラベル",
   "Language": "言語",
-<<<<<<< HEAD
-  "Language and time": "言語と日時",
-=======
->>>>>>> drc_main
   "Language for automated messages and invitation emails": "自動メッセージと招待メールの言語",
   "Large number of subscribers": "多数のフォロワー",
   "Last 10 days": "直近10日",
@@ -641,10 +599,6 @@
   "Last 30 days": "直近30日",
   "Last 6 months": "直近6か月",
   "Last active": "最終ログイン",
-<<<<<<< HEAD
-  "Last active: {last_seen}": "最後のログイン： {last_seen}",
-=======
->>>>>>> drc_main
   "Last message": "最後のメッセージ",
   "Last modified": "最後の編集",
   "Learn more": "詳細",
@@ -684,11 +638,7 @@
   "Mark as unread from selected message": "選択したメッセージ以降を未読にする",
   "Mark as unresolved": "未解決にする",
   "Marketing team": "経理部の社員",
-<<<<<<< HEAD
-  "Marking all messages as read…": "全てを既読にしています…",
-=======
   "Marking all messages as read…": "既読にしています…",
->>>>>>> drc_main
   "May": "5月",
   "Me": "自分",
   "Member": "メンバー",
@@ -708,10 +658,6 @@
   "Message length shouldn't be greater than {max_length} characters.": "メッセージの長さは {max_length} 文字以下にする必要があります。",
   "Message retention": "メッセージの保持",
   "Message retention period": "メッセージの保持期間",
-<<<<<<< HEAD
-  "Message scheduled for {deliver_at}": "{deliver_at}に送信予定",
-=======
->>>>>>> drc_main
   "Message {recipient_label}": "",
   "Message {recipient_names}": "メッセージ {recipient_names}",
   "Message {recipient_name} ({recipient_status})": "メッセージ {recipient_name} ({recipient_status})",
@@ -732,33 +678,20 @@
   "Move messages": "メッセージを移動する",
   "Move messages or topic": "メッセージまたはトピックを移動",
   "Move only this message": "このメッセージのみを移動する",
-<<<<<<< HEAD
-=======
   "Move some messages?": "",
->>>>>>> drc_main
   "Move this and all following messages in this topic": "このトピックとこれ以降のすべてのメッセージを移動する",
   "Move topic": "トピックを移動",
   "Moved ({last_edit_timestr})": "",
   "Moved by {full_name}": "",
-<<<<<<< HEAD
-  "Must be invited by a subscriber; new subscribers can only see messages sent after they join; hidden from non-administrator users": "フォロワーに招待される必要があります。\n新しいフォロワーは、フォロー後に送信されたメッセージのみを閲覧できます。ただし、管理者以外のユーザーには表示されません",
-  "Must be invited by a subscriber; new subscribers can view complete message history; hidden from non-administrator users": "フォロワーに招待される必要があります。\n新しいフォロワーは、過去のメッセージ履歴を閲覧できます。ただし、管理者以外のユーザーには表示されません。",
-=======
   "Moving messages": "メッセージ移動",
   "Must be invited by a subscriber; new subscribers can only see messages sent after they join; hidden from non-administrator users": "フォロワーに招待される必要があります。\n新しいフォロワーは、フォロー後に送信されたメッセージのみを閲覧できます。ただし、管理者以外のユーザーには表示されません。",
   "Must be invited by a subscriber; new subscribers can view complete message history; hidden from non-administrator users": "フォロワーから招待される必要があります。\n新しいフォロワーは、過去のメッセージ履歴を閲覧できます。ただし、管理者以外のユーザーには表示されません。",
->>>>>>> drc_main
   "Mute stream": "ストリームをミュート",
   "Mute this user": "このユーザーをミュートする",
   "Mute topic": "トピックをミュート",
   "Mute user": "ユーザーをミュートする",
-<<<<<<< HEAD
-  "Muted streams don't show up in \"All messages\" or generate notifications unless you are mentioned.": "ミューとしたストリームはメンションされない限り「すべてのメッセージ」に表示されず，通知もされません",
-  "Muted topics": "ミュート中のトピック",
-=======
   "Muted": "ミュート中",
   "Muted streams don't show up in \"All messages\" or generate notifications unless you are mentioned.": "ミューとしたストリームはメンションされない限り「すべてのメッセージ」に表示されず，通知もされません。",
->>>>>>> drc_main
   "Muted user": "ミュートしたユーザー",
   "Muted users": "ミュートしているユーザー",
   "Name": "名前",
@@ -766,13 +699,9 @@
   "Narrow to all direct messages": "すべてのダイレクトメッセージだけ表示",
   "Narrow to all unmuted messages": "すべてのミュートしていないメッセージだけ表示",
   "Narrow to current compose box recipient": "現在のメッセージ作成ボックスの宛先のみ表示",
-<<<<<<< HEAD
-  "Narrow to group private messages with <z-value></z-value>.": "<z-value></z-value>とのグループDMだけ表示",
-=======
   "Narrow to direct messages that include <z-value></z-value>.": "",
   "Narrow to direct messages with <z-value></z-value>.": "<z-value></z-value>とのダイレクトメッセージだけ表示",
   "Narrow to direct messages.": "ダイレクトメッセージだけ表示",
->>>>>>> drc_main
   "Narrow to just message ID <z-value></z-value>.": "IDが<z-value></z-value>のメッセージだけ表示",
   "Narrow to messages containing images.": "画像を含むメッセージだけ表示",
   "Narrow to messages containing links.": "リンクを含むメッセージだけ表示",
@@ -784,26 +713,12 @@
   "Narrow to messages that mention you.": "メンションされたメッセージだけ表示",
   "Narrow to messages with alert words.": "キーワードを含むメッセージだけ表示",
   "Narrow to messages with topic <z-value></z-value>.": "トピック<z-value></z-value>でのメッセージだけ表示",
-<<<<<<< HEAD
-  "Narrow to next unread private message": "次の未読プライベートメッセージだけ表示",
-  "Narrow to next unread topic": "次の未読トピックだけ表示",
-  "Narrow to private messages with <z-value></z-value>.": "<z-value></z-value>とのプライベートメッセージだけ表示",
-  "Narrow to private messages.": "プライベートメッセージだけ表示",
-  "Narrow to starred messages.": "スターされたメッセージだけ表示",
-  "Narrow to stream": "ストリームだけ表示",
-  "Narrow to stream &quot;{display_recipient}&quot;": "",
-  "Narrow to stream &quot;{display_recipient}&quot;, topic &quot;{topic}&quot;": "",
-  "Narrow to topic or PM conversation": "トピック・プライベートメッセージだけ表示",
-  "Narrow to unread messages.": "未読のメッセージだけ表示",
-  "Narrow to your private messages with {display_reply_to}": "",
-=======
   "Narrow to next unread direct message": "次の未読ダイレクトメッセージだけ表示",
   "Narrow to next unread topic": "次の未読トピックだけ表示",
   "Narrow to starred messages.": "スターされたメッセージだけ表示",
   "Narrow to stream from topic view": "",
   "Narrow to topic or DM conversation": "",
   "Narrow to unread messages.": "未読のメッセージだけ表示",
->>>>>>> drc_main
   "Narrow to {message_recipient}": "{message_recipient} だけ表示",
   "Narrowing": "限定表示",
   "Navigation": "ナビゲーション",
@@ -819,20 +734,11 @@
   "New password is too weak": "新しいパスワードが弱すぎます",
   "New stream announcements": "新しいストリームのお知らせ",
   "New stream message": "新しいストリームのメッセージ",
-<<<<<<< HEAD
-  "New subscribers can only see messages sent after they join.": "新しいフォロワーはフォロー後に送信されたメッセージのみを閲覧できます",
-  "New subscribers can view complete message history.": "新しいフォロワーは、すべてのメッセージ履歴を表示できます。",
-=======
->>>>>>> drc_main
   "New task": "新規タスク",
   "New topic": "新しいトピック",
   "New user announcements": "新しいユーザーのお知らせ",
   "Next message": "次のメッセージ",
-<<<<<<< HEAD
-  "Next unread private message": "次の未読のプライベートメッセージ",
-=======
   "Next unread direct message": "次の未読のダイレクトメッセージ",
->>>>>>> drc_main
   "Next unread topic": "次の未読のトピック",
   "Next week": "来週",
   "No bots match your current filter.": "ボットがフィルターに一致しません。",
@@ -857,12 +763,8 @@
   "No topics are marked as resolved.": "解決済みのトピックはありません",
   "No topics match your current filter.": "検索に一致するトピックが存在しません。",
   "No user group subscriptions.": "登録したメンバーはいません",
-<<<<<<< HEAD
-  "No user to subscribe.": "フォローするユーザーがいません",
-=======
   "No user groups": "",
   "No user to subscribe.": "フォロワーがいません",
->>>>>>> drc_main
   "No users match your current filter.": "検索に一致するユーザーが存在しません。",
   "No, I'll catch up.": "いいえ、未読のメッセージを確認します。",
   "Nobody": "誰も",
@@ -982,21 +884,11 @@
   "Reactivate this bot": "このボットを再有効化",
   "Reactivate this user": "",
   "Reactivate {name}": "",
-<<<<<<< HEAD
-  "Read receipts": "",
-=======
   "Read receipts": "開封確認",
->>>>>>> drc_main
   "Read receipts are currently disabled in this organization.": "この組織では現在、既読表示が無効化されています。",
   "Read receipts are not available for Notification Bot messages.": "",
   "Receives new stream announcements": "",
   "Recent conversations": "最近の会話",
-<<<<<<< HEAD
-  "Remind me about this": "リマインドする",
-  "Reminder not set!": "リマインダーが設定されていません！",
-  "Reminder set!": "リマインダーが設定されました！",
-=======
->>>>>>> drc_main
   "Remove": "削除",
   "Remove from default": "デフォルトから削除",
   "Removed successfully.": "削除が完了しました",
@@ -1049,13 +941,8 @@
   "Search": "検索",
   "Search GIFs": "GIF検索",
   "Search all public streams in the organization.": "この組織のすべてのストリームを検索する",
-<<<<<<< HEAD
-  "Search for <z-value></z-value> in the topic or message content.": "トピックやメッセージ内容での<z-value></z-value>を検索する",
-  "Search operators": "検索オペレーター",
-=======
   "Search filters": "検索のフィルター",
   "Search for <z-value></z-value> in the topic or message content.": "トピックやメッセージ内容での<z-value></z-value>を検索する",
->>>>>>> drc_main
   "Search people": "ユーザーを検索",
   "Search results": "検索結果",
   "See how to configure email.": "メールを設定する方法を確認",
@@ -1140,14 +1027,9 @@
   "Subscribed": "フォロー済み",
   "Subscribed streams": "フォロー中のストリーム",
   "Subscriber count": "フォロワー数",
-<<<<<<< HEAD
-  "Subscribers": "フォロワー",
-  "Successfully subscribed users:": "フォローされたユーザー:",
-=======
   "Subscribers": "購読者",
   "Successfully subscribed user:": "",
   "Successfully subscribed users:": "加入済みユーザー:",
->>>>>>> drc_main
   "Sunday": "日曜日",
   "Support Zulip": "Zulipをサポート",
   "Switch between tabs": "タブを切り替え",
@@ -1160,16 +1042,10 @@
   "The administrators provided the following comment:": "管理者が次のコメントを提供しました:",
   "The basics": "基本",
   "The group description cannot contain newline characters.": "グループの説明に改行を含めることはできません。",
-<<<<<<< HEAD
-  "The recipient {recipient} is not valid": "受信者{recipient}は無効",
-  "The recipients {recipients} are not valid": "受信者たち{recipients}は無効",
-  "The sender's email address": "送信者のメールアドレス",
-=======
   "The recipient {recipient} is not valid.": "",
   "The recipients {recipients} are not valid.": "",
   "The sender's email address": "送信者のメールアドレス",
   "The stream <b>#{stream_name}</b> does not exist. Manage your subscriptions <z-link>on your Streams page</z-link>.": "",
->>>>>>> drc_main
   "The stream description cannot contain newline characters.": "ストリームの説明に改行を含むことはできません。",
   "Their password will be cleared from our systems, and any bots they maintain will be disabled.": "無効になったユーザーのパスワードは消去され、無効にしたユーザーが管理していたボットも無効になります。",
   "Theme": "テーマ",
@@ -1184,12 +1060,6 @@
   "This bot cannot be deactivated.": "無効化できないボットです",
   "This bot cannot be edited.": "操作できないボットです",
   "This bot has been deactivated.": "",
-<<<<<<< HEAD
-  "This is a <b>private stream</b>. Only people who have been invited can access its content, but any subscriber can invite others.": "これは<b>プライベート ストリーム</b>です。\n招待された人だけがアクセスできますが、ストリームのフォロワーは他の人を招待できます。",
-  "This is a <b>public stream</b>. Any member of the organization can join without an invitation or view content sent to this stream.": "",
-  "This is a <b>web-public stream</b>. Any member of the organization can join without an invitation and anyone on the internet can read the content published.": "これは<b>Web公開ストリーム</b>です。組織のメンバーは誰でも招待なしで参加でき、インターネット上の誰でも公開されたコンテンツを閲覧できます。",
-=======
->>>>>>> drc_main
   "This is a <z-link>demo organization</z-link> and will be automatically deleted in {days_remaining} days.": "",
   "This is not a <z-link>publicly accessible</z-link> conversation.": "",
   "This is what a Zulip notification looks like.": "Zulipの通知はこのように表示されます。",
@@ -1233,14 +1103,8 @@
   "Time zone": "タイムゾーン",
   "Time's up!": "時間切れです！",
   "Tip: You can also send \"/poll Some question\"": "豆知識: 「/poll 投票内容」というコマンドも存在します。",
-<<<<<<< HEAD
-  "To": "宛先",
-  "To add syntax highlighting to a multi-line code block, add the language's <b>first</b> <z-link>Pygments short name</z-link> after the first set of back-ticks. You can also make a code block by indenting each line with 4 spaces.": "複数行のコードブロックにシンタックスハイライトを適用するには、最初のバッククォートの後ろに<z-link>Pygments</z-link>でのその言語の<b>1つめの</b>short nameを追加してください。また、各行を半角スペース4つでインデントすることでもコードブロックにできます。",
-  "To invite users, please <z-link-billing>increase the number of licenses</z-link-billing> or <z-link-help-page>deactivate inactive users</z-link-help-page>.": "ユーザーを招待するには、<z-link-billing>ライセンス数を増やす</z-link-billing>か、<z-link-help-page>使用していないユーザーを無効</z-link-help-page>にしてください。",
-=======
   "To add syntax highlighting to a multi-line code block, add the language's <b>first</b> <z-link>Pygments short name</z-link> after the first set of back-ticks. You can also make a code block by indenting each line with 4 spaces.": "複数行のコードブロックにシンタックスハイライトを適用するには、最初のバッククォートの後ろに<z-link>Pygments</z-link>でのその言語の<b>1つめの</b>short nameを追加してください。また、各行を半角スペース4つでインデントすることでもコードブロックにできます。",
   "To invite users, please <z-link-billing>increase the number of licenses</z-link-billing> or <z-link-help-page>deactivate inactive users</z-link-help-page>.": "ユーザーを招待するには、<z-link-billing>ライセンス数を増やす</z-link-billing>か、<z-link-help-page>使用していないユーザーを無効にしてください</z-link-help-page>.",
->>>>>>> drc_main
   "To preserve your reading state, this view does not mark messages as read.": "",
   "Today": "今日",
   "Today at {time}": "",
@@ -1284,16 +1148,10 @@
   "Unstar all messages": "すべてのメッセージのスターを外す",
   "Unstar all messages in topic": "トピック内の全てのスターを外す",
   "Unstar messages in topic": "トピック内のメッセージのスターを外す",
-<<<<<<< HEAD
-  "Unsubscribe": "フォロー解除",
-  "Unsubscribe from {stream_name}": "{stream_name}のフォローを解除",
-  "Unsubscribed successfully!": "フォローを解除しました！",
-=======
   "Unstar this message": "",
   "Unsubscribe": "フォロー解除",
   "Unsubscribe from <z-link></z-link>": "<z-link></z-link>のフォローを解除",
   "Unsubscribed successfully!": "フォローを解除しました",
->>>>>>> drc_main
   "Up to {time_limit} after posting": "送信後最大{time_limit}まで",
   "Update successful: Subdomains allowed for {domain}": "",
   "Update successful: Subdomains no longer allowed for {domain}": "更新が成功:{domain} にサブドメインが許可されなくなりました",
@@ -1308,22 +1166,12 @@
   "Upload profile picture": "プロフィール画像をアップロードする",
   "Upload stalled for %'{seconds}' seconds, aborting.": "",
   "Uploaded files": "アップロードしたファイル",
-<<<<<<< HEAD
-  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "",
   "Uploading {filename}…": "{filename}をアップロード中…",
-  "Uploading…": "アップロード中...",
-=======
-  "Uploading {filename}…": "{filename}をアップロード中…",
->>>>>>> drc_main
   "Usage statistics": "使用状況",
   "Use full width on wide screens": "横長スクリーンで全幅を使用する",
   "Use html encoding (not recommended)": "HTMLエンコードを使用（非推奨）",
   "Use organization level settings {org_level_message_retention_setting}": "組織レベルの設定を使用{org_level_message_retention_setting}",
-<<<<<<< HEAD
-  "Use stream settings to unsubscribe from private streams.": "プライベートストリームをフォロー解除するには、ストリーム設定を使用してください。",
-=======
   "Use stream settings to unsubscribe from private streams.": "プライベートストリームのフォローを解除するには、ストリーム設定を使用してください。",
->>>>>>> drc_main
   "User": "ユーザー",
   "User ID": "ユーザーID",
   "User group added!": "ユーザーグループが追加されました！",
@@ -1348,11 +1196,8 @@
   "Vacationing": "休暇中",
   "Version {zulip_version}": "バージョン {zulip_version}",
   "Video call provider": "ビデオ通話サービス",
-<<<<<<< HEAD
-=======
   "View all streams": "",
   "View direct messages": "ダイレクトメッセージを表示",
->>>>>>> drc_main
   "View drafts": "下書きを表示",
   "View edit history": "編集履歴を表示",
   "View file": "ファイルを表示",
@@ -1362,14 +1207,8 @@
   "View message source": "メッセージのソースを表示",
   "View messages sent": "送信済みメッセージを表示",
   "View messages with yourself": "",
-<<<<<<< HEAD
-  "View private messages": "プライベートメッセージを表示",
-  "View profile": "プロフィールを見る",
-  "View read receipts": "",
-=======
   "View profile": "プロフィールを見る",
   "View read receipts": "開封を確認",
->>>>>>> drc_main
   "View recent conversations": "",
   "View scheduled messages": "",
   "View stream": "ストリームを表示",
@@ -1404,15 +1243,9 @@
   "Who can create public streams": "公開ストリームの作成",
   "Who can create web-public streams": "Web公開ストリームの作成",
   "Who can delete their own messages": "各自のメッセージを削除できるメンバー",
-<<<<<<< HEAD
-  "Who can edit the topic of any message": "",
-  "Who can invite users to this organization": "組織にユーザーを招待できる人",
-  "Who can move messages between streams": "ストリーム間でメッセージを移動できる人",
-=======
   "Who can invite users to this organization": "この組織へユーザー招待ができる人",
   "Who can move messages to another stream": "",
   "Who can move messages to another topic": "",
->>>>>>> drc_main
   "Who can post to the stream?": "ストリームに投稿できるユーザー",
   "Who can unsubscribe others from this stream?": "",
   "Who can use @all/@everyone mentions in large streams": "大規模なストリームで「@all/@everyone」のメンションを利用できる人",
@@ -1442,15 +1275,9 @@
   "You are not subscribed to stream <z-stream-name></z-stream-name>": "",
   "You are sending a message to a resolved topic. You can send as-is or unresolve the topic first.": "",
   "You are using an old version of the Zulip desktop app with known security bugs.": "あなたは既知の脆弱性が含まれている古いバージョンのZulip デスクトップアプリを使用しています。",
-<<<<<<< HEAD
-  "You aren't subscribed to this stream and nobody has talked about that yet!": "このストリームにはフォロワーがおらず、まだだれも会話していません！",
-  "You can also make <z-link>tables</z-link> with this <z-link>Markdown-ish table syntax</z-link>.": "<z-link>Markdown-ishの表の記法</z-link>で<z-link>表</z-link>を作成できます。",
-  "You can combine search operators as needed.": "",
-=======
   "You aren't subscribed to this stream and nobody has talked about that yet!": "このストリームをフォローしていませんし、まだだれも会話していません！",
   "You can also make <z-link>tables</z-link> with this <z-link>Markdown-ish table syntax</z-link>.": "<z-link>Markdown-ishの表の記法</z-link>で<z-link>表</z-link>を作成できます。",
   "You can combine search filters as needed.": "検索フィルターは組み合わせて使うことができます。",
->>>>>>> drc_main
   "You can fully access this community and participate in conversations by creating a Zulip account in this organization.": "",
   "You can no longer save changes to this message.": "",
   "You can only view or manage invitations that you sent.": "",
@@ -1491,14 +1318,9 @@
   "You searched for:": "検索履歴:",
   "You subscribed to stream <z-stream-name></z-stream-name>": "",
   "You type": "入力",
-<<<<<<< HEAD
-  "You unsubscribed from stream {stream_name}": "{stream_name} のフォローを解除しました",
-  "You're not subscribed to this stream. You will not be notified if other users reply to your message.": "あなたはこのストリームをフォローしていません。他のユーザーがあなたのメッセージに返信しても、通知を受け取ることができません。",
-=======
   "You unsubscribed from stream <z-stream-name></z-stream-name>": "",
   "You will not receive notifications about new messages.": "",
   "You're not subscribed to this stream. You will not be notified if other users reply to your message.": "このストリームをフォローしていません。他のユーザーがあなたのメッセージに返信しても、通知を受け取ることができません。",
->>>>>>> drc_main
   "Your API key:": "自分のAPIキー:",
   "Your Zulip account on <z-link></z-link> has been deactivated, and you will no longer be able to log in.": "",
   "Your message has been scheduled for {deliver_at}.": "",
@@ -1521,11 +1343,7 @@
   "[Configure]": "[設定]",
   "[Disable]": "[無効]",
   "[More…]": "[さらに表示]",
-<<<<<<< HEAD
-  "[Quoting…]": "",
-=======
   "[Quoting…]": "[引用中...]",
->>>>>>> drc_main
   "[Unset]": "[未設定]",
   "and {remaining_senders, plural, one {1 other} other {# others}}.": "",
   "back to streams": "",
@@ -1550,11 +1368,7 @@
   "or": "または",
   "she/her": "",
   "they/them": "",
-<<<<<<< HEAD
-  "{N, plural, one {Done! {N} message marked as read.} other {Done! {N} messages marked as read.}}": "{N, plural, other {完了：{N}件のメッセージを既読にしました}}",
-=======
   "{N, plural, one {Done! {N} message marked as read.} other {Done! {N} messages marked as read.}}": "{N, plural, other {{N}件のメッセージを既読にしました}}",
->>>>>>> drc_main
   "{N, plural, one {Done! {N} message marked as unread.} other {Done! {N} messages marked as unread.}}": "{N, plural, other {{N}件のメッセージを未読にしました}}",
   "{N, plural, one {Working… {N} message marked as read so far.} other {Working… {N} messages marked as read so far.}}": "{N, plural, other {更新中：{N}件のメッセージを既読にしました}}",
   "{N, plural, one {Working… {N} message marked as unread so far.} other {Working… {N} messages marked as unread so far.}}": "{N, plural, other {更新中：現在{N}件のメッセージを未読にしました}}",

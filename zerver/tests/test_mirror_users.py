@@ -23,17 +23,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         client = get_client("banned_mirror")
 
         with self.assertRaises(InvalidMirrorInputError):
-<<<<<<< HEAD
-            create_mirrored_message_users(client, user, recipients, sender.email, message_type)
-=======
-            create_mirrored_message_users(
                 client, user, recipients, sender.email, recipient_type_name
-            )
->>>>>>> drc_main
-
-    def test_invalid_email(self) -> None:
-        invalid_email = "alice AT example.com"
-        recipients = [invalid_email]
 
         # We use an MIT user here to maximize code coverage
         user = self.mit_user("starnine")
@@ -45,13 +35,9 @@ class MirroredMessageUsersTest(ZulipTestCase):
             client = get_client(client_name)
 
             with self.assertRaises(InvalidMirrorInputError):
-<<<<<<< HEAD
-                create_mirrored_message_users(client, user, recipients, sender.email, message_type)
-=======
                 create_mirrored_message_users(
                     client, user, recipients, sender.email, recipient_type_name
                 )
->>>>>>> drc_main
 
     @mock.patch(
         "DNS.dnslookup",

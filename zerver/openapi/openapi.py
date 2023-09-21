@@ -12,11 +12,7 @@ from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Union, cast
 
 import openapi_core
 import orjson
-<<<<<<< HEAD
-from openapi_core import Spec, openapi_request_validator, openapi_response_validator
-=======
 from openapi_core import Spec
->>>>>>> drc_main
 from openapi_core.protocols import Response
 from openapi_core.testing import MockRequest, MockResponse
 from openapi_core.validation.exceptions import ValidationError as OpenAPIValidationError
@@ -419,16 +415,6 @@ def validate_against_openapi_schema(
         orjson.dumps(content).decode(),
         status_code=int(status_code),
     )
-<<<<<<< HEAD
-    result = openapi_response_validator.validate(
-        openapi_spec.spec(), mock_request, cast(Response, mock_response)
-    )
-    try:
-        result.raise_for_errors()
-    except OpenAPIValidationError as error:
-        message = f"Response validation error at {method} /api/v1{path} ({status_code}):"
-        message += f"\n\n{type(error).__name__}: {error}"
-=======
     try:
         openapi_core.validate_response(
             mock_request, cast(Response, mock_response), spec=openapi_spec.spec()
@@ -440,7 +426,6 @@ def validate_against_openapi_schema(
             "\n\nFor help debugging these errors see: "
             "https://zulip.readthedocs.io/en/latest/documentation/api.html#debugging-schema-validation-errors"
         )
->>>>>>> drc_main
         raise SchemaError(message) from None
 
     return True

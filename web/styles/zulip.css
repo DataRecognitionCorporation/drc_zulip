@@ -1,4 +1,3 @@
-<<<<<<< HEAD:static/styles/zulip.css
 /*
 This is the header, aka the navbar.
 */
@@ -22,14 +21,6 @@ $sidebar_top: calc($header_height + $header_padding_bottom);
 $left_sidebar_collapse_widget_gutter: 10px;
 $left_sidebar_width: 310px;
 $right_sidebar_width: 250px;
-=======
-html {
-    overflow-y: scroll;
-    overflow-x: hidden;
-    overscroll-behavior-y: none;
-    width: calc(100% - var(--disabled-scrollbar-width));
-}
->>>>>>> drc_main:web/styles/zulip.css
 
 body,
 html {
@@ -1695,7 +1686,6 @@ td.pointer {
     background-color: var(--color-background-private-message-content);
 
     .date_row {
-<<<<<<< HEAD:static/styles/zulip.css
         background-color: hsla(192, 19%, 75%, 0.2);
         /* The 5th parameter here is a spread-radius, which, when negative,
          * causes the shadow to shrink (be smaller than the target
@@ -1712,9 +1702,6 @@ td.pointer {
          */
         box-shadow: inset 3px 0 0 -1px hsl(0, 0%, 27%),
             -1px 0 0 0 hsl(0, 0%, 27%);
-=======
-        background-color: var(--color-background-private-message-content);
->>>>>>> drc_main:web/styles/zulip.css
     }
 }
 

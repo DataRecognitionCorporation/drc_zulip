@@ -579,14 +579,9 @@
   "Invitee": "",
   "Invites": "",
   "Inviting...": "دعوة...",
-<<<<<<< HEAD
-  "Italic": "",
-  "January": "",
-=======
   "Italic": "مائل",
   "January": "كانون الثاني",
   "Join video call.": "",
->>>>>>> drc_main
   "Join {realm_name}": "انضم إلى {realm_name}",
   "Joined": "",
   "Joined {date_joined}": "انضم {date_joined}",
@@ -595,19 +590,6 @@
   "June": "حزيران",
   "Just now": "",
   "Keyboard shortcuts": "اختصارات لوحة المفاتيح",
-<<<<<<< HEAD
-  "Label": "",
-  "Language": "",
-  "Language and time": "",
-  "Language for automated messages and invitation emails": "لغة الرسائل ودعوات البريد الالكتروني التلقائية",
-  "Large number of subscribers": "",
-  "Last 10 days": "",
-  "Last 2 months": "",
-  "Last 30 days": "",
-  "Last 6 months": "",
-  "Last active": "",
-  "Last active: {last_seen}": "",
-=======
   "Label": "ملصق",
   "Language": "لغة",
   "Language for automated messages and invitation emails": "لغة الرسائل ودعوات البريد الالكتروني التلقائية",
@@ -617,7 +599,6 @@
   "Last 30 days": "آخر 30 يومًا",
   "Last 6 months": "آخر 6 أشهر",
   "Last active": "آخر نشاط",
->>>>>>> drc_main
   "Last message": "اخر رسالة",
   "Last modified": "",
   "Learn more": "تعرف على المزيد",
@@ -633,15 +614,10 @@
   "Link": "رابط",
   "Link with Webathena": "رابط مع Webathena",
   "Link:": "رابط:",
-<<<<<<< HEAD
-  "Linkifiers": "",
-  "Local time": "",
-=======
   "Linkifiers": "الروابط",
   "Linkifiers make it easy to refer to issues or tickets in third party issue trackers, like GitHub, Salesforce, Zendesk, and others. For instance, you can add a linkifier that automatically turns #2468 into a link to the GitHub issue in the Zulip repository with:": "",
   "Loading…": "جار التحميل...",
   "Local time": "الوقت المحلي",
->>>>>>> drc_main
   "Log in": "تسجيل الدخول",
   "Log in to browse more streams": "",
   "Log out": "تسجيل الخروج",
@@ -692,18 +668,10 @@
   "Mobile message notifications": "",
   "Mobile notifications": "",
   "Mobile push notifications are not configured on this server.": "لم يتم تكوين إرسال الإشعارات للمحمول على هذا الخادم.",
-<<<<<<< HEAD
-  "Moderator": "",
-  "Moderators": "",
-  "Monday": "",
-  "More details are available <z-link>in the Help Center article</z-link>.": "المزيد من التفاصيل متوفرة <z-link>في مقال مركز المساعدة</z-link> .",
-  "More than 2 weeks ago": "",
-=======
   "Moderator": "الوسيط",
   "Moderators": "الوسطاء",
   "Monday": "الإثنين",
   "Monday at {time}": "",
->>>>>>> drc_main
   "Move all messages in <strong>{topic_name}</strong>": "نقل كافة الرسائل إلى <strong>{topic_name}</strong>",
   "Move all messages in this topic": "نقل جميع الرسائل في هذا الموضوع",
   "Move message": "نقل الرسالة",
@@ -794,13 +762,6 @@
   "No streams": "لا غُرف",
   "No topics are marked as resolved.": "لم يتم تمييز أي موضوع على أنه تم حله.",
   "No topics match your current filter.": "لا يوجد موضوع يطابق تصفيتك الحالية.",
-<<<<<<< HEAD
-  "No user group subscriptions.": "",
-  "No user to subscribe.": "",
-  "No users match your current filter.": "لا يوجد مستخدمون يطابقون تصفيتك الحالية.",
-  "No, I'll catch up.": "",
-  "Nobody": "",
-=======
   "No user group subscriptions.": "لا توجد اشتراكات لمجموعة المستخدمين.",
   "No user groups": "",
   "No user to subscribe.": "لا يوجد مستخدم للاشتراك.",
@@ -808,17 +769,11 @@
   "No, I'll catch up.": "لا ، سوف ألحق بالركب.",
   "Nobody": "لا أحد",
   "Nobody in this Zulip organization will be able to see this email address.": "",
->>>>>>> drc_main
   "Non-profit (registered)": "غير ربحية (مسجلة)",
   "None": "لا شيء",
   "Note that any bots that you maintain will be disabled.": "لاحظ أنه سيتم تعطيل أي روبوتات قمت بتحسينها.",
   "Note that organizations are limited to five exports per week.": "لاحظ أن المنظمات تقتصر على خمس عمليات تصدير أسبوعيًا.",
-<<<<<<< HEAD
-  "Nothing to preview": "",
-  "Nothing's been sent here yet!": "لم يتم إرسال أي شيء هنا حتى الآن!",
-=======
   "Nothing to preview": "لا شيء للمعاينة",
->>>>>>> drc_main
   "Notification of account deactivation on {realm_name}": "إشعار بتعطيل الحساب في {realm_name}",
   "Notification settings": "",
   "Notification sound": "",
@@ -850,17 +805,9 @@
   "Open message menu": "فتح قائمة الرسائل",
   "Open reactions menu": "فتح قائمة التفاعلات",
   "Open-source project": "مشروع مفتوح المصدر",
-<<<<<<< HEAD
-  "Operator": "المشغل",
-  "Option already present.": "",
-  "Optional": "",
-  "Or, to automatically linkify GitHub's <code>org/repo#1234</code> syntax:": "أو للربط بـ GitHub تلقائيًا <code>org/repo#1234</code> بناء الجملة:",
-  "Organization": "",
-=======
   "Option already present.": "الخيار موجود بالفعل.",
   "Optional": "اختياري",
   "Organization": "منظمة",
->>>>>>> drc_main
   "Organization administrators": "مسؤولي المنظمة",
   "Organization administrators can change the announcement stream in the organization settings.": "يمكن لمسؤولي المنظمة تغيير غرفة الإعلانات في إعدادات المنظمة.",
   "Organization administrators can reactivate deactivated users.": "يمكن لمسؤولي المنظمة إعادة تنشيط المستخدمين المعطلين.",
@@ -880,24 +827,6 @@
   "Other emails": "",
   "Other permissions": "",
   "Other settings": "إعدادات اخرى",
-<<<<<<< HEAD
-  "Out sick": "",
-  "Outgoing webhook message format": "تنسيق رسالة الويب هوك الصادرة",
-  "Override built-in emoji?": "",
-  "Owner": "مالك",
-  "Owner: {name}": "",
-  "Owners only": "المالكين فقط",
-  "PMs, mentions, and alerts": "",
-  "PRIVATE MESSAGES": "",
-  "Participants": "",
-  "Participated": "",
-  "Password": "",
-  "Password is too weak": "",
-  "Password should be at least {length} characters long": "",
-  "Pattern": "",
-  "Personal": "",
-  "Personal settings": "",
-=======
   "Other users in this Zulip organization will be able to see this email address.": "",
   "Out sick": "من المرضى",
   "Outgoing webhook message format": "تنسيق رسالة الويب هوك الصادرة",
@@ -914,7 +843,6 @@
   "Pattern": "نمط",
   "Personal": "شخصي",
   "Personal settings": "اعدادات شخصية",
->>>>>>> drc_main
   "Pin stream to top": "تثبيت الغرفة في الأعلى",
   "Pin stream to top of left sidebar": "تثبيت الغرفة في أعلى الشريط الجانبي الأيسر",
   "Pinned": "مثبت",
@@ -927,14 +855,8 @@
   "Please just upload one file.": "من فضلك حمل ملف واحد فقط.",
   "Please only use characters that are valid in an email address": "من فضلك استخدم فقط الرموز الصالحة في عنوان البريد الإلكتروني",
   "Please re-enter your password to confirm your identity.": "من فضلك أعد إدخال كلمة المرور الخاصة بك لتأكيد هويتك.",
-<<<<<<< HEAD
-  "Please specify a date or time.": "",
-  "Please specify a stream": "من فضلك حدد غرفة",
-  "Please specify at least one valid recipient": "من فضلك حدد مستلم واحد على الأقل",
-=======
   "Please specify a stream.": "الرجاء تحديد غرفة.",
   "Please specify at least one valid recipient.": "",
->>>>>>> drc_main
   "Political group": "مجموعة سياسية",
   "Posted by {full_name}": "",
   "Press > for list of topics": "اضغط على > للحصول على قائمة المواضيع",
@@ -945,23 +867,11 @@
   "Preview organization profile": "",
   "Preview profile": "",
   "Previous message": "الرسالة السابقة",
-<<<<<<< HEAD
-  "Privacy": "",
-  "Privacy settings": "",
-  "Private messages": "رسائل خاصة",
-  "Private messages and mentions": "",
-  "Private messages are disabled in this organization.": "",
-  "Private messages disabled": "",
-  "Private, protected history": "سجل خاص ومحمي",
-  "Private, shared history": "سجل خاص ومشترك",
-  "Profile": "",
-=======
   "Privacy": "خصوصية",
   "Privacy settings": "إعدادات الخصوصية",
   "Private, protected history": "السجل خاص ومحمي",
   "Private, shared history": "السجل خاص ومشترك",
   "Profile": "حساب تعريفي",
->>>>>>> drc_main
   "Pronouns": "الضمائر",
   "Public": "عام",
   "Question": "سؤال",
@@ -1031,13 +941,8 @@
   "Search": "بحث",
   "Search GIFs": "",
   "Search all public streams in the organization.": "بحث في جميع الغرف العامة في المنظمة.",
-<<<<<<< HEAD
-  "Search for <z-value></z-value> in the topic or message content.": "",
-  "Search operators": "عوامل تشغيل البحث",
-=======
   "Search filters": "",
   "Search for <z-value></z-value> in the topic or message content.": "بحث عن<z-value></z-value> في الموضوع أو محتوى الرسالة.",
->>>>>>> drc_main
   "Search people": "بحث الناس",
   "Search results": "",
   "See how to configure email.": "تعرف على كيفية تهيئة البريد الإلكتروني.",

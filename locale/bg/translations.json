@@ -200,12 +200,8 @@
   "Cancel compose and save draft": "",
   "Card": "",
   "Center the view around message ID <z-value></z-value>.": "",
-<<<<<<< HEAD
-  "Change": "промяна",
-=======
   "Change": "Промени",
   "Change avatar": "",
->>>>>>> drc_main
   "Change color": "",
   "Change email": "",
   "Change group info": "",
@@ -267,12 +263,8 @@
   "Could not unresolve topic": "",
   "Create": "Създай",
   "Create a stream": "",
-<<<<<<< HEAD
-  "Create new stream": "Създай нов канал",
-=======
   "Create new stream": "Създай нов поток",
   "Create new user group": "",
->>>>>>> drc_main
   "Create stream": "",
   "Create user group": "",
   "Creating group...": "",
@@ -1174,13 +1166,7 @@
   "Upload profile picture": "",
   "Upload stalled for %'{seconds}' seconds, aborting.": "",
   "Uploaded files": "",
-<<<<<<< HEAD
-  "Uploading a custom emoji with this name will override the built-in emoji. Continue?": "",
   "Uploading {filename}…": "",
-  "Uploading…": "",
-=======
-  "Uploading {filename}…": "",
->>>>>>> drc_main
   "Usage statistics": "",
   "Use full width on wide screens": "",
   "Use html encoding (not recommended)": "",

@@ -5,10 +5,6 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import return_success_on_head_request, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
-<<<<<<< HEAD
-from zerver.lib.request import REQ, has_request_variables
-=======
->>>>>>> drc_main
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_string

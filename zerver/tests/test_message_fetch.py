@@ -127,13 +127,6 @@ class NarrowBuilderTest(ZulipTestCase):
     ) -> None:  # NEGATED
         term = dict(operator="stream", operand="NonExistingStream")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-<<<<<<< HEAD
-
-    def test_add_term_using_is_operator_and_private_operand(self) -> None:
-        term = dict(operator="is", operand="private")
-        self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
-=======
->>>>>>> drc_main
 
     def test_add_term_using_streams_operator_and_invalid_operand_should_raise_error(
         self,
@@ -367,48 +360,20 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator="dm", operand=two_others, negated=True)
         self._do_add_term_test(term, "WHERE recipient_id != %(recipient_id_1)s")
 
-<<<<<<< HEAD
-    def test_add_term_using_pm_with_operator_with_comma_noise(self) -> None:
-        term = dict(operator="pm-with", operand=" ,,, ,,, ,")
-=======
     def test_add_term_using_dm_operator_with_comma_noise(self) -> None:
         term = dict(operator="dm", operand=" ,,, ,,, ,")
->>>>>>> drc_main
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_dm_operator_with_existing_and_non_existing_user_as_operand(
         self,
     ) -> None:
-<<<<<<< HEAD
-        term = dict(operator="pm-with", operand=self.othello_email + ",non-existing@zulip.com")
-=======
         term = dict(operator="dm", operand=self.othello_email + ",non-existing@zulip.com")
->>>>>>> drc_main
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
 
     def test_add_term_using_dm_including_operator_with_logged_in_user_email(self) -> None:
         term = dict(operator="dm-including", operand=self.hamlet_email)
         self._do_add_term_test(term, "WHERE (flags & %(flags_1)s) != %(param_1)s")
 
-<<<<<<< HEAD
-    def test_add_term_using_id_operator_invalid(self) -> None:
-        term = dict(operator="id", operand="")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-        term = dict(operator="id", operand="notanint")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-
-    def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
-        term = dict(operator="id", operand=555, negated=True)
-        self._do_add_term_test(term, "WHERE id != %(param_1)s")
-
-    def test_add_term_using_group_pm_operator_and_not_the_same_user_as_operand(self) -> None:
-        # Test without any such group PM threads existing
-        term = dict(operator="group-pm-with", operand=self.othello_email)
-        self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
-
-        # Test with at least one such group PM thread existing
-=======
     def test_add_term_using_dm_including_operator_with_different_user_email(self) -> None:
         # Test without any such group direct messages existing
         term = dict(operator="dm-including", operand=self.othello_email)
@@ -418,7 +383,6 @@ class NarrowBuilderTest(ZulipTestCase):
         )
 
         # Test with at least one such group direct messages existing
->>>>>>> drc_main
         self.send_huddle_message(
             self.user_profile, [self.example_user("othello"), self.example_user("cordelia")]
         )
@@ -438,11 +402,6 @@ class NarrowBuilderTest(ZulipTestCase):
             "WHERE NOT (sender_id = %(sender_id_1)s AND recipient_id = %(recipient_id_1)s OR sender_id = %(sender_id_2)s AND recipient_id = %(recipient_id_2)s OR recipient_id IN (__[POSTCOMPILE_recipient_id_3]))",
         )
 
-<<<<<<< HEAD
-    def test_add_term_using_group_pm_operator_with_non_existing_user_as_operand(self) -> None:
-        term = dict(operator="group-pm-with", operand="non-existing@zulip.com")
-        self.assertRaises(BadNarrowOperatorError, self._build_query, term)
-=======
     def test_add_term_using_id_operator_integer(self) -> None:
         term = dict(operator="id", operand=555)
         self._do_add_term_test(term, "WHERE id = %(param_1)s")
@@ -461,7 +420,6 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_id_operator_and_negated(self) -> None:  # NEGATED
         term = dict(operator="id", operand=555, negated=True)
         self._do_add_term_test(term, "WHERE id != %(param_1)s")
->>>>>>> drc_main
 
     @override_settings(USING_PGROONGA=False)
     def test_add_term_using_search_operator(self) -> None:
@@ -561,8 +519,6 @@ class NarrowBuilderTest(ZulipTestCase):
             return builder.add_term(self.raw_query, term)
 
         self.assertRaises(BadNarrowOperatorError, _build_query, term)
-<<<<<<< HEAD
-=======
 
     # Test "is:private" (legacy alias for "is:dm")
     def test_add_term_using_is_operator_and_private_operand(self) -> None:
@@ -610,7 +566,6 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_underscore_version_of_group_pm_with_operator(self) -> None:
         term = dict(operator="group_pm_with", operand=self.othello_email)
         self._do_add_term_test(term, "WHERE recipient_id IN (__[POSTCOMPILE_recipient_id_1])")
->>>>>>> drc_main
 
     def _do_add_term_test(
         self, term: Dict[str, Any], where_clause: str, params: Optional[Dict[str, Any]] = None

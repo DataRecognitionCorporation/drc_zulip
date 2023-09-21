@@ -17,14 +17,9 @@ class Command(ZulipBaseCommand):
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
         if not realm.deactivated:
-<<<<<<< HEAD
-            print("Realm", options["realm_id"], "is active. Please deactivate the Realm the first.")
-            return
-=======
             raise CommandError(
                 f'Realm {options["realm_id"]} is active. Please deactivate the realm the first.'
             )
->>>>>>> drc_main
         print("Scrubbing", options["realm_id"])
         do_scrub_realm(realm, acting_user=None)
         print("Done!")

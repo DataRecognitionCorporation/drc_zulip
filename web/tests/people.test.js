@@ -522,11 +522,7 @@ test_people("utcToZonedTime", ({override}) => {
     assert.equal(people.get_user_time(me.user_id), "0:09");
 
     override(people.get_by_user_id(me.user_id), "timezone", "Eriador/Rivendell");
-<<<<<<< HEAD:frontend_tests/node_tests/people.js
-    blueslip.expect("error", "Got invalid date for timezone: Eriador/Rivendell");
-=======
     blueslip.expect("error", "Got invalid date for timezone");
->>>>>>> drc_main:web/tests/people.test.js
     people.get_user_time(me.user_id);
 });
 

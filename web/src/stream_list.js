@@ -16,14 +16,7 @@ import {
     $t
 } from "./i18n";
 import * as keydown_util from "./keydown_util";
-<<<<<<< HEAD:static/js/stream_list.js
-import {
-    ListCursor
-} from "./list_cursor";
-import * as narrow from "./narrow";
-=======
 import {ListCursor} from "./list_cursor";
->>>>>>> drc_main:web/src/stream_list.js
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
@@ -321,27 +314,13 @@ export function add_sidebar_row(sub) {
     }
 
     create_sidebar_row(sub);
-<<<<<<< HEAD:static/js/stream_list.js
-    stream_cursor.redraw();
-=======
     update_streams_sidebar();
->>>>>>> drc_main:web/src/stream_list.js
 }
 
 export function remove_sidebar_row(stream_id) {
     stream_sidebar.remove_row(stream_id);
-<<<<<<< HEAD:static/js/stream_list.js
-    if(stream_sidebar.get_use_folders()) {
-        build_subfolder_rows();
-    } else {
-        build_stream_list();
-    }
-
-    stream_cursor.redraw();
-=======
     const force_rerender = stream_id === topic_list.active_stream_id();
     update_streams_sidebar(force_rerender);
->>>>>>> drc_main:web/src/stream_list.js
 }
 
 export function create_initial_sidebar_rows() {
@@ -1191,10 +1170,6 @@ function set_stream_unread_count(
 }
 
 export function update_streams_sidebar(force_rerender) {
-<<<<<<< HEAD:static/js/stream_list.js
-
-=======
->>>>>>> drc_main:web/src/stream_list.js
     if (!force_rerender && topic_zoom.is_zoomed_in()) {
         // We do our best to update topics that are displayed
         // in case user zoomed in. Streams list will be updated,
@@ -1340,12 +1315,7 @@ export function get_sidebar_stream_topic_info(filter) {
 }
 
 function deselect_stream_items() {
-<<<<<<< HEAD:static/js/stream_list.js
-    $("ul#stream_filters li").removeClass("active-filter");
-    $("ul#stream_folders li").removeClass("active-filter");
-=======
     $("ul#stream_filters li").removeClass("active-filter stream-expanded");
->>>>>>> drc_main:web/src/stream_list.js
 }
 
 export function update_stream_sidebar_for_narrow(filter) {
@@ -1423,30 +1393,6 @@ function focus_stream_filter(e) {
     e.stopPropagation();
 }
 
-<<<<<<< HEAD:static/js/stream_list.js
-function keydown_enter_key() {
-    const stream_id = stream_cursor.get_key();
-
-    if (stream_id === undefined) {
-        // This can happen for empty searches, no need to warn.
-        return;
-    }
-
-    const sub = sub_store.get(stream_id);
-
-    if (sub === undefined) {
-        blueslip.error("Unknown stream_id for search/enter: " + stream_id);
-        return;
-    }
-
-    clear_and_hide_search();
-    narrow.by("stream", sub.name, {
-        trigger: "sidebar enter key"
-    });
-}
-
-=======
->>>>>>> drc_main:web/src/stream_list.js
 function actually_update_streams_for_search() {
     // stream_sidebar.use_folders = false;
     if(stream_sidebar.use_folders){
@@ -1471,18 +1417,6 @@ function actually_update_streams_for_search() {
 
 const update_streams_for_search = _.throttle(actually_update_streams_for_search, 50);
 
-<<<<<<< HEAD:static/js/stream_list.js
-export function initialize() {
-    if(stream_sidebar.get_use_folders() && !page_params.is_guest) {
-        create_initial_sidebar_folders();
-        build_stream_folder();
-        let render_all_streams = true;
-        build_stream_list_below_folders(render_all_streams);
-    } else {
-        create_initial_sidebar_rows();
-        build_stream_list();
-    }
-=======
 // Exported for tests only.
 export function initialize_stream_cursor() {
     stream_cursor = new ListCursor({
@@ -1503,7 +1437,6 @@ export function initialize_stream_cursor() {
 
 export function initialize({on_stream_click}) {
     create_initial_sidebar_rows();
->>>>>>> drc_main:web/src/stream_list.js
 
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.
@@ -1513,7 +1446,6 @@ export function initialize({on_stream_click}) {
     set_event_handlers({on_stream_click});
 }
 
-<<<<<<< HEAD:static/js/stream_list.js
 export function set_event_handlers() {
     $("#stream_folders").on("click", "li .folder_name", (e) => {
         let $elt = $(e.target).parents("li");
@@ -1534,9 +1466,6 @@ export function set_event_handlers() {
         stream_sidebar.update_sidebar_unread_count(null);
     });
 
-=======
-export function set_event_handlers({on_stream_click}) {
->>>>>>> drc_main:web/src/stream_list.js
     $("#stream_filters").on("click", "li .subscription_block", (e) => {
         if (e.metaKey || e.ctrlKey) {
             return;

@@ -1228,11 +1228,7 @@ def check_send_message(
     *,
     skip_stream_access_check: bool = False,
 ) -> int:
-<<<<<<< HEAD
-    addressee = Addressee.legacy_build(sender, message_type_name, message_to, topic_name)
-=======
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
->>>>>>> drc_main
     try:
         message = check_message(
             sender,
@@ -1386,18 +1382,7 @@ def check_private_message_policy(
             # notifications from system bots to users.
             return
 
-<<<<<<< HEAD
-        raise JsonableError(_("Private messages are disabled in this organization."))
-    elif not sender.is_guest:
-        # Allow everyone except guest(s) to send pm
-        return
-    elif sender.is_guest and not user_profiles[0].is_guest:
-        # Allow guest to send pm to non-guests
-        return
-    raise JsonableError(_("Private messages are not allowed to be sent to this user."))
-=======
         raise JsonableError(_("Direct messages are disabled in this organization."))
->>>>>>> drc_main
 
 
 # check_message:

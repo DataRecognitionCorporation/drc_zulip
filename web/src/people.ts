@@ -300,17 +300,6 @@ export function user_ids_string_to_ids_array(user_ids_string: string): number[] 
     return ids;
 }
 
-<<<<<<< HEAD:static/js/people.js
-export function get_participants_from_user_ids_string(user_ids_string) {
-    let user_ids = user_ids_string_to_ids_array(user_ids_string);
-    // Convert to set to ensure there are no duplicate ids.
-    user_ids = new Set(user_ids);
-    // For group PMs or 1:1 private messages, the user_ids_string
-    // contains just the other user, so we need to add ourselves if not
-    // already present. For PM to self, the current user is already present,
-    // in user_ids_string, so we don't need to add it which is take care of
-    // by user_ids being a `Set`.
-=======
 export function get_participants_from_user_ids_string(user_ids_string: string): Set<number> {
     // Convert to set to ensure there are no duplicate ids.
     const user_ids = new Set(user_ids_string_to_ids_array(user_ids_string));
@@ -319,16 +308,11 @@ export function get_participants_from_user_ids_string(user_ids_string: string): 
     // present. For a direct message to oneself, the current user is
     // already present, in user_ids_string, so we don't need to add it
     // which is take care of by user_ids being a `Set`.
->>>>>>> drc_main:web/src/people.ts
     user_ids.add(my_user_id);
     return user_ids;
 }
 
-<<<<<<< HEAD:static/js/people.js
-export function emails_strings_to_user_ids_array(emails_string) {
-=======
 export function emails_strings_to_user_ids_array(emails_string: string): number[] | undefined {
->>>>>>> drc_main:web/src/people.ts
     const user_ids_string = emails_strings_to_user_ids_string(emails_string);
     if (user_ids_string === undefined) {
         return undefined;
@@ -389,11 +373,7 @@ export function get_user_time(user_id: number): string | undefined {
         const current_date = utcToZonedTime(new Date(), user_pref.timezone);
         // This could happen if the timezone is invalid.
         if (Number.isNaN(current_date.getTime())) {
-<<<<<<< HEAD:static/js/people.js
-            blueslip.error(`Got invalid date for timezone: ${user_pref.timezone}`);
-=======
             blueslip.error("Got invalid date for timezone", {timezone: user_pref.timezone});
->>>>>>> drc_main:web/src/people.ts
             return undefined;
         }
         return format(current_date, user_pref.format, {timeZone: user_pref.timezone});
