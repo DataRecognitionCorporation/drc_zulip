@@ -142,10 +142,8 @@ export function drc_build_user_sidebar(user_ids) {
     const filter_text = get_filter_text();
 
     // const user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
+    buddy_list.populate({keys: user_ids});
 
-    blueslip.measure_time("buddy_list.populate", () => {
-        buddy_list.populate({keys: user_ids});
-    });
 
     return user_ids; // for testing
 }

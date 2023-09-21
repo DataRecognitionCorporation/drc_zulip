@@ -262,6 +262,22 @@ export function get_stream_name_from_id(stream_id: number): string {
     return get_sub_by_id(stream_id)?.name ?? "";
 }
 
+
+// DRC MODIFICATION - readd this since it is being used
+export function is_private(name: string): boolean {
+    // Note: Only use this function for situations where
+    // you are comfortable with a user dealing with an
+    // old name of a stream (from prior to a rename).
+    let stream_id = get_stream_id(name);
+    if(stream_id != null) {
+        const sub = stream_info.get(stream_id);
+        if (sub) {
+            return sub.invite_only;
+        }
+    }
+    return false;
+}
+
 export function get_sub_by_name(name: string): StreamSubscription | undefined {
     // Note: Only use this function for situations where
     // you are comfortable with a user dealing with an
