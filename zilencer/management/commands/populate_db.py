@@ -919,34 +919,80 @@ class Command(BaseCommand):
                 }
 
                 extra_stream_names = [
+                    "EFL327 - CM - Prudence Sofie",
+                    "EFL327 - CM - Kasper Georgette",
+                    "EFL327 - CM - Kimber Franck",
+                    "EFL327 - CM - Michael Émilien",
+                    "EFL327 - CM - Kayden Gerard",
+
+                    "RSA521 - SU - Harry Cordelia",
+                    "RSA523 - DQ - Evaline Joye",
+                    "RSA523 - DQ - Jaye Tylor",
+                    "RSA523 - JG - Byron Frona",
+                    "RSA523 - IX - Angelica Luvinia",
+
+                    "IEL543 - LD - Lorn Alexandrina",
+                    "IEL543 - LD - Krystle Alban",
+                    "IEL543 - LD - Howie Kasandra",
+                    "IEL543 - LD - Nick Tia",
+
+                    "IEL543 - CM - Fancy Mariabella",
+                    "IEL543 - CM - Lizzie Opal",
+
+                    "IEL543 - XG - Lily Addilyn",
+                    "IEL543 - XG - Tyler Annie",
+
+
+
+                    "DHU8246 - IC - Eve Norm",
+                    "DHU8246 - IC - Chandler Emil",
+
+                    "DHU824 - GM - Millie Gypsy",
+                    "DHU824 - GM - Aaren Jimmie",
+
+                    "KDO217 - OW - Johnson Dusty",
+                    "KDO217 - OW - Brady Prudence",
+                    "KDO217 - OW - Monica Marilou",
+                    "KDO217 - OW - Colson Kamryn",
+                    "KDO217 - OW - Floretta Prosper",
+
+                    "KDO217 - HD1 - Joann Todd",
+                    "KDO217 - HD1 - Laureen Indie",
+                    "KDO217 - HD2 - Chuck Alexandria",
+                    "KDO217 - HD2 - Jillian Trey",
+                    "KDO217 - HD3 - Ellis Magdalena",
+
+                    "DFU871 - HE - Cassidy Winter",
+                    "DFU871 - HE - Maryann Leontyne",
+                    "DFU871 - HE - Madisyn Ros",
+                    "DFU871 - HE - Kayleigh Abe",
+
+                    "DSQW452 - GHIE - Esta Vince",
+                    "DSQW452 - GHIE - Monique Kinslee",
+                    "DSQW452 - GHIE - Chrystal Oakley",
+                    "DSQW452 - IE - Myrna Adelle",
+                    "DSQW452 - IE - Morgan Ferne",
+
+                    "EFL812 - HM - Dell Laurene",
+                    "EFL812 - CM - Derren Candis",
+
+                    "DLS874 - SD - Tina Wilfred",
+                    "DLS874 - CI - Edie Zechariah",
+                    "DLS874 - DL - Edmond Victoire",
+                    "DLS874 - DL - Viktor Helen",
+
+                    "DJW173 - DM - Sylvanus Mathew",
+                    "DJW173 - CM - Whitaker Angèle",
+                    "DJW173 - CM - Bertrand Christophe",
+
+                    "SKH321 - HL - Merethe Arleen",
+                    "SKH321 - BI - Ali Jessie",
+
+
                     "802.11a",
                     "Ad Hoc Network",
                     "Augmented Reality",
                     "Cycling",
-                    "DPI",
-                    "FAQ",
-                    "FiFo",
-                    "commits",
-                    "Control panel",
-                    "desktop",
-                    "компьютеры",
-                    "Data security",
-                    "desktop",
-                    "काम",
-                    "discussions",
-                    "Cloud storage",
-                    "GCI",
-                    "Vaporware",
-                    "Recent Trends",
-                    "issues",
-                    "live",
-                    "Health",
-                    "mobile",
-                    "空間",
-                    "provision",
-                    "hidrógeno",
-                    "HR",
-                    "アニメ",
                 ]
 
                 # Add stream names and stream descriptions

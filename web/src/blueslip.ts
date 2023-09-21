@@ -100,9 +100,9 @@ export function error(msg: string, more_info?: object | undefined, original_erro
     logger.error(...args);
 
     // Throw an error in development; this will show a dialog (see below).
-    if (page_params.development_environment) {
-        throw new BlueslipError(msg, more_info, original_error);
-    }
+    // if (page_params.development_environment) {
+    //     throw new BlueslipError(msg, more_info, original_error);
+    // }
     // This function returns to its caller in production!  To raise a
     // fatal error even in production, use throw new Error(…) instead.
 }
