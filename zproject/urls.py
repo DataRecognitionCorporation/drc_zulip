@@ -229,6 +229,9 @@ if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:  # nocoverage
     from two_factor.gateways.twilio.urls import urlpatterns as tf_twilio_urls
     from two_factor.urls import urlpatterns as tf_urls
 
+# DRC MODIFICATION
+from zerver.views.drc_scripts import drc_reports, drc_maintenance
+
 # NB: There are several other pieces of code which route requests by URL:
 #
 #   - legacy_urls.py contains API endpoint written before the redesign
