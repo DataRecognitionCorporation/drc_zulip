@@ -26,7 +26,10 @@ import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
-
+import {
+    StreamSidebarRow,
+    StreamSidebar
+} from "./stream_list_drc"
 export let stream_cursor;
 
 let has_scrolled = false;
@@ -112,31 +115,31 @@ export function update_count_in_dom(
     }
 }
 
-class StreamSidebar {
-    rows = new Map(); // stream id -> row widget
+// class StreamSidebar {
+//     rows = new Map(); // stream id -> row widget
 
-    set_row(stream_id, widget) {
-        this.rows.set(stream_id, widget);
-    }
+//     set_row(stream_id, widget) {
+//         this.rows.set(stream_id, widget);
+//     }
 
-    get_row(stream_id) {
-        return this.rows.get(stream_id);
-    }
+//     get_row(stream_id) {
+//         return this.rows.get(stream_id);
+//     }
 
-    has_row_for(stream_id) {
-        return this.rows.has(stream_id);
-    }
+//     has_row_for(stream_id) {
+//         return this.rows.has(stream_id);
+//     }
 
-    remove_row(stream_id) {
-        // This only removes the row from our data structure.
-        // Our caller should use build_stream_list() to re-draw
-        // the sidebar, so that we don't have to deal with edge
-        // cases like removing the last pinned stream (and removing
-        // the divider).
+//     remove_row(stream_id) {
+//         // This only removes the row from our data structure.
+//         // Our caller should use build_stream_list() to re-draw
+//         // the sidebar, so that we don't have to deal with edge
+//         // cases like removing the last pinned stream (and removing
+//         // the divider).
 
-        this.rows.delete(stream_id);
-    }
-}
+//         this.rows.delete(stream_id);
+//     }
+// }
 export const stream_sidebar = new StreamSidebar();
 
 function get_search_term() {
@@ -371,7 +374,7 @@ export function set_in_home_view(stream_id, in_home) {
     }
 }
 
-function build_stream_sidebar_li(sub) {
+export function build_stream_sidebar_li(sub) {
     const name = sub.name;
     const is_muted = stream_data.is_muted(sub.stream_id);
     const args = {
@@ -389,50 +392,9 @@ function build_stream_sidebar_li(sub) {
     return $list_item;
 }
 
-class StreamSidebarRow {
-    constructor(sub) {
-        this.sub = sub;
-        this.$list_item = build_stream_sidebar_li(sub);
-        this.update_unread_count();
-    }
+// Moved to steam_list_drc.ts for heavy modification
+// class StreamSidebarRow 
 
-    update_whether_active() {
-        if (stream_list_sort.has_recent_activity(this.sub) || this.sub.pin_to_top === true) {
-            this.$list_item.removeClass("inactive_stream");
-        } else {
-            this.$list_item.addClass("inactive_stream");
-        }
-    }
-
-    get_li() {
-        return this.$list_item;
-    }
-
-    remove() {
-        this.$list_item.remove();
-    }
-
-    update_unread_count() {
-        const count = unread.num_unread_for_stream(this.sub.stream_id);
-        const stream_has_any_unread_mention_messages = unread.stream_has_any_unread_mentions(
-            this.sub.stream_id,
-        );
-        const stream_has_any_unmuted_unread_mention = unread.stream_has_any_unmuted_mentions(
-            this.sub.stream_id,
-        );
-        const stream_has_only_muted_unread_mentions =
-            !this.sub.is_muted &&
-            stream_has_any_unread_mention_messages &&
-            !stream_has_any_unmuted_unread_mention;
-        update_count_in_dom(
-            this.$list_item,
-            count,
-            stream_has_any_unread_mention_messages,
-            stream_has_any_unmuted_unread_mention,
-            stream_has_only_muted_unread_mentions,
-        );
-    }
-}
 
 function build_stream_sidebar_row(sub) {
     stream_sidebar.set_row(sub.stream_id, new StreamSidebarRow(sub));
