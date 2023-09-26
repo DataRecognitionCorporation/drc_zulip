@@ -13,6 +13,7 @@ import {$t} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import {ListCursor} from "./list_cursor";
 import * as narrow_state from "./narrow_state";
+import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
@@ -30,6 +31,7 @@ import {
     StreamSidebarRow,
     StreamSidebar
 } from "./stream_list_drc"
+
 export let stream_cursor;
 
 let has_scrolled = false;
@@ -171,6 +173,11 @@ export function create_initial_sidebar_rows() {
 }
 
 export function build_stream_list(force_rerender) {
+    // DRC MODIFICATION - ifnot guest, use drc sidebar folder setup
+    if(!page_params.is_guest) {
+        return
+    }
+
     // The stream list in the left sidebar contains 3 sections:
     // pinned, normal, and dormant streams, with headings above them
     // as appropriate.
@@ -392,7 +399,7 @@ export function build_stream_sidebar_li(sub) {
     return $list_item;
 }
 
-// Moved to steam_list_drc.ts for heavy modification
+// DRC MODIFICATION - moved to steam_list_drc.ts for heavy modification
 // class StreamSidebarRow 
 
 
@@ -453,6 +460,11 @@ function set_stream_unread_count(
 }
 
 export function update_streams_sidebar(force_rerender) {
+    // DRC MODIFICATION - ifnot guest, use drc sidebar folder setup
+    if(!page_params.is_guest) {
+        return
+    }
+
     if (!force_rerender && topic_zoom.is_zoomed_in()) {
         // We do our best to update topics that are displayed
         // in case user zoomed in. Streams list will be updated,
@@ -665,14 +677,23 @@ export function initialize_stream_cursor() {
 }
 
 export function initialize({on_stream_click}) {
-    create_initial_sidebar_rows();
+    if(!page_params.is_guest) {
+        const subs = stream_data.subscribed_subs();
 
-    // We build the stream_list now.  It may get re-built again very shortly
-    // when new messages come in, but it's fairly quick.
-    build_stream_list();
-    update_subscribe_to_more_streams_link();
-    initialize_stream_cursor();
-    set_event_handlers({on_stream_click});
+        for (const sub of subs) {
+            stream_sidebar.add_row(sub, new StreamSidebarRow(sub));
+        }
+    } else {
+        create_initial_sidebar_rows();
+
+        // We build the stream_list now.  It may get re-built again very shortly
+        // when new messages come in, but it's fairly quick.
+        build_stream_list();
+        initialize_stream_cursor();
+        update_subscribe_to_more_streams_link();
+        set_event_handlers({on_stream_click});
+    }
+    
 }
 
 export function set_event_handlers({on_stream_click}) {

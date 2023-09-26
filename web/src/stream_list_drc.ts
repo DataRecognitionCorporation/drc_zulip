@@ -1,4 +1,6 @@
-import * as stream_data from "./stream_data";
+import {
+    get_sub_by_id
+} from "./stream_data";
 import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
 import { 
     stream_has_any_unread_mentions, 
@@ -28,6 +30,35 @@ export class StreamSidebar {
     counts = null;
     subfolder_id_latest = 0;
 
+    add_row(sub: StreamSubscription, widget: StreamSidebarRow) {
+        
+        if(sub == undefined) {
+            console.log('sub is undefined')
+            return;
+        }
+
+        const regex_num_letters = new RegExp('^[a-zA-Z0-9\'_,.-]*$')
+
+        const name_array = sub.name.split(" - ");
+        
+        
+        if (regex_num_letters.test(name_array[0]) && name_array.length == 3) {
+
+            // add folder to folder list
+            this.set_folder(name_array[0], new StreamFolder(name_array[0]))
+            console.log(name_array[0])
+
+            // add subfolder
+
+            // add stream name to subfolder
+            sub.name = name_array[2];
+            const stream_name = new StreamSidebarRow(sub);
+            
+        } else {
+            // add to list below folders
+        }
+    }
+
     set_row(stream_id: number, widget: StreamSidebarRow) {
         this.rows.set(stream_id, widget);
     }
@@ -36,8 +67,8 @@ export class StreamSidebar {
         this.all_rows.set(stream_id, widget);
     }
 
-    set_folder(folder_name: number, folder_obj) {
-      this.folders.set(folder_name, folder_obj);
+    set_folder(folder_name: string, folder: StreamFolder) {
+      this.folders.set(folder_name, folder);
     }
 
     get_row(stream_id: number) {
@@ -166,7 +197,7 @@ export class StreamSidebar {
 }
 
 class StreamFolder {
-    constructor(folder_name, sub_folders) {
+    constructor(folder_name: string) {
         this.folder_name = folder_name;
         this.sub_folders = [];
 
@@ -271,7 +302,7 @@ export class StreamSidebarRow {
         this.$list_item = build_stream_sidebar_li(sub);
         this.update_unread_count();
     }
-
+    
     update_whether_active() {
         if (has_recent_activity(this.sub) || this.sub.pin_to_top === true) {
             this.$list_item.removeClass("inactive_stream");
