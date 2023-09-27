@@ -29,7 +29,8 @@ import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 import {
     StreamSidebarRow,
-    StreamSidebar
+    StreamSidebar,
+    build_stream_folder
 } from "./stream_list_drc"
 
 export let stream_cursor;
@@ -144,7 +145,7 @@ export function update_count_in_dom(
 // }
 export const stream_sidebar = new StreamSidebar();
 
-function get_search_term() {
+export function get_search_term() {
     const $search_box = $(".stream-list-filter");
     const search_term = $search_box.expectOne().val().trim();
     return search_term;
@@ -683,6 +684,9 @@ export function initialize({on_stream_click}) {
         for (const sub of subs) {
             stream_sidebar.add_row(sub, new StreamSidebarRow(sub));
         }
+
+        stream_sidebar.build_stream_folder(true);
+        set_event_handlers({on_stream_click});
     } else {
         create_initial_sidebar_rows();
 
@@ -697,6 +701,26 @@ export function initialize({on_stream_click}) {
 }
 
 export function set_event_handlers({on_stream_click}) {
+    $("#stream_folders").on("click", "li .folder_name", (e) => {
+        let $elt = $(e.target).parents("li");
+        let folder_name =  $(e.target).attr("folder_name");
+        const subfolder_name = ".subfolder_" + folder_name;
+        let length_of_ul = $(subfolder_name).children("li").length;
+        
+        console.log(subfolder_name)
+        if(length_of_ul > 0) {
+            $(".subfolders").off("click");
+            $(".subfolders").empty();
+            return;
+        }
+        $(".subfolders").off("click");
+        $(".subfolders").empty();
+
+
+        stream_sidebar.build_subfolder_rows(folder_name);
+        // stream_sidebar.update_sidebar_unread_count(null);
+    });
+
     $("#stream_filters").on("click", "li .subscription_block", (e) => {
         if (e.metaKey || e.ctrlKey) {
             return;
