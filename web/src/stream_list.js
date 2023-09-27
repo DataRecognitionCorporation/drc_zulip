@@ -174,7 +174,7 @@ export function create_initial_sidebar_rows() {
 }
 
 export function build_stream_list(force_rerender) {
-    // DRC MODIFICATION - ifnot guest, use drc sidebar folder setup
+    // DRC MODIFICATION - if not guest, use drc sidebar folder setup
     if(!page_params.is_guest) {
         return
     }
@@ -492,6 +492,7 @@ export function update_streams_sidebar(force_rerender) {
 }
 
 export function update_dom_with_unread_counts(counts) {
+    console.log(counts)
     // counts.stream_count maps streams to counts
     for (const [stream_id, count] of counts.stream_count) {
         const stream_has_any_unread_mention_messages =
@@ -719,6 +720,7 @@ export function set_event_handlers({on_stream_click}) {
 
         stream_sidebar.build_subfolder_rows(folder_name);
         // stream_sidebar.update_sidebar_unread_count(null);
+        stream_sidebar.update_sidebar_unread_count(null);
     });
 
     $("#stream_filters").on("click", "li .subscription_block", (e) => {

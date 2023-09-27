@@ -45,8 +45,8 @@ export function remove_stream_folders() {
 
 
 export class StreamSidebar {
-    all_rows = new Map();
-    rows = new Map(); // stream id -> row widget
+    // all_rows = new Map();
+    // rows = new Map(); // stream id -> row widget
     folders = new Map(); // map of folder objects
 
     use_folders = true;
@@ -79,8 +79,10 @@ export class StreamSidebar {
                 folder.set_subfoler(subfolder);
                 this.subfolder_id_latest++;
             }
+
             // add stream name to subfolder 
             subfolder.set_row(new StreamSidebarRow(sub, name_array[2]));
+            this.update_folder_count_in_dom(name_array[0], 1);
         } else {
             // add to list below folders
         }
@@ -105,6 +107,8 @@ export class StreamSidebar {
     
         $parent.empty();
         $parent.append(elems);
+
+        
     }
 
     build_subfolder_rows(folder_name: string) {
@@ -134,19 +138,18 @@ export class StreamSidebar {
         // topic_list.clear();
         $parent.empty();
         $parent.append(elems);
-        console.log('wtf')
-        
-    
+
         let stream_subfolder_id = "#stream_subfolder_" + folder_name;
         $(stream_subfolder_id).on("click", "li", (e) => {
+            
             const $elt = $(e.target).parents("li");
             const subfolder_name = $elt.attr("subfolder_name");
             const subfolder_id = $elt.attr("subfolder_id");
             const folder_name = $elt.attr("folder_name");
     
-            // if(subfolder_name == null) {
-            //   return;
-            // }
+            if(folder_name == null || subfolder_name == null || subfolder_id == null) {
+              return;
+            }
     
             const folder_rows_ul = ".subfolder_rows_" + subfolder_id;
             let length_of_li = $(folder_rows_ul).children("li").length;
@@ -157,7 +160,7 @@ export class StreamSidebar {
               $folder.empty();
               return;
             } else {
-              this.build_stream_list_folders(folder_name, subfolder_name, subfolder_id);
+              this.build_stream_list_folders(folder_name, subfolder_name, parseInt(subfolder_id));
             }
         });
     }
@@ -298,26 +301,23 @@ export class StreamSidebar {
         $parent.append(elems);
     }
 
-    // set_event_handlers() {
-    //     $("#stream_folders").on("click", "li .folder_name", (e) => {
-    //         let $elt = $(e.target).parents("li");
-    //         let folder_name =  $(e.target).attr("folder_name");
-    //         const subfolder_name = ".subfolder_" + folder_name;
-    //         let length_of_ul = $(subfolder_name).children("li").length;
+    update_folder_count_in_dom(folder_name: string, count: number) {
+        // The subscription_block properly excludes the topic list,
+        // and it also has sensitive margins related to whether the
+        // count is there or not.
+        let test = "." + folder_name;
+        const $subscription_block = $(test).find(".folder_unread_count");
     
-    //         if(length_of_ul > 0) {
-    //             $(".subfolders").off("click");
-    //             $(".subfolders").empty();
-    //             return;
-    //         }
-    //         $(".subfolders").off("click");
-    //         $(".subfolders").empty();
+        if (count === 0) {
+            $subscription_block.text("");
+            $subscription_block.hide();
+            return;
+        }
     
     
-    //         build_subfolder_rows(folder_name);
-    //         stream_sidebar.update_sidebar_unread_count(null);
-    //     });
-    // }
+        $subscription_block.show();
+        $subscription_block.text(count);
+    }
 
     set_row(stream_id: number, widget: StreamSidebarRow) {
         this.rows.set(stream_id, widget);
@@ -332,7 +332,7 @@ export class StreamSidebar {
     }
 
     get_row(stream_id: number) {
-        return this.rows.get(stream_id);
+        return this.get_row_by_id(stream_id);
     }
 
     get_row_from_all(stream_id: number) {
@@ -373,7 +373,7 @@ export class StreamSidebar {
         // the sidebar, so that we don't have to deal with edge
         // cases like removing the last pinned stream (and removing
         // the divider).
-
+        
         this.rows.delete(stream_id);
     }
 
@@ -387,46 +387,44 @@ export class StreamSidebar {
     }
 
     get_row_by_id(stream_id: number) {
-      for(let [folder_name, folder_obj] of this.folders) {
-        let row = folder_obj.get_row_by_id(stream_id);
-        if(row != null){
-          return row;
+        for(let [folder_name, folder] of this.folders) {
+            let row = folder.get_row_by_id(stream_id);
+
+            if(row != null){
+                return row;
+            }
         }
-      }
-      let row = this.rows.get(stream_id);
-      if(row != null) {
-        return row;
-      }
-      return null;
+        
+        return null;
     }
 
     get_folder_stream_ids() {
-      const all_ids = [];
-      for(let [key, folder] of this.folders) {
-        // for(let subfolder of folder.sub_folders) {
-        for (const [key, value] of Object.entries(folder.sub_folders)) {
-          for(let row of value){
-            all_ids.push(parseInt(row.sub.stream_id));
-          }
-        }
+        const all_ids = [];
+        for(let [key, folder] of this.folders) {
+            // for(let subfolder of folder.sub_folders) {
+            for (const [key, value] of Object.entries(folder.sub_folders)) {
+            for(let row of value){
+                all_ids.push(parseInt(row.sub.stream_id));
+            }
+            }
 
-      }
-      return all_ids;
+        }
+        return all_ids;
     }
 
     get_subfolder_stream_ids(folder: string, subfolder_name: string) {
-      let subfolders = this.get_folder(folder).get_subfolders();
-      for(const subfolder of subfolders) {
-        const name = subfolder.subfolder_name;
-        if(name == subfolder_name){
-          let all_ids = subfolder.get_all_ids();
-          return all_ids;
+        let subfolders = this.get_folder(folder).get_subfolders();
+        for(const subfolder of subfolders) {
+            const name = subfolder.subfolder_name;
+            if(name == subfolder_name){
+            let all_ids = subfolder.get_all_ids();
+            return all_ids;
+            }
         }
-      }
-      return null;
+        return null;
     }
 
-    update_sidebar_unread_count(counts: number){
+    update_sidebar_unread_count(counts){
     //   if(counts == null) {
     //     counts = this.counts;
     //   } else {
@@ -450,7 +448,7 @@ export class StreamSidebar {
 
           update_subfolder_count_in_dom(subfolder.id, subfolder_count);
         }
-        update_folder_count_in_dom(folder.folder_name, folder_count);
+        folder.update_folder_count_in_dom(folder.folder_name, folder_count);
       }
     }
 
@@ -504,14 +502,14 @@ class StreamFolder {
     }
 
     get_all_row_ids() {
-      let ids = [];
+      let ids: number[] = [];
       for(let subfolder of this.sub_folders) {
         ids.concat(subfolder.get_all_ids());
       }
       return ids;
     }
 
-    get_row_by_id(id) {
+    get_row_by_id(id: number) {
       for(let subfolder of this.sub_folders) {
         let row = subfolder.get_row_by_id(id);
         if(row != null) {
@@ -527,6 +525,7 @@ class StreamFolder {
       }
       return temp;
     }
+
 }
 
 class StreamSubFolder {
@@ -550,7 +549,6 @@ class StreamSubFolder {
     }
 
     set_row(widget: StreamSidebarRow) {
-
         this.sidebar_row.push(widget);
     }
 
@@ -582,9 +580,6 @@ class StreamSubFolder {
 
 }
 
-class StreamList {
-
-}
 
 export class StreamSidebarRow {
     sub: StreamSubscription;
@@ -654,23 +649,7 @@ export function update_subfolder_count_in_dom(subfolder_id: number, count: numbe
     $subfolder_unread.text(count);
 }
 
-export function update_folder_count_in_dom(folder_name: string, count: number) {
-    // The subscription_block properly excludes the topic list,
-    // and it also has sensitive margins related to whether the
-    // count is there or not.
-    let test = "." + folder_name;
-    const $subscription_block = $(test).find(".folder_unread_count");
 
-    if (count === 0) {
-        $subscription_block.text("");
-        $subscription_block.hide();
-        return;
-    }
-
-
-    $subscription_block.show();
-    $subscription_block.text(count);
-}
 
 function build_stream_sidebar_li(sub: StreamSubscription, leader_name: string) {
     const name = sub.name;
