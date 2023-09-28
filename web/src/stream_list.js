@@ -203,6 +203,7 @@ export function build_stream_list(force_rerender) {
     const elems = [];
 
     function add_sidebar_li(stream_id) {
+        console.log(stream_id)
         const sidebar_row = stream_sidebar.get_row(stream_id);
         sidebar_row.update_whether_active();
         elems.push(sidebar_row.get_li());
@@ -492,7 +493,7 @@ export function update_streams_sidebar(force_rerender) {
 }
 
 export function update_dom_with_unread_counts(counts) {
-    console.log(counts)
+    stream_sidebar.update_sidebar_unread_count(counts);
     // counts.stream_count maps streams to counts
     for (const [stream_id, count] of counts.stream_count) {
         const stream_has_any_unread_mention_messages =
@@ -708,7 +709,6 @@ export function set_event_handlers({on_stream_click}) {
         const subfolder_name = ".subfolder_" + folder_name;
         let length_of_ul = $(subfolder_name).children("li").length;
         
-        console.log(subfolder_name)
         if(length_of_ul > 0) {
             $(".subfolders").off("click");
             $(".subfolders").empty();
