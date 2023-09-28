@@ -425,31 +425,32 @@ export class StreamSidebar {
     }
 
     update_sidebar_unread_count(counts){
-    //   if(counts == null) {
-    //     counts = this.counts;
-    //   } else {
-    //     this.counts = counts;
-    //   }
-      this.counts = counts;
-
-      for(let [folder_name, folder] of this.folders) {
-
-        let folder_count = 0;
-        const all_subfolders = folder.get_subfolders();
-        for (let subfolder of all_subfolders) {
-          let subfolder_count = 0;
-          const all_rows = subfolder.get_rows();
-          for(let row of all_rows){
-            if(counts.has(row.sub.stream_id)) {
-              subfolder_count = subfolder_count + counts.get(row.sub.stream_id);
-            }
-          }
-          folder_count = folder_count + subfolder_count;
-
-          update_subfolder_count_in_dom(subfolder.id, subfolder_count);
+        console.log(counts)
+        if(counts == null || counts == undefined) {
+            counts = this.counts;
+        } else {
+            this.counts = counts;
         }
-        folder.update_folder_count_in_dom(folder.folder_name, folder_count);
-      }
+        this.counts = counts;
+
+        for(let [folder_name, folder] of this.folders) {
+
+            let folder_count = 0;
+            const all_subfolders = folder.get_subfolders();
+            for (let subfolder of all_subfolders) {
+            let subfolder_count = 0;
+            const all_rows = subfolder.get_rows();
+            for(let row of all_rows){
+                if(counts.has(row.sub.stream_id)) {
+                subfolder_count = subfolder_count + counts.get(row.sub.stream_id);
+                }
+            }
+            folder_count = folder_count + subfolder_count;
+
+            update_subfolder_count_in_dom(subfolder.id, subfolder_count);
+            }
+            folder.update_folder_count_in_dom(folder.folder_name, folder_count);
+        }
     }
 
 }

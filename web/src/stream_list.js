@@ -720,7 +720,6 @@ export function set_event_handlers({on_stream_click}) {
 
         stream_sidebar.build_subfolder_rows(folder_name);
         // stream_sidebar.update_sidebar_unread_count(null);
-        stream_sidebar.update_sidebar_unread_count(null);
     });
 
     $("#stream_filters").on("click", "li .subscription_block", (e) => {
