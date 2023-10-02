@@ -47,6 +47,7 @@ export function is_complete_for_stream_id(stream_id) {
 
     const sub = sub_store.get(stream_id);
     const in_cache = all_topics_in_cache(sub);
+    console.log(in_cache)
 
     if (in_cache) {
         /*
