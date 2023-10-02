@@ -688,6 +688,8 @@ export function initialize({on_stream_click}) {
         }
 
         stream_sidebar.build_stream_folder(true);
+        stream_sidebar.build_stream_list_below_folders(false);
+
         set_event_handlers({on_stream_click});
     } else {
         create_initial_sidebar_rows();
@@ -846,6 +848,7 @@ export function hide_search_section() {
 }
 
 export function initiate_search() {
+    stream_sidebar.remove_stream_folders();
     show_search_section();
 
     const $filter = $(".stream-list-filter").expectOne();
