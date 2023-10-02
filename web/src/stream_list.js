@@ -148,6 +148,7 @@ export const stream_sidebar = new StreamSidebar();
 export function get_search_term() {
     const $search_box = $(".stream-list-filter");
     const search_term = $search_box.expectOne().val().trim();
+    console.log(search_term)
     return search_term;
 }
 
@@ -174,11 +175,6 @@ export function create_initial_sidebar_rows() {
 }
 
 export function build_stream_list(force_rerender) {
-    // DRC MODIFICATION - if not guest, use drc sidebar folder setup
-    if(!page_params.is_guest) {
-        return
-    }
-
     // The stream list in the left sidebar contains 3 sections:
     // pinned, normal, and dormant streams, with headings above them
     // as appropriate.
@@ -203,7 +199,6 @@ export function build_stream_list(force_rerender) {
     const elems = [];
 
     function add_sidebar_li(stream_id) {
-        console.log(stream_id)
         const sidebar_row = stream_sidebar.get_row(stream_id);
         sidebar_row.update_whether_active();
         elems.push(sidebar_row.get_li());
@@ -283,6 +278,7 @@ export function get_stream_li(stream_id) {
         // Not all streams are in the sidebar, so we don't report
         // an error here, and it's up for the caller to error if
         // they expected otherwise.
+
         return undefined;
     }
 
@@ -406,7 +402,7 @@ export function build_stream_sidebar_li(sub) {
 
 
 function build_stream_sidebar_row(sub) {
-    stream_sidebar.set_row(sub.stream_id, new StreamSidebarRow(sub));
+    stream_sidebar.set_row(sub.stream_id);
 }
 
 export function create_sidebar_row(sub) {
@@ -680,6 +676,7 @@ export function initialize_stream_cursor() {
 }
 
 export function initialize({on_stream_click}) {
+    // DRC MODIFICATION - if user is not guest, build stream list with folders
     if(!page_params.is_guest) {
         const subs = stream_data.subscribed_subs();
 
@@ -690,21 +687,22 @@ export function initialize({on_stream_click}) {
         stream_sidebar.build_stream_folder(true);
         stream_sidebar.build_stream_list_below_folders(false);
 
-        set_event_handlers({on_stream_click});
+        set_folder_listeners({on_stream_click});
     } else {
         create_initial_sidebar_rows();
 
         // We build the stream_list now.  It may get re-built again very shortly
         // when new messages come in, but it's fairly quick.
         build_stream_list();
-        initialize_stream_cursor();
-        update_subscribe_to_more_streams_link();
-        set_event_handlers({on_stream_click});
     }
+    initialize_stream_cursor();
+    update_subscribe_to_more_streams_link();
+    set_event_handlers({on_stream_click});
     
 }
 
-export function set_event_handlers({on_stream_click}) {
+// DRC MODIFICATION - add event listeners for folders
+export function set_folder_listeners({on_stream_click}) {
     $("#stream_folders").on("click", "li .folder_name", (e) => {
         let $elt = $(e.target).parents("li");
         let folder_name =  $(e.target).attr("folder_name");
@@ -724,6 +722,9 @@ export function set_event_handlers({on_stream_click}) {
         // stream_sidebar.update_sidebar_unread_count(null);
     });
 
+}
+
+export function set_event_handlers({on_stream_click}) {
     $("#stream_filters").on("click", "li .subscription_block", (e) => {
         if (e.metaKey || e.ctrlKey) {
             return;
@@ -848,7 +849,13 @@ export function hide_search_section() {
 }
 
 export function initiate_search() {
-    stream_sidebar.remove_stream_folders();
+    if(!page_params.is_guest) {
+        stream_sidebar.remove_stream_folders();
+        stream_sidebar.remove_rows_below_folders();
+
+        let render_all_streams = true;
+        stream_sidebar.build_stream_list_below_folders(render_all_streams);
+    }
     show_search_section();
 
     const $filter = $(".stream-list-filter").expectOne();
@@ -881,6 +888,9 @@ export function clear_and_hide_search() {
 export function toggle_filter_displayed(e) {
     if ($(".stream_search_section.notdisplayed").length === 0) {
         clear_and_hide_search();
+        stream_sidebar.remove_rows_below_folders();
+        stream_sidebar.build_stream_folder(true);
+        stream_sidebar.build_stream_list_below_folders(false);
     } else {
         initiate_search();
     }
