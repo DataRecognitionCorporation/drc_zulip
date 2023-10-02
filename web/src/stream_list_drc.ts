@@ -1,7 +1,8 @@
-import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
 import { list } from "postcss";
 import { has_recent_activity } from "./stream_list_sort"
 // import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
+import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
+import render_stream_sidebar_subfolder_row from "../templates/stream_sidebar_subfolder_row.hbs";
 import render_stream_sidebar_dropdown from "../templates/stream_sidebar_dropdown.hbs";
 import render_stream_sidebar_dropdown_subfolder from "../templates/stream_sidebar_dropdown_subfolder.hbs";
 import * as topic_list from "./topic_list";
@@ -34,14 +35,6 @@ import type {
     StreamSubscription,
 } from "./sub_store";
 
-
-
-export function remove_stream_folders() {
-    const $parent = $("#stream_folders");
-    $parent.empty();
-}
-
-
 export class StreamSidebar {
     all_rows = new Map();
     rows = new Map(); // stream id -> row widget
@@ -51,10 +44,9 @@ export class StreamSidebar {
     counts = null;
     subfolder_id_latest = 0;
 
-    add_row(sub: StreamSubscription, widget: StreamSidebarRow) {
+    set_row(sub: StreamSubscription) {
         
         if(sub == undefined) {
-            console.log('sub is undefined')
             return;
         }
 
@@ -305,7 +297,7 @@ export class StreamSidebar {
             return;
         }
     
-        const $parent = $("#stream_list");
+        const $parent = $("#stream_filters");
         let unsorted_rows;
     
         unsorted_rows = this.get_rows();
@@ -416,10 +408,6 @@ export class StreamSidebar {
         $parent.append(elems);
     }
 
-    set_row(stream_id: number, widget: StreamSidebarRow) {
-        // this.rows.set(stream_id, widget);
-    }
-
     set_row_all(stream_id: number, widget: StreamSidebarRow){
         this.all_rows.set(stream_id, widget);
     }
@@ -429,7 +417,7 @@ export class StreamSidebar {
     }
 
     get_row(stream_id: number) {
-        return this.get_row_by_id(stream_id);
+        return this.all_rows.get(stream_id);
     }
 
     get_row_from_all(stream_id: number) {
@@ -479,6 +467,11 @@ export class StreamSidebar {
         $parent.empty();
     }
 
+    remove_rows_below_folders() {
+        const $parent = $("#stream_filters");
+        $parent.empty();
+    }
+
     get_folder_by_name(folder_name: string) {
         this.rows.forEach(function(value, key) {
             if (key == folder_name) {
@@ -489,6 +482,10 @@ export class StreamSidebar {
     }
 
     get_row_by_id(stream_id: number) {
+        if(this.rows.has(stream_id)) {
+            return this.rows.get(stream_id);
+        }
+
         for(let [folder_name, folder] of this.folders) {
             let row = folder.get_row_by_id(stream_id);
 
@@ -719,12 +716,12 @@ class StreamSubFolder {
 export class StreamSidebarRow {
     sub: StreamSubscription;
     $list_item: JQuery<any>;
-    row_name: string;
+    leader_name: string;
 
-    constructor(sub: StreamSubscription, name: string) {
-        this.row_name = name;
+    constructor(sub: StreamSubscription, leader_name: string) {
+        this.leader_name = leader_name;
         this.sub = sub;
-        this.$list_item = build_stream_sidebar_li(sub, name);
+        this.$list_item = this.build_stream_sidebar_li(sub, leader_name);
         this.update_unread_count();
     }
     
@@ -764,28 +761,29 @@ export class StreamSidebarRow {
             stream_has_only_muted_unread_mentions,
         );
     }
-}
 
+    build_stream_sidebar_li(sub: StreamSubscription, leader_name: string) {
+        const name = sub.name;
+        const is_stream_muted = is_muted(sub.stream_id);
+        const args = {
+            name,
+            leader_name: leader_name,
+            id: sub.stream_id,
+            url: hash_util.by_stream_url(sub.stream_id),
+            is_stream_muted,
+            invite_only: sub.invite_only,
+            is_web_public: sub.is_web_public,
+            color: sub.color,
+            pin_to_top: sub.pin_to_top,
+            hide_unread_count: settings_data.should_mask_unread_count(is_stream_muted),
+        };
 
-
-
-
-
-function build_stream_sidebar_li(sub: StreamSubscription, leader_name: string) {
-    const name = sub.name;
-    const is_stream_muted = is_muted(sub.stream_id);
-    const args = {
-        name,
-        leader_name: leader_name,
-        id: sub.stream_id,
-        url: hash_util.by_stream_url(sub.stream_id),
-        is_stream_muted,
-        invite_only: sub.invite_only,
-        is_web_public: sub.is_web_public,
-        color: sub.color,
-        pin_to_top: sub.pin_to_top,
-        hide_unread_count: settings_data.should_mask_unread_count(is_stream_muted),
-    };
-    const $list_item = $(render_stream_sidebar_row(args));
-    return $list_item;
+        let $list_item = undefined;
+        if(leader_name != sub.name) {
+            $list_item = $(render_stream_sidebar_subfolder_row(args));
+        } else {
+            $list_item = $(render_stream_sidebar_row(args));
+        }
+        return $list_item;
+    }
 }
