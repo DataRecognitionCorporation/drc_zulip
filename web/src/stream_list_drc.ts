@@ -305,7 +305,7 @@ export class StreamSidebar {
             return;
         }
     
-        const $parent = $("#stream_filters");
+        const $parent = $("#stream_list");
         let unsorted_rows;
     
         unsorted_rows = this.get_rows();
