@@ -129,7 +129,6 @@ export const stream_sidebar = new StreamSidebar(use_folders);
 export function get_search_term() {
     const $search_box = $(".stream-list-filter");
     const search_term = $search_box.expectOne().val().trim();
-    console.log(search_term)
     return search_term;
 }
 
@@ -709,6 +708,10 @@ export function set_event_handlers({on_stream_click}) {
 
         e.preventDefault();
         e.stopPropagation();
+
+        // DRC MODIFICATION - expand folders and focus on stream after search
+        let focused_stream_id = topic_list.active_stream_id();
+        stream_sidebar.focus_on_stream(stream_id);
     });
 
     $("#clear_search_stream_button").on("click", clear_search);
@@ -816,7 +819,6 @@ export function show_search_section() {
 }
 
 export function hide_search_section() {
-    console.log('hiding search')
     $(".stream_search_section").expectOne().addClass("notdisplayed");
     resize.resize_stream_filters_container();
 }
@@ -858,7 +860,6 @@ export function clear_and_hide_search() {
     }
     stream_cursor.clear();
     $filter.trigger("blur");
-
 }
 
 export function toggle_filter_displayed(e) {

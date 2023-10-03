@@ -36,6 +36,7 @@ import {
 } from "./stream_list";
 
 import type {
+    Stream,
     StreamSubscription,
 } from "./sub_store";
 
@@ -142,8 +143,6 @@ export class StreamSidebar {
         $parent.empty();
         $parent.append(elems);
         this.update_sidebar_unread_count(null);
-
-        console.log('hmm')
 
         let stream_subfolder_id = "#stream_subfolder_" + folder_name;
         $(stream_subfolder_id).on("click", "li", (e) => {
@@ -309,13 +308,11 @@ export class StreamSidebar {
         let search_term = get_search_term();
 
         let search_bar_hidden = $(".stream_search_section").expectOne().hasClass("notdisplayed");
-        console.log(search_bar_hidden);
         const $parent = $("#stream_filters");
         let unsorted_rows;
     
         if(render_all_streams == true || this.use_folders == false) {
             unsorted_rows = this.all_rows;
-            console.log('using all rows')
         } else if(search_term || !search_bar_hidden) {
             unsorted_rows = this.all_rows;
         } else {
@@ -497,13 +494,15 @@ export class StreamSidebar {
         $parent.empty();
     }
 
-    get_folder_by_name(folder_name: string) {
-        this.rows.forEach(function(value, key) {
-            if (key == folder_name) {
-                return value;
+    get_folder_by_name(folder_name_search: string): StreamFolder | null  {
+        for(let [folder_name, folder] of this.folders) {
+            console.log(folder)
+            if (folder_name_search == folder_name) {
+                return folder;
             }
-        })
+        }
 
+        return null;
     }
 
     get_row_by_id(stream_id: number) {
@@ -610,6 +609,26 @@ export class StreamSidebar {
         this.remove_stream_folders();
         this.remove_rows_below_folders();
     }
+
+    focus_on_stream(stream_id: number) {
+        if(!this.use_folders) {
+            return
+        }
+        
+        let row = this.get_row_by_id(stream_id);
+        let name_array = row.sub.name.split(" - ");
+        let folder = this.get_folder_by_name(name_array[0]);
+
+        if(folder != null) {
+            let subfolder = folder.get_subfolder_by_name(name_array[1]);
+            if(subfolder != undefined) {
+                this.build_subfolder_rows(name_array[0]);
+                this.build_stream_list_folders(name_array[0], name_array[1], subfolder.get_subfolder_id());
+            }
+        } else {
+            return
+        }
+    }
 }
 
 class StreamFolder {
@@ -711,6 +730,10 @@ class StreamSubFolder {
         this.sidebar_row.push(widget);
     }
 
+    get_subfolder_id(): number {
+        return this.id;
+    }
+
     // return a list of ids of all rows within subfolder
     get_all_ids() {
         let ids = [];
@@ -737,9 +760,9 @@ class StreamSubFolder {
         return temp;
     }
 
-    set_unread_count(count: number) {
-        this.set_unread_count = count;
-    }
+    // set_unread_count(count: number) {
+    //     this.set_unread_count = count;
+    // }
 }
 
 
