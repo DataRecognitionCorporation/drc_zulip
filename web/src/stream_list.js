@@ -156,6 +156,11 @@ export function create_initial_sidebar_rows() {
 
 export function build_stream_list(force_rerender) {
     stream_sidebar.build_stream_list_below_folders(true);
+    if(stream_sidebar.current_open_folder != '' && stream_sidebar.current_open_subfolder_id != -1) {
+        stream_sidebar.build_stream_folder();
+        stream_sidebar.build_subfolder_rows(stream_sidebar.current_open_folder);
+        stream_sidebar.build_stream_list_folders(stream_sidebar.current_open_folder, stream_sidebar.current_open_subfolder_id);
+    }
     return
     // The stream list in the left sidebar contains 3 sections:
     // pinned, normal, and dormant streams, with headings above them
@@ -513,7 +518,7 @@ export function rename_stream(sub) {
 export function refresh_pinned_or_unpinned_stream(sub) {
     // Pinned/unpinned streams require re-ordering.
     // We use kind of brute force now, which is probably fine.
-    build_stream_sidebar_row(sub);
+    // build_stream_sidebar_row(sub);
     update_streams_sidebar();
 
     // Only scroll pinned topics into view.  If we're unpinning
@@ -683,6 +688,7 @@ export function set_folder_listeners({on_stream_click}) {
         let length_of_ul = $(subfolder_name).children("li").length;
         
         if(length_of_ul > 0) {
+            stream_sidebar.current_open_folder = '';
             $(".subfolders").off("click");
             $(".subfolders").empty();
             return;
