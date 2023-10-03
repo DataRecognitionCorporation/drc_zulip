@@ -498,4 +498,18 @@ export function register_click_handlers() {
 
         e.stopPropagation();
     });
+
+    // DRC MODIFICATION - add stream folder popover listeners
+    $("#stream_folders").on("click", ".stream-sidebar-menu-icon", (e) => {
+        e.stopPropagation();
+
+        const elt = e.target;
+        const $stream_li = $(elt).parents("li");
+        const stream_id = elem_to_stream_id($stream_li);
+
+        build_stream_popover({
+            elt,
+            stream_id,
+        });
+    });
 }

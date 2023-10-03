@@ -118,32 +118,13 @@ export function update_count_in_dom(
     }
 }
 
+// DRC MODIFICATION - streamsidebar moved to stream_list_drc.ts
 // class StreamSidebar {
-//     rows = new Map(); // stream id -> row widget
-
-//     set_row(stream_id, widget) {
-//         this.rows.set(stream_id, widget);
-//     }
-
-//     get_row(stream_id) {
-//         return this.rows.get(stream_id);
-//     }
-
-//     has_row_for(stream_id) {
-//         return this.rows.has(stream_id);
-//     }
-
-//     remove_row(stream_id) {
-//         // This only removes the row from our data structure.
-//         // Our caller should use build_stream_list() to re-draw
-//         // the sidebar, so that we don't have to deal with edge
-//         // cases like removing the last pinned stream (and removing
-//         // the divider).
-
-//         this.rows.delete(stream_id);
-//     }
-// }
-export const stream_sidebar = new StreamSidebar();
+let use_folders = false;
+if(!page_params.is_guest) {
+    use_folders = true;
+}
+export const stream_sidebar = new StreamSidebar(use_folders);
 
 export function get_search_term() {
     const $search_box = $(".stream-list-filter");
@@ -175,12 +156,8 @@ export function create_initial_sidebar_rows() {
 }
 
 export function build_stream_list(force_rerender) {
-    if(!page_params.is_guest) {
-        stream_sidebar.build_stream_folder(true);
-        stream_sidebar.build_stream_list_below_folders(false);
-        set_folder_listeners();
-        return;
-    }
+    stream_sidebar.build_stream_list_below_folders(true);
+    return
     // The stream list in the left sidebar contains 3 sections:
     // pinned, normal, and dormant streams, with headings above them
     // as appropriate.
@@ -280,6 +257,7 @@ export function build_stream_list(force_rerender) {
 
 export function get_stream_li(stream_id) {
     const row = stream_sidebar.get_row(stream_id);
+    
     if (!row) {
         // Not all streams are in the sidebar, so we don't report
         // an error here, and it's up for the caller to error if
@@ -680,17 +658,24 @@ export function initialize_stream_cursor() {
 export function initialize({on_stream_click}) {
     create_initial_sidebar_rows();
 
+    if(!page_params.is_guest) {
+        stream_sidebar.build_stream_folder(true);
+        // stream_sidebar.build_stream_list_below_folders(false);
+        
+        // return;
+    }
+
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.
     build_stream_list();
-    initialize_stream_cursor();
     update_subscribe_to_more_streams_link();
+    initialize_stream_cursor();
     set_event_handlers({on_stream_click});
     
 }
 
 // DRC MODIFICATION - add event listeners for folders
-export function set_folder_listeners() {
+export function set_folder_listeners({on_stream_click}) {
     $("#stream_folders").on("click", "li .folder_name", (e) => {
         let $elt = $(e.target).parents("li");
         let folder_name =  $(e.target).attr("folder_name");
@@ -704,15 +689,14 @@ export function set_folder_listeners() {
         }
         $(".subfolders").off("click");
         $(".subfolders").empty();
-
-
+        
         stream_sidebar.build_subfolder_rows(folder_name);
         // stream_sidebar.update_sidebar_unread_count(null);
     });
-
 }
 
 export function set_event_handlers({on_stream_click}) {
+    set_folder_listeners({on_stream_click});
     $("#stream_filters").on("click", "li .subscription_block", (e) => {
         if (e.metaKey || e.ctrlKey) {
             return;
@@ -832,17 +816,16 @@ export function show_search_section() {
 }
 
 export function hide_search_section() {
+    console.log('hiding search')
     $(".stream_search_section").expectOne().addClass("notdisplayed");
     resize.resize_stream_filters_container();
 }
 
 export function initiate_search() {
     if(!page_params.is_guest) {
-        stream_sidebar.remove_stream_folders();
-        stream_sidebar.remove_rows_below_folders();
+        stream_sidebar.clear_sidebar();
 
-        let render_all_streams = true;
-        stream_sidebar.build_stream_list_below_folders(render_all_streams);
+        stream_sidebar.build_stream_list_below_folders(true, true);
     }
     show_search_section();
 
@@ -862,6 +845,12 @@ export function initiate_search() {
 }
 
 export function clear_and_hide_search() {
+    hide_search_section();
+    stream_sidebar.clear_sidebar();
+    stream_sidebar.build_stream_folder(true);
+    stream_sidebar.build_stream_list_below_folders(true, false);
+    stream_sidebar.update_sidebar_unread_count();
+
     const $filter = $(".stream-list-filter");
     if ($filter.val() !== "") {
         $filter.val("");
@@ -870,15 +859,11 @@ export function clear_and_hide_search() {
     stream_cursor.clear();
     $filter.trigger("blur");
 
-    hide_search_section();
 }
 
 export function toggle_filter_displayed(e) {
     if ($(".stream_search_section.notdisplayed").length === 0) {
         clear_and_hide_search();
-        stream_sidebar.remove_rows_below_folders();
-        stream_sidebar.build_stream_folder(true);
-        stream_sidebar.build_stream_list_below_folders(false);
     } else {
         initiate_search();
     }

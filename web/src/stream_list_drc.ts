@@ -10,6 +10,10 @@ import * as stream_list_sort from "./stream_list_sort";
 import * as hash_util from "./hash_util";
 import * as settings_data from "./settings_data";
 
+import { 
+    register_click_handlers 
+} from "./stream_popover";
+
 import render_stream_subheader from "../templates/streams_subheader.hbs";
 import {$t} from "./i18n";
 import {
@@ -36,17 +40,27 @@ import type {
 } from "./sub_store";
 
 export class StreamSidebar {
+    use_folders: boolean = false;
+
     all_rows = new Map();
     rows = new Map(); // stream id -> row widget
     folders = new Map(); // map of folder objects
 
-    use_folders = true;
     counts = null;
     subfolder_id_latest = 0;
+
+    constructor(use_folders: boolean) {
+        this.use_folders = use_folders;
+    }
 
     set_row(sub: StreamSubscription) {
         
         if(sub == undefined) {
+            return;
+        }
+
+        if(!this.use_folders) {
+            this.all_rows.set(sub.stream_id, new StreamSidebarRow(sub, sub.name));
             return;
         }
 
@@ -98,8 +112,6 @@ export class StreamSidebar {
     
         $parent.empty();
         $parent.append(elems);
-
-        
     }
 
     build_subfolder_rows(folder_name: string) {
@@ -130,6 +142,8 @@ export class StreamSidebar {
         $parent.empty();
         $parent.append(elems);
         this.update_sidebar_unread_count(null);
+
+        console.log('hmm')
 
         let stream_subfolder_id = "#stream_subfolder_" + folder_name;
         $(stream_subfolder_id).on("click", "li", (e) => {
@@ -288,25 +302,32 @@ export class StreamSidebar {
         }
     
         $parent.append(elems);
+        
     }
 
-    build_stream_list_below_folders(render_all_streams: boolean) {
-        if(render_all_streams == true) {
-            let force_render = true;
-            build_stream_list(force_render);
-            return;
-        }
-    
+    build_stream_list_below_folders(force_rerender: any, render_all_streams: any) {
+        let search_term = get_search_term();
+
+        let search_bar_hidden = $(".stream_search_section").expectOne().hasClass("notdisplayed");
+        console.log(search_bar_hidden);
         const $parent = $("#stream_filters");
         let unsorted_rows;
     
-        unsorted_rows = this.get_rows();
+        if(render_all_streams == true || this.use_folders == false) {
+            unsorted_rows = this.all_rows;
+            console.log('using all rows')
+        } else if(search_term || !search_bar_hidden) {
+            unsorted_rows = this.all_rows;
+        } else {
+            unsorted_rows = this.rows;
+        }
     
         let stream_ids = [];
         for(let stream of unsorted_rows) {
-        stream_ids.push(stream[0]);
+            stream_ids.push(stream[0]);
         }
-        const stream_groups = stream_list_sort.sort_groups(stream_ids, get_search_term());
+        const stream_groups = stream_list_sort.sort_groups(stream_ids, search_term);
+        
         let folder_stream_groups = {
             dormant_streams: [],
             muted_active_streams: [],
@@ -408,25 +429,29 @@ export class StreamSidebar {
         $parent.append(elems);
     }
 
-    set_row_all(stream_id: number, widget: StreamSidebarRow){
-        this.all_rows.set(stream_id, widget);
-    }
+    // set_row_all(stream_id: number, widget: StreamSidebarRow){
+    //     this.all_rows.set(stream_id, widget);
+    // }
 
     set_folder(folder_name: string, folder: StreamFolder) {
       this.folders.set(folder_name, folder);
     }
 
     get_row(stream_id: number) {
-        return this.all_rows.get(stream_id);
+        if(this.use_folders) {
+            return this.get_row_by_id(stream_id);
+        } else {
+            return this.all_rows.get(stream_id);
+        }
     }
 
-    get_row_from_all(stream_id: number) {
-        return this.all_rows.get(stream_id);
-    }
+    // get_row_from_all(stream_id: number) {
+    //     return this.all_rows.get(stream_id);
+    // }
 
-    get_rows_from_all(stream_id: number) {
-        return this.all_rows;
-    }
+    // get_rows_from_all(stream_id: number) {
+    //     return this.all_rows;
+    // }
 
     get_folder(folder_name: string) {
         return this.folders.get(folder_name);
@@ -444,13 +469,13 @@ export class StreamSidebar {
         return this.get_row_by_id(stream_id);
     }
 
-    set_use_folders(set_use_folders: boolean) {
-        this.use_folders = true;
-    }
+    // set_use_folders(set_use_folders: boolean) {
+    //     this.use_folders = true;
+    // }
 
-    get_use_folders() {
-        return this.use_folders;
-    }
+    // get_use_folders() {
+    //     return this.use_folders;
+    // }
 
     remove_row(stream_id: number) {
         // This only removes the row from our data structure.
@@ -459,7 +484,7 @@ export class StreamSidebar {
         // cases like removing the last pinned stream (and removing
         // the divider).
         
-        this.rows.delete(stream_id);
+        this.all_rows.delete(stream_id);
     }
 
     remove_stream_folders() {
@@ -523,7 +548,7 @@ export class StreamSidebar {
         return null;
     }
 
-    update_sidebar_unread_count(counts){
+    update_sidebar_unread_count(counts: number | null | undefined){
         if(counts == null || counts == undefined) {
             counts = this.counts;
         } else {
@@ -579,6 +604,11 @@ export class StreamSidebar {
         }
         $subfolder_unread.show();
         $subfolder_unread.text(count);
+    }
+
+    clear_sidebar() {
+        this.remove_stream_folders();
+        this.remove_rows_below_folders();
     }
 }
 
@@ -779,11 +809,11 @@ export class StreamSidebarRow {
         };
 
         let $list_item = undefined;
-        if(leader_name != sub.name) {
+        // if(leader_name != sub.name) {
             $list_item = $(render_stream_sidebar_subfolder_row(args));
-        } else {
-            $list_item = $(render_stream_sidebar_row(args));
-        }
+        // } else {
+        //     $list_item = $(render_stream_sidebar_row(args));
+        // }
         return $list_item;
     }
 }
