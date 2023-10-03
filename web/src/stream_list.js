@@ -565,6 +565,7 @@ export function get_sidebar_stream_topic_info(filter) {
 }
 
 function deselect_stream_items() {
+    $("ul#stream_folders li").removeClass("active-filter stream-expanded");
     $("ul#stream_filters li").removeClass("active-filter stream-expanded");
 }
 
