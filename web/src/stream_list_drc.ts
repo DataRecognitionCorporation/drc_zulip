@@ -17,7 +17,6 @@ import {
 import render_stream_subheader from "../templates/streams_subheader.hbs";
 import {$t} from "./i18n";
 import {
-    get_sub_by_id,
     subscribed_stream_ids,
     is_muted
 } from "./stream_data";
@@ -31,12 +30,9 @@ import {
 import {
     update_count_in_dom,
     get_search_term,
-    update_dom_with_unread_counts,
-    build_stream_list
 } from "./stream_list";
 
 import type {
-    Stream,
     StreamSubscription,
 } from "./sub_store";
 
@@ -94,7 +90,7 @@ export class StreamSidebar {
 
     }
 
-    build_stream_folder(force_rerender: boolean) {
+    build_stream_folder() {
         const streams = subscribed_stream_ids();
         const $parent = $("#stream_folders");
         const elems: JQuery<any>[] = [];
@@ -209,6 +205,8 @@ export class StreamSidebar {
                 }
             }
         }
+
+        console.log(folder_stream_groups)
     
         topic_list.clear();
         $parent.empty();
@@ -496,7 +494,6 @@ export class StreamSidebar {
 
     get_folder_by_name(folder_name_search: string): StreamFolder | null  {
         for(let [folder_name, folder] of this.folders) {
-            console.log(folder)
             if (folder_name_search == folder_name) {
                 return folder;
             }
@@ -510,7 +507,7 @@ export class StreamSidebar {
             return this.rows.get(stream_id);
         }
 
-        for(let [folder_name, folder] of this.folders) {
+        for(let folder of this.folders.values()) {
             let row = folder.get_row_by_id(stream_id);
 
             if(row != null){

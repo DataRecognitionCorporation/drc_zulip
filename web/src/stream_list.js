@@ -658,7 +658,7 @@ export function initialize({on_stream_click}) {
     create_initial_sidebar_rows();
 
     if(!page_params.is_guest) {
-        stream_sidebar.build_stream_folder(true);
+        stream_sidebar.build_stream_folder();
         // stream_sidebar.build_stream_list_below_folders(false);
         
         // return;
@@ -849,7 +849,7 @@ export function initiate_search() {
 export function clear_and_hide_search() {
     hide_search_section();
     stream_sidebar.clear_sidebar();
-    stream_sidebar.build_stream_folder(true);
+    stream_sidebar.build_stream_folder();
     stream_sidebar.build_stream_list_below_folders(true, false);
     stream_sidebar.update_sidebar_unread_count();
 
