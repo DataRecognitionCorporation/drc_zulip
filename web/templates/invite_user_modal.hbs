@@ -55,8 +55,8 @@
             {{> help_link_widget link="/help/roles-and-permissions" }}
         </label>
         <select id="invite_as" class="invite-as modal_select bootstrap-focus-style">
-            <option name="invite_as" value="{{ invite_as_options.guest.code }}">{{t "Guests" }}</option>
-            <option name="invite_as" selected="selected" value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
+            <option name="invite_as" selected="selected" value="{{ invite_as_options.guest.code }}">{{t "Guests" }}</option>
+            <option name="invite_as" value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
             {{#if is_admin}}
             <option name="invite_as" value="{{ invite_as_options.moderator.code }}">{{t "Moderators" }}</option>
             <option name="invite_as" value="{{ invite_as_options.admin.code }}">{{t "Organization administrators" }}</option>
@@ -82,6 +82,15 @@
                 <button class="btn btn-link" type="button" id="invite_check_all_button">{{t "Check all" }}</button> |
                 <button class="btn btn-link" type="button" id="invite_uncheck_all_button">{{t "Uncheck all" }}</button>
             </div>
+
+             <label for="stream_search">{{t "Stream filter" }}</label>
+                <div>
+                    <input type="text" id="stream_search" class="stream_search" name="stream_search" placeholder="{{t 'Stream name...' }}">
+                    <button type="button" class="btn invite_clear_search_button" >
+                        <i class="fa fa-remove" aria-hidden="true"></i>
+                    </button>
+                    <!-- <button id="stream_search_btn">Filter</button> -->
+                </div>
             <div id="invite-stream-checkboxes" class="new-style">
                 {{#each streams}}
 

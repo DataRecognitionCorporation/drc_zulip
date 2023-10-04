@@ -453,7 +453,7 @@ export function get_invite_stream_data(): InviteStreamData[] {
     }
 
     // ...plus all your subscribed streams (avoiding repeats).
-    for (const sub of subscribed_subs()) {
+    for (const sub of get_unsorted_subs()) {
         if (!default_stream_ids.has(sub.stream_id)) {
             streams.push(get_data(sub));
         }
