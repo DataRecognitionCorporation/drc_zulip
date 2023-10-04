@@ -1,19 +1,11 @@
-import { list } from "postcss";
 import { has_recent_activity } from "./stream_list_sort"
-// import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
 import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
-import render_stream_sidebar_subfolder_row from "../templates/stream_sidebar_subfolder_row.hbs";
 import render_stream_sidebar_dropdown from "../templates/stream_sidebar_dropdown.hbs";
 import render_stream_sidebar_dropdown_subfolder from "../templates/stream_sidebar_dropdown_subfolder.hbs";
 import * as topic_list from "./topic_list";
 import * as stream_list_sort from "./stream_list_sort";
 import * as hash_util from "./hash_util";
 import * as settings_data from "./settings_data";
-
-import { 
-    register_click_handlers 
-} from "./stream_popover";
-
 import render_stream_subheader from "../templates/streams_subheader.hbs";
 import {$t} from "./i18n";
 import {
@@ -22,6 +14,7 @@ import {
 } from "./stream_data";
 
 import { 
+    get_counts,
     stream_has_any_unread_mentions, 
     stream_has_any_unmuted_mentions,
     num_unread_for_stream
@@ -36,6 +29,31 @@ import type {
     StreamSubscription,
 } from "./sub_store";
 
+
+type folder_stream_grouping = {
+    dormant_streams: number[],
+    muted_active_streams: number[],
+    muted_pinned_streams: number[],
+    normal_streams: number[],
+    pinned_streams: number[]
+}
+
+type message_counts = {
+    direct_message_count: number,
+    direct_message_with_mention_count: number,
+    home_unread_messages: number,
+    mentioned_message_count: number,
+    pm_count: Map<string, number>,
+    right_sidebar_direct_message_count: number,
+    stream_count:  Map<number, {
+        muted_count: number,
+        stream_is_muted: boolean,
+        unmuted_count: number
+    }>,
+    streams_with_mentions: number[],
+    streams_with_unmuted_mentions: number[]
+}
+
 export class StreamSidebar {
     use_folders: boolean = false;
 
@@ -43,7 +61,7 @@ export class StreamSidebar {
     rows = new Map(); // stream id -> row widget
     folders = new Map(); // map of folder objects
 
-    counts = null;
+    counts: message_counts;
     subfolder_id_latest = 0;
 
     current_open_folder: string = '';
@@ -51,6 +69,7 @@ export class StreamSidebar {
 
     constructor(use_folders: boolean) {
         this.use_folders = use_folders;
+        this.counts = get_counts();
     }
 
     set_row(sub: StreamSubscription) {
@@ -197,24 +216,25 @@ export class StreamSidebar {
 
         const elems = [];
         const stream_groups = stream_list_sort.sort_groups(streams, get_search_term());
+
+        console.log(stream_groups)
     
-        let folder_stream_groups = {
+        let folder_stream_groups: folder_stream_grouping = {
             dormant_streams: [],
             muted_active_streams: [],
             muted_pinned_streams: [],
             normal_streams: [],
             pinned_streams: []
         }
-    
+        
+        // errors caused from any types coming from stream_list_sort.
         for (const stream_group_name in stream_groups) {
             for (let i in stream_groups[stream_group_name]) {
-    
-              let stream_id = stream_groups[stream_group_name][i]
-    
-              if(all_folder_stream_ids.includes(parseInt(stream_id))) {
-                  let temp_list = folder_stream_groups[stream_group_name]
-                  temp_list.push(stream_id);
-                  folder_stream_groups[stream_group_name] = temp_list;
+                let stream_id = stream_groups[stream_group_name][i]
+                if(all_folder_stream_ids.includes(parseInt(stream_id))) {
+                    let temp_list = folder_stream_groups[stream_group_name]
+                    temp_list.push(stream_id);
+                    folder_stream_groups[stream_group_name] = temp_list;
                 }
             }
         }
@@ -342,15 +362,14 @@ export class StreamSidebar {
             pinned_streams: []
         }
     
+        // errors caused from any types coming from stream_list_sort.
         for (const stream_group_name in stream_groups) {
             for (let i in stream_groups[stream_group_name]) {
-    
-            let stream_id = stream_groups[stream_group_name][i]
-    
-            if(stream_ids.includes(parseInt(stream_id))) {
-                let temp_list = folder_stream_groups[stream_group_name]
-                temp_list.push(stream_id);
-                folder_stream_groups[stream_group_name] = temp_list;
+                let stream_id = stream_groups[stream_group_name][i]
+                if(stream_ids.includes(parseInt(stream_id))) {
+                    let temp_list = folder_stream_groups[stream_group_name]
+                    temp_list.push(stream_id);
+                    folder_stream_groups[stream_group_name] = temp_list;
                 }
             }
         }
@@ -529,19 +548,18 @@ export class StreamSidebar {
         return null;
     }
 
-    get_folder_stream_ids() {
-        const all_ids = [];
-        for(let [key, folder] of this.folders) {
-            // for(let subfolder of folder.sub_folders) {
-            for (const [key, value] of Object.entries(folder.sub_folders)) {
-            for(let row of value){
-                all_ids.push(parseInt(row.sub.stream_id));
-            }
-            }
+    // get_folder_stream_ids() {
+    //     const all_ids = [];
+    //     for(let folder of this.folders.values()) {
+    //         for (const subfolder in folder.sub_folders) {
+    //             for(const row of subfolder.sidebar_row){
+    //                 all_ids.push(parseInt(row.sub.stream_id));
+    //             }
+    //         }
 
-        }
-        return all_ids;
-    }
+    //     }
+    //     return all_ids;
+    // }
 
     get_subfolder_stream_ids(folder: string, subfolder_name: string) {
         let subfolders = this.get_folder(folder).get_subfolders();
@@ -555,15 +573,15 @@ export class StreamSidebar {
         return null;
     }
 
-    update_sidebar_unread_count(counts: number | null | undefined){
-        if(counts == null || counts == undefined) {
-            counts = this.counts;
+    update_sidebar_unread_count(counts: message_counts | null | undefined){
+        if(!counts) {
+            counts = this.counts;;
         } else {
             this.counts = counts;
         }
         let stream_counts = counts.stream_count;
         
-        for(let [folder_name, folder] of this.folders) {
+        for(let folder of this.folders.values()) {
             let folder_count = 0;
             const all_subfolders = folder.get_subfolders();
             for (let subfolder of all_subfolders) {
@@ -572,7 +590,11 @@ export class StreamSidebar {
                 
                 for(let row of all_rows){
                     if(stream_counts.has(row.sub.stream_id)) {
-                        subfolder_count = subfolder_count + stream_counts.get(row.sub.stream_id).unmuted_count;
+                        let stream = stream_counts.get(row.sub.stream_id);
+                        if(!stream) {
+                            return;
+                        }
+                        subfolder_count = subfolder_count + stream.unmuted_count;
                     }
                 }
                 folder_count = folder_count + subfolder_count;
@@ -746,7 +768,7 @@ class StreamSubFolder {
         return this.id;
     }
 
-    get_rows() {
+    get_rows(): StreamSidebarRow[] {
         return this.sidebar_row;
     }
 
@@ -852,11 +874,7 @@ export class StreamSidebarRow {
         };
 
         let $list_item = undefined;
-        // if(leader_name != sub.name) {
-            $list_item = $(render_stream_sidebar_subfolder_row(args));
-        // } else {
-        //     $list_item = $(render_stream_sidebar_row(args));
-        // }
+        $list_item = $(render_stream_sidebar_row(args));
         return $list_item;
     }
 }
