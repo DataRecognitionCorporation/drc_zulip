@@ -23,6 +23,13 @@ import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
 
+import {
+    StreamList
+} from "./inivte_drc"
+import { more_private_conversations_li } from "./pm_list_dom";
+
+let stream_list;
+
 let custom_expiration_time_input = 10;
 let custom_expiration_time_unit = "days";
 
@@ -53,6 +60,7 @@ function get_common_invitation_data() {
     } else {
         $("#invite-stream-checkboxes input:checked").each(function () {
             const stream_id = Number.parseInt($(this).val(), 10);
+            console.log(stream_id)
             stream_ids.push(stream_id);
         });
     }
@@ -186,7 +194,8 @@ function generate_multiuse_invite() {
 }
 
 export function get_invite_streams() {
-    const streams = stream_data.get_invite_stream_data();
+    stream_list = new StreamList();
+    let streams = stream_list.get_streams();   
     streams.sort((a, b) => util.strcmp(a.name, b.name));
     return streams;
 }
@@ -243,9 +252,11 @@ function set_streams_to_join_list_visibility() {
     if (default_streams_selected) {
         $("#streams_to_add .invite-stream-controls").hide();
         $("#invite-stream-checkboxes").hide();
+        $(".stream-filter").hide();
     } else {
         $("#streams_to_add .invite-stream-controls").show();
         $("#invite-stream-checkboxes").show();
+        $(".stream-filter").show();   
     }
 }
 
@@ -343,9 +354,17 @@ function open_invite_user_modal(e) {
             $("#custom_expires_on").text(valid_to(get_expiration_time_in_minutes()));
         });
 
-        $("#invite_check_all_button").on("click", () => {
-            $("#invite-stream-checkboxes input[type=checkbox]").prop("checked", true);
-            toggle_invite_submit_button();
+        $(".stream_checkbox_invite").on("click", (e) => {
+            let id = $(e.target).val()
+            stream_list.switch_checked();
+        });
+
+
+        $('#stream_search').on('input', (e) => {
+            let streams = stream_list.get_streams_filtered($(e.target).val())
+            
+            
+            
         });
 
         $("#invite_uncheck_all_button").on("click", () => {
@@ -354,6 +373,10 @@ function open_invite_user_modal(e) {
 
         $("#invite_select_default_streams").on("change", () => {
             set_streams_to_join_list_visibility();
+        });
+
+        $(".invite_clear_search_button").on("click", (e) => {
+            $(".filter_text_input").val("");
         });
 
         if (!user_has_email_set) {

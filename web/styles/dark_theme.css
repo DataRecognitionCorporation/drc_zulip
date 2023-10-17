@@ -722,6 +722,7 @@
     .narrow_to_compose_recipients,
     .expand_composebox_button,
     .collapse_composebox_button,
+    .invite_clear_search_button,
     .clear_search_button,
     .clear_search_button:focus,
     .clear_search_button:active,
@@ -733,6 +734,10 @@
 
     .clear_search_button:hover {
         color: hsl(0deg 0% 100%);
+    }
+
+    .invite_clear_search_button:hover {
+        color: hsl(0, 0%, 100%);
     }
 
     .spectator_login_buttons a {

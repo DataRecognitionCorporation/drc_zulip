@@ -1178,3 +1178,40 @@ div.overlay {
         }
     }
 }
+
+
+
+
+.invite_clear_search_button {
+    &:hover {
+        color: hsl(0, 0%, 0%);
+    }
+
+    &:disabled {
+        visibility: hidden;
+    }
+
+    &,
+    &:focus,
+    &:active,
+    &:disabled:hover {
+        position: relative;
+        right: 25px;
+        background: none;
+        border: none;
+        text-align: center;
+        padding-top: 8px;
+        padding-left: 4px;
+        color: hsl(0, 0%, 80%);
+        text-shadow: none;
+        outline: none !important;
+        box-shadow: none;
+        z-index: 5;
+
+        #set_user_status_modal & {
+            margin-left: -26px;
+            right: 0;
+            padding-top: 6px;
+        }
+    }
+}

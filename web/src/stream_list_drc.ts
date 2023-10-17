@@ -136,8 +136,7 @@ export class StreamSidebar {
     build_subfolder_rows(folder_name: string) {
         this.current_open_folder = folder_name;
 
-        if(folder_name == null || folder_name == undefined) {
-            console.log('errror')
+        if(!folder_name) {
             return;
         }
     
@@ -216,8 +215,6 @@ export class StreamSidebar {
 
         const elems = [];
         const stream_groups = stream_list_sort.sort_groups(streams, get_search_term());
-
-        console.log(stream_groups)
     
         let folder_stream_groups: folder_stream_grouping = {
             dormant_streams: [],

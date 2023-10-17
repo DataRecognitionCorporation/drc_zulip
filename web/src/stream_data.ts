@@ -33,7 +33,7 @@ type ApiGenericStreamSubscription =
     | ApiStreamSubscription
     | (Stream & {stream_weekly_traffic: number | null; subscribers: number[]});
 
-type InviteStreamData = {
+export type InviteStreamData = {
     name: string;
     stream_id: number;
     invite_only: boolean;
@@ -433,7 +433,7 @@ export function get_streams_for_user(user_id: number): {
     };
 }
 
-export function get_invite_stream_data(): InviteStreamData[] {
+export function get_all_invite_stream_data(): InviteStreamData[] {
     function get_data(sub: StreamSubscription): InviteStreamData {
         return {
             name: sub.name,
@@ -454,6 +454,36 @@ export function get_invite_stream_data(): InviteStreamData[] {
 
     // ...plus all your subscribed streams (avoiding repeats).
     for (const sub of get_unsorted_subs()) {
+        if (!default_stream_ids.has(sub.stream_id)) {
+            streams.push(get_data(sub));
+        }
+    }
+
+    return streams;
+}
+
+
+export function get_invite_stream_data(): InviteStreamData[] {
+    function get_data(sub: StreamSubscription): InviteStreamData {
+        return {
+            name: sub.name,
+            stream_id: sub.stream_id,
+            invite_only: sub.invite_only,
+            is_web_public: sub.is_web_public,
+            default_stream: default_stream_ids.has(sub.stream_id),
+        };
+    }
+
+    const streams = [];
+
+    // Invite users to all default streams...
+    for (const stream_id of default_stream_ids) {
+        const sub = sub_store.get(stream_id)!;
+        streams.push(get_data(sub));
+    }
+
+    // ...plus all your subscribed streams (avoiding repeats).
+    for (const sub of subscribed_subs()) {
         if (!default_stream_ids.has(sub.stream_id)) {
             streams.push(get_data(sub));
         }
