@@ -61,7 +61,6 @@ function get_common_invitation_data() {
     } else {
         $("#invite-stream-checkboxes input:checked").each(function () {
             const stream_id = Number.parseInt($(this).val(), 10);
-            console.log(stream_id)
             stream_ids.push(stream_id);
         });
     }
@@ -196,7 +195,6 @@ function generate_multiuse_invite() {
 
 export function get_invite_streams() {
     if(stream_list == undefined) {
-        console.log('fucking creating new')
         stream_list = new StreamList();
     }
     let streams = stream_list.get_streams();   
@@ -389,15 +387,12 @@ function open_invite_user_modal(e) {
 
         $(".stream_checkbox_invite").on("click", (e) => {
             let id = $(e.target).val()
-            console.log(id)
             stream_list.switch_checked();
         });
 
 
         $('#stream_search').on('input', (e) => {
             let streams = stream_list.get_streams_filtered($(e.target).val())
-            
-            console.log($(e.target).val())
             render_filtered_invite_rows($(e.target).val());
             
         });

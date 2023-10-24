@@ -623,11 +623,7 @@ export function update_stream_sidebar_for_narrow(filter) {
     if(stream_name == ""){
       return $stream_li;
     }
-
-    console.log(is_private)
-    console.log(stream_name)
-    console.log(stream_id)
-
+    
     if(page_params.is_guest && is_private){
       let user_ids = get_subscribers(stream_id);
       activity.drc_build_user_sidebar(user_ids);

@@ -688,6 +688,7 @@ export function initialize() {
                 topic_name,
                 url,
             });
+            console.log(instance.context)
             instance.setContent(parse_html(render_topic_sidebar_actions(instance.context)));
         },
         onMount(instance) {

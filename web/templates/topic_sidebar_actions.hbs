@@ -8,6 +8,7 @@
 
     <hr />
 
+    {{#unless is_guest}}
     {{#if development}}
         <li class="hidden-for-spectators">
             <div class="tabs-container">
@@ -64,6 +65,7 @@
             {{/unless}}
         {{/if}}
     {{/if}}
+    {{/unless}}
 
     {{#if has_starred_messages}}
     <li class="hidden-for-spectators">
@@ -88,6 +90,7 @@
         </a>
     </li>
 
+    {{#unless is_guest}}
     {{#if can_move_topic}}
     <hr />
 
@@ -120,6 +123,7 @@
         </a>
     </li>
     {{/if}}
+    {{/unless}}
 
     {{#if is_realm_admin}}
     <li>

@@ -130,6 +130,7 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
         can_move_topic,
         can_rename_topic,
         is_realm_admin: page_params.is_admin,
+        is_guest: page_params.is_guest,
         topic_is_resolved: resolved_topic.is_resolved(topic_name),
         color: sub.color,
         has_starred_messages,

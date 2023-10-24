@@ -51,6 +51,7 @@
     </li>
     {{/if}}
 
+    {{#if is_realm_admin}}
     <li>
         <a tabindex="0" class="popover_new_topic_button">
             <i class="fa fa-plus" aria-hidden="true"></i>
@@ -58,7 +59,6 @@
         </a>
     </li>
     <!-- DRC MODIFICATION -->
-    {{#if is_realm_admin}}
     <li class="hidden-for-spectators">
         <a tabindex="0" class="popover_sub_unsub_button" data-name="{{stream.name}}">
             <i class='fa fa-envelope' aria-hidden="true"></i>

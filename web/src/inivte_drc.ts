@@ -39,7 +39,6 @@ export class StreamList {
         this.all_streams.push(stream);
       }
     }
-    console.log(this.all_streams)
   }
 
   switch_checked(stream_id: number){

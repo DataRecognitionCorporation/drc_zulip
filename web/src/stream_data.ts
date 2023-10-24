@@ -269,11 +269,9 @@ export function is_private(name: string): boolean {
     // you are comfortable with a user dealing with an
     // old name of a stream (from prior to a rename).
     let stream_id = get_stream_id(name);
-    console.log(stream_id)
     if(stream_id != null) {
         const sub = stream_info.get(stream_id);
         if (sub) {
-            console.log(sub)
             return sub.invite_only;
         }
     }
