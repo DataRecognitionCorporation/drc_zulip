@@ -1,0 +1,17 @@
+<div id="invite-stream-checkboxes" class="new-style">
+    {{#each streams}}
+
+        <label class="checkbox display-block">
+            <input id="stream_checkbox" class="stream_checkbox_invite" type="checkbox" name="stream" value="{{stream_id}}"
+              {{#if is_checked}}checked="checked"{{/if}} />
+            <span></span>
+            {{#if (or invite_only is_web_public)}} {{>stream_privacy}} {{name}}
+            {{else}}
+            #{{name}}
+            {{/if}}
+            {{#if (eq name ../notifications_stream)}}
+            <i>({{t 'Receives new stream announcements' }})</i>
+            {{/if}}
+        </label>
+    {{/each}}
+</div>

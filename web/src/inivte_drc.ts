@@ -55,6 +55,18 @@ export class StreamList {
     }
   }
 
+  uncheck_all() {
+    for(const stream of this.all_streams){
+      stream.is_checked = false;
+    }
+  }
+
+  check_all() {
+    for(const stream of this.all_streams){
+      stream.is_checked = true;
+    }
+  }
+
   get_streams(): InviteStreamDataWithCheckboxes[] {
     return this.all_streams;
   }
@@ -71,7 +83,4 @@ export class StreamList {
     }
     return temp_streams;
   }
-
-
-  
 }
