@@ -134,7 +134,6 @@ export function build_user_sidebar() {
 }
 
 export function drc_build_user_sidebar(user_ids) {
-    // alert(stream_name)
     if (page_params.realm_presence_disabled) {
         return undefined;
     }

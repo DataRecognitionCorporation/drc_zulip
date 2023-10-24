@@ -133,7 +133,7 @@ export class TopicListWidget {
             zoomed,
             get_topic_search_term(),
         );
-
+        
         const num_possible_topics = list_info.num_possible_topics;
         const more_topics_unreads = list_info.more_topics_unreads;
         const more_topics_have_unread_mention_messages =

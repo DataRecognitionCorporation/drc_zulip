@@ -7,12 +7,15 @@ import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
 import render_stream_subheader from "../templates/streams_subheader.hbs";
 import render_subscribe_to_more_streams from "../templates/subscribe_to_more_streams.hbs";
 
+import * as activity from "./activity";
 import * as blueslip from "./blueslip";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import {ListCursor} from "./list_cursor";
 import * as narrow_state from "./narrow_state";
+import {page_params} from "./page_params";
+import {get_subscribers} from "./peer_data"
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
@@ -26,6 +29,11 @@ import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
+import {
+    StreamSidebarRow,
+    StreamSidebar,
+    build_stream_folder
+} from "./stream_list_drc"
 
 export let stream_cursor;
 
@@ -112,34 +120,15 @@ export function update_count_in_dom(
     }
 }
 
-class StreamSidebar {
-    rows = new Map(); // stream id -> row widget
-
-    set_row(stream_id, widget) {
-        this.rows.set(stream_id, widget);
-    }
-
-    get_row(stream_id) {
-        return this.rows.get(stream_id);
-    }
-
-    has_row_for(stream_id) {
-        return this.rows.has(stream_id);
-    }
-
-    remove_row(stream_id) {
-        // This only removes the row from our data structure.
-        // Our caller should use build_stream_list() to re-draw
-        // the sidebar, so that we don't have to deal with edge
-        // cases like removing the last pinned stream (and removing
-        // the divider).
-
-        this.rows.delete(stream_id);
-    }
+// DRC MODIFICATION - streamsidebar moved to stream_list_drc.ts
+// class StreamSidebar {
+let use_folders = false;
+if(!page_params.is_guest) {
+    use_folders = true;
 }
-export const stream_sidebar = new StreamSidebar();
+export const stream_sidebar = new StreamSidebar(use_folders);
 
-function get_search_term() {
+export function get_search_term() {
     const $search_box = $(".stream-list-filter");
     const search_term = $search_box.expectOne().val().trim();
     return search_term;
@@ -168,6 +157,13 @@ export function create_initial_sidebar_rows() {
 }
 
 export function build_stream_list(force_rerender) {
+    stream_sidebar.build_stream_list_below_folders(true);
+    if(stream_sidebar.current_open_folder != '' && stream_sidebar.current_open_subfolder_id != -1) {
+        stream_sidebar.build_stream_folder();
+        stream_sidebar.build_subfolder_rows(stream_sidebar.current_open_folder);
+        stream_sidebar.build_stream_list_folders(stream_sidebar.current_open_folder, stream_sidebar.current_open_subfolder_id);
+    }
+    return
     // The stream list in the left sidebar contains 3 sections:
     // pinned, normal, and dormant streams, with headings above them
     // as appropriate.
@@ -267,10 +263,12 @@ export function build_stream_list(force_rerender) {
 
 export function get_stream_li(stream_id) {
     const row = stream_sidebar.get_row(stream_id);
+    
     if (!row) {
         // Not all streams are in the sidebar, so we don't report
         // an error here, and it's up for the caller to error if
         // they expected otherwise.
+
         return undefined;
     }
 
@@ -371,7 +369,7 @@ export function set_in_home_view(stream_id, in_home) {
     }
 }
 
-function build_stream_sidebar_li(sub) {
+export function build_stream_sidebar_li(sub) {
     const name = sub.name;
     const is_muted = stream_data.is_muted(sub.stream_id);
     const args = {
@@ -389,53 +387,12 @@ function build_stream_sidebar_li(sub) {
     return $list_item;
 }
 
-class StreamSidebarRow {
-    constructor(sub) {
-        this.sub = sub;
-        this.$list_item = build_stream_sidebar_li(sub);
-        this.update_unread_count();
-    }
+// DRC MODIFICATION - moved to steam_list_drc.ts for heavy modification
+// class StreamSidebarRow 
 
-    update_whether_active() {
-        if (stream_list_sort.has_recent_activity(this.sub) || this.sub.pin_to_top === true) {
-            this.$list_item.removeClass("inactive_stream");
-        } else {
-            this.$list_item.addClass("inactive_stream");
-        }
-    }
-
-    get_li() {
-        return this.$list_item;
-    }
-
-    remove() {
-        this.$list_item.remove();
-    }
-
-    update_unread_count() {
-        const count = unread.num_unread_for_stream(this.sub.stream_id);
-        const stream_has_any_unread_mention_messages = unread.stream_has_any_unread_mentions(
-            this.sub.stream_id,
-        );
-        const stream_has_any_unmuted_unread_mention = unread.stream_has_any_unmuted_mentions(
-            this.sub.stream_id,
-        );
-        const stream_has_only_muted_unread_mentions =
-            !this.sub.is_muted &&
-            stream_has_any_unread_mention_messages &&
-            !stream_has_any_unmuted_unread_mention;
-        update_count_in_dom(
-            this.$list_item,
-            count,
-            stream_has_any_unread_mention_messages,
-            stream_has_any_unmuted_unread_mention,
-            stream_has_only_muted_unread_mentions,
-        );
-    }
-}
 
 function build_stream_sidebar_row(sub) {
-    stream_sidebar.set_row(sub.stream_id, new StreamSidebarRow(sub));
+    stream_sidebar.set_row(sub);
 }
 
 export function create_sidebar_row(sub) {
@@ -491,6 +448,7 @@ function set_stream_unread_count(
 }
 
 export function update_streams_sidebar(force_rerender) {
+
     if (!force_rerender && topic_zoom.is_zoomed_in()) {
         // We do our best to update topics that are displayed
         // in case user zoomed in. Streams list will be updated,
@@ -517,6 +475,7 @@ export function update_streams_sidebar(force_rerender) {
 }
 
 export function update_dom_with_unread_counts(counts) {
+    stream_sidebar.update_sidebar_unread_count(counts);
     // counts.stream_count maps streams to counts
     for (const [stream_id, count] of counts.stream_count) {
         const stream_has_any_unread_mention_messages =
@@ -561,7 +520,7 @@ export function rename_stream(sub) {
 export function refresh_pinned_or_unpinned_stream(sub) {
     // Pinned/unpinned streams require re-ordering.
     // We use kind of brute force now, which is probably fine.
-    build_stream_sidebar_row(sub);
+    // build_stream_sidebar_row(sub);
     update_streams_sidebar();
 
     // Only scroll pinned topics into view.  If we're unpinning
@@ -613,6 +572,7 @@ export function get_sidebar_stream_topic_info(filter) {
 }
 
 function deselect_stream_items() {
+    $("ul#stream_folders li").removeClass("active-filter stream-expanded");
     $("ul#stream_filters li").removeClass("active-filter stream-expanded");
 }
 
@@ -655,6 +615,21 @@ export function update_stream_sidebar_for_narrow(filter) {
     }
 
     topic_list.rebuild($stream_li, stream_id);
+
+    // DRC MODIFICATION
+    let stream_name = $("ul .active-filter .stream-name").text();
+    let id = stream_data.get_stream_id(stream_name);
+    let is_private = stream_data.is_private(stream_name);
+    if(stream_name == ""){
+      return $stream_li;
+    }
+    
+    if(page_params.is_guest && is_private){
+      let user_ids = get_subscribers(stream_id);
+      activity.drc_build_user_sidebar(user_ids);
+    } else if(page_params.is_guest && !is_private){
+      activity.drc_build_user_sidebar(0);
+    }
 
     return $stream_li;
 }
@@ -705,15 +680,46 @@ export function initialize_stream_cursor() {
 export function initialize({on_stream_click}) {
     create_initial_sidebar_rows();
 
+    if(!page_params.is_guest) {
+        stream_sidebar.build_stream_folder();
+        // stream_sidebar.build_stream_list_below_folders(false);
+        
+        // return;
+    }
+
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.
     build_stream_list();
     update_subscribe_to_more_streams_link();
     initialize_stream_cursor();
     set_event_handlers({on_stream_click});
+    
+}
+
+// DRC MODIFICATION - add event listeners for folders
+export function set_folder_listeners({on_stream_click}) {
+    $("#stream_folders").on("click", "li .folder_name", (e) => {
+        let $elt = $(e.target).parents("li");
+        let folder_name =  $(e.target).attr("folder_name");
+        const subfolder_name = ".subfolder_" + folder_name;
+        let length_of_ul = $(subfolder_name).children("li").length;
+        
+        if(length_of_ul > 0) {
+            stream_sidebar.current_open_folder = '';
+            $(".subfolders").off("click");
+            $(".subfolders").empty();
+            return;
+        }
+        $(".subfolders").off("click");
+        $(".subfolders").empty();
+        
+        stream_sidebar.build_subfolder_rows(folder_name);
+        // stream_sidebar.update_sidebar_unread_count(null);
+    });
 }
 
 export function set_event_handlers({on_stream_click}) {
+    set_folder_listeners({on_stream_click});
     $("#stream_filters").on("click", "li .subscription_block", (e) => {
         if (e.metaKey || e.ctrlKey) {
             return;
@@ -726,6 +732,10 @@ export function set_event_handlers({on_stream_click}) {
 
         e.preventDefault();
         e.stopPropagation();
+
+        // DRC MODIFICATION - expand folders and focus on stream after search
+        let focused_stream_id = topic_list.active_stream_id();
+        stream_sidebar.focus_on_stream(stream_id);
     });
 
     $("#clear_search_stream_button").on("click", clear_search);
@@ -838,6 +848,11 @@ export function hide_search_section() {
 }
 
 export function initiate_search() {
+    if(!page_params.is_guest) {
+        stream_sidebar.clear_sidebar();
+
+        stream_sidebar.build_stream_list_below_folders(true, true);
+    }
     show_search_section();
 
     const $filter = $(".stream-list-filter").expectOne();
@@ -856,6 +871,12 @@ export function initiate_search() {
 }
 
 export function clear_and_hide_search() {
+    hide_search_section();
+    stream_sidebar.clear_sidebar();
+    stream_sidebar.build_stream_folder();
+    stream_sidebar.build_stream_list_below_folders(true, false);
+    stream_sidebar.update_sidebar_unread_count();
+
     const $filter = $(".stream-list-filter");
     if ($filter.val() !== "") {
         $filter.val("");
@@ -863,8 +884,6 @@ export function clear_and_hide_search() {
     }
     stream_cursor.clear();
     $filter.trigger("blur");
-
-    hide_search_section();
 }
 
 export function toggle_filter_displayed(e) {

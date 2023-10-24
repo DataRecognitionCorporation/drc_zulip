@@ -6,6 +6,7 @@ import $ from "jquery";
 import copy_invite_link from "../templates/copy_invite_link.hbs";
 import render_invitation_failed_error from "../templates/invitation_failed_error.hbs";
 import render_invite_user_modal from "../templates/invite_user_modal.hbs";
+import render_invite_subscription_rows from "../templates/invite_subscription_rows.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
 import * as channel from "./channel";
@@ -22,6 +23,13 @@ import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
+
+import {
+    StreamList
+} from "./inivte_drc"
+import { more_private_conversations_li } from "./pm_list_dom";
+
+let stream_list;
 
 let custom_expiration_time_input = 10;
 let custom_expiration_time_unit = "days";
@@ -186,9 +194,32 @@ function generate_multiuse_invite() {
 }
 
 export function get_invite_streams() {
-    const streams = stream_data.get_invite_stream_data();
+    if(stream_list == undefined) {
+        stream_list = new StreamList();
+    }
+    let streams = stream_list.get_streams();   
     streams.sort((a, b) => util.strcmp(a.name, b.name));
     return streams;
+}
+
+function render_invite_rows() {
+    let html_streams = render_invite_subscription_rows({
+        streams: get_invite_streams()
+    })
+    let $parent = $("#invite-streams");
+    $parent.empty();
+    $parent.append(html_streams);
+    add_listners();
+}
+
+function render_filtered_invite_rows(filter_text) {
+    let html_streams = render_invite_subscription_rows({
+        streams: stream_list.get_streams_filtered(filter_text)
+    })
+    let $parent = $("#invite-streams");
+    $parent.empty();
+    $parent.append(html_streams)
+    add_listners();
 }
 
 function valid_to(expires_in) {
@@ -243,10 +274,21 @@ function set_streams_to_join_list_visibility() {
     if (default_streams_selected) {
         $("#streams_to_add .invite-stream-controls").hide();
         $("#invite-stream-checkboxes").hide();
+        $(".stream-filter").hide();
+        $("#invite-streams").hide();
     } else {
         $("#streams_to_add .invite-stream-controls").show();
         $("#invite-stream-checkboxes").show();
+        $(".stream-filter").show(); 
+        $("#invite-streams").show();  
     }
+}
+
+function add_listners() {
+    $(".stream_checkbox_invite").on("click", (e) => {
+        let id = $(e.target).val();
+        stream_list.switch_checked(id);
+    });
 }
 
 function open_invite_user_modal(e) {
@@ -307,7 +349,7 @@ function open_invite_user_modal(e) {
                 $t({defaultMessage: "Inviting..."}),
             );
             toggle_invite_submit_button();
-            reset_error_messages();
+            reset_error_messages();            
         });
 
         $("#invite-user-modal").on("change", "#generate_multiuse_invite_radio", () => {
@@ -343,17 +385,37 @@ function open_invite_user_modal(e) {
             $("#custom_expires_on").text(valid_to(get_expiration_time_in_minutes()));
         });
 
-        $("#invite_check_all_button").on("click", () => {
-            $("#invite-stream-checkboxes input[type=checkbox]").prop("checked", true);
-            toggle_invite_submit_button();
+        $(".stream_checkbox_invite").on("click", (e) => {
+            let id = $(e.target).val()
+            stream_list.switch_checked();
         });
+
+
+        $('#stream_search').on('input', (e) => {
+            let streams = stream_list.get_streams_filtered($(e.target).val())
+            render_filtered_invite_rows($(e.target).val());
+            
+        });
+
+        $(document).on("click", "#invite_check_all_button", () => {
+            $("#invite-stream-checkboxes :checkbox").prop("checked", true);
+            stream_list.check_all();
+        });
+    
 
         $("#invite_uncheck_all_button").on("click", () => {
             $("#invite-stream-checkboxes input[type=checkbox]").prop("checked", false);
+            stream_list.uncheck_all();
         });
 
         $("#invite_select_default_streams").on("change", () => {
             set_streams_to_join_list_visibility();
+            render_invite_rows();
+        });
+
+        $(".invite_clear_search_button").on("click", (e) => {
+            $(".filter_text_input").val("");
+            render_invite_rows();
         });
 
         if (!user_has_email_set) {
@@ -372,6 +434,7 @@ function open_invite_user_modal(e) {
     }
 
     function invite_users() {
+        render_invite_rows();
         const is_generate_invite_link = $("#generate_multiuse_invite_radio").prop("checked");
         if (is_generate_invite_link) {
             generate_multiuse_invite();
@@ -389,6 +452,7 @@ function open_invite_user_modal(e) {
         on_click: invite_users,
         post_render: invite_user_modal_post_render,
     });
+    
 }
 
 export function initialize() {
