@@ -2,6 +2,7 @@ import { has_recent_activity } from "./stream_list_sort"
 import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
 import render_stream_sidebar_dropdown from "../templates/stream_sidebar_dropdown.hbs";
 import render_stream_sidebar_dropdown_subfolder from "../templates/stream_sidebar_dropdown_subfolder.hbs";
+import render_stream_sidebar_dropdown_sub_subfolder from "../templates/stream_sidebar_dropdown_sub_subfolder.hbs";
 import * as topic_list from "./topic_list";
 import * as stream_list_sort from "./stream_list_sort";
 import * as hash_util from "./hash_util";
@@ -13,9 +14,9 @@ import {
     is_muted
 } from "./stream_data";
 
-import { 
+import {
     get_counts,
-    stream_has_any_unread_mentions, 
+    stream_has_any_unread_mentions,
     stream_has_any_unmuted_mentions,
     num_unread_for_stream
 }from "./unread";
@@ -63,6 +64,7 @@ export class StreamSidebar {
 
     counts: message_counts;
     subfolder_id_latest = 0;
+    //sub_sub_folder_id_latest = 0;
 
     current_open_folder: string = '';
     current_open_subfolder_id: number = -1;
@@ -73,7 +75,7 @@ export class StreamSidebar {
     }
 
     set_row(sub: StreamSubscription) {
-        
+
         if(sub == undefined) {
             return;
         }
@@ -85,8 +87,8 @@ export class StreamSidebar {
 
         const regex_num_letters = new RegExp('^[a-zA-Z0-9\'_,.-]*$')
         const name_array = sub.name.split(" - ");
-        
-        if (regex_num_letters.test(name_array[0]) && name_array.length == 3) {
+
+        if (regex_num_letters.test(name_array[0]) && name_array.length == 4) {
 
             // add folder to folder list
             if(!this.folders.has(name_array[0])){
@@ -96,15 +98,23 @@ export class StreamSidebar {
             // add subfolder
             let folder = this.get_folder(name_array[0]);
             let subfolder = folder.get_subfolder_by_name(name_array[1]);
-            
+
             if(subfolder == undefined) {
                 subfolder = new StreamSubFolder(this.subfolder_id_latest, name_array[1]);
                 folder.set_subfoler(subfolder);
                 this.subfolder_id_latest++;
             }
 
-            // add stream name to subfolder 
-            subfolder.set_row(new StreamSidebarRow(sub, name_array[2]));
+            let sub_sub_folder = subfolder.get_subfolder_by_name(name_array[2])
+
+            if(sub_sub_folder == undefined) {
+               sub_sub_folder = new StreamSubFolder(this.subfolder_id_latest, name_array[2]);
+               subfolder.add_subfolder(sub_sub_folder);
+               this.subfolder_id_latest++;
+            }
+
+            // add stream name to subfolder
+            sub_sub_folder.set_row(new StreamSidebarRow(sub, name_array[3]));
         } else {
             this.rows.set(sub.stream_id, new StreamSidebarRow(sub, sub.name))
         }
@@ -121,14 +131,14 @@ export class StreamSidebar {
             $parent.empty();
             return;
         }
-    
+
         let all_folders = this.get_folders();
 
         all_folders.forEach((folder) => {
             const $list_item = $(render_stream_sidebar_dropdown(folder.get_render_data()));
             elems.push($list_item);
         })
-    
+
         $parent.empty();
         $parent.append(elems);
     }
@@ -136,27 +146,27 @@ export class StreamSidebar {
     build_subfolder_rows(folder_name: string) {
         this.current_open_folder = folder_name;
 
-        if(!folder_name) {
-            return;
-        }
-    
+        //if(!folder_name) {
+        //    return;
+        //}
+
         let folder = this.get_folder(folder_name);
         let subfolders = folder.get_subfolders();
         const parent = ".subfolder_" + folder_name;
         const $parent = $(parent);
-    
+
         const elems = [];
         for (const subfolder of subfolders) {
             let tmp_dict = {
               folder_name: folder_name,
               subfolder_name: subfolder.subfolder_name,
               subfolder_id: subfolder.id,
+              subfolders: subfolder.subfolders,
               // subfolder_name_underscore: key.replaceAll(' ', '_')
             }
-    
             elems.push($(render_stream_sidebar_dropdown_subfolder(tmp_dict)));
         }
-    
+
         // $parent.removeClass("expand");
         // topic_list.clear();
         $parent.empty();
@@ -165,12 +175,12 @@ export class StreamSidebar {
 
         let stream_subfolder_id = "#stream_subfolder_" + folder_name;
         $(stream_subfolder_id).on("click", "li", (e) => {
-            
+
             const $elt = $(e.target).parents("li");
             const subfolder_name = $elt.attr("subfolder_name");
             const subfolder_id = $elt.attr("subfolder_id");
             const folder_name = $elt.attr("folder_name");
-            
+
             if(subfolder_id != undefined) {
                 let subfolder_id_int = parseInt(subfolder_id);
                 this.current_open_subfolder_id = subfolder_id_int;
@@ -180,12 +190,74 @@ export class StreamSidebar {
             if(folder_name == null || subfolder_name == null || subfolder_id == null) {
               return;
             }
-    
+
             const folder_rows_ul = ".subfolder_rows_" + subfolder_id;
             let length_of_li = $(folder_rows_ul).children("li").length;
             if(length_of_li > 0){
                 this.current_open_subfolder_id = -1;
-                $("ul#stream_folders li").removeClass("active-filter");
+                //$("ul#stream_folders li").removeClass("active-filter");
+                const $folder = $(folder_rows_ul);
+                //$folder.empty();
+                return;
+            } else {
+                this.build_sub_subfolder_rows(folder_name, parseInt(subfolder_id));
+            }
+        });
+    }
+
+    build_sub_subfolder_rows(folder_name: string, subfolder_id: number) {
+        this.current_open_folder = folder_name;
+        //if(!folder_name) {
+        //    return;
+        //}
+
+        let folder = this.get_folder(folder_name);
+        let subfolder = folder.get_subfolder_by_id(subfolder_id);
+        const parent = ".sub_sub_folder_" + subfolder_id;
+        const $parent = $(parent);
+
+        const elems = [];
+        for (const sub_subfolder of subfolder.get_subfolders()) {
+            let tmp_dict = {
+              folder_name: folder_name,
+              subfolder_name: sub_subfolder.subfolder_name,
+              subfolder_id: sub_subfolder.id,
+              subfolders: sub_subfolder.subfolders,
+              // subfolder_name_underscore: key.replaceAll(' ', '_')
+            }
+            elems.push($(render_stream_sidebar_dropdown_sub_subfolder(tmp_dict)));
+        }
+
+        // $parent.removeClass("expand");
+        // topic_list.clear();
+        $parent.empty();
+        $parent.append(elems);
+        this.update_sidebar_unread_count(null);
+
+        let stream_subfolder_id = "#stream_subfolder_" + folder_name;
+        $(stream_subfolder_id).on("click", "li", (e) => {
+
+            const $elt = $(e.target).parents("li");
+            const subfolder_name = $elt.attr("subfolder_name");
+            const subfolder_id = $elt.attr("subfolder_id");
+            const folder_name = $elt.attr("folder_name");
+
+            if(subfolder_id != undefined) {
+                let subfolder_id_int = parseInt(subfolder_id);
+                this.current_open_subfolder_id = subfolder_id_int;
+            } else {
+                // this.current_open_subfolder_id = -1;
+            }
+            if(folder_name == null || subfolder_name == null || subfolder_id == null) {
+              return;
+            }
+            console.log(subfolder_id)
+
+            const folder_rows_ul = ".subfolder_rows_" + subfolder_id;
+            let length_of_li = $(folder_rows_ul).children("li").length;
+            if(length_of_li > 0){
+                this.current_open_subfolder_id = -1;
+                //$("ul#stream_folders li").removeClass("active-filter");
                 const $folder = $(folder_rows_ul);
                 $folder.empty();
                 return;
@@ -202,8 +274,9 @@ export class StreamSidebar {
         const parent = ".subfolder_rows_" + subfolder_id;
         const $parent = $(parent);
         let folder = this.get_folder(folder_name);
+        console.log(subfolder_id)
         const subfolder = folder.get_subfolder_by_id(subfolder_id);
-
+        console.log(subfolder)
         const streams = subscribed_stream_ids();
         if (streams.length === 0) {
             topic_list.clear();
@@ -215,7 +288,7 @@ export class StreamSidebar {
 
         const elems = [];
         const stream_groups = stream_list_sort.sort_groups(streams, get_search_term());
-    
+
         let folder_stream_groups: folder_stream_grouping = {
             dormant_streams: [],
             muted_active_streams: [],
@@ -223,7 +296,7 @@ export class StreamSidebar {
             normal_streams: [],
             pinned_streams: []
         }
-        
+
         // errors caused from any types coming from stream_list_sort.
         for (const stream_group_name in stream_groups) {
             for (let i in stream_groups[stream_group_name]) {
@@ -238,19 +311,19 @@ export class StreamSidebar {
 
         topic_list.clear();
         $parent.empty();
-    
+
         const any_pinned_streams =
             folder_stream_groups.pinned_streams.length > 0 || folder_stream_groups.muted_pinned_streams.length > 0;
         const any_normal_streams =
             folder_stream_groups.normal_streams.length > 0 || folder_stream_groups.muted_active_streams.length > 0;
         const any_dormant_streams = folder_stream_groups.dormant_streams.length > 0;
-    
+
         const need_section_subheaders =
             (any_pinned_streams ? 1 : 0) +
                 (any_normal_streams ? 1 : 0) +
                 (any_dormant_streams ? 1 : 0) >=
             2;
-    
+
         if (any_pinned_streams && need_section_subheaders) {
             elems.push(
                 render_stream_subheader({
@@ -260,16 +333,16 @@ export class StreamSidebar {
                 }),
             );
         }
-    
-        
+
+
         for(let row of subfolder.get_rows()){
             if(folder_stream_groups.pinned_streams.includes(parseInt(row.sub.stream_id))) {
                 row.update_whether_active();
                 elems.push(row.get_li())
             }
         }
-        
-    
+
+
 
         for(let row of subfolder.get_rows()){
             if(folder_stream_groups.muted_pinned_streams.includes(parseInt(row.sub.stream_id))) {
@@ -277,8 +350,8 @@ export class StreamSidebar {
                 elems.push(row.get_li())
             }
         }
-        
-    
+
+
         if (any_normal_streams && need_section_subheaders) {
             elems.push(
                 render_stream_subheader({
@@ -288,7 +361,7 @@ export class StreamSidebar {
                 }),
             );
         }
-    
+
 
         for(let row of subfolder.get_rows()){
             if(folder_stream_groups.normal_streams.includes(parseInt(row.sub.stream_id))) {
@@ -296,17 +369,17 @@ export class StreamSidebar {
                 elems.push(row.get_li())
             }
         }
-        
-    
-        
+
+
+
         for(let row of subfolder.get_rows()){
             if(folder_stream_groups.muted_active_streams.includes(parseInt(row.sub.stream_id))) {
                 row.update_whether_active();
                 elems.push(row.get_li())
             }
         }
-        
-    
+
+
         if (any_dormant_streams && need_section_subheaders) {
             elems.push(
                 render_stream_subheader({
@@ -316,7 +389,7 @@ export class StreamSidebar {
                 }),
             );
         }
-    
+
 
         for(let row of subfolder.get_rows()){
             if(folder_stream_groups.dormant_streams.includes(parseInt(row.sub.stream_id))) {
@@ -324,10 +397,10 @@ export class StreamSidebar {
                 elems.push(row.get_li())
             }
         }
-        
-    
+
+
         $parent.append(elems);
-        
+
     }
 
     build_stream_list_below_folders(force_rerender: any, render_all_streams: any) {
@@ -336,7 +409,7 @@ export class StreamSidebar {
         let search_bar_hidden = $(".stream_search_section").expectOne().hasClass("notdisplayed");
         const $parent = $("#stream_filters");
         let unsorted_rows;
-    
+
         if(render_all_streams == true || this.use_folders == false) {
             unsorted_rows = this.all_rows;
         } else if(search_term || !search_bar_hidden) {
@@ -344,13 +417,13 @@ export class StreamSidebar {
         } else {
             unsorted_rows = this.rows;
         }
-    
+
         let stream_ids = [];
         for(let stream of unsorted_rows) {
             stream_ids.push(stream[0]);
         }
         const stream_groups = stream_list_sort.sort_groups(stream_ids, search_term);
-        
+
         let folder_stream_groups = {
             dormant_streams: [],
             muted_active_streams: [],
@@ -358,7 +431,7 @@ export class StreamSidebar {
             normal_streams: [],
             pinned_streams: []
         }
-    
+
         // errors caused from any types coming from stream_list_sort.
         for (const stream_group_name in stream_groups) {
             for (let i in stream_groups[stream_group_name]) {
@@ -370,23 +443,23 @@ export class StreamSidebar {
                 }
             }
         }
-    
+
         topic_list.clear();
         $parent.empty();
-    
+
         let elems = [];
         const any_pinned_streams =
             folder_stream_groups.pinned_streams.length > 0 || folder_stream_groups.muted_pinned_streams.length > 0;
         const any_normal_streams =
             folder_stream_groups.normal_streams.length > 0 || folder_stream_groups.muted_active_streams.length > 0;
         const any_dormant_streams = folder_stream_groups.dormant_streams.length > 0;
-    
+
         const need_section_subheaders =
             (any_pinned_streams ? 1 : 0) +
                 (any_normal_streams ? 1 : 0) +
                 (any_dormant_streams ? 1 : 0) >=
             2;
-    
+
         if (any_pinned_streams && need_section_subheaders) {
             elems.push(
                 render_stream_subheader({
@@ -396,19 +469,19 @@ export class StreamSidebar {
                 }),
             );
         }
-    
+
         for (const stream_id of folder_stream_groups.pinned_streams) {
             let list_item = unsorted_rows.get(stream_id);
             list_item.update_whether_active();
             elems.push(list_item.get_li())
         }
-    
+
         for (const stream_id of folder_stream_groups.muted_pinned_streams) {
             let list_item = unsorted_rows.get(stream_id);
             list_item.update_whether_active();
             elems.push(list_item.get_li())
         }
-    
+
         if (any_normal_streams && need_section_subheaders) {
             elems.push(
                 render_stream_subheader({
@@ -418,19 +491,19 @@ export class StreamSidebar {
                 }),
             );
         }
-    
+
         for (const stream_id of folder_stream_groups.normal_streams) {
             let list_item = unsorted_rows.get(stream_id);
             list_item.update_whether_active();
             elems.push(list_item.get_li())
         }
-    
+
         for (const stream_id of folder_stream_groups.muted_active_streams) {
             let list_item = unsorted_rows.get(stream_id);
             list_item.update_whether_active();
             elems.push(list_item.get_li())
         }
-    
+
         if (any_dormant_streams && need_section_subheaders) {
             elems.push(
                 render_stream_subheader({
@@ -440,14 +513,14 @@ export class StreamSidebar {
                 }),
             );
         }
-    
+
         for (const stream_id of folder_stream_groups.dormant_streams) {
             let list_item = unsorted_rows.get(stream_id);
             list_item.update_whether_active();
             elems.push(list_item.get_li())
         }
-    
-    
+
+
         $parent.append(elems);
     }
 
@@ -505,7 +578,7 @@ export class StreamSidebar {
         // the sidebar, so that we don't have to deal with edge
         // cases like removing the last pinned stream (and removing
         // the divider).
-        
+
         this.all_rows.delete(stream_id);
     }
 
@@ -541,7 +614,7 @@ export class StreamSidebar {
                 return row;
             }
         }
-        
+
         return null;
     }
 
@@ -577,14 +650,14 @@ export class StreamSidebar {
             this.counts = counts;
         }
         let stream_counts = counts.stream_count;
-        
+
         for(let folder of this.folders.values()) {
             let folder_count = 0;
             const all_subfolders = folder.get_subfolders();
             for (let subfolder of all_subfolders) {
                 let subfolder_count = 0;
                 const all_rows = subfolder.get_rows();
-                
+
                 for(let row of all_rows){
                     if(stream_counts.has(row.sub.stream_id)) {
                         let stream = stream_counts.get(row.sub.stream_id);
@@ -595,7 +668,7 @@ export class StreamSidebar {
                     }
                 }
                 folder_count = folder_count + subfolder_count;
-                
+
                 this.update_subfolder_count_in_dom(subfolder.id, subfolder_count);
             }
             this.update_folder_count_in_dom(folder.folder_name, folder_count);
@@ -608,13 +681,13 @@ export class StreamSidebar {
         // count is there or not.
         let dom_folder = "." + folder_name;
         const $subscription_block = $(dom_folder).find(".folder_unread_count");
-    
+
         if (count === 0) {
             $subscription_block.text("");
             $subscription_block.hide();
             return;
         }
-    
+
         $subscription_block.show();
         $subscription_block.text(count);
     }
@@ -622,7 +695,7 @@ export class StreamSidebar {
     update_subfolder_count_in_dom(subfolder_id: number, count: number) {
         let subfolder_dom = ".subfolder_" + subfolder_id;
         const $subfolder_unread = $(subfolder_dom).find(".subfolder_unread_count");
-    
+
         if (count === 0) {
             $subfolder_unread.text("");
             $subfolder_unread.hide();
@@ -643,7 +716,7 @@ export class StreamSidebar {
         if(!this.use_folders) {
             return
         }
-        
+
         let row = this.get_row_by_id(stream_id);
         let name_array = row.sub.name.split(" - ");
         let folder = this.get_folder_by_name(name_array[0]);
@@ -678,22 +751,29 @@ class StreamFolder {
 
     get_subfolder_by_name(subfolder_name: string): StreamSubFolder | undefined {
         for(let sub_folder of this.sub_folders) {
-            
+
             if(sub_folder.get_name() == subfolder_name) {
                 return sub_folder;
             }
         }
-        
+
         return undefined;
     }
 
     get_subfolder_by_id(subfolder_id: number): StreamSubFolder | undefined {
         for(let sub_folder of this.sub_folders) {
+            if(sub_folder.get_subfolders().length > 0) {
+                for(let sub_sub_folder of sub_folder.get_subfolders()) {
+                    if(sub_sub_folder.get_id() == subfolder_id) {
+                        console.log(subfolder_id);
+                        return sub_sub_folder;
+                    }
+                }
+            }
             if(sub_folder.get_id() == subfolder_id) {
                 return sub_folder;
             }
         }
-        
         return undefined;
     }
 
@@ -747,11 +827,13 @@ class StreamFolder {
 class StreamSubFolder {
     id: number;
     subfolder_name: string;
+    subfolders: StreamSubFolder[];
     sidebar_row: StreamSidebarRow[];
     unread_count: number = 0;
 
 
     constructor(id: number, subfolder_name: string) {
+        this.subfolders = [];
         this.id = id;
         this.subfolder_name = subfolder_name;
         this.sidebar_row = [];
@@ -765,8 +847,34 @@ class StreamSubFolder {
         return this.id;
     }
 
+    add_subfolder(sub_sub_folder: StreamSubFolder) {
+        this.subfolders.push(sub_sub_folder);
+    }
+
+    get_subfolder_by_name(subfolder_name: string): StreamSubFolder | undefined {
+        for(let sub_folder of this.subfolders) {
+            if(sub_folder.get_name() == subfolder_name) {
+                return sub_folder;
+            }
+        }
+
+        return undefined;
+    }
+
+    get_subfolders(): StreamSubFolder[] {
+        return this.subfolders
+    }
+
     get_rows(): StreamSidebarRow[] {
-        return this.sidebar_row;
+        let all_rows: StreamSidebarRow[] = [];
+        if(this.subfolders.length > 0) {
+            for(let subfolder of this.subfolders) {
+                all_rows = all_rows.concat(subfolder.get_rows());
+            }
+            return all_rows;
+        } else {
+            return this.sidebar_row;
+        }
     }
 
     set_row(widget: StreamSidebarRow) {
@@ -776,14 +884,14 @@ class StreamSubFolder {
     // return a list of ids of all rows within subfolder
     get_all_ids() {
         let ids = [];
-        for(let row of this.sidebar_row) {
+        for(let row of this.get_rows()) {
             ids.push(row.sub.stream_id);
         }
         return ids;
     }
 
     get_row_by_id(id: number) {
-        for(let row of this.sidebar_row) {
+        for(let row of this.get_rows()) {
             if(id == row.sub.stream_id){
                 return row;
             }
@@ -816,7 +924,7 @@ export class StreamSidebarRow {
         this.$list_item = this.build_stream_sidebar_li(sub, leader_name);
         this.update_unread_count();
     }
-    
+
     update_whether_active() {
         if (has_recent_activity(this.sub) || this.sub.pin_to_top === true) {
             this.$list_item.removeClass("inactive_stream");
