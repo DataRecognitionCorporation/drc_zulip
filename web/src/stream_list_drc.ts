@@ -29,6 +29,7 @@ import {
 import type {
     StreamSubscription,
 } from "./sub_store";
+import { warn } from "console";
 
 
 type folder_stream_grouping = {
@@ -173,7 +174,7 @@ export class StreamSidebar {
         $parent.append(elems);
         this.update_sidebar_unread_count(null);
 
-        let stream_subfolder_id = "#stream_subfolder_" + folder_name;
+        let stream_subfolder_id = ".subfolder_" + folder_name;
         $(stream_subfolder_id).on("click", "li", (e) => {
 
             const $elt = $(e.target).parents("li");
@@ -191,12 +192,15 @@ export class StreamSidebar {
               return;
             }
 
-            const folder_rows_ul = ".subfolder_rows_" + subfolder_id;
+            const folder_rows_ul = ".sub_sub_folder_" + subfolder_id;
             let length_of_li = $(folder_rows_ul).children("li").length;
+
             if(length_of_li > 0){
-                this.current_open_subfolder_id = -1;
-                //$("ul#stream_folders li").removeClass("active-filter");
-                const $folder = $(folder_rows_ul);
+                //this.current_open_subfolder_id = -1;
+                $(folder_rows_ul).removeClass("active-filter");
+                $(".sub_sub_folder").off("click");
+                $(".sub_sub_folder").empty();
+                //const $folder = $(folder_rows_ul);
                 //$folder.empty();
                 return;
             } else {
@@ -207,9 +211,9 @@ export class StreamSidebar {
 
     build_sub_subfolder_rows(folder_name: string, subfolder_id: number) {
         this.current_open_folder = folder_name;
-        //if(!folder_name) {
-        //    return;
-        //}
+        if(!folder_name) {
+            return;
+        }
 
         let folder = this.get_folder(folder_name);
         let subfolder = folder.get_subfolder_by_id(subfolder_id);
@@ -234,7 +238,8 @@ export class StreamSidebar {
         $parent.append(elems);
         this.update_sidebar_unread_count(null);
 
-        let stream_subfolder_id = "#stream_subfolder_" + folder_name;
+        let stream_subfolder_id = ".sub_sub_folder_" + subfolder_id;
+        //let stream_subfolder_id = "#stream_subfolder_" + folder_name;
         $(stream_subfolder_id).on("click", "li", (e) => {
 
             const $elt = $(e.target).parents("li");
@@ -248,18 +253,21 @@ export class StreamSidebar {
             } else {
                 // this.current_open_subfolder_id = -1;
             }
-            if(folder_name == null || subfolder_name == null || subfolder_id == null) {
+            if(subfolder_id == null) {
               return;
             }
-            console.log(subfolder_id)
 
             const folder_rows_ul = ".subfolder_rows_" + subfolder_id;
             let length_of_li = $(folder_rows_ul).children("li").length;
+
             if(length_of_li > 0){
                 this.current_open_subfolder_id = -1;
-                //$("ul#stream_folders li").removeClass("active-filter");
+
+                $(folder_rows_ul).removeClass("active-filter");
+                $(folder_rows_ul).off("click");
+                $(folder_rows_ul).empty();
                 const $folder = $(folder_rows_ul);
-                $folder.empty();
+                //$folder.empty();
                 return;
             } else {
                 this.build_stream_list_folders(folder_name, parseInt(subfolder_id));
@@ -271,12 +279,11 @@ export class StreamSidebar {
         if(folder_name == null || subfolder_id == null){
            return;
         }
+
         const parent = ".subfolder_rows_" + subfolder_id;
         const $parent = $(parent);
         let folder = this.get_folder(folder_name);
-        console.log(subfolder_id)
         const subfolder = folder.get_subfolder_by_id(subfolder_id);
-        console.log(subfolder)
         const streams = subscribed_stream_ids();
         if (streams.length === 0) {
             topic_list.clear();
@@ -765,7 +772,6 @@ class StreamFolder {
             if(sub_folder.get_subfolders().length > 0) {
                 for(let sub_sub_folder of sub_folder.get_subfolders()) {
                     if(sub_sub_folder.get_id() == subfolder_id) {
-                        console.log(subfolder_id);
                         return sub_sub_folder;
                     }
                 }

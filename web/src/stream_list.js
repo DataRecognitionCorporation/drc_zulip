@@ -263,7 +263,7 @@ export function build_stream_list(force_rerender) {
 
 export function get_stream_li(stream_id) {
     const row = stream_sidebar.get_row(stream_id);
-    
+
     if (!row) {
         // Not all streams are in the sidebar, so we don't report
         // an error here, and it's up for the caller to error if
@@ -388,7 +388,7 @@ export function build_stream_sidebar_li(sub) {
 }
 
 // DRC MODIFICATION - moved to steam_list_drc.ts for heavy modification
-// class StreamSidebarRow 
+// class StreamSidebarRow
 
 
 function build_stream_sidebar_row(sub) {
@@ -623,7 +623,7 @@ export function update_stream_sidebar_for_narrow(filter) {
     if(stream_name == ""){
       return $stream_li;
     }
-    
+
     if(page_params.is_guest && is_private){
       let user_ids = get_subscribers(stream_id);
       activity.drc_build_user_sidebar(user_ids);
@@ -683,7 +683,7 @@ export function initialize({on_stream_click}) {
     if(!page_params.is_guest) {
         stream_sidebar.build_stream_folder();
         // stream_sidebar.build_stream_list_below_folders(false);
-        
+
         // return;
     }
 
@@ -693,7 +693,7 @@ export function initialize({on_stream_click}) {
     update_subscribe_to_more_streams_link();
     initialize_stream_cursor();
     set_event_handlers({on_stream_click});
-    
+
 }
 
 // DRC MODIFICATION - add event listeners for folders
@@ -703,7 +703,7 @@ export function set_folder_listeners({on_stream_click}) {
         let folder_name =  $(e.target).attr("folder_name");
         const subfolder_name = ".subfolder_" + folder_name;
         let length_of_ul = $(subfolder_name).children("li").length;
-        
+
         if(length_of_ul > 0) {
             stream_sidebar.current_open_folder = '';
             $(".subfolders").off("click");
@@ -712,7 +712,7 @@ export function set_folder_listeners({on_stream_click}) {
         }
         $(".subfolders").off("click");
         $(".subfolders").empty();
-        
+
         stream_sidebar.build_subfolder_rows(folder_name);
         // stream_sidebar.update_sidebar_unread_count(null);
     });
