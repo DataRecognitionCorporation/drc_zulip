@@ -655,7 +655,6 @@ export class StreamSidebar {
         } else {
             this.counts = counts;
         }
-        console.log(counts);
         let stream_counts = counts.stream_count;
 
         for(let folder of this.folders.values()) {
@@ -671,7 +670,6 @@ export class StreamSidebar {
                         for(let row of all_rows){
 
                             if(stream_counts.has(row.sub.stream_id)) {
-                                console.log(row.sub);
                                 let stream = stream_counts.get(row.sub.stream_id);
                                 if(!stream) {
                                     return;
@@ -729,9 +727,6 @@ export class StreamSidebar {
     update_subfolder_count_in_dom(subfolder_id: number, count: number) {
         let  $subfolder_unread = $(".subfolder_unread_count_" + subfolder_id);
 
-        console.log('update coutn in dom');
-        //console.log(subfolder_dom);
-        console.log(count);
         if (count === 0) {
             $subfolder_unread.text("");
             $subfolder_unread.hide();
