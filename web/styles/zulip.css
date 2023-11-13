@@ -19,7 +19,7 @@ go beneath the header.
 $sidebar_top: calc($header_height + $header_padding_bottom);
 
 $left_sidebar_collapse_widget_gutter: 10px;
-$left_sidebar_width: 350px;
+$left_sidebar_width: 450px;
 $right_sidebar_width: 250px;
 
 body,
@@ -96,7 +96,7 @@ body {
     with them) go beneath the header.
     */
     --left-sidebar-collapse-widget-gutter: 10px;
-    --left-sidebar-width: 270px;
+    --left-sidebar-width: 310px;
     --right-sidebar-width: 250px;
 
     /*

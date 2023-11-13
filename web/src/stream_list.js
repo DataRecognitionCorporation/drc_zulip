@@ -158,11 +158,6 @@ export function create_initial_sidebar_rows() {
 
 export function build_stream_list(force_rerender) {
     stream_sidebar.build_stream_list_below_folders(true);
-    if(stream_sidebar.current_open_folder != '' && stream_sidebar.current_open_subfolder_id != -1) {
-        stream_sidebar.build_stream_folder();
-        stream_sidebar.build_subfolder_rows(stream_sidebar.current_open_folder);
-        stream_sidebar.build_stream_list_folders(stream_sidebar.current_open_folder, stream_sidebar.current_open_subfolder_id);
-    }
     return
     // The stream list in the left sidebar contains 3 sections:
     // pinned, normal, and dormant streams, with headings above them

@@ -157,22 +157,33 @@ li.show-more-topics {
         margin: 0 0 0 $far_left_gutter_size;
     }
 
+    /*
     .folder_unread_count {
-        margin-right: 20px;
+        margin-right: 10px;
     }
+    */
 
     .subfolder_unread_count {
-        margin-right: 10px;
-
+        margin-right: -10px;
     }
 
+    .sidebar_row_unread {
+        margin-right: -18px;
+    }
     .stream-name:hover {
         text-decoration: none;
     }
 
+    /*
     .row_unread_count {
         margin-right: 10px;
     }
+    */
+
+    & li .narrow-filter {
+        margin-right: 8px;
+    }
+
 
     .subscription_block_subfolder .stream-sidebar-menu-icon {
         padding-right: 0px;
@@ -180,6 +191,11 @@ li.show-more-topics {
         width: 13px;
         vertical-align: middle;
     }
+
+    & li .zulip-icon-more-vertical {
+        margin-right: -6px;
+    }
+
 }
 
 #stream_filters {
