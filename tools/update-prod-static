@@ -42,11 +42,16 @@ run(["./tools/setup/build_pygments_data"])
 # Build time zone data
 run(["./tools/setup/build_timezone_values"])
 
+# Generate landing page images of various sizes and formats if we will
+# need them.
+if settings.CORPORATE_ENABLED:
+    run(["./tools/setup/generate_landing_page_images.py"])
+
 # Create webpack bundle
 run(["./tools/webpack", "--quiet"])
 
 # Collect the files that we're going to serve; this creates prod-static/serve.
-run(["./manage.py", "collectstatic", "-v2", "--noinput"])
+run(["./manage.py", "collectstatic", "-v0", "--noinput"])
 
 # Compile translation strings to generate `.mo` files.
 run(["./manage.py", "compilemessages", "-v0", "--ignore=*"])
