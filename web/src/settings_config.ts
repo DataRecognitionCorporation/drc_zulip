@@ -777,9 +777,10 @@ export function get_notifications_table_row_data(
             throw new TypeError(`Incorrect setting_name passed: ${setting_name}`);
         }
 
+        // Disable notification settings for members and guests
         const checkbox = {
             setting_name,
-            is_disabled: false,
+            is_disabled: !page_params.is_admin && !page_params.is_owner && !page_params.is_moderator,
             is_checked: checked,
         };
         if (column === "mobile") {
