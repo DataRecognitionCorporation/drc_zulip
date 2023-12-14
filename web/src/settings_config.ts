@@ -777,9 +777,10 @@ export function get_notifications_table_row_data(
             throw new TypeError(`Incorrect setting_name passed: ${setting_name}`);
         }
 
+        // Disable notification settings for members and guests
         const checkbox = {
             setting_name,
-            is_disabled: false,
+            is_disabled: !page_params.is_admin && !page_params.is_owner && !page_params.is_moderator,
             is_checked: checked,
         };
         if (column === "mobile") {
@@ -800,6 +801,7 @@ export type AllNotifications = {
     show_push_notifications_tooltip: {
         push_notifications: boolean;
         enable_online_push_notifications: boolean;
+        is_guest_or_member: boolean;
     };
 };
 
@@ -836,6 +838,7 @@ export const all_notifications = (settings_object: Settings): AllNotifications =
     show_push_notifications_tooltip: {
         push_notifications: !page_params.realm_push_notifications_enabled,
         enable_online_push_notifications: !page_params.realm_push_notifications_enabled,
+        is_guest_or_member: !page_params.is_admin && !page_params.is_owner && !page_params.is_moderator,
     },
 });
 
