@@ -255,6 +255,7 @@ export function show_settings_for(node) {
         notification_settings,
         other_settings,
         is_admin: page_params.is_admin,
+        is_guest: page_params.is_guest,
         stream_post_policy_values: stream_data.stream_post_policy_values,
         stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
         stream_privacy_policy: stream_data.get_stream_privacy_policy(stream_id),
