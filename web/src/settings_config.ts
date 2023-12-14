@@ -801,6 +801,7 @@ export type AllNotifications = {
     show_push_notifications_tooltip: {
         push_notifications: boolean;
         enable_online_push_notifications: boolean;
+        is_guest_or_member: boolean;
     };
 };
 
@@ -837,6 +838,7 @@ export const all_notifications = (settings_object: Settings): AllNotifications =
     show_push_notifications_tooltip: {
         push_notifications: !page_params.realm_push_notifications_enabled,
         enable_online_push_notifications: !page_params.realm_push_notifications_enabled,
+        is_guest_or_member: !page_params.is_admin && !page_params.is_owner && !page_params.is_moderator,
     },
 });
 

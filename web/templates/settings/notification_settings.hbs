@@ -9,21 +9,21 @@
             <thead>
                 <tr>
                     <th rowspan="2" width="30%"></th>
-                    <th colspan="2" width="28%">{{t "Desktop"}}</th>
-                    <th rowspan="2" width="14%" class="{{#if show_push_notifications_tooltip.push_notifications}}control-label-disabled{{/if}}">
+                    <th colspan="2" width="28%" class="{{#if show_push_notifications_tooltip.is_guest_or_member}}control-label-disabled{{/if}}">{{t "Desktop"}}</th>
+                    <th rowspan="2" width="14%" class="{{#if show_push_notifications_tooltip.push_notifications}}control-label-disabled{{else if show_push_notifications_tooltip.is_guest_or_member}}control-label-disabled{{/if}}">
                         {{t "Mobile"}}
                         {{#if (not realm_push_notifications_enabled) }}
                         <i class="fa fa-question-circle settings-info-icon tippy-zulip-tooltip" data-tippy-content="{{t 'Mobile push notifications are not configured on this server.' }}"></i>
                         {{/if}}
                     </th>
-                    <th rowspan="2" width="14%">{{t "Email"}}</th>
-                    <th rowspan="2" width="14%">@all
+                    <th rowspan="2" width="14%" class="{{#if show_push_notifications_tooltip.is_guest_or_member}}control-label-disabled{{/if}}">{{t "Email"}}</th>
+                    <th rowspan="2" width="14%" class="{{#if show_push_notifications_tooltip.is_guest_or_member}}control-label-disabled{{/if}}">@all
                         <i class="fa fa-question-circle settings-info-icon tippy-zulip-tooltip" data-tippy-content="{{t 'Whether wildcard mentions like @all are treated as mentions for the purpose of notifications.' }}"></i>
                     </th>
                 </tr>
                 <tr>
-                    <th>{{t "Visual"}}</th>
-                    <th>{{t "Audible"}}</th>
+                    <th class="{{#if show_push_notifications_tooltip.is_guest_or_member}}control-label-disabled{{/if}}">{{t "Visual"}}</th>
+                    <th class="{{#if show_push_notifications_tooltip.is_guest_or_member}}control-label-disabled{{/if}}">{{t "Audible"}}</th>
                 </tr>
             </thead>
             <tbody>
