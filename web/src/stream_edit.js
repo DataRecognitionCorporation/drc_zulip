@@ -169,13 +169,18 @@ export function stream_settings(sub) {
         settings_config.all_notifications(user_settings).show_push_notifications_tooltip;
 
     const settings = Object.keys(settings_labels).map((setting) => {
+        // Disable notification settings for guests
         const ret = {
             name: setting,
             label: settings_labels[setting],
-            disabled_realm_setting: check_realm_setting[setting],
-            is_disabled: check_realm_setting[setting],
+            disabled_realm_setting: page_params.is_guest || (setting == "push_notifications" && !page_params.realm_push_notifications_enabled),
+            is_disabled: page_params.is_guest || (setting == "push_notifications" && !page_params.realm_push_notifications_enabled),
             is_notification_setting: is_notification_setting(setting),
         };
+        // Disable email and wildcard notifications for members
+        if ((ret.name === "email_notifications" || ret.name === "wildcard_mentions_notify") && !page_params.is_guest) {
+            ret.disabled_realm_setting = ret.is_disabled = !page_params.is_admin && !page_params.is_owner && !page_params.is_moderator && !page_params.is_guest;
+        }
         if (is_notification_setting(setting)) {
             // This block ensures we correctly display to users the
             // current state of stream-level notification settings
