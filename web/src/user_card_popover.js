@@ -174,6 +174,7 @@ function get_user_card_popover_data(
         has_message_context,
         is_active,
         is_bot: user.is_bot,
+        is_guest_or_member: !page_params.is_admin && !page_params.is_owner && !page_params.is_moderator,
         is_me,
         is_sender_popover,
         pm_with_url: hash_util.pm_with_url(user.email),
