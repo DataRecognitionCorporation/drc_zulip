@@ -11,7 +11,9 @@
                     <span class="global-filter-name">{{t 'All messages' }}</span>
                     <span class="unread_count"></span>
                 </a>
+                {{#if is_not_guest_or_member}}
                 <span class="arrow sidebar-menu-icon all-messages-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
+                {{/if}}
             </li>
             <li class="top_left_inbox top_left_row hidden-for-spectators">
                 <a href="#inbox" class="tippy-left-sidebar-tooltip global-filter-container" data-tooltip-template-id="inbox-tooltip-template">

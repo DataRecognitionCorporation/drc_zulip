@@ -116,6 +116,7 @@ function build_stream_popover(opts) {
 
     popovers.hide_all_except_sidebars();
     const content = render_stream_sidebar_actions({
+        is_not_guest_or_member: page_params.is_admin || page_params.is_owner || page_params.is_moderator,
         stream: sub_store.get(stream_id),
     });
 
