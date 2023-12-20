@@ -41,7 +41,7 @@ function get_new_heights() {
         ($("#user_search_section").outerHeight(true) ?? 0) -
         right_sidebar_shortcuts_height;
 
-    res.buddy_list_wrapper_max_height = Math.max(80, usable_height);
+    res.buddy_list_wrapper_max_height = Math.max(80, Math.floor(usable_height / 2));
 
     return res;
 }
