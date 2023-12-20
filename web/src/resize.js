@@ -9,8 +9,10 @@ import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
+import { page_params } from "./page_params";
 import * as popovers from "./popovers";
 import * as util from "./util";
+
 
 function get_bottom_whitespace_height() {
     return message_viewport.height() * 0.4;
@@ -41,8 +43,13 @@ function get_new_heights() {
         ($("#user_search_section").outerHeight(true) ?? 0) -
         right_sidebar_shortcuts_height;
 
-    res.buddy_list_wrapper_max_height = Math.max(80, Math.floor(usable_height / 2));
-
+    // If user is member then restrict scroll bar height to make it easier to see each
+    // user's activity status
+    if (!page_params.is_admin && !page_params.is_owner && !page_params.is_moderator && !page_params.is_guest) {
+        res.buddy_list_wrapper_max_height = Math.max(80, Math.floor(usable_height / 2));
+    } else {
+        res.buddy_list_wrapper_max_height = Math.max(80, usable_height);
+    }
     return res;
 }
 
