@@ -13,7 +13,6 @@ import { page_params } from "./page_params";
 import * as popovers from "./popovers";
 import * as util from "./util";
 
-
 function get_bottom_whitespace_height() {
     return message_viewport.height() * 0.4;
 }
