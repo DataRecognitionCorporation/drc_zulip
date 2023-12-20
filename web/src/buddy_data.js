@@ -96,9 +96,6 @@ function get_num_unread(user_id) {
 
 export function user_last_seen_time_status(user_id) {
     const status = presence.get_status(user_id);
-    if (status === "active") {
-        return $t({defaultMessage: "Active now"});
-    }
 
     if (status === "idle") {
         // When we complete our presence API rewrite to have the data
@@ -221,9 +218,9 @@ export function get_item(user_id) {
 
 export function get_items_for_users(user_ids) {
     let user_info = user_ids.map((user_id) => info_for(user_id));
-    // If the user is a guest or member then hide all admins from the buddy list
+    // If the user is a guest or member then hide all admins and owners from the buddy list
     if (!page_params.is_admin && !page_params.is_owner && !page_params.is_moderator) {
-        user_info = user_info.filter((user) => !user.is_admin);
+        user_info = user_info.filter((user) => !user.is_admin && !user.is_owner);
     }
     compose_fade_users.update_user_info(user_info, fade_config);
 
