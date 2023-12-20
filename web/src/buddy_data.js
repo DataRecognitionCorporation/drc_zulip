@@ -87,6 +87,13 @@ export function compare_function(a, b) {
 export function sort_users(user_ids) {
     // TODO sort by unread count first, once we support that
     user_ids.sort(compare_function);
+    // Order the roles in descending order: Current user, then guest, then member, then anything else
+    const current_user = user_ids[0];
+    if (people.maybe_get_user_by_id(current_user).role >= 400) {
+        user_ids = user_ids.slice(1).sort((a, b) => parseFloat(people.maybe_get_user_by_id(b).role) - parseFloat(people.maybe_get_user_by_id(a).role));
+        user_ids.splice(0, 0, current_user);
+    }
+
     return user_ids;
 }
 
@@ -217,13 +224,8 @@ export function get_item(user_id) {
 }
 
 export function get_items_for_users(user_ids) {
-    let user_info = user_ids.map((user_id) => info_for(user_id));
-    // If the user is a guest or member then hide all admins and owners from the buddy list
-    if (!page_params.is_admin && !page_params.is_owner && !page_params.is_moderator) {
-        user_info = user_info.filter((user) => !user.is_admin && !user.is_owner);
-    }
+    const user_info = user_ids.map((user_id) => info_for(user_id));
     compose_fade_users.update_user_info(user_info, fade_config);
-
     return user_info;
 }
 
