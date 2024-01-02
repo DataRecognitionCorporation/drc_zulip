@@ -8,8 +8,8 @@ from returns.curry import partial
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
-from zerver.lib.validator import WildValue, check_int, check_string
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
+from zerver.lib.validator import WildValue, check_int, check_none_or, check_string
 from zerver.lib.webhooks.common import (
     OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
@@ -169,7 +169,7 @@ def get_merge_request_open_or_updated_body(
         base_branch=pull_request["target_branch"].tame(check_string)
         if action == "created"
         else None,
-        message=pull_request["description"].tame(check_string),
+        message=pull_request["description"].tame(check_none_or(check_string)),
         assignees=replace_assignees_username_with_name(get_assignees(payload)),
         type="MR",
         title=payload["object_attributes"]["title"].tame(check_string) if include_title else None,
@@ -423,7 +423,7 @@ def api_gitlab_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    payload: WebhookPayload[WildValue],
+    payload: JsonBodyPayload[WildValue],
     branches: Optional[str] = None,
     use_merge_request_title: Json[bool] = True,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,

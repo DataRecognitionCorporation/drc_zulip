@@ -153,7 +153,10 @@ js_rules = RuleList(
         {
             "pattern": r"""[.]text\(["'][a-zA-Z]""",
             "description": "Strings passed to $().text should be wrapped in $t() for internationalization",
-            "exclude": {"web/tests/"},
+            "exclude": {
+                "web/tests/",
+                "web/src/billing/",
+            },
         },
         {
             "pattern": r"""report.success\(["']""",
@@ -230,6 +233,9 @@ python_rules = RuleList(
             "good_lines": ["topic_name"],
             "bad_lines": ['subject="foo"', " MAX_SUBJECT_LEN"],
             "exclude": FILES_WITH_LEGACY_SUBJECT,
+            "exclude_line": {
+                ("zerver/lib/message.py", "message__subject__iexact=message.topic_name(),"),
+            },
             "include_only": {
                 "zerver/data_import/",
                 "zerver/lib/",
@@ -545,6 +551,8 @@ html_rules: List["Rule"] = [
         },
         "exclude": {
             "templates/analytics/support.html",
+            "templates/analytics/remote_server_support.html",
+            "templates/corporate",
             # We have URL template and Pygments language name as placeholders
             # in the below template which we don't want to be translatable.
             "web/templates/settings/playground_settings_admin.hbs",
@@ -575,6 +583,9 @@ html_rules: List["Rule"] = [
             '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Filter streams\') }}" />'
         ],
         "bad_lines": ["<input placeholder='foo'>"],
+        "exclude": {
+            "templates/corporate",
+        },
     },
     {
         "pattern": "aria-label='[^{]",
@@ -593,16 +604,11 @@ html_rules: List["Rule"] = [
         "bad_lines": ['<button aria-label="foo"></button>'],
     },
     {
-        "pattern": 'script src="http',
+        "pattern": r'<script[^<>]*\ssrc=[\'"]?(?:https?:|//)',
         "description": "Don't directly load dependencies from CDNs.  See docs/subsystems/html-css.md",
-        "exclude": {
-            "templates/corporate/billing.html",
-            "templates/corporate/hello.html",
-            "templates/corporate/upgrade.html",
-            "templates/corporate/event_status.html",
-        },
         "bad_lines": [
-            '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>'
+            '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>',
+            '<script async src="https://platform.twitter.com/widgets.js"></script>',
         ],
     },
     {
@@ -616,6 +622,7 @@ html_rules: List["Rule"] = [
         "exclude": {
             "templates/zerver/emails",
             "templates/analytics/realm_details.html",
+            "templates/analytics/remote_server_support.html",
             "templates/analytics/support.html",
         },
         "description": "`title` value should be translatable.",
@@ -689,16 +696,15 @@ html_rules: List["Rule"] = [
             "web/templates/pm_list_item.hbs",
             # Inline styling for an svg; could be moved to CSS files?
             "templates/zerver/landing_nav.html",
-            "templates/zerver/billing_nav.html",
             "templates/corporate/features.html",
             "templates/zerver/portico-header.html",
             "templates/corporate/billing.html",
             "templates/corporate/upgrade.html",
             # Miscellaneous violations to be cleaned up
-            "web/templates/user_card_popover_title.hbs",
+            "web/templates/popovers/user_card/user_card_popover_avatar.hbs",
             "web/templates/confirm_dialog/confirm_subscription_invites_warning.hbs",
             "templates/zerver/reset_confirm.html",
-            "templates/zerver/config_error.html",
+            "templates/zerver/config_error/container.html",
             "templates/zerver/dev_env_email_access_details.html",
             "templates/zerver/confirm_continue_registration.html",
             "templates/zerver/register.html",

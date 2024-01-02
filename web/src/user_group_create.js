@@ -4,11 +4,12 @@ import * as channel from "./channel";
 import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as loading from "./loading";
+import * as settings_components from "./settings_components";
 import * as ui_report from "./ui_report";
+import * as user_group_components from "./user_group_components";
 import * as user_group_create_members from "./user_group_create_members";
 import * as user_group_create_members_data from "./user_group_create_members_data";
 import * as user_groups from "./user_groups";
-import * as user_group_settings_ui from "./user_groups_settings_ui";
 
 let created_group_name;
 
@@ -86,16 +87,6 @@ class UserGroupNameError {
 }
 const user_group_name_error = new UserGroupNameError();
 
-export function create_user_group_clicked() {
-    // this changes the tab switcher (settings/preview) which isn't necessary
-    // to a add new stream title.
-    user_group_settings_ui.show_user_group_settings_pane.create_user_group();
-    $(".group-row.active").removeClass("active");
-
-    show_new_user_group_modal();
-    $("#create_user_group_name").trigger("focus");
-}
-
 function clear_error_display() {
     user_group_name_error.clear_errors();
     $(".user_group_create_info").hide();
@@ -133,6 +124,10 @@ function create_user_group() {
     const user_ids = user_group_create_members.get_principals();
     data.members = JSON.stringify(user_ids);
 
+    data.can_mention_group = Number.parseInt(
+        settings_components.new_group_can_mention_group_widget.value(),
+        10,
+    );
     loading.make_indicator($("#user_group_creating_indicator"), {
         text: $t({defaultMessage: "Creating group..."}),
     });
@@ -144,10 +139,6 @@ function create_user_group() {
             $("#create_user_group_name").val("");
             $("#create_user_group_description").val("");
             user_group_create_members.clear_member_list();
-            ui_report.success(
-                $t_html({defaultMessage: "User group successfully created!"}),
-                $(".user_group_create_info"),
-            );
             loading.destroy_indicator($("#user_group_creating_indicator"));
             // TODO: The rest of the work should be done via the create event we will get for user group.
         },
@@ -203,4 +194,6 @@ export function set_up_handlers() {
             e.preventDefault();
         }
     });
+
+    user_group_components.setup_permissions_dropdown(undefined, true);
 }

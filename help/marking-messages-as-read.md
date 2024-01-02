@@ -71,9 +71,19 @@ stream or topic as read**.
     jumping to the bottom with the **Scroll to bottom**
     (<i class="fa fa-chevron-down"></i>) button or the <kbd>End</kbd> shortcut.
 
+{tab|via-inbox-view}
+
+{!go-to-inbox.md!}
+
+1. Hover over a stream or topic in the left sidebar.
+
+1. Click on the **ellipsis** (<i class="zulip-icon zulip-icon-more-vertical"></i>).
+
+1. Click **Mark all messages as read**.
+
 {tab|via-recent-conversations}
 
-{relative|message|recent}
+{!go-to-recent-conversations.md!}
 
 1. Click on an unread messages counter in the **Topic** column to mark all
    messages in that topic as read.
@@ -81,7 +91,7 @@ stream or topic as read**.
 {tab|mobile}
 
 1. Tap a stream, topic, or the **All messages**
-   (<img src="/static/images/help/mobile-globe-icon.svg" alt="globe" class="mobile-icon"/>)
+   (<img src="/static/images/help/mobile-globe-icon.svg" alt="globe" class="help-center-icon"/>)
    tab.
 
 2. Tap **Mark stream as read**, **Mark topic as read**, or **Mark all as read**

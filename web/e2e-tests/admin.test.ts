@@ -1,6 +1,6 @@
 import {strict as assert} from "assert";
 
-import type {ElementHandle, Page} from "puppeteer";
+import type {Page} from "puppeteer";
 
 import * as common from "./lib/common";
 
@@ -156,11 +156,9 @@ async function test_organization_permissions(page: Page): Promise<void> {
 async function test_add_emoji(page: Page): Promise<void> {
     await common.fill_form(page, "#add-custom-emoji-form", {name: "zulip logo"});
 
-    const emoji_upload_handle = await page.$("#emoji_file_input");
+    const emoji_upload_handle = await page.$("input#emoji_file_input");
     assert.ok(emoji_upload_handle);
-    await (emoji_upload_handle as ElementHandle<HTMLInputElement>).uploadFile(
-        "static/images/logo/zulip-icon-128x128.png",
-    );
+    await emoji_upload_handle.uploadFile("static/images/logo/zulip-icon-128x128.png");
     await page.click("#add-custom-emoji-modal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
 
@@ -193,59 +191,10 @@ async function test_custom_realm_emoji(page: Page): Promise<void> {
     await test_delete_emoji(page);
 }
 
-async function test_add_default_stream(page: Page): Promise<void> {
-    const streams = ["Denmark", "Venice"];
-    for (let i = 0; i < 2; i += 1) {
-        await page.click(`#select_default_stream_${i}_widget`);
-        await page.waitForSelector(".dropdown-list-container .list-item", {
-            visible: true,
-        });
-
-        const stream_to_select = `.dropdown-list-container .list-item[data-name="${streams[i]}"]`;
-        await page.waitForSelector(stream_to_select, {visible: true});
-        await page.click(stream_to_select);
-        assert((await page.$(".dropdown-list-container")) === null);
-    }
-
-    await page.click("#add-default-stream-modal .dialog_submit_button");
-
-    await common.wait_for_micromodal_to_close(page);
-
-    let stream_id = await common.get_stream_id(page, "Denmark");
-    let row = `.default_stream_row[data-stream-id='${CSS.escape(stream_id.toString())}']`;
-    await page.waitForSelector(row, {visible: true});
-
-    stream_id = await common.get_stream_id(page, "Venice");
-    row = `.default_stream_row[data-stream-id='${CSS.escape(stream_id.toString())}']`;
-    await page.waitForSelector(row, {visible: true});
-}
-
-async function test_remove_default_stream(page: Page, row: string): Promise<void> {
-    await page.click(row + " button.remove-default-stream");
-
-    // assert row doesn't exist.
-    await page.waitForSelector(row, {hidden: true});
-}
-
-async function test_default_streams(page: Page): Promise<void> {
-    await page.click("li[data-section='default-streams-list']");
-    await page.click("#show-add-default-streams-modal");
-    await common.wait_for_micromodal_to_open(page);
-
-    const stream_name = "Denmark";
-    const stream_id = await common.get_stream_id(page, stream_name);
-    const row = `.default_stream_row[data-stream-id='${CSS.escape(stream_id.toString())}']`;
-
-    await test_add_default_stream(page);
-    await test_remove_default_stream(page, row);
-}
-
 async function test_upload_realm_icon_image(page: Page): Promise<void> {
-    const upload_handle = await page.$("#realm-icon-upload-widget .image_file_input");
+    const upload_handle = await page.$("#realm-icon-upload-widget input.image_file_input");
     assert.ok(upload_handle);
-    await (upload_handle as ElementHandle<HTMLInputElement>).uploadFile(
-        "static/images/logo/zulip-icon-128x128.png",
-    );
+    await upload_handle.uploadFile("static/images/logo/zulip-icon-128x128.png");
 
     await page.waitForSelector("#realm-icon-upload-widget .upload-spinner-background", {
         visible: true,
@@ -324,7 +273,6 @@ async function admin_test(page: Page): Promise<void> {
         await test_custom_realm_emoji(page);
         await test_organization_profile(page);
     }
-    await test_default_streams(page);
     await test_authentication_methods(page);
 }
 

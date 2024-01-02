@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_banners} = require("./lib/compose_banner");
 const {mock_esm, set_global, zrequire, with_overrides} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {user_settings} = require("./lib/zpage_params");
 
@@ -24,8 +24,6 @@ const aaron = {
     full_name: "Aaron",
 };
 people.add_active_user(aaron);
-
-const noop = () => {};
 
 const setTimeout_delay = 3000;
 set_global("setTimeout", (f, delay) => {
@@ -63,6 +61,7 @@ user_settings.twenty_four_hour_time = false;
 
 const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");
+const drafts_overlay_ui = zrequire("drafts_overlay_ui");
 const messages_overlay_ui = zrequire("messages_overlay_ui");
 const timerender = zrequire("timerender");
 
@@ -87,7 +86,7 @@ const short_msg = {
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        $("#draft_overlay").css = () => {};
+        $("#draft_overlay").css = noop;
         window.localStorage.clear();
         f(helpers);
     });
@@ -155,7 +154,6 @@ test("draft_model delete", ({override}) => {
 test("snapshot_message", ({override_rewire}) => {
     override_rewire(user_pill, "get_user_ids", () => [aaron.user_id]);
     override_rewire(compose_pm_pill, "set_from_emails", noop);
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", () => {});
     mock_banners();
 
     $(".narrow_to_compose_recipients").toggleClass = noop;
@@ -195,7 +193,7 @@ test("snapshot_message", ({override_rewire}) => {
     set_compose_state();
     assert.deepEqual(drafts.snapshot_message(), undefined);
 
-    curr_draft = {};
+    curr_draft = {type: false};
     set_compose_state();
     assert.equal(drafts.snapshot_message(), undefined);
 });
@@ -215,6 +213,7 @@ test("initialize", ({override_rewire}) => {
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     drafts.initialize();
+    drafts_overlay_ui.initialize();
 });
 
 test("remove_old_drafts", () => {
@@ -245,7 +244,7 @@ test("remove_old_drafts", () => {
 });
 
 test("update_draft", ({override, override_rewire}) => {
-    compose_state.set_message_type(null);
+    compose_state.set_message_type(false);
     let draft_id = drafts.update_draft();
     assert.equal(draft_id, undefined);
 
@@ -522,7 +521,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
             stream_name: "stream",
             stream_id: 30,
             recipient_bar_color: "#ebebeb",
-            stream_privacy_icon_color: "#b9b9b9",
+            stream_privacy_icon_color: "#9a9a9a",
             topic: "topic",
             raw_content: "Test stream message",
             time_stamp: "7:55 AM",
@@ -556,7 +555,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
             stream_name: "stream 2",
             stream_id: 40,
             recipient_bar_color: "#ebebeb",
-            stream_privacy_icon_color: "#b9b9b9",
+            stream_privacy_icon_color: "#9a9a9a",
             topic: "topic",
             raw_content: "Test stream message 2",
             time_stamp: "Jan 21",
@@ -604,11 +603,11 @@ test("format_drafts", ({override_rewire, mock_template}) => {
 
     $.create("#drafts_table .overlay-message-row", {children: []});
     $(".draft-selection-checkbox").filter = () => [];
-    drafts.launch();
+    drafts_overlay_ui.launch();
 
     $.clear_all_elements();
     $.create("#drafts_table .overlay-message-row", {children: []});
-    $("#draft_overlay").css = () => {};
+    $("#draft_overlay").css = noop;
 
     override_rewire(sub_store, "get", (stream_id) => {
         assert.ok([30, 40].includes(stream_id));
@@ -623,7 +622,7 @@ test("format_drafts", ({override_rewire, mock_template}) => {
     $(".top_left_drafts").set_find_results(".unread_count", $unread_count);
 
     $(".draft-selection-checkbox").filter = () => [];
-    drafts.launch();
+    drafts_overlay_ui.launch();
 });
 
 test("filter_drafts", ({override_rewire, mock_template}) => {
@@ -703,7 +702,7 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
             stream_name: "stream",
             stream_id: 30,
             recipient_bar_color: "#ebebeb",
-            stream_privacy_icon_color: "#b9b9b9",
+            stream_privacy_icon_color: "#9a9a9a",
             topic: "topic",
             raw_content: "Test stream message",
             time_stamp: "7:55 AM",
@@ -716,7 +715,7 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
             stream_name: "stream 2",
             stream_id: 40,
             recipient_bar_color: "#ebebeb",
-            stream_privacy_icon_color: "#b9b9b9",
+            stream_privacy_icon_color: "#9a9a9a",
             topic: "topic",
             raw_content: "Test stream message 2",
             time_stamp: "Jan 21",
@@ -771,5 +770,5 @@ test("filter_drafts", ({override_rewire, mock_template}) => {
 
     $.create("#drafts_table .overlay-message-row", {children: []});
     $(".draft-selection-checkbox").filter = () => [];
-    drafts.launch();
+    drafts_overlay_ui.launch();
 });

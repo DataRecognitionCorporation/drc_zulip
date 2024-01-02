@@ -349,7 +349,7 @@ class ChangeSettingsTest(ZulipTestCase):
     def do_test_change_user_setting(self, setting_name: str) -> None:
         test_changes: Dict[str, Any] = dict(
             default_language="de",
-            default_view="all_messages",
+            web_home_view="all_messages",
             emojiset="google",
             timezone="America/Denver",
             demote_inactive_streams=2,
@@ -362,6 +362,8 @@ class ChangeSettingsTest(ZulipTestCase):
             desktop_icon_count_display=2,
             email_address_visibility=3,
             realm_name_in_email_notifications_policy=2,
+            automatically_follow_topics_policy=1,
+            automatically_unmute_topics_in_muted_streams_policy=1,
         )
 
         self.login("hamlet")
@@ -398,7 +400,7 @@ class ChangeSettingsTest(ZulipTestCase):
     def test_invalid_setting_value(self) -> None:
         invalid_values_dict = dict(
             default_language="invalid_de",
-            default_view="invalid_view",
+            web_home_view="invalid_view",
             emojiset="apple",
             timezone="invalid_US/Mountain",
             demote_inactive_streams=10,

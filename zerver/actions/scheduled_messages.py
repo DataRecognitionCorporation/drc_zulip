@@ -1,8 +1,7 @@
-import datetime
 import logging
+from datetime import datetime, timedelta
 from typing import List, Optional, Sequence, Tuple
 
-import orjson
 from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
@@ -18,6 +17,7 @@ from zerver.actions.uploads import check_attachment_reference_change, do_claim_a
 from zerver.lib.addressee import Addressee
 from zerver.lib.exceptions import JsonableError, RealmDeactivatedError, UserDeactivatedError
 from zerver.lib.message import SendMessageRequest, render_markdown, truncate_topic
+from zerver.lib.recipient_parsing import extract_direct_message_recipient_ids, extract_stream_id
 from zerver.lib.scheduled_messages import access_scheduled_message
 from zerver.lib.string_validation import check_stream_topic
 from zerver.models import (
@@ -34,31 +34,6 @@ from zerver.tornado.django_api import send_event
 SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES = 10
 
 
-def extract_stream_id(req_to: str) -> List[int]:
-    # Recipient should only be a single stream ID.
-    try:
-        stream_id = int(req_to)
-    except ValueError:
-        raise JsonableError(_("Invalid data type for stream ID"))
-    return [stream_id]
-
-
-def extract_direct_message_recipient_ids(req_to: str) -> List[int]:
-    try:
-        user_ids = orjson.loads(req_to)
-    except orjson.JSONDecodeError:
-        user_ids = req_to
-
-    if not isinstance(user_ids, list):
-        raise JsonableError(_("Invalid data type for recipients"))
-
-    for user_id in user_ids:
-        if not isinstance(user_id, int):
-            raise JsonableError(_("Recipient list may only contain user IDs"))
-
-    return list(set(user_ids))
-
-
 def check_schedule_message(
     sender: UserProfile,
     client: Client,
@@ -66,9 +41,11 @@ def check_schedule_message(
     message_to: List[int],
     topic_name: Optional[str],
     message_content: str,
-    deliver_at: datetime.datetime,
+    deliver_at: datetime,
     realm: Optional[Realm] = None,
+    *,
     forwarder_user_profile: Optional[UserProfile] = None,
+    read_by_sender: Optional[bool] = None,
 ) -> int:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
     send_request = check_message(
@@ -81,11 +58,22 @@ def check_schedule_message(
     )
     send_request.deliver_at = deliver_at
 
-    return do_schedule_messages([send_request], sender)[0]
+    if read_by_sender is None:
+        # Legacy default: a scheduled message you sent from a non-API client is
+        # automatically marked as read for yourself, unless it was sent to
+        # yourself only.
+        read_by_sender = (
+            client.default_read_by_sender() and send_request.message.recipient != sender.recipient
+        )
+
+    return do_schedule_messages([send_request], sender, read_by_sender=read_by_sender)[0]
 
 
 def do_schedule_messages(
-    send_message_requests: Sequence[SendMessageRequest], sender: UserProfile
+    send_message_requests: Sequence[SendMessageRequest],
+    sender: UserProfile,
+    *,
+    read_by_sender: bool = False,
 ) -> List[int]:
     scheduled_messages: List[Tuple[ScheduledMessage, SendMessageRequest]] = []
 
@@ -105,6 +93,7 @@ def do_schedule_messages(
         scheduled_message.realm = send_request.realm
         assert send_request.deliver_at is not None
         scheduled_message.scheduled_timestamp = send_request.deliver_at
+        scheduled_message.read_by_sender = read_by_sender
         scheduled_message.delivery_type = ScheduledMessage.SEND_LATER
 
         scheduled_messages.append((scheduled_message, send_request))
@@ -150,7 +139,7 @@ def edit_scheduled_message(
     message_to: Optional[str],
     topic_name: Optional[str],
     message_content: Optional[str],
-    deliver_at: Optional[datetime.datetime],
+    deliver_at: Optional[datetime],
     realm: Realm,
 ) -> None:
     with transaction.atomic():
@@ -182,7 +171,8 @@ def edit_scheduled_message(
             # Update message recipient if changed.
             if message_to is not None:
                 if updated_recipient_type_name == "stream":
-                    updated_recipient = extract_stream_id(message_to)
+                    stream_id = extract_stream_id(message_to)
+                    updated_recipient = [stream_id]
                 else:
                     updated_recipient = extract_direct_message_recipient_ids(message_to)
             else:
@@ -293,7 +283,7 @@ def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
         raise UserDeactivatedError
 
     # Limit how late we're willing to send a scheduled message.
-    latest_send_time = scheduled_message.scheduled_timestamp + datetime.timedelta(
+    latest_send_time = scheduled_message.scheduled_timestamp + timedelta(
         minutes=SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES
     )
     if timezone_now() > latest_send_time:
@@ -325,11 +315,11 @@ def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
         scheduled_message.realm,
     )
 
-    scheduled_message_to_self = scheduled_message.recipient == scheduled_message.sender.recipient
-    message_id = do_send_messages(
-        [send_request], scheduled_message_to_self=scheduled_message_to_self
+    sent_message_result = do_send_messages(
+        [send_request],
+        mark_as_read=[scheduled_message.sender_id] if scheduled_message.read_by_sender else [],
     )[0]
-    scheduled_message.delivered_message_id = message_id
+    scheduled_message.delivered_message_id = sent_message_result.message_id
     scheduled_message.delivered = True
     scheduled_message.save(update_fields=["delivered", "delivered_message_id"])
     notify_remove_scheduled_message(scheduled_message.sender, scheduled_message.id)

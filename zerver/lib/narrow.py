@@ -43,7 +43,7 @@ from sqlalchemy.sql import (
 )
 from sqlalchemy.sql.selectable import SelectBase
 from sqlalchemy.types import ARRAY, Boolean, Integer, Text
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, override
 
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
 from zerver.lib.exceptions import ErrorCode, JsonableError
@@ -204,6 +204,7 @@ class BadNarrowOperatorError(JsonableError):
         self.desc: str = desc
 
     @staticmethod
+    @override
     def msg_format() -> str:
         return _("Invalid narrow operator: {desc}")
 
@@ -294,6 +295,18 @@ class NarrowBuilder:
             "pm_with": self.by_dm,
             "group_pm_with": self.by_group_pm_with,
         }
+        self.is_stream_narrow = False
+        self.is_dm_narrow = False
+
+    def check_not_both_stream_dm(
+        self, is_dm_narrow: bool = False, is_stream_narrow: bool = False
+    ) -> None:
+        if is_dm_narrow:
+            self.is_dm_narrow = True
+        if is_stream_narrow:
+            self.is_stream_narrow = True
+        if self.is_stream_narrow and self.is_dm_narrow:
+            raise BadNarrowOperatorError("No message can be both a stream and a DM message")
 
     def add_term(self, query: Select, term: Dict[str, Any]) -> Select:
         """
@@ -308,9 +321,6 @@ class NarrowBuilder:
         # methods to the same criterion.  See the class's block comment
         # for details.
 
-        # We have to be careful here because we're letting users call a method
-        # by name! The prefix 'by_' prevents it from colliding with builtin
-        # Python __magic__ stuff.
         operator = term["operator"]
         operand = term["operand"]
 
@@ -355,6 +365,7 @@ class NarrowBuilder:
 
         if operand in ["dm", "private"]:
             # "is:private" is a legacy alias for "is:dm"
+            self.check_not_both_stream_dm(is_dm_narrow=True)
             cond = column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0
             return query.where(maybe_negate(cond))
         elif operand == "starred":
@@ -364,9 +375,13 @@ class NarrowBuilder:
             cond = column("flags", Integer).op("&")(UserMessage.flags.read.mask) == 0
             return query.where(maybe_negate(cond))
         elif operand == "mentioned":
-            cond1 = column("flags", Integer).op("&")(UserMessage.flags.mentioned.mask) != 0
-            cond2 = column("flags", Integer).op("&")(UserMessage.flags.wildcard_mentioned.mask) != 0
-            cond = or_(cond1, cond2)
+            mention_flags_mask = (
+                UserMessage.flags.mentioned.mask
+                | UserMessage.flags.stream_wildcard_mentioned.mask
+                | UserMessage.flags.topic_wildcard_mentioned.mask
+                | UserMessage.flags.group_mentioned.mask
+            )
+            cond = column("flags", Integer).op("&")(mention_flags_mask) != 0
             return query.where(maybe_negate(cond))
         elif operand == "alerted":
             cond = column("flags", Integer).op("&")(UserMessage.flags.has_alert_word.mask) != 0
@@ -400,6 +415,8 @@ class NarrowBuilder:
     def by_stream(
         self, query: Select, operand: Union[str, int], maybe_negate: ConditionTransform
     ) -> Select:
+        self.check_not_both_stream_dm(is_stream_narrow=True)
+
         try:
             # Because you can see your own message history for
             # private streams you are no longer subscribed to, we
@@ -441,6 +458,8 @@ class NarrowBuilder:
         return query.where(maybe_negate(cond))
 
     def by_streams(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
+        self.check_not_both_stream_dm(is_stream_narrow=True)
+
         if operand == "public":
             # Get all both subscribed and non-subscribed public streams
             # but exclude any private subscribed streams.
@@ -455,6 +474,8 @@ class NarrowBuilder:
         return query.where(maybe_negate(cond))
 
     def by_topic(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
+        self.check_not_both_stream_dm(is_stream_narrow=True)
+
         if self.realm.is_zephyr_mirror_realm:
             # MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
             # (foo, foo.d, foo.d.d, etc)
@@ -531,6 +552,8 @@ class NarrowBuilder:
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
+        self.check_not_both_stream_dm(is_dm_narrow=True)
+
         try:
             if isinstance(operand, str):
                 email_list = operand.split(",")
@@ -580,20 +603,26 @@ class NarrowBuilder:
             # complex query to get messages between these two users
             # with either of them as the sender.
             self_recipient_id = self.user_profile.recipient_id
-            cond = or_(
-                and_(
-                    column("sender_id", Integer) == other_participant.id,
-                    column("recipient_id", Integer) == self_recipient_id,
-                ),
-                and_(
-                    column("sender_id", Integer) == self.user_profile.id,
-                    column("recipient_id", Integer) == recipient.id,
+            cond = and_(
+                column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
+                column("realm_id", Integer) == self.realm.id,
+                or_(
+                    and_(
+                        column("sender_id", Integer) == other_participant.id,
+                        column("recipient_id", Integer) == self_recipient_id,
+                    ),
+                    and_(
+                        column("sender_id", Integer) == self.user_profile.id,
+                        column("recipient_id", Integer) == recipient.id,
+                    ),
                 ),
             )
             return query.where(maybe_negate(cond))
 
         # Direct message with self
         cond = and_(
+            column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
+            column("realm_id", Integer) == self.realm.id,
             column("sender_id", Integer) == self.user_profile.id,
             column("recipient_id", Integer) == recipient.id,
         )
@@ -624,6 +653,8 @@ class NarrowBuilder:
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
+        self.check_not_both_stream_dm(is_dm_narrow=True)
+
         try:
             if isinstance(operand, str):
                 narrow_user_profile = get_user_including_cross_realm(operand, self.realm)
@@ -647,16 +678,22 @@ class NarrowBuilder:
         self_recipient_id = self.user_profile.recipient_id
         # See note above in `by_dm` about needing bidirectional messages
         # for direct messages with another person.
-        cond = or_(
-            and_(
-                column("sender_id", Integer) == narrow_user_profile.id,
-                column("recipient_id", Integer) == self_recipient_id,
+        cond = and_(
+            column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
+            column("realm_id", Integer) == self.realm.id,
+            or_(
+                and_(
+                    column("sender_id", Integer) == narrow_user_profile.id,
+                    column("recipient_id", Integer) == self_recipient_id,
+                ),
+                and_(
+                    column("sender_id", Integer) == self.user_profile.id,
+                    column("recipient_id", Integer) == narrow_user_profile.recipient_id,
+                ),
+                and_(
+                    column("recipient_id", Integer).in_(huddle_recipient_ids),
+                ),
             ),
-            and_(
-                column("sender_id", Integer) == self.user_profile.id,
-                column("recipient_id", Integer) == narrow_user_profile.recipient_id,
-            ),
-            column("recipient_id", Integer).in_(huddle_recipient_ids),
         )
         return query.where(maybe_negate(cond))
 
@@ -667,6 +704,8 @@ class NarrowBuilder:
         assert not self.is_web_public_query
         assert self.user_profile is not None
 
+        self.check_not_both_stream_dm(is_dm_narrow=True)
+
         try:
             if isinstance(operand, str):
                 narrow_profile = get_user_including_cross_realm(operand, self.realm)
@@ -676,7 +715,11 @@ class NarrowBuilder:
             raise BadNarrowOperatorError("unknown user " + str(operand))
 
         recipient_ids = self._get_huddle_recipients(narrow_profile)
-        cond = column("recipient_id", Integer).in_(recipient_ids)
+        cond = and_(
+            column("flags", Integer).op("&")(UserMessage.flags.is_private.mask) != 0,
+            column("realm_id", Integer) == self.realm.id,
+            column("recipient_id", Integer).in_(recipient_ids),
+        )
         return query.where(maybe_negate(cond))
 
     def by_search(self, query: Select, operand: str, maybe_negate: ConditionTransform) -> Select:
@@ -912,13 +955,12 @@ def get_base_query_for_search(
     realm_id: int, user_profile: Optional[UserProfile], need_message: bool, need_user_message: bool
 ) -> Tuple[Select, ColumnElement[Integer]]:
     # Handle the simple case where user_message isn't involved first.
-    realm_cond = column("realm_id", Integer) == literal(realm_id)
     if not need_user_message:
         assert need_message
         query = (
             select(column("id", Integer).label("message_id"))
             .select_from(table("zerver_message"))
-            .where(realm_cond)
+            .where(column("realm_id", Integer) == literal(realm_id))
         )
 
         inner_msg_id_col = literal_column("zerver_message.id", Integer)
@@ -928,9 +970,11 @@ def get_base_query_for_search(
     if need_message:
         query = (
             select(column("message_id", Integer), column("flags", Integer))
-            .where(realm_cond)
-            .where(column("user_profile_id", Integer) == literal(user_profile.id))
-            .select_from(
+            # We don't limit by realm_id despite the join to
+            # zerver_messages, since the user_profile_id limit in
+            # usermessage is more selective, and the query planner
+            # can't know about that cross-table correlation.
+            .where(column("user_profile_id", Integer) == literal(user_profile.id)).select_from(
                 join(
                     table("zerver_usermessage"),
                     table("zerver_message"),

@@ -1,9 +1,10 @@
-import datetime
 from argparse import ArgumentParser
+from datetime import timedelta
 from typing import Any
 
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from zerver.actions.uploads import do_delete_old_unclaimed_attachments
 from zerver.lib.upload import all_message_attachments, delete_message_attachments
@@ -13,8 +14,9 @@ from zerver.models import ArchivedAttachment, Attachment, get_old_unclaimed_atta
 class Command(BaseCommand):
     help = """Remove unclaimed attachments from storage older than a supplied
               numerical value indicating the limit of how old the attachment can be.
-              One week is taken as the default value."""
+              The default is five weeks."""
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "-w",
@@ -22,7 +24,7 @@ class Command(BaseCommand):
             dest="delta_weeks",
             default=5,
             type=int,
-            help="Limiting value of how old the file can be.",
+            help="How long unattached attachments are preserved; defaults to 5 weeks.",
         )
 
         parser.add_argument(
@@ -40,6 +42,7 @@ class Command(BaseCommand):
             "any files which are not in the database. This may take a very long time!",
         )
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         delta_weeks = options["delta_weeks"]
         print(f"Deleting unclaimed attached files older than {delta_weeks} weeks")
@@ -67,7 +70,7 @@ class Command(BaseCommand):
             raise CommandError("This was a dry run. Pass -f to actually delete.")
 
     def clean_attachment_upload_backend(self, dry_run: bool = True) -> None:
-        cutoff = timezone_now() - datetime.timedelta(minutes=5)
+        cutoff = timezone_now() - timedelta(minutes=5)
         print(f"Removing extra files in storage black-end older than {cutoff.isoformat()}")
         to_delete = []
         for path_id, modified_at in all_message_attachments():

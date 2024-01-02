@@ -1,6 +1,6 @@
-import datetime
 import re
 import time
+from datetime import timedelta
 from io import StringIO
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 from unittest import mock
@@ -11,12 +11,9 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.scheduled_messages import (
     SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES,
-    extract_direct_message_recipient_ids,
-    extract_stream_id,
     try_deliver_one_scheduled_message,
 )
 from zerver.actions.users import change_user_is_active
-from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message
 from zerver.lib.timestamp import timestamp_to_datetime
@@ -98,7 +95,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
     def create_scheduled_message(self) -> None:
         content = "Test message"
-        scheduled_delivery_datetime = timezone_now() + datetime.timedelta(minutes=5)
+        scheduled_delivery_datetime = timezone_now() + timedelta(minutes=5)
         scheduled_delivery_timestamp = int(scheduled_delivery_datetime.timestamp())
         verona_stream_id = self.get_stream_id("Verona")
         result = self.do_schedule_message(
@@ -116,8 +113,8 @@ class ScheduledMessageTest(ZulipTestCase):
         scheduled_message = self.last_scheduled_message()
 
         # mock current time to be greater than the scheduled time, so that the `scheduled_message` can be sent.
-        more_than_scheduled_delivery_datetime = (
-            scheduled_message.scheduled_timestamp + datetime.timedelta(minutes=1)
+        more_than_scheduled_delivery_datetime = scheduled_message.scheduled_timestamp + timedelta(
+            minutes=1
         )
 
         with time_machine.travel(more_than_scheduled_delivery_datetime, tick=False):
@@ -145,7 +142,7 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assertFalse(try_deliver_one_scheduled_message(logger))
 
         content = "Test message"
-        scheduled_delivery_datetime = timezone_now() + datetime.timedelta(minutes=5)
+        scheduled_delivery_datetime = timezone_now() + timedelta(minutes=5)
         scheduled_delivery_timestamp = int(scheduled_delivery_datetime.timestamp())
         sender = self.example_user("hamlet")
         othello = self.example_user("othello")
@@ -156,9 +153,7 @@ class ScheduledMessageTest(ZulipTestCase):
         scheduled_message = self.last_scheduled_message()
 
         # mock current time to be greater than the scheduled time.
-        more_than_scheduled_delivery_datetime = scheduled_delivery_datetime + datetime.timedelta(
-            minutes=1
-        )
+        more_than_scheduled_delivery_datetime = scheduled_delivery_datetime + timedelta(minutes=1)
 
         with time_machine.travel(more_than_scheduled_delivery_datetime, tick=False):
             result = try_deliver_one_scheduled_message(logger)
@@ -184,7 +179,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         # Check error is sent if an edit happens after the scheduled
         # message is successfully sent.
-        new_delivery_datetime = timezone_now() + datetime.timedelta(minutes=7)
+        new_delivery_datetime = timezone_now() + timedelta(minutes=7)
         new_delivery_timestamp = int(new_delivery_datetime.timestamp())
         content = "New message content"
         payload = {
@@ -202,7 +197,7 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assertFalse(try_deliver_one_scheduled_message(logger))
 
         content = "Test message to self"
-        scheduled_delivery_datetime = timezone_now() + datetime.timedelta(minutes=5)
+        scheduled_delivery_datetime = timezone_now() + timedelta(minutes=5)
         scheduled_delivery_timestamp = int(scheduled_delivery_datetime.timestamp())
         sender = self.example_user("hamlet")
         response = self.do_schedule_message(
@@ -212,9 +207,7 @@ class ScheduledMessageTest(ZulipTestCase):
         scheduled_message = self.last_scheduled_message()
 
         # mock current time to be greater than the scheduled time.
-        more_than_scheduled_delivery_datetime = scheduled_delivery_datetime + datetime.timedelta(
-            minutes=1
-        )
+        more_than_scheduled_delivery_datetime = scheduled_delivery_datetime + timedelta(minutes=1)
 
         with time_machine.travel(more_than_scheduled_delivery_datetime, tick=False):
             result = try_deliver_one_scheduled_message(logger)
@@ -264,9 +257,8 @@ class ScheduledMessageTest(ZulipTestCase):
         self.create_scheduled_message()
         scheduled_message = self.last_scheduled_message()
 
-        too_late_to_send_message_datetime = (
-            scheduled_message.scheduled_timestamp
-            + datetime.timedelta(minutes=SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES + 1)
+        too_late_to_send_message_datetime = scheduled_message.scheduled_timestamp + timedelta(
+            minutes=SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES + 1
         )
 
         with time_machine.travel(too_late_to_send_message_datetime, tick=False):
@@ -293,8 +285,8 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assertFalse(scheduled_message.realm.deactivated)
         message_before_deactivation = most_recent_message(scheduled_message.sender)
 
-        more_than_scheduled_delivery_datetime = (
-            scheduled_message.scheduled_timestamp + datetime.timedelta(minutes=1)
+        more_than_scheduled_delivery_datetime = scheduled_message.scheduled_timestamp + timedelta(
+            minutes=1
         )
 
         with time_machine.travel(more_than_scheduled_delivery_datetime, tick=False):
@@ -322,8 +314,8 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assertTrue(scheduled_message.sender.is_active)
         message_before_deactivation = most_recent_message(scheduled_message.sender)
 
-        more_than_scheduled_delivery_datetime = (
-            scheduled_message.scheduled_timestamp + datetime.timedelta(minutes=1)
+        more_than_scheduled_delivery_datetime = scheduled_message.scheduled_timestamp + timedelta(
+            minutes=1
         )
 
         with time_machine.travel(more_than_scheduled_delivery_datetime, tick=False):
@@ -346,8 +338,8 @@ class ScheduledMessageTest(ZulipTestCase):
         self.create_scheduled_message()
         scheduled_message = self.last_scheduled_message()
 
-        more_than_scheduled_delivery_datetime = (
-            scheduled_message.scheduled_timestamp + datetime.timedelta(minutes=1)
+        more_than_scheduled_delivery_datetime = scheduled_message.scheduled_timestamp + timedelta(
+            minutes=1
         )
 
         with time_machine.travel(more_than_scheduled_delivery_datetime, tick=False):
@@ -385,9 +377,8 @@ class ScheduledMessageTest(ZulipTestCase):
         self.create_scheduled_message()
         scheduled_message = self.last_scheduled_message()
 
-        too_late_to_send_message_datetime = (
-            scheduled_message.scheduled_timestamp
-            + datetime.timedelta(minutes=SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES + 1)
+        too_late_to_send_message_datetime = scheduled_message.scheduled_timestamp + timedelta(
+            minutes=SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES + 1
         )
 
         with time_machine.travel(too_late_to_send_message_datetime, tick=False):
@@ -406,7 +397,7 @@ class ScheduledMessageTest(ZulipTestCase):
 
         # Editing the scheduled message with that ID for a future time is
         # successful and resets the `failed` and `failure_message` fields.
-        new_delivery_datetime = timezone_now() + datetime.timedelta(minutes=60)
+        new_delivery_datetime = timezone_now() + timedelta(minutes=60)
         new_delivery_timestamp = int(new_delivery_datetime.timestamp())
         scheduled_message_id = scheduled_message.id
         payload_with_timestamp = {
@@ -717,42 +708,3 @@ class ScheduledMessageTest(ZulipTestCase):
             [scheduled_message.id],
         )
         self.assertEqual(scheduled_message.has_attachment, True)
-
-    def test_extract_stream_id(self) -> None:
-        # Scheduled stream message recipient = single stream ID.
-        stream_id = extract_stream_id("1")
-        self.assertEqual(stream_id, [1])
-
-        with self.assertRaisesRegex(JsonableError, "Invalid data type for stream ID"):
-            extract_stream_id("1,2")
-
-        with self.assertRaisesRegex(JsonableError, "Invalid data type for stream ID"):
-            extract_stream_id("[1]")
-
-        with self.assertRaisesRegex(JsonableError, "Invalid data type for stream ID"):
-            extract_stream_id("general")
-
-    def test_extract_recipient_ids(self) -> None:
-        # Scheduled direct message recipients = user IDs.
-        user_ids = "[3,2,1]"
-        result = sorted(extract_direct_message_recipient_ids(user_ids))
-        self.assertEqual(result, [1, 2, 3])
-
-        # JSON list w/duplicates
-        user_ids = orjson.dumps([3, 3, 12]).decode()
-        result = sorted(extract_direct_message_recipient_ids(user_ids))
-        self.assertEqual(result, [3, 12])
-
-        # Invalid data
-        user_ids = "1, 12"
-        with self.assertRaisesRegex(JsonableError, "Invalid data type for recipients"):
-            extract_direct_message_recipient_ids(user_ids)
-
-        user_ids = orjson.dumps(dict(recipient=12)).decode()
-        with self.assertRaisesRegex(JsonableError, "Invalid data type for recipients"):
-            extract_direct_message_recipient_ids(user_ids)
-
-        # Heterogeneous lists are not supported
-        user_ids = orjson.dumps([3, 4, "eeshan@example.com"]).decode()
-        with self.assertRaisesRegex(JsonableError, "Recipient list may only contain user IDs"):
-            extract_direct_message_recipient_ids(user_ids)

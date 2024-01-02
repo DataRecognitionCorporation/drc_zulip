@@ -109,7 +109,7 @@ function update_ui_and_send_reaction_ajax(message_id, reaction_info) {
 
 export function toggle_emoji_reaction(message_id, emoji_name) {
     // This codepath doesn't support toggling a deactivated realm emoji.
-    // Since an user can interact with a deactivated realm emoji only by
+    // Since a user can interact with a deactivated realm emoji only by
     // clicking on a reaction and that is handled by `process_reaction_click()`
     // method. This codepath is to be used only where there is no chance of an
     // user interacting with a deactivated realm emoji like emoji picker.
@@ -438,11 +438,6 @@ export function set_clean_reactions(message) {
     for (const reaction of message.reactions) {
         const local_id = get_local_reaction_id(reaction);
         const user_id = reaction.user_id;
-
-        if (!people.is_known_user_id(user_id)) {
-            blueslip.warn("Unknown user_id " + user_id + " in reaction for message " + message.id);
-            continue;
-        }
 
         if (!distinct_reactions.has(local_id)) {
             distinct_reactions.set(local_id, reaction);

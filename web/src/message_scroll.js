@@ -4,29 +4,12 @@ import _ from "lodash";
 import * as compose_banner from "./compose_banner";
 import * as message_fetch from "./message_fetch";
 import * as message_lists from "./message_lists";
+import * as message_scroll_state from "./message_scroll_state";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
-
-let actively_scrolling = false;
-
-// Tracks whether the next scroll that will complete is initiated by
-// code, not the user, and thus should avoid moving the selected
-// message.
-let update_selection_on_next_scroll = true;
-
-export function suppress_selection_update_on_next_scroll() {
-    update_selection_on_next_scroll = false;
-}
-
-// Whether a keyboard shortcut is triggering a message feed scroll event.
-let keyboard_triggered_current_scroll = false;
-
-export function mark_keyboard_triggered_current_scroll() {
-    keyboard_triggered_current_scroll = true;
-}
 
 let hide_scroll_to_bottom_timer;
 export function hide_scroll_to_bottom() {
@@ -72,12 +55,8 @@ $(document).on("keydown", (e) => {
     $("#scroll-to-bottom-button-container").removeClass("show");
 });
 
-export function is_actively_scrolling() {
-    return actively_scrolling;
-}
-
 export function scroll_finished() {
-    actively_scrolling = false;
+    message_scroll_state.set_actively_scrolling(false);
     message_lists.current.view.update_sticky_recipient_headers();
     hide_scroll_to_bottom();
 
@@ -94,10 +73,10 @@ export function scroll_finished() {
         }
     }
 
-    if (update_selection_on_next_scroll) {
+    if (message_scroll_state.update_selection_on_next_scroll) {
         message_viewport.keep_pointer_in_view();
     } else {
-        update_selection_on_next_scroll = true;
+        message_scroll_state.set_update_selection_on_next_scroll(true);
     }
 
     if (message_viewport.at_top()) {
@@ -121,14 +100,14 @@ export function scroll_finished() {
 
 let scroll_timer;
 function scroll_finish() {
-    actively_scrolling = true;
+    message_scroll_state.set_actively_scrolling(true);
 
     // Don't present the "scroll to bottom" widget if the current
     // scroll was triggered by the keyboard.
-    if (!keyboard_triggered_current_scroll) {
+    if (!message_scroll_state.keyboard_triggered_current_scroll) {
         show_scroll_to_bottom_button();
     }
-    keyboard_triggered_current_scroll = false;
+    message_scroll_state.set_keyboard_triggered_current_scroll(false);
 
     clearTimeout(scroll_timer);
     scroll_timer = setTimeout(scroll_finished, 100);
@@ -139,6 +118,7 @@ export function initialize() {
         "scroll",
         _.throttle(() => {
             unread_ops.process_visible();
+            message_lists.current.view.update_sticky_recipient_headers();
             scroll_finish();
         }, 50),
     );

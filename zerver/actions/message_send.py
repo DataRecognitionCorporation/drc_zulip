@@ -1,7 +1,7 @@
-import datetime
 import logging
 from collections import defaultdict
 from dataclasses import dataclass
+from datetime import timedelta
 from email.headerregistry import Address
 from typing import (
     AbstractSet,
@@ -30,6 +30,10 @@ from django.utils.translation import override as override_language
 from django_stubs_ext import ValuesQuerySet
 
 from zerver.actions.uploads import do_claim_attachments
+from zerver.actions.user_topics import (
+    bulk_do_set_user_topic_visibility_policy,
+    do_set_user_topic_visibility_policy,
+)
 from zerver.lib.addressee import Addressee
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.cache import cache_with_key, user_profile_delivery_email_cache_key
@@ -38,7 +42,9 @@ from zerver.lib.exceptions import (
     JsonableError,
     MarkdownRenderingError,
     StreamDoesNotExistError,
+    StreamWildcardMentionNotAllowedError,
     StreamWithIDDoesNotExistError,
+    TopicWildcardMentionNotAllowedError,
     ZephyrMessageAlreadySentError,
 )
 from zerver.lib.markdown import MessageRenderingResult
@@ -50,8 +56,11 @@ from zerver.lib.message import (
     check_user_group_mention_allowed,
     normalize_body,
     render_markdown,
+    set_visibility_policy_possible,
+    stream_wildcard_mention_allowed,
+    topic_wildcard_mention_allowed,
     truncate_topic,
-    wildcard_mention_allowed,
+    visibility_policy_for_send_message,
 )
 from zerver.lib.muted_users import get_muting_users
 from zerver.lib.notification_data import (
@@ -66,12 +75,20 @@ from zerver.lib.stream_subscription import (
     num_subscribers_for_stream_id,
 )
 from zerver.lib.stream_topic import StreamTopicTarget
-from zerver.lib.streams import access_stream_for_send_message, ensure_stream
+from zerver.lib.streams import access_stream_for_send_message, ensure_stream, subscribed_to_stream
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import participants_for_topic
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_message import UserMessageLite, bulk_insert_ums
+from zerver.lib.users import (
+    check_can_access_user,
+    get_inaccessible_user_ids,
+    get_subscribers_of_target_user_subscriptions,
+    get_user_ids_who_can_access_user,
+    get_users_involved_in_dms_with_target_users,
+    user_access_restricted_in_realm,
+)
 from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
 from zerver.models import (
@@ -81,6 +98,7 @@ from zerver.models import (
     Realm,
     Recipient,
     Stream,
+    SystemGroups,
     UserMessage,
     UserPresence,
     UserProfile,
@@ -180,6 +198,7 @@ class RecipientInfoResult:
     service_bot_tuples: List[Tuple[int, int]]
     all_bot_user_ids: Set[int]
     topic_participant_user_ids: Set[int]
+    sender_muted_stream: Optional[bool]
 
 
 class ActiveUserDict(TypedDict):
@@ -190,6 +209,12 @@ class ActiveUserDict(TypedDict):
     long_term_idle: bool
     is_bot: bool
     bot_type: Optional[int]
+
+
+@dataclass
+class SentMessageResult:
+    message_id: int
+    automatic_new_visibility_policy: Optional[int] = None
 
 
 def get_recipient_info(
@@ -212,6 +237,7 @@ def get_recipient_info(
     stream_wildcard_mention_in_followed_topic_user_ids: Set[int] = set()
     muted_sender_user_ids: Set[int] = get_muting_users(sender_id)
     topic_participant_user_ids: Set[int] = set()
+    sender_muted_stream: Optional[bool] = None
 
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
@@ -234,6 +260,11 @@ def get_recipient_info(
             topic_participant_user_ids = participants_for_topic(
                 realm_id, recipient.id, stream_topic.topic_name
             )
+            # We explicitly include the sender as a topic participant because the message will
+            # be actually sent at a later stage in this codepath, so `participants_for_topic`
+            # misses this sender. This is useful when the sender is sending their first message
+            # in the topic.
+            topic_participant_user_ids.add(sender_id)
         subscription_rows = (
             get_subscriptions_for_send_message(
                 realm_id=realm_id,
@@ -275,7 +306,14 @@ def get_recipient_info(
             .order_by("user_profile_id")
         )
 
-        message_to_user_ids = [row["user_profile_id"] for row in subscription_rows]
+        message_to_user_ids = list()
+        for row in subscription_rows:
+            message_to_user_ids.append(row["user_profile_id"])
+            # We store the 'sender_muted_stream' information here to avoid db query at
+            # a later stage when we perform automatically unmute topic in muted stream operation.
+            if row["user_profile_id"] == sender_id:
+                sender_muted_stream = row["is_muted"]
+
         user_id_to_visibility_policy = stream_topic.user_id_to_visibility_policy_dict()
 
         def notification_recipients(setting: str) -> Set[int]:
@@ -466,6 +504,7 @@ def get_recipient_info(
         service_bot_tuples=service_bot_tuples,
         all_bot_user_ids=all_bot_user_ids,
         topic_participant_user_ids=topic_participant_user_ids,
+        sender_muted_stream=sender_muted_stream,
     )
 
 
@@ -546,6 +585,7 @@ def build_message_send_dict(
     mention_backend: Optional[MentionBackend] = None,
     limit_unread_user_ids: Optional[Set[int]] = None,
     disable_external_notifications: bool = False,
+    recipients_for_user_creation_events: Optional[Dict[UserProfile, Set[int]]] = None,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
@@ -559,6 +599,7 @@ def build_message_send_dict(
     mention_data = MentionData(
         mention_backend=mention_backend,
         content=message.content,
+        message_sender=message.sender,
     )
 
     if message.is_stream_message():
@@ -642,6 +683,7 @@ def build_message_send_dict(
 
     message_send_dict = SendMessageRequest(
         stream=stream,
+        sender_muted_stream=info.sender_muted_stream,
         local_id=local_id,
         sender_queue_id=sender_queue_id,
         realm=realm,
@@ -672,6 +714,7 @@ def build_message_send_dict(
         limit_unread_user_ids=limit_unread_user_ids,
         disable_external_notifications=disable_external_notifications,
         topic_participant_user_ids=topic_participant_user_ids,
+        recipients_for_user_creation_events=recipients_for_user_creation_events,
     )
 
     return message_send_dict
@@ -689,18 +732,16 @@ def create_user_messages(
     followed_topic_email_user_ids: AbstractSet[int],
     mark_as_read_user_ids: Set[int],
     limit_unread_user_ids: Optional[Set[int]],
-    scheduled_message_to_self: bool,
     topic_participant_user_ids: Set[int],
 ) -> List[UserMessageLite]:
     # These properties on the Message are set via
     # render_markdown by code in the Markdown inline patterns
     ids_with_alert_words = rendering_result.user_ids_with_alert_words
-    sender_id = message.sender.id
     is_stream_message = message.is_stream_message()
 
     base_flags = 0
     if rendering_result.mentions_stream_wildcard:
-        base_flags |= UserMessage.flags.wildcard_mentioned
+        base_flags |= UserMessage.flags.stream_wildcard_mentioned
     if message.recipient.type in [Recipient.HUDDLE, Recipient.PERSONAL]:
         base_flags |= UserMessage.flags.is_private
 
@@ -726,17 +767,8 @@ def create_user_messages(
     user_messages = []
     for user_profile_id in um_eligible_user_ids:
         flags = base_flags
-        if (
-            (
-                # Messages you sent from a non-API client are
-                # automatically marked as read for yourself; scheduled
-                # messages to yourself only are not.
-                user_profile_id == sender_id
-                and message.sent_by_human()
-                and not scheduled_message_to_self
-            )
-            or user_profile_id in mark_as_read_user_ids
-            or (limit_unread_user_ids is not None and user_profile_id not in limit_unread_user_ids)
+        if user_profile_id in mark_as_read_user_ids or (
+            limit_unread_user_ids is not None and user_profile_id not in limit_unread_user_ids
         ):
             flags |= UserMessage.flags.read
         if user_profile_id in mentioned_user_ids:
@@ -747,7 +779,7 @@ def create_user_messages(
             rendering_result.mentions_topic_wildcard
             and user_profile_id in topic_participant_user_ids
         ):
-            flags |= UserMessage.flags.wildcard_mentioned
+            flags |= UserMessage.flags.topic_wildcard_mentioned
 
         if (
             user_profile_id in long_term_idle_user_ids
@@ -780,7 +812,7 @@ def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
     if not user_ids:
         return []
 
-    recent = timezone_now() - datetime.timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS)
+    recent = timezone_now() - timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS)
     rows = UserPresence.objects.filter(
         user_profile_id__in=user_ids,
         last_active_time__gte=recent,
@@ -822,9 +854,8 @@ def do_send_messages(
     send_message_requests_maybe_none: Sequence[Optional[SendMessageRequest]],
     *,
     email_gateway: bool = False,
-    scheduled_message_to_self: bool = False,
     mark_as_read: Sequence[int] = [],
-) -> List[int]:
+) -> List[SentMessageResult]:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
     for high-level documentation on this subsystem.
@@ -872,7 +903,6 @@ def do_send_messages(
                 followed_topic_email_user_ids=send_request.followed_topic_email_user_ids,
                 mark_as_read_user_ids=mark_as_read_user_ids,
                 limit_unread_user_ids=send_request.limit_unread_user_ids,
-                scheduled_message_to_self=scheduled_message_to_self,
                 topic_participant_user_ids=send_request.topic_participant_user_ids,
             )
 
@@ -896,6 +926,8 @@ def do_send_messages(
 
     # This next loop is responsible for notifying other parts of the
     # Zulip system about the messages we just committed to the database:
+    # * Sender automatically follows or unmutes the topic depending on 'automatically_follow_topics_policy'
+    #   and 'automatically_unmute_topics_in_muted_streams_policy' user settings.
     # * Notifying clients via send_event
     # * Triggering outgoing webhooks via the service event queue.
     # * Updating the `first_message_id` field for streams without any message history.
@@ -906,10 +938,85 @@ def do_send_messages(
         if send_request.message.is_stream_message():
             if send_request.stream is None:
                 stream_id = send_request.message.recipient.type_id
-                send_request.stream = Stream.objects.select_related().get(id=stream_id)
+                send_request.stream = Stream.objects.get(id=stream_id)
             # assert needed because stubs for django are missing
             assert send_request.stream is not None
             realm_id = send_request.stream.realm_id
+            sender = send_request.message.sender
+
+            # Determine and set the visibility_policy depending on 'automatically_follow_topics_policy'
+            # and 'automatically_unmute_topics_in_muted_streams_policy'.
+            if set_visibility_policy_possible(sender, send_request.message) and not (
+                sender.automatically_follow_topics_policy
+                == sender.automatically_unmute_topics_in_muted_streams_policy
+                == UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER
+            ):
+                try:
+                    user_topic = UserTopic.objects.get(
+                        user_profile=sender,
+                        stream_id=send_request.stream.id,
+                        topic_name__iexact=send_request.message.topic_name(),
+                    )
+                    visibility_policy = user_topic.visibility_policy
+                except UserTopic.DoesNotExist:
+                    visibility_policy = UserTopic.VisibilityPolicy.INHERIT
+
+                new_visibility_policy = visibility_policy_for_send_message(
+                    sender,
+                    send_request.message,
+                    send_request.stream,
+                    send_request.sender_muted_stream,
+                    visibility_policy,
+                )
+                if new_visibility_policy:
+                    do_set_user_topic_visibility_policy(
+                        user_profile=sender,
+                        stream=send_request.stream,
+                        topic=send_request.message.topic_name(),
+                        visibility_policy=new_visibility_policy,
+                    )
+                    send_request.automatic_new_visibility_policy = new_visibility_policy
+
+            # Set the visibility_policy of the users mentioned in the message
+            # to "FOLLOWED" if "automatically_follow_topics_where_mentioned" is "True".
+            human_user_personal_mentions = send_request.rendering_result.mentions_user_ids & (
+                send_request.active_user_ids - send_request.all_bot_user_ids
+            )
+            expect_follow_user_profiles: Set[UserProfile] = set()
+
+            if len(human_user_personal_mentions) > 0:
+                expect_follow_user_profiles = set(
+                    UserProfile.objects.filter(
+                        realm_id=realm_id,
+                        id__in=human_user_personal_mentions,
+                        automatically_follow_topics_where_mentioned=True,
+                    )
+                )
+            if len(expect_follow_user_profiles) > 0:
+                user_topics_query_set = UserTopic.objects.filter(
+                    user_profile__in=expect_follow_user_profiles,
+                    stream_id=send_request.stream.id,
+                    topic_name__iexact=send_request.message.topic_name(),
+                    visibility_policy__in=[
+                        # Explicitly muted takes precedence over this setting.
+                        UserTopic.VisibilityPolicy.MUTED,
+                        # Already followed
+                        UserTopic.VisibilityPolicy.FOLLOWED,
+                    ],
+                )
+                skip_follow_users = {
+                    user_topic.user_profile for user_topic in user_topics_query_set
+                }
+
+                to_follow_users = list(expect_follow_user_profiles - skip_follow_users)
+
+                if to_follow_users:
+                    bulk_do_set_user_topic_visibility_policy(
+                        user_profiles=to_follow_users,
+                        stream=send_request.stream,
+                        topic=send_request.message.topic_name(),
+                        visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
+                    )
 
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.
@@ -948,6 +1055,13 @@ def do_send_messages(
         users: List[UserData] = []
         for user_id in user_list:
             flags = user_flags.get(user_id, [])
+            # TODO/compatibility: The `wildcard_mentioned` flag was deprecated in favor of
+            # the `stream_wildcard_mentioned` and `topic_wildcard_mentioned` flags.  The
+            # `wildcard_mentioned` flag exists for backwards-compatibility with older
+            # clients.  Remove this when we no longer support legacy clients that have not
+            # been updated to access `stream_wildcard_mentioned`.
+            if "stream_wildcard_mentioned" in flags or "topic_wildcard_mentioned" in flags:
+                flags.append("wildcard_mentioned")
             user_data: UserData = dict(id=user_id, flags=flags, mentioned_user_group_id=None)
 
             if user_id in send_request.mentioned_user_groups_map:
@@ -988,6 +1102,15 @@ def do_send_messages(
             user_notifications_data_list=user_notifications_data_list,
         )
 
+        if send_request.recipients_for_user_creation_events is not None:
+            from zerver.actions.create_user import notify_created_user
+
+            for (
+                new_accessible_user,
+                notify_user_ids,
+            ) in send_request.recipients_for_user_creation_events.items():
+                notify_created_user(new_accessible_user, list(notify_user_ids))
+
         event = dict(
             type="message",
             message=send_request.message.id,
@@ -1013,6 +1136,7 @@ def do_send_messages(
             muted_sender_user_ids=list(send_request.muted_sender_user_ids),
             all_bot_user_ids=list(send_request.all_bot_user_ids),
             disable_external_notifications=send_request.disable_external_notifications,
+            realm_host=send_request.realm.host,
         )
 
         if send_request.message.is_stream_message():
@@ -1032,6 +1156,29 @@ def do_send_messages(
             if send_request.stream.first_message_id is None:
                 send_request.stream.first_message_id = send_request.message.id
                 send_request.stream.save(update_fields=["first_message_id"])
+
+            # Performance note: This check can theoretically do
+            # database queries in a loop if many messages are being
+            # sent via a single do_send_messages call.
+            #
+            # This is not a practical concern at present, because our
+            # only use case for bulk-sending messages via this API
+            # endpoint is for direct messages bulk-sent by system
+            # bots; and for system bots,
+            # "user_access_restricted_in_realm" will always return
+            # False without doing any database queries at all.
+            if user_access_restricted_in_realm(
+                send_request.message.sender
+            ) and not subscribed_to_stream(send_request.message.sender, send_request.stream.id):
+                user_ids_who_can_access_sender = get_user_ids_who_can_access_user(
+                    send_request.message.sender
+                )
+                user_ids_receiving_event = {user["id"] for user in users}
+                user_ids_without_access_to_sender = user_ids_receiving_event - set(
+                    user_ids_who_can_access_sender
+                )
+                event["user_ids_without_access_to_sender"] = user_ids_without_access_to_sender
+
         if send_request.local_id is not None:
             event["local_id"] = send_request.local_id
         if send_request.sender_queue_id is not None:
@@ -1069,7 +1216,14 @@ def do_send_messages(
                     },
                 )
 
-    return [send_request.message.id for send_request in send_message_requests]
+    sent_message_results = [
+        SentMessageResult(
+            message_id=send_request.message.id,
+            automatic_new_visibility_policy=send_request.automatic_new_visibility_policy,
+        )
+        for send_request in send_message_requests
+    ]
+    return sent_message_results
 
 
 def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
@@ -1077,9 +1231,9 @@ def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
         # For huddle messages, we use a 10-second window because the
         # timestamps aren't guaranteed to actually match between two
         # copies of the same message.
-        time_window = datetime.timedelta(seconds=10)
+        time_window = timedelta(seconds=10)
     else:
-        time_window = datetime.timedelta(seconds=0)
+        time_window = timedelta(seconds=0)
 
     messages = Message.objects.filter(
         # Uses index: zerver_message_realm_recipient_subject
@@ -1178,12 +1332,16 @@ def check_send_stream_message(
     stream_name: str,
     topic: str,
     body: str,
+    *,
     realm: Optional[Realm] = None,
+    read_by_sender: bool = False,
 ) -> int:
     addressee = Addressee.for_stream_name(stream_name, topic)
     message = check_message(sender, client, addressee, body, realm)
-
-    return do_send_messages([message])[0]
+    sent_message_result = do_send_messages(
+        [message], mark_as_read=[sender.id] if read_by_sender else []
+    )[0]
+    return sent_message_result.message_id
 
 
 def check_send_stream_message_by_id(
@@ -1196,8 +1354,8 @@ def check_send_stream_message_by_id(
 ) -> int:
     addressee = Addressee.for_stream_id(stream_id, topic)
     message = check_message(sender, client, addressee, body, realm)
-
-    return do_send_messages([message])[0]
+    sent_message_result = do_send_messages([message])[0]
+    return sent_message_result.message_id
 
 
 def check_send_private_message(
@@ -1205,8 +1363,8 @@ def check_send_private_message(
 ) -> int:
     addressee = Addressee.for_user_profile(receiving_user)
     message = check_message(sender, client, addressee, body)
-
-    return do_send_messages([message])[0]
+    sent_message_result = do_send_messages([message])[0]
+    return sent_message_result.message_id
 
 
 # check_send_message:
@@ -1227,7 +1385,8 @@ def check_send_message(
     widget_content: Optional[str] = None,
     *,
     skip_stream_access_check: bool = False,
-) -> int:
+    read_by_sender: bool = False,
+) -> SentMessageResult:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
     try:
         message = check_message(
@@ -1245,8 +1404,8 @@ def check_send_message(
             skip_stream_access_check=skip_stream_access_check,
         )
     except ZephyrMessageAlreadySentError as e:
-        return e.message_id
-    return do_send_messages([message])[0]
+        return SentMessageResult(message_id=e.message_id)
+    return do_send_messages([message], mark_as_read=[sender.id] if read_by_sender else [])[0]
 
 
 def send_rate_limited_pm_notification_to_bot_owner(
@@ -1273,7 +1432,7 @@ def send_rate_limited_pm_notification_to_bot_owner(
     # direct messages on a misconfigured integration, re-using the
     # UserProfile.last_reminder field, which is not used for bots.
     last_reminder = sender.last_reminder
-    waitperiod = datetime.timedelta(minutes=UserProfile.BOT_OWNER_STREAM_ALERT_WAITPERIOD)
+    waitperiod = timedelta(minutes=UserProfile.BOT_OWNER_STREAM_ALERT_WAITPERIOD)
     if last_reminder and timezone_now() - last_reminder <= waitperiod:
         return
 
@@ -1385,6 +1544,69 @@ def check_private_message_policy(
         raise JsonableError(_("Direct messages are disabled in this organization."))
 
 
+def check_sender_can_access_recipients(
+    realm: Realm, sender: UserProfile, user_profiles: Sequence[UserProfile]
+) -> None:
+    recipient_user_ids = [user.id for user in user_profiles]
+    inaccessible_recipients = get_inaccessible_user_ids(recipient_user_ids, sender)
+
+    if inaccessible_recipients:
+        raise JsonableError(_("You do not have permission to access some of the recipients."))
+
+
+def get_recipients_for_user_creation_events(
+    realm: Realm, sender: UserProfile, user_profiles: Sequence[UserProfile]
+) -> Dict[UserProfile, Set[int]]:
+    """
+    This function returns a dictionary with data about which users would
+    receive stream creation events due to gaining access to a user.
+    The key of the dictionary is a user object and the value is a set of
+    user_ids that would gain access to that user.
+    """
+    recipients_for_user_creation_events: Dict[UserProfile, Set[int]] = defaultdict(set)
+
+    # If none of the users in the direct message conversation are
+    # guests, then there is no possible can_access_all_users_group
+    # policy that would mean sending this message changes any user's
+    # user access to other users.
+    guest_recipients = [user for user in user_profiles if user.is_guest]
+    if len(guest_recipients) == 0:
+        return recipients_for_user_creation_events
+
+    if realm.can_access_all_users_group.name == SystemGroups.EVERYONE:
+        return recipients_for_user_creation_events
+
+    if len(user_profiles) == 1:
+        if not check_can_access_user(sender, user_profiles[0]):
+            recipients_for_user_creation_events[sender].add(user_profiles[0].id)
+        return recipients_for_user_creation_events
+
+    users_involved_in_dms = get_users_involved_in_dms_with_target_users(guest_recipients, realm)
+    subscribers_of_guest_recipient_subscriptions = get_subscribers_of_target_user_subscriptions(
+        guest_recipients
+    )
+
+    for recipient_user in guest_recipients:
+        for user in user_profiles:
+            if user.id == recipient_user.id or user.is_bot:
+                continue
+
+            if (
+                user.id not in users_involved_in_dms[recipient_user.id]
+                and user.id not in subscribers_of_guest_recipient_subscriptions[recipient_user.id]
+            ):
+                recipients_for_user_creation_events[user].add(recipient_user.id)
+
+        if (
+            not sender.is_bot
+            and sender.id not in users_involved_in_dms[recipient_user.id]
+            and sender.id not in subscribers_of_guest_recipient_subscriptions[recipient_user.id]
+        ):
+            recipients_for_user_creation_events[sender].add(recipient_user.id)
+
+    return recipients_for_user_creation_events
+
+
 # check_message:
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
 def check_message(
@@ -1417,6 +1639,7 @@ def check_message(
     if realm is None:
         realm = sender.realm
 
+    recipients_for_user_creation_events = None
     if addressee.is_stream():
         topic_name = addressee.topic()
         topic_name = truncate_topic(topic_name)
@@ -1470,7 +1693,13 @@ def check_message(
             "JabberMirror",
         ]
 
+        check_sender_can_access_recipients(realm, sender, user_profiles)
+
         check_private_message_policy(realm, sender, user_profiles)
+
+        recipients_for_user_creation_events = get_recipients_for_user_creation_events(
+            realm, sender, user_profiles
+        )
 
         # API super-users who set the `forged` flag are allowed to
         # forge messages sent by any user, so we disable the
@@ -1536,16 +1765,23 @@ def check_message(
         mention_backend=mention_backend,
         limit_unread_user_ids=limit_unread_user_ids,
         disable_external_notifications=disable_external_notifications,
+        recipients_for_user_creation_events=recipients_for_user_creation_events,
     )
 
     if (
         stream is not None
-        and message_send_dict.rendering_result.has_wildcard_mention()
-        and not wildcard_mention_allowed(sender, stream, realm)
+        and message_send_dict.rendering_result.mentions_stream_wildcard
+        and not stream_wildcard_mention_allowed(sender, stream, realm)
     ):
-        raise JsonableError(
-            _("You do not have permission to use wildcard mentions in this stream.")
-        )
+        raise StreamWildcardMentionNotAllowedError
+
+    topic_participant_count = len(message_send_dict.topic_participant_user_ids)
+    if (
+        stream is not None
+        and message_send_dict.rendering_result.mentions_topic_wildcard
+        and not topic_wildcard_mention_allowed(sender, topic_participant_count, realm)
+    ):
+        raise TopicWildcardMentionNotAllowedError
 
     if message_send_dict.rendering_result.mentions_user_group_ids:
         mentioned_group_ids = list(message_send_dict.rendering_result.mentions_user_group_ids)
@@ -1691,8 +1927,8 @@ def internal_send_private_message(
     )
     if message is None:
         return None
-    message_ids = do_send_messages([message])
-    return message_ids[0]
+    sent_message_result = do_send_messages([message])[0]
+    return sent_message_result.message_id
 
 
 def internal_send_stream_message(
@@ -1715,8 +1951,9 @@ def internal_send_stream_message(
 
     if message is None:
         return None
-    message_ids = do_send_messages([message])
-    return message_ids[0]
+
+    sent_message_result = do_send_messages([message])[0]
+    return sent_message_result.message_id
 
 
 def internal_send_stream_message_by_name(
@@ -1736,8 +1973,8 @@ def internal_send_stream_message_by_name(
 
     if message is None:
         return None
-    message_ids = do_send_messages([message])
-    return message_ids[0]
+    sent_message_result = do_send_messages([message])[0]
+    return sent_message_result.message_id
 
 
 def internal_send_huddle_message(
@@ -1752,5 +1989,5 @@ def internal_send_huddle_message(
     )
     if message is None:
         return None
-    message_ids = do_send_messages([message])
-    return message_ids[0]
+    sent_message_result = do_send_messages([message])[0]
+    return sent_message_result.message_id

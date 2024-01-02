@@ -14,7 +14,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
 
 {% block portico_content %}
 <div class="register-account flex full-page">
-    <div class="center-block new-style" style="padding: 20px 0px">
+    <div class="center-block new-style" id="create-account">
 
         <div class="pitch">
             {% if creating_new_realm %}
@@ -51,6 +51,10 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                     <div class="input-box">
                         <label for="id_realm_type" class="inline-block label-title">{{ _('Organization type') }}</label>
                         <div id="id_realm_type" class="not-editable-realm-field">{{ selected_realm_type_name }}</div>
+                    </div>
+                    <div class="input-box">
+                        <label for="id_realm_default_language" class="inline-block label-title">{{ _('Organization language') }}</label>
+                        <div id="id_realm_default_language" class="not-editable-realm-field">{{ selected_realm_default_language_name }}</div>
                     </div>
                     <div class="input-box">
                         <label for="id_realm_subdomain" class="inline-block label-title">{{ _('Organization URL') }}</label>

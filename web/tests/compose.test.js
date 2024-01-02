@@ -8,13 +8,11 @@ const {mock_stream_header_colorblock} = require("./lib/compose");
 const {mock_banners} = require("./lib/compose_banner");
 const {$t} = require("./lib/i18n");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params, user_settings} = require("./lib/zpage_params");
 
 const settings_config = zrequire("settings_config");
-
-const noop = () => {};
 
 set_global("document", {
     querySelector() {},
@@ -29,8 +27,8 @@ set_global(
 
 const fake_now = 555;
 
-const autosize = () => {};
-autosize.update = () => {};
+const autosize = noop;
+autosize.update = noop;
 mock_esm("autosize", {default: autosize});
 
 const channel = mock_esm("../src/channel");
@@ -39,6 +37,7 @@ const compose_actions = mock_esm("../src/compose_actions", {
     register_compose_box_clear_hook: noop,
 });
 const compose_fade = mock_esm("../src/compose_fade");
+const compose_notifications = mock_esm("../src/compose_notifications");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const loading = mock_esm("../src/loading");
 const markdown = mock_esm("../src/markdown");
@@ -49,6 +48,7 @@ const sent_messages = mock_esm("../src/sent_messages");
 const server_events = mock_esm("../src/server_events");
 const transmit = mock_esm("../src/transmit");
 const upload = mock_esm("../src/upload");
+const onboarding_steps = mock_esm("../src/onboarding_steps");
 
 const compose_ui = zrequire("compose_ui");
 const compose_banner = zrequire("compose_banner");
@@ -56,6 +56,7 @@ const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_recipient = zrequire("compose_recipient");
 const compose_state = zrequire("compose_state");
 const compose = zrequire("compose");
+const compose_setup = zrequire("compose_setup");
 const echo = zrequire("echo");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
@@ -122,17 +123,21 @@ function test_ui(label, f) {
 function initialize_handlers({override}) {
     override(page_params, "realm_available_video_chat_providers", {disabled: {id: 0}});
     override(page_params, "realm_video_chat_provider", 0);
-    override(upload, "setup_upload", () => undefined);
-    override(upload, "feature_check", () => {});
-    override(resize, "watch_manual_resize", () => {});
-    compose.initialize();
+    override(upload, "feature_check", noop);
+    override(resize, "watch_manual_resize", noop);
+    compose_setup.initialize();
 }
 
-test_ui("send_message_success", ({override_rewire}) => {
+test_ui("send_message_success", ({override, override_rewire}) => {
     mock_banners();
-    $("#compose-textarea").val("foobarfoobar");
-    $("#compose-textarea").trigger("blur");
-    $(".compose-submit-button .loader").show();
+
+    function reset() {
+        $("textarea#compose-textarea").val("foobarfoobar");
+        $("textarea#compose-textarea").trigger("blur");
+        $(".compose-submit-button .loader").show();
+    }
+
+    reset();
 
     let reify_message_id_checked;
     override_rewire(echo, "reify_message_id", (local_id, message_id) => {
@@ -141,12 +146,61 @@ test_ui("send_message_success", ({override_rewire}) => {
         reify_message_id_checked = true;
     });
 
-    compose.send_message_success("1001", 12, false);
+    override(
+        onboarding_steps,
+        "ONE_TIME_NOTICES_TO_DISPLAY",
+        new Set(["visibility_policy_banner"]),
+    );
 
-    assert.equal($("#compose-textarea").val(), "");
-    assert.ok($("#compose-textarea").is_focused());
+    override(compose_notifications, "notify_automatic_new_visibility_policy", (message, data) => {
+        assert.equal(message.type, "stream");
+        assert.equal(message.stream_id, 1);
+        assert.equal(message.topic, "test");
+        assert.equal(data.id, 12);
+        assert.equal(data.automatic_new_visibility_policy, 2);
+    });
+
+    override(onboarding_steps, "post_onboarding_step_as_read", (onboarding_step_name) => {
+        assert.equal(onboarding_step_name, "visibility_policy_banner");
+    });
+
+    let request = {
+        locally_echoed: false,
+        local_id: "1001",
+        type: "stream",
+        stream_id: 1,
+        topic: "test",
+    };
+    let data = {id: 12, automatic_new_visibility_policy: 2};
+    compose.send_message_success(request, data);
+
+    assert.equal($("textarea#compose-textarea").val(), "");
+    assert.ok($("textarea#compose-textarea").is_focused());
     assert.ok(!$(".compose-submit-button .loader").visible());
+    assert.ok(reify_message_id_checked);
 
+    reset();
+
+    reify_message_id_checked = false;
+    override(compose_notifications, "get_muted_narrow", (message) => {
+        assert.equal(message.type, "stream");
+        assert.equal(message.stream_id, 2);
+        assert.equal(message.topic, "test");
+    });
+
+    request = {
+        locally_echoed: false,
+        local_id: "1001",
+        type: "stream",
+        stream_id: 2,
+        topic: "test",
+    };
+    data = {id: 12};
+    compose.send_message_success(request, data);
+
+    assert.equal($("textarea#compose-textarea").val(), "");
+    assert.ok($("textarea#compose-textarea").is_focused());
+    assert.ok(!$(".compose-submit-button .loader").visible());
     assert.ok(reify_message_id_checked);
 });
 
@@ -181,8 +235,8 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         override(compose_pm_pill, "get_emails", () => "alice@example.com");
 
         const server_message_id = 127;
-        override(markdown, "apply_markdown", () => {});
-        override(markdown, "add_topic_links", () => {});
+        override(markdown, "apply_markdown", noop);
+        override(markdown, "add_topic_links", noop);
 
         override_rewire(echo, "try_deliver_locally", (message_request) => {
             const local_id_float = 123.04;
@@ -198,7 +252,7 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
                 sender_id: new_user.user_id,
                 queue_id: undefined,
                 resend: false,
-                stream_id: "",
+                stream_id: undefined,
                 topic: "",
                 to: `[${alice.user_id}]`,
                 reply_to: "alice@example.com",
@@ -221,8 +275,8 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
             stub_state.reify_message_id_checked += 1;
         });
 
-        $("#compose-textarea").val("[foobar](/user_uploads/123456)");
-        $("#compose-textarea").trigger("blur");
+        $("textarea#compose-textarea").val("[foobar](/user_uploads/123456)");
+        $("textarea#compose-textarea").trigger("blur");
         $(".compose-submit-button .loader").show();
 
         compose.send_message();
@@ -233,8 +287,8 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
             send_msg_called: 1,
         };
         assert.deepEqual(stub_state, state);
-        assert.equal($("#compose-textarea").val(), "");
-        assert.ok($("#compose-textarea").is_focused());
+        assert.equal($("textarea#compose-textarea").val(), "");
+        assert.ok($("textarea#compose-textarea").is_focused());
         assert.ok(!$(".compose-submit-button .loader").visible());
     })();
 
@@ -275,12 +329,12 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
             banner_rendered = true;
         });
         stub_state = initialize_state_stub_dict();
-        $("#compose-textarea").val("foobarfoobar");
-        $("#compose-textarea").trigger("blur");
+        $("textarea#compose-textarea").val("foobarfoobar");
+        $("textarea#compose-textarea").trigger("blur");
         $(".compose-submit-button .loader").show();
-        $("#compose-textarea").off("select");
+        $("textarea#compose-textarea").off("select");
         echo_error_msg_checked = false;
-        override_rewire(echo, "try_deliver_locally", () => {});
+        override_rewire(echo, "try_deliver_locally", noop);
 
         override(sent_messages, "get_new_local_id", () => "loc-55");
 
@@ -294,18 +348,17 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.deepEqual(stub_state, state);
         assert.ok(!echo_error_msg_checked);
         assert.ok(banner_rendered);
-        assert.equal($("#compose-textarea").val(), "foobarfoobar");
-        assert.ok($("#compose-textarea").is_focused());
+        assert.equal($("textarea#compose-textarea").val(), "foobarfoobar");
+        assert.ok($("textarea#compose-textarea").is_focused());
         assert.ok(!$(".compose-submit-button .loader").visible());
     })();
 });
 
 test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     mock_banners();
-    $("#compose-textarea").toggleClass = noop;
+    $("textarea#compose-textarea").toggleClass = noop;
     mock_stream_header_colorblock();
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
-    override_rewire(compose_banner, "clear_message_sent_banners", () => {});
+    override_rewire(compose_banner, "clear_message_sent_banners", noop);
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
     override(loading, "show_button_spinner", ($spinner) => {
@@ -319,8 +372,8 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     compose_state.set_message_type("stream");
     compose_state.set_stream_id(social.stream_id);
 
-    $("#compose-textarea").val("message me");
-    $("#compose-textarea").hide();
+    $("textarea#compose-textarea").val("message me");
+    $("textarea#compose-textarea").hide();
     $("#compose .undo_markdown_preview").show();
     $("#compose .preview_message_area").show();
     $("#compose .markdown_preview").hide();
@@ -331,7 +384,7 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
         send_message_called = true;
     });
     compose.enter_with_preview_open();
-    assert.ok($("#compose-textarea").visible());
+    assert.ok($("textarea#compose-textarea").visible());
     assert.ok(!$("#compose .undo_markdown_preview").visible());
     assert.ok(!$("#compose .preview_message_area").visible());
     assert.ok($("#compose .markdown_preview").visible());
@@ -340,12 +393,12 @@ test_ui("enter_with_preview_open", ({override, override_rewire}) => {
     assert.ok(show_button_spinner_called);
 
     user_settings.enter_sends = false;
-    $("#compose-textarea").trigger("blur");
+    $("textarea#compose-textarea").trigger("blur");
     compose.enter_with_preview_open();
-    assert.ok($("#compose-textarea").is_focused());
+    assert.ok($("textarea#compose-textarea").is_focused());
 
     // Test sending a message without content.
-    $("#compose-textarea").val("");
+    $("textarea#compose-textarea").val("");
     $("#compose .preview_message_area").show();
     user_settings.enter_sends = true;
 
@@ -356,7 +409,7 @@ test_ui("finish", ({override, override_rewire}) => {
     mock_banners();
     mock_stream_header_colorblock();
 
-    override_rewire(compose_banner, "clear_message_sent_banners", () => {});
+    override_rewire(compose_banner, "clear_message_sent_banners", noop);
     override(document, "to_$", () => $("document-stub"));
     let show_button_spinner_called = false;
     override(loading, "show_button_spinner", ($spinner) => {
@@ -365,7 +418,7 @@ test_ui("finish", ({override, override_rewire}) => {
     });
 
     (function test_when_compose_validation_fails() {
-        $("#compose-textarea").toggleClass = (classname, value) => {
+        $("textarea#compose-textarea").toggleClass = (classname, value) => {
             assert.equal(classname, "invalid");
             assert.equal(value, true);
         };
@@ -373,8 +426,8 @@ test_ui("finish", ({override, override_rewire}) => {
         $("#compose-send-button").prop("disabled", false);
         $("#compose-send-button").trigger("focus");
         $(".compose-submit-button .loader").hide();
-        $("#compose-textarea").off("select");
-        $("#compose-textarea").val("");
+        $("textarea#compose-textarea").off("select");
+        $("textarea#compose-textarea").val("");
         override_rewire(compose_ui, "compose_spinner_visible", false);
         const res = compose.finish();
         assert.equal(res, false);
@@ -389,7 +442,7 @@ test_ui("finish", ({override, override_rewire}) => {
         $("#compose .preview_message_area").show();
         $("#compose .markdown_preview").hide();
         $("#compsoe").addClass("preview_mode");
-        $("#compose-textarea").val("foobarfoobar");
+        $("textarea#compose-textarea").val("foobarfoobar");
         override_rewire(compose_ui, "compose_spinner_visible", false);
         compose_state.set_message_type("private");
         override(compose_pm_pill, "get_emails", () => "bob@example.com");
@@ -404,7 +457,7 @@ test_ui("finish", ({override, override_rewire}) => {
             send_message_called = true;
         });
         assert.ok(compose.finish());
-        assert.ok($("#compose-textarea").visible());
+        assert.ok($("textarea#compose-textarea").visible());
         assert.ok(!$("#compose .undo_markdown_preview").visible());
         assert.ok(!$("#compose .preview_message_area").visible());
         assert.ok($("#compose .markdown_preview").visible());
@@ -439,23 +492,17 @@ test_ui("initialize", ({override}) => {
 
     page_params.max_file_upload_size_mib = 512;
 
-    let setup_upload_called = false;
     let uppy_cancel_all_called = false;
-    override(upload, "setup_upload", (config) => {
-        assert.equal(config.mode, "compose");
-        setup_upload_called = true;
-        return {
-            cancelAll() {
-                uppy_cancel_all_called = true;
-            },
-        };
+    override(upload, "compose_upload_object", {
+        cancelAll() {
+            uppy_cancel_all_called = true;
+        },
     });
-    override(upload, "feature_check", () => {});
+    override(upload, "feature_check", noop);
 
-    compose.initialize();
+    compose_setup.initialize();
 
     assert.ok(resize_watch_manual_resize_checked);
-    assert.ok(setup_upload_called);
 
     function set_up_compose_start_mock(expected_opts) {
         compose_actions_start_checked = false;
@@ -468,7 +515,7 @@ test_ui("initialize", ({override}) => {
         reset_jquery();
         set_up_compose_start_mock({});
 
-        compose.initialize();
+        compose_setup.initialize();
 
         assert.ok(compose_actions_start_checked);
     })();
@@ -479,16 +526,16 @@ test_ui("initialize", ({override}) => {
         reset_jquery();
         set_up_compose_start_mock({topic: "testing"});
 
-        compose.initialize();
+        compose_setup.initialize();
 
         assert.ok(compose_actions_start_checked);
     })();
 
     (function test_abort_xhr() {
         reset_jquery();
-        compose.initialize();
+        compose_setup.initialize();
 
-        compose.abort_xhr();
+        compose_setup.abort_xhr();
 
         assert.equal($("#compose-send-button").attr(), undefined);
         assert.ok(uppy_cancel_all_called);
@@ -558,7 +605,7 @@ test_ui("on_events", ({override, override_rewire}) => {
 
     initialize_handlers({override});
 
-    override(rendered_markdown, "update_elements", () => {});
+    override(rendered_markdown, "update_elements", noop);
 
     (function test_attach_files_compose_clicked() {
         const handler = $("#compose").get_on_handler("click", ".compose_upload_file");
@@ -579,7 +626,7 @@ test_ui("on_events", ({override, override_rewire}) => {
     (function test_markdown_preview_compose_clicked() {
         // Tests setup
         function setup_visibilities() {
-            $("#compose-textarea").show();
+            $("textarea#compose-textarea").show();
             $("#compose .markdown_preview").show();
             $("#compose .undo_markdown_preview").hide();
             $("#compose .preview_message_area").hide();
@@ -587,7 +634,7 @@ test_ui("on_events", ({override, override_rewire}) => {
         }
 
         function assert_visibilities() {
-            assert.ok(!$("#compose-textarea").visible());
+            assert.ok(!$("textarea#compose-textarea").visible());
             assert.ok(!$("#compose .markdown_preview").visible());
             assert.ok($("#compose .undo_markdown_preview").visible());
             assert.ok($("#compose .preview_message_area").visible());
@@ -651,7 +698,7 @@ test_ui("on_events", ({override, override_rewire}) => {
         const handler = $("#compose").get_on_handler("click", ".markdown_preview");
 
         // Tests start here
-        $("#compose-textarea").val("");
+        $("textarea#compose-textarea").val("");
         setup_visibilities();
 
         const event = {
@@ -665,7 +712,7 @@ test_ui("on_events", ({override, override_rewire}) => {
         assert_visibilities();
 
         let make_indicator_called = false;
-        $("#compose-textarea").val("```foobarfoobar```");
+        $("textarea#compose-textarea").val("```foobarfoobar```");
         setup_visibilities();
         setup_mock_markdown_contains_backend_only_syntax("```foobarfoobar```", true);
         setup_mock_markdown_is_status_message("```foobarfoobar```", false);
@@ -683,7 +730,7 @@ test_ui("on_events", ({override, override_rewire}) => {
         assert_visibilities();
 
         let apply_markdown_called = false;
-        $("#compose-textarea").val("foobarfoobar");
+        $("textarea#compose-textarea").val("foobarfoobar");
         setup_visibilities();
         setup_mock_markdown_contains_backend_only_syntax("foobarfoobar", false);
         setup_mock_markdown_is_status_message("foobarfoobar", false);
@@ -706,7 +753,7 @@ test_ui("on_events", ({override, override_rewire}) => {
     (function test_undo_markdown_preview_clicked() {
         const handler = $("#compose").get_on_handler("click", ".undo_markdown_preview");
 
-        $("#compose-textarea").hide();
+        $("textarea#compose-textarea").hide();
         $("#compose .undo_markdown_preview").show();
         $("#compose .preview_message_area").show();
         $("#compose .markdown_preview").hide();
@@ -721,7 +768,7 @@ test_ui("on_events", ({override, override_rewire}) => {
 
         handler(event);
 
-        assert.ok($("#compose-textarea").visible());
+        assert.ok($("textarea#compose-textarea").visible());
         assert.ok(!$("#compose .undo_markdown_preview").visible());
         assert.ok(!$("#compose .preview_message_area").visible());
         assert.ok($("#compose .markdown_preview").visible());
@@ -732,11 +779,10 @@ test_ui("on_events", ({override, override_rewire}) => {
 test_ui("create_message_object", ({override, override_rewire}) => {
     mock_stream_header_colorblock();
     mock_banners();
-    override_rewire(compose_recipient, "on_compose_select_recipient_update", noop);
 
     compose_state.set_stream_id(social.stream_id);
-    $("#stream_message_recipient_topic").val("lunch");
-    $("#compose-textarea").val("burrito");
+    $("input#stream_message_recipient_topic").val("lunch");
+    $("textarea#compose-textarea").val("burrito");
 
     compose_state.set_message_type("stream");
 
@@ -784,21 +830,21 @@ test_ui("narrow_button_titles", ({override}) => {
     override(narrow_state, "is_message_feed_visible", () => true);
     compose_closed_ui.update_buttons_for_private();
     assert.equal(
-        $("#left_bar_compose_stream_button_big").text(),
-        $t({defaultMessage: "New stream message"}),
+        $("#new_conversation_button").text(),
+        $t({defaultMessage: "Start new conversation"}),
     );
     assert.equal(
-        $("#left_bar_compose_private_button_big").text(),
+        $("#new_direct_message_button").text(),
         $t({defaultMessage: "New direct message"}),
     );
 
-    compose_closed_ui.update_buttons_for_stream();
+    compose_closed_ui.update_buttons_for_stream_views();
     assert.equal(
-        $("#left_bar_compose_stream_button_big").text(),
-        $t({defaultMessage: "New topic"}),
+        $("#new_conversation_button").text(),
+        $t({defaultMessage: "Start new conversation"}),
     );
     assert.equal(
-        $("#left_bar_compose_private_button_big").text(),
+        $("#new_direct_message_button").text(),
         $t({defaultMessage: "New direct message"}),
     );
 });

@@ -148,7 +148,7 @@
 <div id="settings_overlay_container" class="overlay" data-overlay="settings" aria-hidden="true">
 </div>
 <div class="informational-overlays overlay new-style" data-overlay="informationalOverlays" aria-hidden="true">
-    <div class="overlay-content modal-bg">
+    <div class="overlay-content overlay-container">
         <div class="overlay-tabs">
             <span class="exit">&times;</span>
         </div>
@@ -158,6 +158,8 @@
 </div>
 
 <div id="user-profile-modal-holder"></div>
+
+<div id="about-zulip-modal-container"></div>
 
 <audio id="user-notification-sound-audio">
     <source class="notification-sound-source-ogg" type="audio/ogg" />
@@ -259,6 +261,8 @@
                             <div class="message-list" id="zfilt" role="list" aria-live="polite" aria-label="{{ _('Messages') }}">
                             </div>
                         </div>
+                        <div id="scheduled_message_indicator">
+                        </div>
                         <div id="typing_notifications">
                         </div>
                         <div id="mark_read_on_scroll_state_banner">
@@ -275,9 +279,10 @@
         <div class="column-right" id="right-sidebar-container">
         </div><!--/right sidebar-->
     </div><!--/row-->
-    <div class="hidden">
-        <form id="logout_form" action="/accounts/logout/" method="POST">{{ csrf_input }}
-        </form>
-    </div>
+</div>
+
+<div class="hidden">
+    <form id="logout_form" action="/accounts/logout/" method="POST">{{ csrf_input }}
+    </form>
 </div>
 {% endblock %}

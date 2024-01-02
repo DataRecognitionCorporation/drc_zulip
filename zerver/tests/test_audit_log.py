@@ -47,12 +47,12 @@ from zerver.actions.streams import (
 )
 from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
-    bulk_add_members_to_user_group,
+    bulk_add_members_to_user_groups,
+    bulk_remove_members_from_user_groups,
     check_add_user_group,
     do_change_user_group_permission_setting,
     do_update_user_group_description,
     do_update_user_group_name,
-    remove_members_from_user_group,
     remove_subgroups_from_user_group,
 )
 from zerver.actions.user_settings import (
@@ -81,6 +81,7 @@ from zerver.models import (
     RealmPlayground,
     Recipient,
     Subscription,
+    SystemGroups,
     UserGroup,
     UserProfile,
     get_all_custom_emoji_for_realm,
@@ -158,8 +159,8 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertListEqual(
             modified_user_group_names,
             [
-                UserGroup.MEMBERS_GROUP_NAME,
-                UserGroup.FULL_MEMBERS_GROUP_NAME,
+                SystemGroups.MEMBERS,
+                SystemGroups.FULL_MEMBERS,
             ],
         )
 
@@ -207,16 +208,16 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(old_values_seen, new_values_seen)
 
         expected_system_user_group_names = [
-            UserGroup.ADMINISTRATORS_GROUP_NAME,
-            UserGroup.MEMBERS_GROUP_NAME,
-            UserGroup.FULL_MEMBERS_GROUP_NAME,
-            UserGroup.EVERYONE_GROUP_NAME,
-            UserGroup.MEMBERS_GROUP_NAME,
-            UserGroup.FULL_MEMBERS_GROUP_NAME,
-            UserGroup.OWNERS_GROUP_NAME,
-            UserGroup.MEMBERS_GROUP_NAME,
-            UserGroup.FULL_MEMBERS_GROUP_NAME,
-            UserGroup.MODERATORS_GROUP_NAME,
+            SystemGroups.ADMINISTRATORS,
+            SystemGroups.MEMBERS,
+            SystemGroups.FULL_MEMBERS,
+            SystemGroups.EVERYONE,
+            SystemGroups.MEMBERS,
+            SystemGroups.FULL_MEMBERS,
+            SystemGroups.OWNERS,
+            SystemGroups.MEMBERS,
+            SystemGroups.FULL_MEMBERS,
+            SystemGroups.MODERATORS,
         ]
         user_group_modified_names = (
             RealmAuditLog.objects.filter(
@@ -234,8 +235,8 @@ class TestRealmAuditLog(ZulipTestCase):
             list(user_group_modified_names),
             [
                 *expected_system_user_group_names,
-                UserGroup.MEMBERS_GROUP_NAME,
-                UserGroup.FULL_MEMBERS_GROUP_NAME,
+                SystemGroups.MEMBERS,
+                SystemGroups.FULL_MEMBERS,
             ],
         )
         user_group_modified_names = (
@@ -253,8 +254,8 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertListEqual(
             list(user_group_modified_names),
             [
-                UserGroup.MEMBERS_GROUP_NAME,
-                UserGroup.FULL_MEMBERS_GROUP_NAME,
+                SystemGroups.MEMBERS,
+                SystemGroups.FULL_MEMBERS,
                 *expected_system_user_group_names,
             ],
         )
@@ -369,7 +370,7 @@ class TestRealmAuditLog(ZulipTestCase):
         stream = self.make_stream(stream_name, realm)
         stream_ids = {stream.id}
 
-        result = get_streams_traffic(stream_ids)
+        result = get_streams_traffic(stream_ids, realm)
         self.assertEqual(result, {})
 
         StreamCount.objects.create(
@@ -380,7 +381,7 @@ class TestRealmAuditLog(ZulipTestCase):
             value=999,
         )
 
-        result = get_streams_traffic(stream_ids)
+        result = get_streams_traffic(stream_ids, realm)
         self.assertEqual(result, {stream.id: 999})
 
     def test_subscriptions(self) -> None:
@@ -746,7 +747,7 @@ class TestRealmAuditLog(ZulipTestCase):
         value: Union[bool, int, str]
         test_values = dict(
             default_language="de",
-            default_view="all_messages",
+            web_home_view="all_messages",
             emojiset="twitter",
             notification_sound="ding",
         )
@@ -1128,7 +1129,7 @@ class TestRealmAuditLog(ZulipTestCase):
                 acting_user=None,
             ).values_list("modified_user_group_id", "extra_data")
         )
-        nobody_group = UserGroup.objects.get(name=UserGroup.NOBODY_GROUP_NAME, realm=realm)
+        nobody_group = UserGroup.objects.get(name=SystemGroups.NOBODY, realm=realm)
         for (user_group_id, extra_data), expected_user_group_id in zip(
             audit_log_entries, logged_system_group_ids
         ):
@@ -1147,7 +1148,7 @@ class TestRealmAuditLog(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         now = timezone_now()
         public_group = UserGroup.objects.get(
-            name=UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME, realm=hamlet.realm
+            name=SystemGroups.EVERYONE_ON_INTERNET, realm=hamlet.realm
         )
         user_group = check_add_user_group(
             hamlet.realm,
@@ -1202,7 +1203,7 @@ class TestRealmAuditLog(ZulipTestCase):
         now = timezone_now()
         user_group = check_add_user_group(hamlet.realm, "foo", [], acting_user=None)
 
-        bulk_add_members_to_user_group(user_group, [hamlet.id, cordelia.id], acting_user=hamlet)
+        bulk_add_members_to_user_groups([user_group], [hamlet.id, cordelia.id], acting_user=hamlet)
         audit_log_entries = RealmAuditLog.objects.filter(
             acting_user=hamlet,
             realm=hamlet.realm,
@@ -1214,7 +1215,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(audit_log_entries[0].modified_user, hamlet)
         self.assertEqual(audit_log_entries[1].modified_user, cordelia)
 
-        remove_members_from_user_group(user_group, [hamlet.id], acting_user=hamlet)
+        bulk_remove_members_from_user_groups([user_group], [hamlet.id], acting_user=hamlet)
         audit_log_entries = RealmAuditLog.objects.filter(
             acting_user=hamlet,
             realm=hamlet.realm,
@@ -1330,7 +1331,7 @@ class TestRealmAuditLog(ZulipTestCase):
 
         old_group = user_group.can_mention_group
         new_group = UserGroup.objects.get(
-            name=UserGroup.EVERYONE_ON_INTERNET_GROUP_NAME, realm=user_group.realm
+            name=SystemGroups.EVERYONE_ON_INTERNET, realm=user_group.realm
         )
         self.assertNotEqual(old_group.id, new_group.id)
         do_change_user_group_permission_setting(

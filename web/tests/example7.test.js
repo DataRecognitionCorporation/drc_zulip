@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
 /*
@@ -53,9 +53,9 @@ const $ = require("./lib/zjquery");
 set_global("document", {hasFocus: () => true});
 
 const channel = mock_esm("../src/channel");
+const desktop_notifications = mock_esm("../src/desktop_notifications");
 const message_lists = mock_esm("../src/message_lists");
 const message_viewport = mock_esm("../src/message_viewport");
-const notifications = mock_esm("../src/notifications");
 const unread_ui = mock_esm("../src/unread_ui");
 
 message_lists.current = {view: {}};
@@ -63,7 +63,6 @@ message_lists.home = {view: {}};
 message_lists.all_rendered_message_lists = () => [message_lists.home, message_lists.current];
 
 const message_store = zrequire("message_store");
-const recent_view_util = zrequire("recent_view_util");
 const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");
 const unread_ops = zrequire("unread_ops");
@@ -92,9 +91,6 @@ run_test("unread_ops", ({override}) => {
         },
     ];
 
-    // We don't want Recent Conversations to process message for this test.
-    recent_view_util.set_visible(false);
-
     // Make our test message appear to be unread, so that
     // we then need to subsequently process them as read.
     message_store.update_message_cache(test_messages[0]);
@@ -110,11 +106,11 @@ run_test("unread_ops", ({override}) => {
     override(message_lists.current, "all_messages", () => test_messages);
 
     // Ignore these interactions for now:
-    override(message_lists.current.view, "show_message_as_read", () => {});
-    override(message_lists.home.view, "show_message_as_read", () => {});
-    override(notifications, "close_notification", () => {});
-    override(unread_ui, "update_unread_counts", () => {});
-    override(unread_ui, "notify_messages_remain_unread", () => {});
+    override(message_lists.current.view, "show_message_as_read", noop);
+    override(message_lists.home.view, "show_message_as_read", noop);
+    override(desktop_notifications, "close_notification", noop);
+    override(unread_ui, "update_unread_counts", noop);
+    override(unread_ui, "notify_messages_remain_unread", noop);
 
     // Set up a way to capture the options passed in to channel.post.
     let channel_post_opts;

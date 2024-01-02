@@ -13,6 +13,9 @@ const blueslip = require("./lib/zblueslip");
 const {page_params, user_settings} = require("./lib/zpage_params");
 
 const message_user_ids = mock_esm("../src/message_user_ids");
+const settings_data = mock_esm("../src/settings_data", {
+    user_can_access_all_other_users: () => true,
+});
 
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
@@ -45,11 +48,15 @@ const isaac = {
     full_name: "Isaac Newton",
 };
 
+const unknown_user = people.make_user(1500, "unknown@example.com", "Unknown user");
+
 function initialize() {
     people.init();
     people.add_active_user({...me});
     people.initialize_current_user(me.user_id);
     muted_users.set_muted_users([]);
+
+    people._add_user(unknown_user);
 }
 
 function test_people(label, f) {
@@ -131,6 +138,15 @@ const moderator = {
     is_billing_admin: false,
     is_moderator: true,
     is_bot: false,
+    role: 300,
+};
+
+const bot_with_inaccessible_owner = {
+    email: "inaccessible-owner-bot@example.com",
+    user_id: 37,
+    full_name: "Inaccessible owner bot",
+    is_bot: true,
+    bot_owner_id: 38,
     role: 300,
 };
 
@@ -237,10 +253,21 @@ const all2 = {
     full_name: "all",
 };
 
+const stewie = {
+    email: "stewie@example.com",
+    user_id: 1204,
+    full_name: "Stewart Gilligan",
+    profile_data: {
+        1: "(888) 888-8888",
+        2: "(555) 555-5555",
+        3: "he/him",
+    },
+};
+
 // This is for error checking--never actually
 // tell people.js about this user.
-const unknown_user = {
-    email: "unknown@example.com",
+const invalid_user = {
+    email: "invalid@example.com",
     user_id: 999,
     unknown_local_echo_user: true,
 };
@@ -249,12 +276,12 @@ function get_all_persons() {
     return people.filter_all_persons(() => true);
 }
 
-test_people("basics", () => {
+test_people("basics", ({override}) => {
     const persons = get_all_persons();
 
     assert.deepEqual(people.get_realm_users(), [me]);
 
-    assert.equal(persons.length, 1);
+    assert.equal(persons.length, 2);
     assert.equal(persons[0].full_name, "Me Myself");
 
     let realm_persons = people.get_realm_users();
@@ -322,6 +349,12 @@ test_people("basics", () => {
     assert.equal(people.get_active_human_count(), 1);
     assert.equal(people.get_by_email(welcome_bot.email).full_name, "Welcome Bot");
 
+    override(settings_data, "user_can_access_all_other_users", () => false);
+    assert.equal(
+        people.get_bot_owner_user(bot_with_inaccessible_owner).full_name,
+        "translated: Unknown user",
+    );
+
     // get_realm_users() will include our active bot,
     // but will exclude isaac (who is deactivated)
     assert.deepEqual(
@@ -352,7 +385,7 @@ test_people("basics", () => {
     assert.equal(person.full_name, "Me Myself");
 
     // Test undefined people
-    assert.equal(people.is_cross_realm_email("unknown@example.com"), false);
+    assert.equal(people.is_cross_realm_email("invalid@example.com"), false);
 
     // Test is_my_user_id function
     assert.equal(people.is_my_user_id(me.user_id), true);
@@ -461,21 +494,63 @@ test_people("get_full_names_for_poll_option", () => {
     assert.equal(names, "Me Myself, Isaac Newton");
 });
 
-test_people("get_display_full_names", () => {
+test_people("get_display_full_names", ({override}) => {
     people.initialize_current_user(me.user_id);
     people.add_active_user(steven);
     people.add_active_user(bob);
     people.add_active_user(charles);
-    const user_ids = [me.user_id, steven.user_id, bob.user_id, charles.user_id];
+    people.add_active_user(guest);
+    page_params.realm_enable_guest_user_indicator = true;
+
+    let user_ids = [me.user_id, steven.user_id, bob.user_id, charles.user_id, guest.user_id];
     let names = people.get_display_full_names(user_ids);
 
     // This doesn't do anything special for the current user. The caller has
     // to take care of such cases and do the appropriate.
-    assert.deepEqual(names, ["Me Myself", "Steven", "Bob van Roberts", "Charles Dickens"]);
+    assert.deepEqual(names, [
+        "Me Myself",
+        "Steven",
+        "Bob van Roberts",
+        "Charles Dickens",
+        "translated: Guest User (guest)",
+    ]);
 
     muted_users.add_muted_user(charles.user_id);
+    page_params.realm_enable_guest_user_indicator = false;
     names = people.get_display_full_names(user_ids);
-    assert.deepEqual(names, ["Me Myself", "Steven", "Bob van Roberts", "translated: Muted user"]);
+    assert.deepEqual(names, [
+        "Me Myself",
+        "Steven",
+        "Bob van Roberts",
+        "translated: Muted user",
+        "Guest User",
+    ]);
+
+    muted_users.add_muted_user(guest.user_id);
+    names = people.get_display_full_names(user_ids);
+    assert.deepEqual(names, [
+        "Me Myself",
+        "Steven",
+        "Bob van Roberts",
+        "translated: Muted user",
+        "translated: Muted user",
+    ]);
+
+    page_params.realm_enable_guest_user_indicator = true;
+    names = people.get_display_full_names(user_ids);
+    assert.deepEqual(names, [
+        "Me Myself",
+        "Steven",
+        "Bob van Roberts",
+        "translated: Muted user",
+        "translated: Muted user (guest)",
+    ]);
+
+    override(settings_data, "user_can_access_all_other_users", () => false);
+    const inaccessible_user_id = 99;
+    user_ids = [me.user_id, steven.user_id, inaccessible_user_id];
+    names = people.get_display_full_names(user_ids, true);
+    assert.deepEqual(names, ["Me Myself", "Steven", "translated: Unknown user"]);
 });
 
 test_people("my_custom_profile_data", () => {
@@ -483,6 +558,45 @@ test_people("my_custom_profile_data", () => {
     person.profile_data = {3: "My address", 4: "My phone number"};
     assert.equal(people.my_custom_profile_data(3), "My address");
     assert.equal(people.my_custom_profile_data(4), "My phone number");
+});
+
+test_people("get_custom_fields_by_type", () => {
+    people.add_active_user(stewie);
+    const person = people.get_by_user_id(stewie.user_id);
+    page_params.custom_profile_field_types = {
+        SHORT_TEXT: {
+            id: 1,
+            name: "Short text",
+        },
+        PRONOUNS: {
+            id: 8,
+            name: "Pronouns",
+        },
+    };
+    page_params.custom_profile_fields = [
+        {
+            id: 1,
+            name: "Phone number (mobile)",
+            type: 1,
+        },
+        {
+            id: 2,
+            name: "Phone number (office)",
+            type: 1,
+        },
+        {
+            id: 3,
+            name: "Pronouns",
+            type: 8,
+        },
+    ];
+    const SHORT_TEXT_ID = 1;
+    assert.deepEqual(people.get_custom_fields_by_type(person.user_id, SHORT_TEXT_ID), [
+        "(888) 888-8888",
+        "(555) 555-5555",
+    ]);
+    assert.deepEqual(people.get_custom_fields_by_type(person.user_id, 8), ["he/him"]);
+    assert.deepEqual(people.get_custom_fields_by_type(person.user_id, 100), []);
 });
 
 test_people("bot_custom_profile_data", () => {
@@ -496,20 +610,8 @@ test_people("bot_custom_profile_data", () => {
 test_people("user_timezone", () => {
     MockDate.set(parseISO("20130208T080910").getTime());
 
-    const expected_pref = {
-        timezone: "America/Los_Angeles",
-        format: "H:mm",
-    };
-
     user_settings.twenty_four_hour_time = true;
-    assert.deepEqual(people.get_user_time_preferences(me.user_id), expected_pref);
-
-    expected_pref.format = "h:mm a";
-    user_settings.twenty_four_hour_time = false;
-    assert.deepEqual(people.get_user_time_preferences(me.user_id), expected_pref);
-
-    user_settings.twenty_four_hour_time = true;
-    assert.equal(people.get_user_time(me.user_id), "0:09");
+    assert.equal(people.get_user_time(me.user_id), "00:09");
 
     user_settings.twenty_four_hour_time = false;
     assert.equal(people.get_user_time(me.user_id), "12:09 AM");
@@ -519,10 +621,14 @@ test_people("utcToZonedTime", ({override}) => {
     MockDate.set(parseISO("20130208T080910").getTime());
     user_settings.twenty_four_hour_time = true;
 
-    assert.equal(people.get_user_time(me.user_id), "0:09");
+    assert.deepEqual(people.get_user_time(unknown_user.user_id), undefined);
+    assert.equal(people.get_user_time(me.user_id), "00:09");
 
     override(people.get_by_user_id(me.user_id), "timezone", "Eriador/Rivendell");
-    blueslip.expect("error", "Got invalid date for timezone");
+    blueslip.expect(
+        "warn",
+        "Error formatting time in Eriador/Rivendell: RangeError: Invalid time zone specified: Eriador/Rivendell",
+    );
     people.get_user_time(me.user_id);
 });
 
@@ -655,7 +761,7 @@ test_people("filtered_users", () => {
     assert.ok(filtered_people.has(noah.user_id));
 
     // Test filtering with undefined user
-    users.push(unknown_user);
+    users.push(invalid_user);
 
     filtered_people = people.filter_people_by_search_terms(users, ["ltorv"]);
     assert.equal(filtered_people.size, 1);
@@ -706,7 +812,7 @@ test_people("emails_to_full_names_string", () => {
             "unknown-email@example.com",
             maria.email,
         ]),
-        `${charles.full_name}, unknown-email@example.com, ${maria.full_name}`,
+        `${charles.full_name}, translated: Unknown user, ${maria.full_name}`,
     );
 });
 
@@ -876,7 +982,7 @@ test_people("extract_people_from_message", () => {
     // Get line coverage
     message = {
         type: "private",
-        display_recipient: [unknown_user],
+        display_recipient: [invalid_user],
     };
     people.extract_people_from_message(message);
 });
@@ -906,8 +1012,8 @@ test_people("maybe_incr_recipient_count", () => {
     people.maybe_incr_recipient_count(message);
     assert.equal(people.get_recipient_count(maria), 1);
 
-    const unknown_recip = {
-        email: "unknown@example.com",
+    const other_invalid_recip = {
+        email: "invalid2@example.com",
         id: 500,
         unknown_local_echo_user: true,
     };
@@ -915,7 +1021,7 @@ test_people("maybe_incr_recipient_count", () => {
     message = {
         type: "private",
         sent_by_me: true,
-        display_recipient: [unknown_recip],
+        display_recipient: [other_invalid_recip],
     };
     people.maybe_incr_recipient_count(message);
     assert.equal(people.get_recipient_count(maria), 1);
@@ -994,7 +1100,7 @@ test_people("updates", () => {
     assert.ok(!people.is_cross_realm_email(new_email));
 
     const all_people = get_all_persons();
-    assert.equal(all_people.length, 2);
+    assert.equal(all_people.length, 3);
 
     person = all_people.find((p) => p.email === new_email);
     assert.equal(person.full_name, "Foo Barson");
@@ -1020,7 +1126,7 @@ test_people("update_email_in_reply_to", () => {
         "charles@example.com,maria@example.com",
     );
 
-    reply_to = "    charles@example.com,   athens@example.com, unknown@example.com";
+    reply_to = "    charles@example.com,   athens@example.com, invalid@example.com";
     assert.equal(people.update_email_in_reply_to(reply_to, 9999, "whatever"), reply_to);
 });
 
@@ -1267,6 +1373,54 @@ test_people("get_realm_active_human_users", () => {
     humans = people.get_realm_active_human_users();
     assert.equal(humans.length, 1);
     assert.deepEqual(humans, [me]);
+});
+
+test_people("should_show_guest_user_indicator", () => {
+    people.add_active_user(charles);
+    people.add_active_user(guest);
+
+    page_params.realm_enable_guest_user_indicator = false;
+    assert.equal(people.should_add_guest_user_indicator(charles.user_id), false);
+    assert.equal(people.should_add_guest_user_indicator(guest.user_id), false);
+
+    page_params.realm_enable_guest_user_indicator = true;
+    assert.equal(people.should_add_guest_user_indicator(charles.user_id), false);
+    assert.equal(people.should_add_guest_user_indicator(guest.user_id), true);
+});
+
+test_people("get_user_by_id_assert_valid", ({override}) => {
+    people.add_active_user(charles);
+    const inaccessible_user_id = 99;
+    page_params.realm_bot_domain = "zulipdev.com";
+    override(settings_data, "user_can_access_all_other_users", () => false);
+
+    let user = people.get_user_by_id_assert_valid(inaccessible_user_id);
+    assert.equal(user.full_name, "translated: Unknown user");
+    assert.equal(user.user_id, inaccessible_user_id);
+    assert.ok(user.is_inaccessible_user);
+    assert.equal(user.email, "user99@zulipdev.com");
+
+    user = people.get_user_by_id_assert_valid(charles.user_id);
+    assert.equal(user.full_name, charles.full_name);
+    assert.ok(!user.is_inaccessible_user);
+    assert.equal(user.email, charles.email);
+
+    override(settings_data, "user_can_access_all_other_users", () => true);
+
+    assert.throws(
+        () => {
+            people.get_user_by_id_assert_valid(199);
+        },
+        {
+            name: "Error",
+            message: "Unknown user_id in get_by_user_id: 199",
+        },
+    );
+
+    user = people.get_user_by_id_assert_valid(charles.user_id);
+    assert.equal(user.full_name, charles.full_name);
+    assert.ok(!user.is_inaccessible_user);
+    assert.equal(user.email, charles.email);
 });
 
 // reset to native Date()

@@ -3,18 +3,19 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const {page_params} = require("./lib/zpage_params");
-
-const noop = () => {};
 
 const channel = mock_esm("../src/channel");
 const reload = mock_esm("../src/reload");
 const reload_state = mock_esm("../src/reload_state");
 const sent_messages = mock_esm("../src/sent_messages", {
     start_tracking_message: noop,
-    report_server_ack: noop,
+    get_message_state: () => ({
+        report_server_ack: noop,
+        saw_event: true,
+    }),
     start_send: noop,
 });
 
@@ -95,6 +96,34 @@ run_test("transmit_message_ajax_reload_pending", () => {
     };
     transmit.send_message(request, success, error);
     assert.ok(reload_initiated);
+});
+
+run_test("topic wildcard mention not allowed", ({override}) => {
+    /* istanbul ignore next */
+    const success = () => {
+        throw new Error("unexpected success");
+    };
+
+    /* istanbul ignore next */
+    const error = (_response, server_error_code) => {
+        assert.equal(server_error_code, "TOPIC_WILDCARD_MENTION_NOT_ALLOWED");
+    };
+
+    override(reload_state, "is_pending", () => false);
+
+    const request = {foo: "bar"};
+    override(channel, "post", (opts) => {
+        assert.equal(opts.url, "/json/messages");
+        assert.equal(opts.data.foo, "bar");
+        const xhr = {
+            responseJSON: {
+                code: "TOPIC_WILDCARD_MENTION_NOT_ALLOWED",
+            },
+        };
+        opts.error(xhr, "bad request");
+    });
+
+    transmit.send_message(request, success, error);
 });
 
 run_test("reply_message_stream", ({override}) => {

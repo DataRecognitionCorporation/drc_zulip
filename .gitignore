@@ -17,7 +17,10 @@
 # See `git help ignore` for details on the format.
 
 ## Config files for the dev environment
+/zproject/apns-dev.pem
+/zproject/apns-dev-key.p8
 /zproject/dev-secrets.conf
+/zproject/custom_dev_settings.py
 /tools/conf.ini
 /tools/custom_provision
 /tools/droplets/conf.ini
@@ -82,6 +85,9 @@ zulip.kdev4
 
 # Core dump files
 core
+
+# Static generated files for landing page.
+/static/images/landing-page/hello/generated
 
 ## Miscellaneous
 # (Ideally this section is empty.)

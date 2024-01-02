@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 
 /*
    Our test from an earlier example verifies that the update events
@@ -22,8 +22,8 @@ const {run_test} = require("./lib/test");
 // replace them with {}.
 const huddle_data = mock_esm("../src/huddle_data");
 const message_lists = mock_esm("../src/message_lists");
+const message_notifications = mock_esm("../src/message_notifications");
 const message_util = mock_esm("../src/message_util");
-const notifications = mock_esm("../src/notifications");
 const pm_list = mock_esm("../src/pm_list");
 const recent_view_data = mock_esm("../src/recent_view_data");
 const stream_list = mock_esm("../src/stream_list");
@@ -85,7 +85,7 @@ function test_helper({override}) {
 run_test("insert_message", ({override}) => {
     message_store.clear_for_testing();
 
-    override(pm_list, "update_private_messages", () => {});
+    override(pm_list, "update_private_messages", noop);
 
     const helper = test_helper({override});
 
@@ -99,9 +99,9 @@ run_test("insert_message", ({override}) => {
     assert.equal(message_store.get(new_message.id), undefined);
 
     helper.redirect(huddle_data, "process_loaded_messages");
+    helper.redirect(message_notifications, "received_messages");
     helper.redirect(message_util, "add_new_messages_data");
     helper.redirect(message_util, "add_new_messages");
-    helper.redirect(notifications, "received_messages");
     helper.redirect(recent_view_data, "process_message");
     helper.redirect(stream_list, "update_streams_sidebar");
     helper.redirect(unread_ops, "process_visible");
@@ -122,7 +122,7 @@ run_test("insert_message", ({override}) => {
         [message_util, "add_new_messages"],
         [unread_ui, "update_unread_counts"],
         [unread_ops, "process_visible"],
-        [notifications, "received_messages"],
+        [message_notifications, "received_messages"],
         [stream_list, "update_streams_sidebar"],
         [recent_view_data, "process_message"],
     ]);

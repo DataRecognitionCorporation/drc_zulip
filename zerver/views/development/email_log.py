@@ -1,7 +1,7 @@
 import os
-import urllib
 from contextlib import suppress
 from typing import Optional
+from urllib.parse import urlencode
 
 import orjson
 from django.conf import settings
@@ -121,7 +121,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     # Verification for new email
     result = client.patch(
         "/json/settings",
-        urllib.parse.urlencode({"email": "hamlets-new@zulip.com"}),
+        urlencode({"email": "hamlets-new@zulip.com"}),
         content_type="application/x-www-form-urlencoded",
         HTTP_HOST=realm.host,
     )
@@ -137,17 +137,17 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     # Reset the email value so we can run this again
     do_change_user_delivery_email(user_profile, registered_email)
 
-    # Initial email with new account information for normal user.
+    # Initial email with new account information for normal user
     send_account_registered_email(user_profile)
 
-    # Follow up day2 and onboarding zulip guide emails for normal user
+    # Onboarding emails for normal user
     enqueue_welcome_emails(user_profile)
 
     # Initial email with new account information for admin user
     send_account_registered_email(get_user_by_delivery_email("iago@zulip.com", realm))
 
-    # Follow up day2 and onboarding zulip guide emails for admin user
-    enqueue_welcome_emails(get_user_by_delivery_email("iago@zulip.com", realm))
+    # Onboarding emails for admin user
+    enqueue_welcome_emails(get_user_by_delivery_email("iago@zulip.com", realm), realm_creation=True)
 
     # Realm reactivation email
     do_send_realm_reactivation_email(realm, acting_user=None)

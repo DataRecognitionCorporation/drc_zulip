@@ -1,8 +1,9 @@
 import $ from "jquery";
 
+import * as buddy_data from "./buddy_data";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
-import * as stream_popover from "./stream_popover";
+import * as sidebar_ui from "./sidebar_ui";
 
 export class UserSearch {
     // This is mostly view code to manage the user search widget
@@ -20,7 +21,10 @@ export class UserSearch {
         $("#clear_search_people_button").on("click", () => this.clear_search());
         $("#userlist-header").on("click", () => this.toggle_filter_displayed());
 
-        this.$input.on("input", opts.update_list);
+        this.$input.on("input", () => {
+            buddy_data.set_is_searching_users(this.$input.val() !== "");
+            opts.update_list();
+        });
         this.$input.on("focus", (e) => this.on_focus(e));
     }
 
@@ -40,7 +44,11 @@ export class UserSearch {
         return this.text() === "";
     }
 
+    // This clears search input but doesn't close
+    // the search widget unless it was already empty.
     clear_search() {
+        buddy_data.set_is_searching_users(false);
+
         if (this.empty()) {
             this.close_widget();
             return;
@@ -51,14 +59,11 @@ export class UserSearch {
         this._reset_items();
     }
 
-    escape_search() {
-        if (this.empty()) {
-            this.close_widget();
-            return;
-        }
-
-        this.$input.val("");
+    // This always clears and closes search.
+    clear_and_hide_search() {
+        this.clear_search();
         this._update_list();
+        this.close_widget();
     }
 
     hide_widget() {
@@ -67,23 +72,14 @@ export class UserSearch {
     }
 
     show_widget() {
-        // Hide all the popovers but not userlist sidebar
-        // when the user wants to search.
-        popovers.hide_all_except_sidebars();
+        // Hide all the popovers.
+        popovers.hide_all();
         this.$widget.removeClass("notdisplayed");
         resize.resize_sidebars();
     }
 
     widget_shown() {
         return this.$widget.hasClass("notdisplayed");
-    }
-
-    clear_and_hide_search() {
-        if (!this.empty()) {
-            this.$input.val("");
-            this._update_list();
-        }
-        this.close_widget();
     }
 
     close_widget() {
@@ -97,9 +93,9 @@ export class UserSearch {
         if (!$column.hasClass("expanded")) {
             popovers.hide_all();
             if ($column.hasClass("column-left")) {
-                stream_popover.show_streamlist_sidebar();
+                sidebar_ui.show_streamlist_sidebar();
             } else if ($column.hasClass("column-right")) {
-                popovers.show_userlist_sidebar();
+                sidebar_ui.show_userlist_sidebar();
             }
         }
     }

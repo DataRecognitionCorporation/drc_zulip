@@ -1,7 +1,6 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import base64
 import copy
-import datetime
 import email
 import email.policy
 import logging
@@ -11,9 +10,9 @@ import socket
 import tempfile
 import threading
 import time
-import urllib
 from abc import ABC, abstractmethod
 from collections import defaultdict, deque
+from datetime import timedelta
 from email.message import EmailMessage
 from functools import wraps
 from types import FrameType
@@ -31,6 +30,7 @@ from typing import (
     Type,
     TypeVar,
 )
+from urllib.parse import urlsplit
 
 import orjson
 import sentry_sdk
@@ -44,6 +44,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from returns.curry import partial
 from sentry_sdk import add_breadcrumb, configure_scope
+from typing_extensions import override
 from zulip_bots.lib import extract_query_without_mention
 
 from zerver.actions.invites import do_send_confirmation_email
@@ -77,7 +78,10 @@ from zerver.lib.push_notifications import (
 )
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.queue import SimpleQueueClient, retry_event
-from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
+from zerver.lib.remote_server import (
+    PushNotificationBouncerRetryLaterError,
+    send_server_data_to_push_bouncer,
+)
 from zerver.lib.send_email import (
     EmailNotDeliveredError,
     FromAddress,
@@ -116,6 +120,7 @@ class WorkerTimeoutError(Exception):
         self.limit = limit
         self.event_count = event_count
 
+    @override
     def __str__(self) -> str:
         return f"Timed out in {self.queue_name} after {self.limit * self.event_count} seconds processing {self.event_count} events"
 
@@ -416,9 +421,11 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
     sleep_delay = 1
     batch_size = 100
 
+    @override
     def setup(self) -> None:
         self.q = SimpleQueueClient(prefetch=max(self.PREFETCH, self.batch_size))
 
+    @override
     def start(self) -> None:  # nocoverage
         assert self.q is not None
         self.initialize_statistics()
@@ -433,6 +440,7 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
     def consume_batch(self, events: List[Dict[str, Any]]) -> None:
         pass
 
+    @override
     def consume(self, event: Dict[str, Any]) -> None:
         """In LoopQueueProcessingWorker, consume is used just for automated tests"""
         self.consume_batch([event])
@@ -440,6 +448,7 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
 
 @assign_queue("invites")
 class ConfirmationEmailWorker(QueueProcessingWorker):
+    @override
     def consume(self, data: Mapping[str, Any]) -> None:
         if "invite_expires_in_days" in data:
             invite_expires_in_minutes = data["invite_expires_in_days"] * 24 * 60
@@ -487,7 +496,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                 from_address=FromAddress.tokenized_no_reply_placeholder,
                 language=email_language,
                 context=context,
-                delay=datetime.timedelta(minutes=invite_expires_in_minutes - (2 * 24 * 60)),
+                delay=timedelta(minutes=invite_expires_in_minutes - (2 * 24 * 60)),
             )
 
 
@@ -513,11 +522,13 @@ class UserActivityWorker(LoopQueueProcessingWorker):
 
     client_id_map: Dict[str, int] = {}
 
+    @override
     def start(self) -> None:
         # For our unit tests to make sense, we need to clear this on startup.
         self.client_id_map = {}
         super().start()
 
+    @override
     def consume_batch(self, user_activity_events: List[Dict[str, Any]]) -> None:
         uncommitted_events: Dict[Tuple[int, int, str], Tuple[int, float]] = {}
 
@@ -548,6 +559,7 @@ class UserActivityWorker(LoopQueueProcessingWorker):
 
 @assign_queue("user_activity_interval")
 class UserActivityIntervalWorker(QueueProcessingWorker):
+    @override
     def consume(self, event: Mapping[str, Any]) -> None:
         user_profile = get_user_profile_by_id(event["user_profile_id"])
         log_time = timestamp_to_datetime(event["time"])
@@ -556,6 +568,7 @@ class UserActivityIntervalWorker(QueueProcessingWorker):
 
 @assign_queue("user_presence")
 class UserPresenceWorker(QueueProcessingWorker):
+    @override
     def consume(self, event: Mapping[str, Any]) -> None:
         logging.debug("Received presence event: %s", event)
         user_profile = get_user_profile_by_id(event["user_profile_id"])
@@ -586,6 +599,7 @@ class MissedMessageWorker(QueueProcessingWorker):
 
     # The main thread, which handles the RabbitMQ connection and creates
     # database rows from them.
+    @override
     def consume(self, event: Dict[str, Any]) -> None:
         logging.debug("Processing missedmessage_emails event: %s", event)
         # When we consume an event, check if there are existing pending emails
@@ -594,7 +608,7 @@ class MissedMessageWorker(QueueProcessingWorker):
         user_profile_id: int = event["user_profile_id"]
         user_profile = get_user_profile_by_id(user_profile_id)
         batch_duration_seconds = user_profile.email_notifications_batching_period_seconds
-        batch_duration = datetime.timedelta(seconds=batch_duration_seconds)
+        batch_duration = timedelta(seconds=batch_duration_seconds)
 
         try:
             pending_email = ScheduledMessageNotificationEmail.objects.filter(
@@ -649,6 +663,7 @@ class MissedMessageWorker(QueueProcessingWorker):
                     "ScheduledMessageNotificationEmail row could not be created. The message may have been deleted. Skipping event."
                 )
 
+    @override
     def start(self) -> None:
         with self.cv:
             self.stopping = False
@@ -762,6 +777,7 @@ class MissedMessageWorker(QueueProcessingWorker):
 
             events_to_process.delete()
 
+    @override
     def stop(self) -> None:
         with self.cv:
             self.stopping = True
@@ -789,10 +805,12 @@ class EmailSendingWorker(LoopQueueProcessingWorker):
         self.connection = initialize_connection(self.connection)
         send_email(**copied_event, connection=self.connection)
 
+    @override
     def consume_batch(self, events: List[Dict[str, Any]]) -> None:
         for event in events:
             self.send_email(event)
 
+    @override
     def stop(self) -> None:
         try:
             self.connection.close()
@@ -807,6 +825,7 @@ class PushNotificationsWorker(QueueProcessingWorker):
     # play well with asyncio.
     MAX_CONSUME_SECONDS = None
 
+    @override
     def start(self) -> None:
         # initialize_push_notifications doesn't strictly do anything
         # beyond printing some logging warnings if push notifications
@@ -814,6 +833,7 @@ class PushNotificationsWorker(QueueProcessingWorker):
         initialize_push_notifications()
         super().start()
 
+    @override
     def consume(self, event: Dict[str, Any]) -> None:
         try:
             if event.get("type", "add") == "remove":
@@ -836,6 +856,7 @@ class PushNotificationsWorker(QueueProcessingWorker):
 class DigestWorker(QueueProcessingWorker):  # nocoverage
     # Who gets a digest is entirely determined by the enqueue_digest_emails
     # management command, not here.
+    @override
     def consume(self, event: Mapping[str, Any]) -> None:
         if "user_ids" in event:
             user_ids = event["user_ids"]
@@ -847,6 +868,7 @@ class DigestWorker(QueueProcessingWorker):  # nocoverage
 
 @assign_queue("email_mirror")
 class MirrorWorker(QueueProcessingWorker):
+    @override
     def consume(self, event: Mapping[str, Any]) -> None:
         rcpt_to = event["rcpt_to"]
         msg = email.message_from_bytes(
@@ -877,6 +899,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
     # Update stats file after every consume call.
     CONSUME_ITERATIONS_BEFORE_UPDATE_STATS_NUM = 1
 
+    @override
     def consume(self, event: Mapping[str, Any]) -> None:
         url_embed_data: Dict[str, Optional[UrlEmbedData]] = {}
         for url in event["urls"]:
@@ -910,6 +933,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             )
             do_update_embedded_data(message.sender, message, message.content, rendering_result)
 
+    @override
     def timer_expired(
         self, limit: int, events: List[Dict[str, Any]], signal: int, frame: Optional[FrameType]
     ) -> None:
@@ -928,6 +952,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
 
 @assign_queue("outgoing_webhooks")
 class OutgoingWebhookWorker(QueueProcessingWorker):
+    @override
     def consume(self, event: Dict[str, Any]) -> None:
         message = event["message"]
         event["command"] = message["content"]
@@ -944,6 +969,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
     def get_bot_api_client(self, user_profile: UserProfile) -> EmbeddedBotHandler:
         return EmbeddedBotHandler(user_profile)
 
+    @override
     def consume(self, event: Mapping[str, Any]) -> None:
         user_profile_id = event["user_profile_id"]
         user_profile = get_user_profile_by_id(user_profile_id)
@@ -991,6 +1017,7 @@ class DeferredWorker(QueueProcessingWorker):
     # remove any processing timeouts
     MAX_CONSUME_SECONDS = None
 
+    @override
     def consume(self, event: Dict[str, Any]) -> None:
         start = time.time()
         if event["type"] == "mark_stream_messages_as_read":
@@ -1105,7 +1132,7 @@ class DeferredWorker(QueueProcessingWorker):
             assert public_url is not None
 
             # Update the extra_data field now that the export is complete.
-            extra_data["export_path"] = urllib.parse.urlparse(public_url).path
+            extra_data["export_path"] = urlsplit(public_url).path
             export_event.extra_data = extra_data
             export_event.save(update_fields=["extra_data"])
 
@@ -1113,8 +1140,8 @@ class DeferredWorker(QueueProcessingWorker):
             # triggered the export know the export finished.
             with override_language(user_profile.default_language):
                 content = _(
-                    "Your data export is complete and has been uploaded here:\n\n{public_url}"
-                ).format(public_url=public_url)
+                    "Your data export is complete. [View and download exports]({export_settings_link})."
+                ).format(export_settings_link="/#organization/data-exports-admin")
             internal_send_private_message(
                 sender=get_system_bot(settings.NOTIFICATION_BOT, realm.id),
                 recipient_user=user_profile,
@@ -1143,6 +1170,11 @@ class DeferredWorker(QueueProcessingWorker):
             )
             user_profile = get_user_profile_by_id(event["user_profile_id"])
             reactivate_user_if_soft_deactivated(user_profile)
+        elif event["type"] == "push_bouncer_update_for_realm":
+            # In the future we may use the realm_id to send only that single realm's info.
+            realm_id = event["realm_id"]
+            logger.info("Updating push bouncer with metadata on behalf of realm %s", realm_id)
+            send_server_data_to_push_bouncer(consider_usage_statistics=False)
 
         end = time.time()
         logger.info(
@@ -1158,6 +1190,7 @@ class TestWorker(QueueProcessingWorker):
     # creating significant side effects.  It can be useful in development or
     # for troubleshooting prod/staging.  It pulls a message off the test queue
     # and appends it to a file in /var/log/zulip.
+    @override
     def consume(self, event: Mapping[str, Any]) -> None:  # nocoverage
         fn = settings.ZULIP_WORKER_TEST_FILE
         message = orjson.dumps(event)
@@ -1182,6 +1215,7 @@ class NoopWorker(QueueProcessingWorker):
         self.max_consume = max_consume
         self.slow_queries: Set[int] = set(slow_queries)
 
+    @override
     def consume(self, event: Mapping[str, Any]) -> None:
         self.consumed += 1
         if self.consumed in self.slow_queries:
@@ -1210,6 +1244,7 @@ class BatchNoopWorker(LoopQueueProcessingWorker):
         self.max_consume = max_consume
         self.slow_queries: Set[int] = set(slow_queries)
 
+    @override
     def consume_batch(self, events: List[Dict[str, Any]]) -> None:
         event_numbers = set(range(self.consumed + 1, self.consumed + 1 + len(events)))
         found_slow = self.slow_queries & event_numbers

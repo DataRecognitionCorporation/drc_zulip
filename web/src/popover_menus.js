@@ -2,117 +2,89 @@
    TippyJS/Popper popover library from the legacy Bootstrap
    popovers system in popovers.js. */
 
-import ClipboardJS from "clipboard";
 import $ from "jquery";
-import tippy, {delegate} from "tippy.js";
-
-import render_actions_popover_content from "../templates/actions_popover_content.hbs";
-import render_all_messages_sidebar_actions from "../templates/all_messages_sidebar_actions.hbs";
-import render_change_visibility_policy_popover from "../templates/change_visibility_policy_popover.hbs";
-import render_compose_control_buttons_popover from "../templates/compose_control_buttons_popover.hbs";
-import render_compose_select_enter_behaviour_popover from "../templates/compose_select_enter_behaviour_popover.hbs";
-import render_delete_topic_modal from "../templates/confirm_dialog/confirm_delete_topic.hbs";
-import render_drafts_sidebar_actions from "../templates/drafts_sidebar_action.hbs";
-import render_left_sidebar_stream_setting_popover from "../templates/left_sidebar_stream_setting_popover.hbs";
-import render_mobile_message_buttons_popover_content from "../templates/mobile_message_buttons_popover_content.hbs";
-import render_send_later_modal from "../templates/send_later_modal.hbs";
-import render_send_later_popover from "../templates/send_later_popover.hbs";
-import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
-import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs";
+import tippy from "tippy.js";
 
 import * as blueslip from "./blueslip";
-import * as channel from "./channel";
-import * as common from "./common";
-import * as compose from "./compose";
-import * as compose_actions from "./compose_actions";
-import * as compose_validate from "./compose_validate";
-import * as condense from "./condense";
-import * as confirm_dialog from "./confirm_dialog";
-import * as drafts from "./drafts";
-import * as emoji_picker from "./emoji_picker";
-import * as flatpickr from "./flatpickr";
-import * as giphy from "./giphy";
-import {$t_html} from "./i18n";
-import * as message_edit from "./message_edit";
-import * as message_lists from "./message_lists";
-import * as message_viewport from "./message_viewport";
-import * as narrow_state from "./narrow_state";
+import {media_breakpoints_num} from "./css_variables";
+import * as modals from "./modals";
 import * as overlays from "./overlays";
-import * as popover_menus_data from "./popover_menus_data";
 import * as popovers from "./popovers";
-import * as read_receipts from "./read_receipts";
-import * as rows from "./rows";
-import * as scheduled_messages from "./scheduled_messages";
-import * as settings_data from "./settings_data";
-import * as starred_messages from "./starred_messages";
-import * as starred_messages_ui from "./starred_messages_ui";
-import * as stream_popover from "./stream_popover";
-import * as timerender from "./timerender";
-import {show_copied_confirmation} from "./tippyjs";
-import {parse_html} from "./ui_util";
-import * as unread_ops from "./unread_ops";
-import {user_settings} from "./user_settings";
-import * as user_topics from "./user_topics";
+import * as util from "./util";
 
-let message_actions_popover_keyboard_toggle = false;
-let selected_send_later_timestamp;
-
-const popover_instances = {
+export const popover_instances = {
     compose_control_buttons: null,
     starred_messages: null,
     drafts: null,
-    all_messages: null,
+    left_sidebar_inbox_popover: null,
+    left_sidebar_all_messages_popover: null,
+    left_sidebar_recent_view_popover: null,
+    top_left_sidebar: null,
     message_actions: null,
     stream_settings: null,
     compose_mobile_button: null,
-    compose_enter_sends: null,
     topics_menu: null,
     send_later: null,
     change_visibility_policy: null,
+    personal_menu: null,
+    gear_menu: null,
+    help_menu: null,
 };
+
+/* Keyboard UI functions */
+export function popover_items_handle_keyboard(key, $items) {
+    if (!$items) {
+        return;
+    }
+
+    let index = $items.index($items.filter(":focus"));
+
+    if (key === "enter" && index >= 0 && index < $items.length) {
+        // This is not enough for some elements which need to trigger
+        // natural click for them to work like ClipboardJS and follow
+        // the link for anchor tags. For those elements, we need to
+        // use `.navigate-link-on-enter` class on them.
+        $items.eq(index).trigger("click");
+        return;
+    }
+
+    if (index === -1) {
+        index = 0;
+    } else if ((key === "down_arrow" || key === "vim_down") && index < $items.length - 1) {
+        index += 1;
+    } else if ((key === "up_arrow" || key === "vim_up") && index > 0) {
+        index -= 1;
+    }
+    $items.eq(index).trigger("focus");
+}
+
+export function focus_first_popover_item($items, index = 0) {
+    if (!$items) {
+        return;
+    }
+
+    $items.eq(index).expectOne().trigger("focus");
+}
 
 export function sidebar_menu_instance_handle_keyboard(instance, key) {
     const items = get_popover_items_for_instance(instance);
-    popovers.popover_items_handle_keyboard(key, items);
+    popover_items_handle_keyboard(key, items);
 }
 
 export function get_visible_instance() {
     return Object.values(popover_instances).find(Boolean);
 }
+
 export function get_topic_menu_popover() {
     return popover_instances.topics_menu;
 }
 
-export function get_selected_send_later_timestamp() {
-    if (!selected_send_later_timestamp) {
-        return undefined;
-    }
-    return selected_send_later_timestamp;
-}
-
-export function get_formatted_selected_send_later_time() {
-    const current_time = Date.now() / 1000; // seconds, like selected_send_later_timestamp
-    if (
-        scheduled_messages.is_send_later_timestamp_missing_or_expired(
-            selected_send_later_timestamp,
-            current_time,
-        )
-    ) {
-        return undefined;
-    }
-    return timerender.get_full_datetime(new Date(selected_send_later_timestamp * 1000), "time");
-}
-
-export function set_selected_schedule_timestamp(timestamp) {
-    selected_send_later_timestamp = timestamp;
-}
-
-export function reset_selected_schedule_timestamp() {
-    selected_send_later_timestamp = undefined;
-}
-
 export function get_scheduled_messages_popover() {
     return popover_instances.send_later;
+}
+
+export function is_scheduled_messages_popover_displayed() {
+    return popover_instances.send_later?.state.isVisible;
 }
 
 export function get_compose_control_buttons_popover() {
@@ -123,8 +95,24 @@ export function get_starred_messages_popover() {
     return popover_instances.starred_messages;
 }
 
-export function is_compose_enter_sends_popover_displayed() {
-    return popover_instances.compose_enter_sends?.state.isVisible;
+export function is_personal_menu_popover_displayed() {
+    return popover_instances.personal_menu?.state.isVisible;
+}
+
+export function is_gear_menu_popover_displayed() {
+    return popover_instances.gear_menu?.state.isVisible;
+}
+
+export function get_gear_menu_instance() {
+    return popover_instances.gear_menu;
+}
+
+export function is_help_menu_popover_displayed() {
+    return popover_instances.help_menu?.state.isVisible;
+}
+
+export function is_message_actions_popover_displayed() {
+    return popover_instances.message_actions?.state.isVisible;
 }
 
 function get_popover_items_for_instance(instance) {
@@ -136,7 +124,7 @@ function get_popover_items_for_instance(instance) {
         return undefined;
     }
 
-    return $current_elem.find("li:not(.divider):visible a");
+    return $current_elem.find("a:visible");
 }
 
 export const default_popover_props = {
@@ -154,6 +142,97 @@ export const default_popover_props = {
     touch: true,
     /* Don't use allow-HTML here since it is unsafe. Instead, use `parse_html`
        to generate the required html */
+    popperOptions: {
+        modifiers: [
+            {
+                // Hide popover for which the reference element is hidden.
+                // References:
+                // https://popper.js.org/docs/v2/modifiers/
+                // https://github.com/atomiks/tippyjs/blob/ad85f6feb79cf6c5853c43bf1b2a50c4fa98e7a1/src/createTippy.ts#L608
+                name: "destroy-popover-if-reference-hidden",
+                enabled: true,
+                phase: "beforeWrite",
+                requires: ["$$tippy"],
+                fn({state}) {
+                    const instance = state.elements.reference._tippy;
+                    const $popover = $(state.elements.popper);
+                    const $tippy_box = $popover.find(".tippy-box");
+                    if ($tippy_box.hasClass("show-when-reference-hidden")) {
+                        return;
+                    }
+
+                    // $tippy_box[0].hasAttribute("data-reference-hidden"); is the real check
+                    // but linter wants us to write it like this.
+                    const is_reference_outside_window = Object.hasOwn(
+                        $tippy_box[0].dataset,
+                        "referenceHidden",
+                    );
+                    if (is_reference_outside_window) {
+                        instance.hide();
+                        return;
+                    }
+
+                    const $reference = $(state.elements.reference);
+                    // Hide popover if the reference element is below another element.
+                    //
+                    // We only care about the reference element if it is inside the message feed since
+                    // hiding elements outside the message feed is tricky and expensive due to stacking context.
+                    // References in overlays, modal, sidebar overlays, popovers, etc. can make the below logic hard
+                    // to live with if we take elements outside message feed into account.
+                    // Since `.sticky_header` is inside `#message_feed_container`, we allow popovers from reference inside
+                    // `.sticky_header` to be visible.
+                    if (
+                        $reference.parents("#message_feed_container, .sticky_header").length !== 1
+                    ) {
+                        return;
+                    }
+
+                    const reference_rect = $reference[0].getBoundingClientRect();
+                    // This is the logic we want but since it is too expensive to run
+                    // on every scroll, we run a cheaper version of this to just check if
+                    // compose, sticky header or navbar are not obscuring the reference
+                    // in message list where we want a better experience.
+                    // Also, elementFromPoint can be quite buggy since element can be temporarily
+                    // hidden or obscured by other elements like `simplebar-wrapper`.
+                    //
+                    // const topmost_element = document.elementFromPoint(
+                    //     reference_rect.left,
+                    //     reference_rect.top,
+                    // );
+                    // if (
+                    //     !topmost_element ||
+                    //     ($(topmost_element).closest($reference).length === 0 &&
+                    //         $(topmost_element).find($reference).length === 0)
+                    // ) {
+                    //     instance.hide();
+                    // }
+
+                    // Hide popover if the reference element is below compose, sticky header or navbar.
+
+                    // These are elements covering the reference element (intersection of elements at top
+                    // top left and bottom right)
+                    const elements_at_reference_position = document
+                        .elementsFromPoint(reference_rect.left, reference_rect.top)
+                        .filter((element) =>
+                            document
+                                .elementsFromPoint(reference_rect.right, reference_rect.bottom)
+                                .includes(element),
+                        );
+
+                    if (
+                        elements_at_reference_position.some(
+                            (element) =>
+                                element.id === "navbar-fixed-container" ||
+                                element.id === "compose-content" ||
+                                element.classList.contains("sticky_header"),
+                        )
+                    ) {
+                        instance.hide();
+                    }
+                },
+            },
+        ],
+    },
 };
 
 export const left_sidebar_tippy_options = {
@@ -170,11 +249,7 @@ export const left_sidebar_tippy_options = {
     },
 };
 
-export function any_active() {
-    return Boolean(get_visible_instance());
-}
-
-function on_show_prep(instance) {
+export function on_show_prep(instance) {
     $(instance.popper).on("click", (e) => {
         // Popover is not hidden on click inside it unless the click handler for the
         // element explicitly hides the popover when handling the event.
@@ -187,7 +262,6 @@ function on_show_prep(instance) {
         e.stopPropagation();
         instance.hide();
     });
-    popovers.hide_all_except_sidebars();
 }
 
 function get_props_for_popover_centering(popover_props) {
@@ -208,8 +282,24 @@ function get_props_for_popover_centering(popover_props) {
                         offset({popper}) {
                             // Calculate the offset needed to place the reference in the center
                             const x_offset_to_center = window.innerWidth / 2;
-                            const y_offset_to_center = window.innerHeight / 2 - popper.height / 2;
+                            let y_offset_to_center = window.innerHeight / 2 - popper.height / 2;
 
+                            // Move popover to the top of the screen if user is focused on an element which can
+                            // open keyboard on a mobile device causing the screen to resize.
+                            // Resize doesn't happen on iOS when keyboard is open, and typing text in input field just works.
+                            // For other browsers, we need to check if the focused element is an text field and
+                            // is causing a resize (thus calling this `offset` modifier function), in which case
+                            // we need to move the popover to the top of the screen.
+                            if (util.is_mobile()) {
+                                const $focused_element = $(document.activeElement);
+                                if (
+                                    $focused_element.is(
+                                        "input[type=text], input[type=number], textarea",
+                                    )
+                                ) {
+                                    y_offset_to_center = 10;
+                                }
+                            }
                             return [x_offset_to_center, y_offset_to_center];
                         },
                     },
@@ -246,17 +336,26 @@ function get_props_for_popover_centering(popover_props) {
 // shortcuts and similar alternative ways to open a popover menu.
 export function toggle_popover_menu(target, popover_props, options) {
     const instance = target._tippy;
+    if (instance) {
+        instance.hide();
+        return;
+    }
+
     let mobile_popover_props = {};
 
-    if (options?.show_as_overlay) {
+    // If the window is mobile-sized, we will render the
+    // popover centered on the screen as an overlay.
+    if (options?.show_as_overlay_on_mobile && window.innerWidth <= media_breakpoints_num.md) {
         mobile_popover_props = {
             ...get_props_for_popover_centering(popover_props),
         };
     }
 
-    if (instance) {
-        instance.hide();
-        return;
+    if (popover_props.popperOptions?.modifiers) {
+        popover_props.popperOptions.modifiers = [
+            ...default_popover_props.popperOptions.modifiers,
+            ...popover_props.popperOptions.modifiers,
+        ];
     }
 
     tippy(target, {
@@ -290,120 +389,8 @@ export function register_popover_menu(target, popover_props) {
     });
 }
 
-export function toggle_message_actions_menu(message) {
-    if (message.locally_echoed || message_edit.is_editing(message.id)) {
-        // Don't open the popup for locally echoed messages for now.
-        // It creates bugs with things like keyboard handlers when
-        // we get the server response.
-        // We also suppress the popup for messages in an editing state,
-        // including previews, when a user tries to reach them from the
-        // keyboard.
-        return true;
-    }
-
-    message_viewport.maybe_scroll_to_show_message_top();
-    const $popover_reference = $(".selected_message .actions_hover .message-actions-menu-button");
-    message_actions_popover_keyboard_toggle = true;
-    $popover_reference.trigger("click");
-    return true;
-}
-
-function set_compose_box_schedule(element) {
-    const selected_send_at_time = element.dataset.sendStamp / 1000;
-    return selected_send_at_time;
-}
-
-export function open_send_later_menu() {
-    if (!compose_validate.validate(true)) {
-        return;
-    }
-
-    // Only show send later options that are possible today.
-    const date = new Date();
-    const filtered_send_opts = scheduled_messages.get_filtered_send_opts(date);
-    $("body").append(render_send_later_modal(filtered_send_opts));
-    let interval;
-
-    overlays.open_modal("send_later_modal", {
-        autoremove: true,
-        on_show() {
-            interval = setInterval(
-                scheduled_messages.update_send_later_options,
-                scheduled_messages.SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS,
-            );
-
-            const $send_later_modal = $("#send_later_modal");
-
-            // Upon the first keydown event, we focus on the first element in the list,
-            // enabling keyboard navigation that is handled by `hotkey.js` and `list_util.ts`.
-            $send_later_modal.one("keydown", () => {
-                const $options = $send_later_modal.find("a");
-                $options[0].focus();
-
-                $send_later_modal.on("keydown", (e) => {
-                    if (e.key === "Enter") {
-                        e.target.click();
-                    }
-                });
-            });
-
-            $send_later_modal.on("click", ".send_later_custom", (e) => {
-                const $send_later_modal_content = $send_later_modal.find(".modal__content");
-                const current_time = new Date();
-                flatpickr.show_flatpickr(
-                    $(".send_later_custom")[0],
-                    do_schedule_message,
-                    new Date(current_time.getTime() + 60 * 60 * 1000),
-                    {
-                        minDate: new Date(
-                            current_time.getTime() +
-                                scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS * 1000,
-                        ),
-                        onClose() {
-                            // Return to normal state.
-                            $send_later_modal_content.css("pointer-events", "all");
-                        },
-                    },
-                );
-                // Disable interaction with rest of the options in the modal.
-                $send_later_modal_content.css("pointer-events", "none");
-                e.preventDefault();
-                e.stopPropagation();
-            });
-            $send_later_modal.one(
-                "click",
-                ".send_later_today, .send_later_tomorrow, .send_later_monday",
-                (e) => {
-                    const send_at_time = set_compose_box_schedule(e.currentTarget);
-                    do_schedule_message(send_at_time);
-                    e.preventDefault();
-                    e.stopPropagation();
-                },
-            );
-        },
-        on_shown() {
-            // When shown, we should give the modal focus to correctly handle keyboard events.
-            const $send_later_modal_overlay = $("#send_later_modal .modal__overlay");
-            $send_later_modal_overlay.trigger("focus");
-        },
-        on_hide() {
-            clearInterval(interval);
-        },
-    });
-}
-
-export function do_schedule_message(send_at_time) {
-    overlays.close_modal_if_open("send_later_modal");
-
-    if (!Number.isInteger(send_at_time)) {
-        // Convert to timestamp if this is not a timestamp.
-        send_at_time = Math.floor(Date.parse(send_at_time) / 1000);
-    }
-    selected_send_later_timestamp = send_at_time;
-    compose.finish(true);
-}
-
 export function initialize() {
+<<<<<<< HEAD
     register_popover_menu("#streams_inline_icon", {
         onShow(instance) {
             const can_create_streams =
@@ -1188,4 +1175,11 @@ export function initialize() {
             popover_instances.send_later = undefined;
         },
     });
+=======
+    /* Configure popovers to hide when toggling overlays. */
+    overlays.register_pre_open_hook(popovers.hide_all);
+    overlays.register_pre_close_hook(popovers.hide_all);
+    modals.register_pre_open_hook(popovers.hide_all);
+    modals.register_pre_close_hook(popovers.hide_all);
+>>>>>>> 8.0
 }

@@ -33,23 +33,9 @@ kbd {
         display: none !important;
     }
 
-    .show-sm {
-        display: block !important;
-    }
-
     #settings_page .save-button-controls {
         display: block;
         margin: 10px 0 0;
-    }
-}
-
-@media (width < $lg_min) {
-    .hide-lg {
-        display: none !important;
-    }
-
-    .show-lg {
-        display: block !important;
     }
 }
 
@@ -368,6 +354,15 @@ div.overlay {
             transition-timing-function: ease-out;
         }
     }
+
+    .overlay-scroll-container {
+        max-height: 60vh;
+        padding: 15px;
+    }
+
+    .overlay-container {
+        background-color: var(--color-background-modal);
+    }
 }
 
 .input-append {
@@ -567,6 +562,30 @@ div.overlay {
     margin-right: 8px;
 }
 
+.demo-organization-warning {
+    position: relative;
+    display: block;
+    background-color: hsl(4deg 35% 90%);
+    border: 1px solid hsl(3deg 57% 33% / 40%);
+    border-radius: 4px;
+    padding: 10px;
+    margin: 10px 0;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: hsl(4deg 58% 33%);
+
+    a {
+        text-decoration: none;
+    }
+
+    .convert-demo-organization-button {
+        &:focus {
+            outline: 1px solid hsl(200deg 100% 25%);
+            outline-offset: 0;
+        }
+    }
+}
+
 /* We are mostly consistent in how we style
    unread counts, except for starred messages.
    This is the common section.
@@ -579,7 +598,7 @@ div.overlay {
     font-size: 12px;
     font-weight: normal;
     border-radius: 4px;
-    background-color: hsl(105deg 2% 50%);
+    background-color: var(--color-background-unread-counter);
     color: hsl(0deg 0% 100%);
 }
 
@@ -594,7 +613,7 @@ div.overlay {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: hsl(0deg 0% 80%);
+    background-color: var(--color-masked-unread-marker);
     display: none;
 }
 
@@ -619,12 +638,6 @@ div.overlay {
     .bankruptcy_unread_count {
         font-weight: 600;
     }
-}
-
-.white_zulip_icon_without_text {
-    display: inline-block;
-    background-image: url("../images/logo/white-zulip-logo-without-text.svg");
-    background-size: cover;
 }
 
 .only-visible-for-spectators {
@@ -822,7 +835,8 @@ div.overlay {
 }
 
 #stream_settings .save-button-controls,
-#settings_page .save-button-controls {
+#settings_page .save-button-controls,
+#user_group_settings .save-button-controls {
     display: inline;
     margin-left: 15px;
 
@@ -1108,8 +1122,14 @@ div.overlay {
         position: relative;
         top: -1px;
     }
+
+    &:disabled {
+        cursor: not-allowed;
+        background-color: hsl(0deg 0% 93%);
+    }
 }
 
+.dropdown-current-value-not-in-options,
 .setting-disabled-option {
     color: hsl(38deg 46% 54%);
 
@@ -1117,6 +1137,15 @@ div.overlay {
         /* Values set to match text alignment in stream dropdown. */
         padding: 0 5px 0 1px;
     }
+}
+
+.empty-list-message,
+.empty-table-message {
+    background-color: inherit;
+    color: var(--color-text-default);
+    font-size: 1.5em;
+    padding: 3em 1em !important;
+    text-align: center;
 }
 
 .filter_text_input {
@@ -1144,21 +1173,22 @@ div.overlay {
     justify-content: center;
     align-items: center;
     box-sizing: border-box;
-    width: 100%;
-    height: 27px;
-    background-color: hsl(0deg 0% 0% / 7%);
-    position: relative;
+    padding: 1px;
+    height: 33px;
+    gap: 2px;
+    background-color: var(--color-background-tab-picker-container);
     border-radius: 5px;
 
     & i {
         z-index: 2;
-        color: hsl(200deg 100% 40%);
-        font-size: 17px;
+        color: var(--color-tab-picker-icon);
+        font-size: 16px;
     }
 
     .selected-tab {
-        background-color: hsl(0deg 0% 100%);
-        border: 1px solid hsl(0deg 0% 0% / 30%);
+        background-color: var(--color-background-tab-picker-selected-tab);
+        outline: 1px solid var(--color-outline-tab-picker-tab-option);
+        outline-offset: -1px;
         z-index: 1;
     }
 
@@ -1168,13 +1198,19 @@ div.overlay {
         align-items: center;
         box-sizing: border-box;
         width: 100%;
-        height: 100%;
+        height: 31px;
         cursor: pointer;
         border-radius: 5px;
 
         &:hover:not(.selected-tab) {
-            background-color: hsl(0deg 0% 100%);
-            border: 1px solid hsl(0deg 0% 0% / 30%);
+            background-color: var(
+                --color-background-tab-picker-tab-option-hover
+            );
+        }
+
+        &:active:not(.selected-tab) {
+            outline: 1px solid var(--color-outline-tab-picker-tab-option);
+            outline-offset: -1px;
         }
     }
 }

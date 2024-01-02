@@ -101,6 +101,13 @@ EXTERNAL_HOST = "zulip.example.com"
 ## confirmation emails when ADD_TOKENS_TO_NOREPLY_ADDRESS=False.
 # NOREPLY_EMAIL_ADDRESS = "noreply@example.com"
 
+## Emails sent by the Zulip server will use a sender name starting
+## with INSTALLATION_NAME. The default is EXTERNAL_HOST. If INSTALLATION_NAME is
+## "zulip.example.com", email senders names will include:
+## * "zulip.example.com notifications" (message notification emails).
+## * "zulip.example.com account security" (account security emails).
+# INSTALLATION_NAME = "My Zulip Server"
+
 ## Many countries and bulk mailers require certain types of email to display
 ## a physical mailing address to comply with anti-spam legislation.
 ## Non-commercial and non-public-facing installations are unlikely to need
@@ -264,6 +271,20 @@ AUTH_LDAP_USER_ATTR_MAP = {
 #          "employeeType": "staff"
 #      }
 #    ]
+# }
+
+
+## LDAP group sync configuration.
+## See: https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#synchronizing-groups
+# AUTH_LDAP_GROUP_TYPE = GroupOfUniqueNamesType()
+# AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
+#     "ou=groups,dc=www,dc=example,dc=com", ldap.SCOPE_SUBTREE, "(objectClass=groupOfUniqueNames)"
+# )
+# LDAP_SYNCHRONIZED_GROUPS_BY_REALM = {
+#   "subdomain1" : [
+#       "group1",
+#       "group2",
+#   ]
 # }
 
 ########

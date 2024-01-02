@@ -1,16 +1,19 @@
 import $ from "jquery";
 
-import * as activity from "./activity";
+import * as activity_ui from "./activity_ui";
 import * as alert_words from "./alert_words";
 import * as alert_words_ui from "./alert_words_ui";
 import * as attachments_ui from "./attachments_ui";
+import * as audible_notifications from "./audible_notifications";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as browser_history from "./browser_history";
 import {buddy_list} from "./buddy_list";
-import * as compose from "./compose";
+import * as compose_call from "./compose_call";
+import * as compose_call_ui from "./compose_call_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_recipient from "./compose_recipient";
+import * as compose_state from "./compose_state";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as dark_theme from "./dark_theme";
 import * as emoji from "./emoji";
@@ -26,8 +29,9 @@ import * as message_lists from "./message_lists";
 import * as message_live_update from "./message_live_update";
 import * as muted_users_ui from "./muted_users_ui";
 import * as narrow_state from "./narrow_state";
+import * as narrow_title from "./narrow_title";
 import * as navbar_alerts from "./navbar_alerts";
-import * as notifications from "./notifications";
+import * as onboarding_steps from "./onboarding_steps";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
@@ -40,7 +44,9 @@ import * as realm_playground from "./realm_playground";
 import {realm_user_settings_defaults} from "./realm_user_settings_defaults";
 import * as reload from "./reload";
 import * as scheduled_messages from "./scheduled_messages";
+import * as scheduled_messages_feed_ui from "./scheduled_messages_feed_ui";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui";
+import * as scheduled_messages_ui from "./scheduled_messages_ui";
 import * as scroll_bar from "./scroll_bar";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
@@ -57,8 +63,8 @@ import * as settings_profile_fields from "./settings_profile_fields";
 import * as settings_realm_domains from "./settings_realm_domains";
 import * as settings_realm_user_settings_defaults from "./settings_realm_user_settings_defaults";
 import * as settings_streams from "./settings_streams";
-import * as settings_user_groups from "./settings_user_groups_legacy";
 import * as settings_users from "./settings_users";
+import * as sidebar_ui from "./sidebar_ui";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_data from "./stream_data";
@@ -71,13 +77,11 @@ import * as stream_ui_updates from "./stream_ui_updates";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import * as typing_events from "./typing_events";
-import * as ui_init from "./ui_init";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as user_events from "./user_events";
 import * as user_group_edit from "./user_group_edit";
 import * as user_groups from "./user_groups";
-import * as user_groups_settings_ui from "./user_groups_settings_ui";
 import {user_settings} from "./user_settings";
 import * as user_status from "./user_status";
 import * as user_topics_ui from "./user_topics_ui";
@@ -132,18 +136,19 @@ export function dispatch_normal_event(event) {
         case "has_zoom_token":
             page_params.has_zoom_token = event.value;
             if (event.value) {
-                for (const callback of compose.zoom_token_callbacks.values()) {
+                for (const callback of compose_call.zoom_token_callbacks.values()) {
                     callback();
                 }
-                compose.zoom_token_callbacks.clear();
+                compose_call.zoom_token_callbacks.clear();
             }
             break;
 
-        case "hotspots":
-            hotspots.load_new(event.hotspots);
-            page_params.hotspots = page_params.hotspots
-                ? [...page_params.hotspots, ...event.hotspots]
-                : event.hotspots;
+        case "onboarding_steps":
+            hotspots.load_new(onboarding_steps.filter_new_hotspots(event.onboarding_steps));
+            onboarding_steps.update_notice_to_display(event.onboarding_steps);
+            page_params.onboarding_steps = page_params.onboarding_steps
+                ? [...page_params.onboarding_steps, ...event.onboarding_steps]
+                : event.onboarding_steps;
             break;
 
         case "invites_changed":
@@ -157,7 +162,7 @@ export function dispatch_normal_event(event) {
             break;
 
         case "presence":
-            activity.update_presence_info(event.user_id, event.presence, event.server_timestamp);
+            activity_ui.update_presence_info(event.user_id, event.presence, event.server_timestamp);
             break;
 
         case "restart": {
@@ -221,22 +226,25 @@ export function dispatch_normal_event(event) {
                 move_messages_within_stream_limit_seconds: message_edit.update_inline_topic_edit_ui,
                 message_retention_days: noop,
                 move_messages_between_streams_policy: noop,
-                name: notifications.redraw_title,
+                name: narrow_title.redraw_title,
                 name_changes_disabled: settings_account.update_name_change_display,
                 notifications_stream_id: stream_ui_updates.update_announce_stream_option,
                 org_type: noop,
                 private_message_policy: noop,
+                push_notifications_enabled: noop,
                 send_welcome_emails: noop,
                 message_content_allowed_in_email_notifications: noop,
                 enable_spectator_access: noop,
                 signup_notifications_stream_id: noop,
                 emails_restricted_to_domains: noop,
-                video_chat_provider: compose.update_audio_and_video_chat_button_display,
+                video_chat_provider: compose_call_ui.update_audio_and_video_chat_button_display,
+                jitsi_server_url: compose_call_ui.update_audio_and_video_chat_button_display,
                 giphy_rating: giphy.update_giphy_rating,
                 waiting_period_threshold: noop,
                 want_advertise_in_communities_directory: noop,
                 wildcard_mention_policy: noop,
                 enable_read_receipts: settings_account.update_send_read_receipts_tooltip,
+                enable_guest_user_indicator: noop,
             };
             switch (event.op) {
                 case "update":
@@ -251,8 +259,8 @@ export function dispatch_normal_event(event) {
 
                         if (event.property === "invite_to_realm_policy") {
                             settings_invites.update_invite_user_panel();
-                            ui_init.update_invite_user_option();
-                            gear_menu.initialize();
+                            sidebar_ui.update_invite_user_option();
+                            gear_menu.rerender();
                         }
 
                         const stream_creation_settings = [
@@ -282,8 +290,8 @@ export function dispatch_normal_event(event) {
 
                                 if (key === "create_multiuse_invite_group") {
                                     settings_invites.update_invite_user_panel();
-                                    ui_init.update_invite_user_option();
-                                    gear_menu.initialize();
+                                    sidebar_ui.update_invite_user_option();
+                                    gear_menu.rerender();
                                 }
 
                                 if (key === "edit_topic_policy") {
@@ -350,11 +358,6 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     bot_data.add(event.bot);
-                    settings_bots.render_bots();
-                    break;
-                case "remove":
-                    bot_data.deactivate(event.bot.user_id);
-                    event.bot.is_active = false;
                     settings_bots.render_bots();
                     break;
                 case "delete":
@@ -445,8 +448,8 @@ export function dispatch_normal_event(event) {
             settings_realm_user_settings_defaults.update_page(event.property);
 
             if (event.property === "notification_sound") {
-                notifications.update_notification_sound_source(
-                    $("#realm-default-notification-sound-audio"),
+                audible_notifications.update_notification_sound_source(
+                    $("audio#realm-default-notification-sound-audio"),
                     realm_user_settings_defaults,
                 );
             }
@@ -462,16 +465,6 @@ export function dispatch_normal_event(event) {
                         settings_users.redraw_bots_list();
                     }
                     break;
-                case "remove":
-                    people.deactivate(event.person);
-                    stream_events.remove_deactivated_user_from_all_streams(event.person.user_id);
-                    settings_users.update_view_on_deactivate(event.person.user_id);
-                    buddy_list.maybe_remove_key({key: event.person.user_id});
-                    settings_account.maybe_update_deactivate_account_button();
-                    if (people.user_is_bot(event.person.user_id)) {
-                        settings_users.update_bot_data(event.person.user_id);
-                    }
-                    break;
                 case "update":
                     user_events.update_person(event.person);
                     settings_account.maybe_update_deactivate_account_button();
@@ -479,6 +472,16 @@ export function dispatch_normal_event(event) {
                         settings_users.update_bot_data(event.person.user_id);
                     }
                     break;
+                case "remove": {
+                    const user_id = event.person.user_id;
+                    people.remove_inaccessible_user(user_id);
+                    buddy_list.maybe_remove_user_id({user_id});
+                    message_live_update.update_user_full_name(
+                        user_id,
+                        people.INACCESSIBLE_USER_NAME,
+                    );
+                    break;
+                }
                 default:
                     blueslip.error("Unexpected event type realm_user/" + event.op);
                     break;
@@ -489,12 +492,17 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add": {
                     scheduled_messages.add_scheduled_messages(event.scheduled_messages);
+                    scheduled_messages_feed_ui.update_schedule_message_indicator();
                     scheduled_messages_overlay_ui.rerender();
                     left_sidebar_navigation_area.update_scheduled_messages_row();
                     break;
                 }
                 case "remove": {
                     scheduled_messages.remove_scheduled_message(event.scheduled_message_id);
+                    scheduled_messages_feed_ui.update_schedule_message_indicator();
+                    scheduled_messages_ui.hide_scheduled_message_success_compose_banner(
+                        event.scheduled_message_id,
+                    );
                     scheduled_messages_overlay_ui.remove_scheduled_message_id(
                         event.scheduled_message_id,
                     );
@@ -546,8 +554,9 @@ export function dispatch_normal_event(event) {
                         stream_settings_ui.remove_stream(stream.stream_id);
                         if (was_subscribed) {
                             stream_list.remove_sidebar_row(stream.stream_id);
-                            if (stream.stream_id === compose_recipient.selected_recipient_id) {
-                                compose_recipient.set_selected_recipient_id("");
+                            if (stream.stream_id === compose_state.selected_recipient_id) {
+                                compose_state.set_selected_recipient_id("");
+                                compose_recipient.on_compose_select_recipient_update();
                             }
                         }
                         settings_streams.update_default_streams_table();
@@ -664,8 +673,8 @@ export function dispatch_normal_event(event) {
 
                 if (notification_name === "notification_sound") {
                     // Change the sound source with the new page `notification_sound`.
-                    notifications.update_notification_sound_source(
-                        $("#user-notification-sound-audio"),
+                    audible_notifications.update_notification_sound_source(
+                        $("audio#user-notification-sound-audio"),
                         user_settings,
                     );
                 }
@@ -676,12 +685,12 @@ export function dispatch_normal_event(event) {
             const user_display_settings = [
                 "color_scheme",
                 "default_language",
-                "default_view",
+                "web_home_view",
                 "demote_inactive_streams",
                 "dense_mode",
                 "web_mark_read_on_scroll_policy",
                 "emojiset",
-                "escape_navigates_to_default_view",
+                "web_escape_navigates_to_home_view",
                 "fluid_layout_width",
                 "high_contrast_mode",
                 "timezone",
@@ -696,7 +705,7 @@ export function dispatch_normal_event(event) {
                 "send_read_receipts",
             ];
 
-            const original_default_view = user_settings.default_view;
+            const original_home_view = user_settings.web_home_view;
             if (user_display_settings.includes(event.property)) {
                 user_settings[event.property] = event.value;
             }
@@ -709,19 +718,20 @@ export function dispatch_normal_event(event) {
                 // present in the backend/Jinja2 templates.
                 settings_display.set_default_language_name(event.language_name);
             }
-            if (
-                event.property === "default_view" && // If current hash is empty (default view), and the
-                // user changes the default view while in settings,
+            if (event.property === "web_home_view") {
+                left_sidebar_navigation_area.handle_home_view_changed(event.value);
+
+                // If current hash is empty (home view), and the
+                // user changes the home view while in settings,
                 // then going back to an empty hash on closing the
                 // overlay will not match the view currently displayed
                 // under settings, so we set the hash to the previous
-                // value of the default view.
-                !browser_history.state.hash_before_overlay &&
-                overlays.settings_open()
-            ) {
-                browser_history.state.hash_before_overlay =
-                    "#" +
-                    (original_default_view === "recent_topics" ? "recent" : original_default_view);
+                // value of the home view.
+                if (!browser_history.state.hash_before_overlay && overlays.settings_open()) {
+                    browser_history.state.hash_before_overlay =
+                        "#" +
+                        (original_home_view === "recent_topics" ? "recent" : original_home_view);
+                }
             }
             if (event.property === "twenty_four_hour_time") {
                 // Rerender the whole message list UI
@@ -743,7 +753,7 @@ export function dispatch_normal_event(event) {
                 settings_display.report_user_list_style_change(
                     settings_display.user_settings_panel,
                 );
-                activity.build_user_sidebar();
+                activity_ui.build_user_sidebar();
             }
             if (event.property === "dense_mode") {
                 $("body").toggleClass("less_dense_mode");
@@ -788,14 +798,14 @@ export function dispatch_normal_event(event) {
                     msg_list.rerender();
                 }
                 // Rerender buddy list status emoji
-                activity.build_user_sidebar();
+                activity_ui.build_user_sidebar();
             }
 
             if (event.property === "display_emoji_reaction_users") {
                 message_live_update.rerender_messages_view();
             }
-            if (event.property === "escape_navigates_to_default_view") {
-                $("#go-to-default-view-hotkey-help").toggleClass("notdisplayed", !event.value);
+            if (event.property === "web_escape_navigates_to_home_view") {
+                $("#go-to-home-view-hotkey-help").toggleClass("notdisplayed", !event.value);
             }
             if (event.property === "enter_sends") {
                 user_settings.enter_sends = event.value;
@@ -806,7 +816,7 @@ export function dispatch_normal_event(event) {
             if (event.property === "presence_enabled") {
                 user_settings.presence_enabled = event.value;
                 $("#user_presence_enabled").prop("checked", user_settings.presence_enabled);
-                activity.redraw_user(page_params.user_id);
+                activity_ui.redraw_user(page_params.user_id);
                 break;
             }
             if (event.property === "email_address_visibility") {
@@ -853,7 +863,7 @@ export function dispatch_normal_event(event) {
                 case "add":
                     user_groups.add(event.group);
                     if (overlays.groups_open()) {
-                        user_groups_settings_ui.add_group_to_table(event.group);
+                        user_group_edit.add_group_to_table(event.group);
                     }
                     break;
                 case "remove":
@@ -876,13 +886,12 @@ export function dispatch_normal_event(event) {
                     break;
                 case "update":
                     user_groups.update(event);
-                    user_groups_settings_ui.update_group(event.group_id);
+                    user_group_edit.update_group(event.group_id);
                     break;
                 default:
                     blueslip.error("Unexpected event type user_group/" + event.op);
                     break;
             }
-            settings_user_groups.reload();
             break;
 
         case "user_status":
@@ -891,7 +900,7 @@ export function dispatch_normal_event(event) {
                     user_id: event.user_id,
                     status_text: event.status_text,
                 });
-                activity.redraw_user(event.user_id);
+                activity_ui.redraw_user(event.user_id);
 
                 // Update the status text in compose box placeholder when opened to self.
                 if (compose_pm_pill.get_user_ids().includes(event.user_id)) {
@@ -901,7 +910,7 @@ export function dispatch_normal_event(event) {
 
             if (event.emoji_name !== undefined) {
                 user_status.set_status_emoji(event);
-                activity.redraw_user(event.user_id);
+                activity_ui.redraw_user(event.user_id);
                 pm_list.update_private_messages();
                 message_live_update.update_user_status_emoji(
                     event.user_id,

@@ -121,78 +121,12 @@ const apps_events = function () {
 };
 
 const events = function () {
-    // get the location url like `zulip.com/features/`, cut off the trailing
-    // `/` and then split by `/` to get ["zulip.com", "features"], then
-    // pop the last element to get the current section (eg. `features`).
-    const location = window.location.pathname.replace(/\/$/, "").split(/\//).pop();
-
-    $(`[data-on-page='${CSS.escape(location)}']`).addClass("active");
-
-    $("body").on("click", (e) => {
-        const $e = $(e.target);
-
-        if ($e.is("nav ul .exit")) {
-            $("nav ul").css("transform", "translate(-350px, 0)");
-            // See https://ishadeed.com/article/layout-flickering/ for
-            // more context as to why the following timeout is important.
-            setTimeout(() => {
-                $("nav ul").removeClass("show");
-                $("nav ul").css("transform", "");
-                $("body").removeClass("noscroll");
-            }, 500);
-        }
-
-        if ($("nav ul.show") && !$e.closest("nav ul.show").length && !$e.is("nav ul.show")) {
-            $("nav ul").removeClass("show");
-            $("body").removeClass("noscroll");
-        }
-    });
-
-    $(".hamburger").on("click", (e) => {
-        $("nav ul").addClass("show");
-        $("body").addClass("noscroll");
-        e.stopPropagation();
-    });
-
     if (path_parts().includes("apps")) {
         apps_events();
     }
 };
 
 $(() => {
-    // Initiate the bootstrap carousel logic
-    $(".carousel").carousel({
-        interval: false,
-    });
-
-    // Move to the next slide on clicking inside the carousel container
-    $(".carousel-inner .item-container").on("click", function (e) {
-        const get_tag_name = e.target.tagName.toLowerCase();
-        const is_button = get_tag_name === "button";
-        const is_link = get_tag_name === "a";
-        const is_last_slide = $("#tour-carousel .carousel-inner .item:last-child").hasClass(
-            "active",
-        );
-
-        // Do not trigger this event if user clicks on a button, link
-        // or if it's the last slide
-        const move_slide_forward = !is_button && !is_link && !is_last_slide;
-
-        if (move_slide_forward) {
-            $(this).closest(".carousel").carousel("next");
-        }
-    });
-
-    $(".carousel").on("slid", function () {
-        const $this = $(this);
-        $this.find(".visibility-control").show();
-        if ($this.find(".carousel-inner .item").first().hasClass("active")) {
-            $this.find(".left.visibility-control").hide();
-        } else if ($this.find(".carousel-inner .item").last().hasClass("active")) {
-            $this.find(".right.visibility-control").hide();
-        }
-    });
-
     // Set up events / categories / search
     events();
 
@@ -202,20 +136,27 @@ $(() => {
         render_tabs(contributors);
     }
 
-    // Source: https://stackoverflow.com/questions/819416/adjust-width-and-height-of-iframe-to-fit-with-content-in-it
-    // Resize tweet to avoid overlapping with image. Since tweet uses an iframe which doesn't adjust with
-    // screen resize, we need to manually adjust its width.
-
-    function resizeIFrameToFitContent(iFrame) {
-        $(iFrame).width("38vw");
-    }
-
-    window.addEventListener("resize", () => {
-        const iframes = document.querySelectorAll(".twitter-tweet iframe");
-        for (const iframe of iframes) {
-            resizeIFrameToFitContent(iframe);
+    if (window.location.pathname.endsWith("/plans/")) {
+        const tabs = ["#cloud", "#self-hosted"];
+        const target_hash =
+            window.location.hash === "#self-hosted-plan-comparison"
+                ? "#self-hosted"
+                : window.location.hash;
+        if (!tabs.includes(target_hash)) {
+            return;
         }
-    });
+        const tab_to_show = target_hash;
+
+        // Don't scroll to the target element
+        if (target_hash === "#self-hosted") {
+            window.scroll({top: 0});
+        }
+        // Display the self-hosted tabs when the URL fragment is #self-hosted
+        // or #self-hosted-plan-comparison
+        const $pricing_wrapper = $(".portico-pricing");
+        $pricing_wrapper.removeClass("showing-cloud showing-self-hosted");
+        $pricing_wrapper.addClass(`showing-${tab_to_show.slice(1)}`);
+    }
 });
 
 // Scroll to anchor link when clicked. Note that help.js has a similar
@@ -223,4 +164,12 @@ $(() => {
 // page.
 $(document).on("click", ".markdown h1, .markdown h2, .markdown h3", function () {
     window.location.hash = $(this).attr("id");
+});
+
+$(document).on("click", ".pricing-tab", function () {
+    const id = $(this).attr("id");
+    const $pricing_wrapper = $(".portico-pricing");
+    $pricing_wrapper.removeClass("showing-cloud showing-self-hosted");
+    $pricing_wrapper.addClass(`showing-${id}`);
+    history.pushState(null, null, `#${id}`);
 });

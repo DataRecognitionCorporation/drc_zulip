@@ -93,7 +93,7 @@
 
     .legend_symbol {
         position: absolute;
-        left: calc(40px);
+        left: calc(340px);
         transform: translateX(-50%);
 
         /* Adjust for 50px closed left sidebar state */
@@ -208,6 +208,10 @@
             vertical-align: middle;
         }
 
+        & i.icon-collapsed-state {
+            transform: rotate(270deg);
+        }
+
         @media (width <= 500px) {
             padding: 10px;
         }
@@ -250,7 +254,7 @@
             border: none;
         }
 
-        &.mobile-icon {
+        &.help-center-icon {
             width: 24px;
             box-shadow: none;
             border: none;

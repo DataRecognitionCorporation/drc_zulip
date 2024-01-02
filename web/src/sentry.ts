@@ -31,7 +31,12 @@ export function shouldCreateSpanForRequest(url: string): boolean {
 }
 
 if (page_params.server_sentry_dsn) {
-    const url_matches = [/^\//, new RegExp("^" + _.escapeRegExp(page_params.webpack_public_path))];
+    const url_matches = [/^\//];
+    if (document.currentScript instanceof HTMLScriptElement) {
+        url_matches.push(
+            new RegExp("^" + _.escapeRegExp(new URL(".", document.currentScript.src).href)),
+        );
+    }
     if (page_params.realm_uri !== undefined) {
         url_matches.push(new RegExp("^" + _.escapeRegExp(page_params.realm_uri) + "/"));
     }
@@ -40,8 +45,8 @@ if (page_params.server_sentry_dsn) {
         page_params.realm_sentry_key === undefined
             ? "www"
             : page_params.realm_sentry_key === ""
-            ? "(root)"
-            : page_params.realm_sentry_key;
+              ? "(root)"
+              : page_params.realm_sentry_key;
     const user_info: UserInfo = {
         realm: sentry_key,
     };
@@ -49,16 +54,16 @@ if (page_params.server_sentry_dsn) {
         user_info.role = page_params.is_owner
             ? "Organization owner"
             : page_params.is_admin
-            ? "Organization administrator"
-            : page_params.is_moderator
-            ? "Moderator"
-            : page_params.is_guest
-            ? "Guest"
-            : page_params.is_spectator
-            ? "Spectator"
-            : page_params.user_id
-            ? "Member"
-            : "Logged out";
+              ? "Organization administrator"
+              : page_params.is_moderator
+                ? "Moderator"
+                : page_params.is_guest
+                  ? "Guest"
+                  : page_params.is_spectator
+                    ? "Spectator"
+                    : page_params.user_id
+                      ? "Member"
+                      : "Logged out";
         if (page_params.user_id) {
             user_info.id = page_params.user_id.toString();
         }
