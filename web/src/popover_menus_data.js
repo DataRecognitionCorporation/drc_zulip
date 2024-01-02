@@ -131,6 +131,7 @@ export function get_topic_popover_content_context({stream_id, topic_name, url}) 
         can_rename_topic,
         is_realm_admin: page_params.is_admin,
         is_guest: page_params.is_guest,
+        is_not_guest_or_member: page_params.is_admin || page_params.is_owner || page_params.is_moderator,
         topic_is_resolved: resolved_topic.is_resolved(topic_name),
         color: sub.color,
         has_starred_messages,
