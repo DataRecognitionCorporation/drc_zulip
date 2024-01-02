@@ -21,12 +21,11 @@ import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
 import * as settings_data from "./settings_data";
+import * as sidebar_ui from "./sidebar_ui";
 import * as stream_data from "./stream_data";
 import * as stream_list_sort from "./stream_list_sort";
-import * as stream_popover from "./stream_popover";
 import * as sub_store from "./sub_store";
 import * as topic_list from "./topic_list";
-import * as topic_zoom from "./topic_zoom";
 import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 import {
@@ -35,9 +34,66 @@ import {
     build_stream_folder
 } from "./stream_list_drc"
 
+let pending_stream_list_rerender = false;
+let zoomed_in = false;
+
 export let stream_cursor;
 
 let has_scrolled = false;
+
+export function is_zoomed_in() {
+    return zoomed_in;
+}
+
+function zoom_in() {
+    const stream_id = topic_list.active_stream_id();
+
+    popovers.hide_all();
+    pm_list.close();
+    topic_list.zoom_in();
+    zoom_in_topics({
+        stream_id,
+    });
+
+    zoomed_in = true;
+}
+
+export function set_pending_stream_list_rerender(value) {
+    pending_stream_list_rerender = value;
+}
+
+export function zoom_out() {
+    if (pending_stream_list_rerender) {
+        update_streams_sidebar(true);
+    }
+    const $stream_li = topic_list.get_stream_li();
+
+    popovers.hide_all();
+    topic_list.zoom_out();
+    zoom_out_topics();
+
+    if ($stream_li) {
+        scroll_stream_into_view($stream_li);
+    }
+
+    zoomed_in = false;
+}
+
+export function clear_topics() {
+    const $stream_li = topic_list.get_stream_li();
+
+    topic_list.close();
+
+    if (zoomed_in) {
+        zoom_out_topics();
+
+        if ($stream_li) {
+            scroll_stream_into_view($stream_li);
+        }
+    }
+
+    zoomed_in = false;
+}
 
 export function update_count_in_dom(
     $stream_li,
@@ -188,7 +244,7 @@ export function build_stream_list(force_rerender) {
         elems.push(sidebar_row.get_li());
     }
 
-    topic_zoom.clear_topics();
+    clear_topics();
     $parent.empty();
 
     const any_pinned_streams =
@@ -443,18 +499,22 @@ function set_stream_unread_count(
 }
 
 export function update_streams_sidebar(force_rerender) {
+<<<<<<< HEAD
 
     if (!force_rerender && topic_zoom.is_zoomed_in()) {
+=======
+    if (!force_rerender && is_zoomed_in()) {
+>>>>>>> 8.0
         // We do our best to update topics that are displayed
         // in case user zoomed in. Streams list will be updated,
         // once the user zooms out. This avoids user being zoomed out
         // when a new message causes streams to re-arrange.
         const filter = narrow_state.filter();
         update_stream_sidebar_for_narrow(filter);
-        topic_zoom.set_pending_stream_list_rerender(true);
+        set_pending_stream_list_rerender(true);
         return;
     }
-    topic_zoom.set_pending_stream_list_rerender(false);
+    set_pending_stream_list_rerender(false);
 
     build_stream_list(force_rerender);
 
@@ -492,6 +552,12 @@ export function update_dom_with_unread_counts(counts) {
 }
 
 export function update_dom_unread_counts_visibility() {
+    const $streams_header = $("#streams_header");
+    if (settings_data.should_mask_unread_count()) {
+        $streams_header.addClass("hide_unread_counts");
+    } else {
+        $streams_header.removeClass("hide_unread_counts");
+    }
     for (const stream of stream_sidebar.rows.values()) {
         const $subscription_block = stream.get_li().find(".subscription_block");
 
@@ -579,7 +645,7 @@ export function update_stream_sidebar_for_narrow(filter) {
     const stream_id = info.stream_id;
 
     if (!stream_id) {
-        topic_zoom.clear_topics();
+        clear_topics();
         return undefined;
     }
 
@@ -592,7 +658,7 @@ export function update_stream_sidebar_for_narrow(filter) {
         // stopped appearing from March 2018 until at least
         // April 2020, so if it appears again, something regressed.
         blueslip.error("No stream_li for subscribed stream", {stream_id});
-        topic_zoom.clear_topics();
+        clear_topics();
         return undefined;
     }
 
@@ -606,7 +672,7 @@ export function update_stream_sidebar_for_narrow(filter) {
     $stream_li.addClass("stream-expanded");
 
     if (stream_id !== topic_list.active_stream_id()) {
-        topic_zoom.clear_topics();
+        clear_topics();
     }
 
     topic_list.rebuild($stream_li, stream_id);
@@ -636,9 +702,9 @@ export function handle_narrow_activated(filter) {
     }
 }
 
-export function handle_narrow_deactivated() {
+export function handle_message_view_deactivated() {
     deselect_stream_items();
-    topic_zoom.clear_topics();
+    clear_topics();
 }
 
 function focus_stream_filter(e) {
@@ -658,11 +724,11 @@ const update_streams_for_search = _.throttle(actually_update_streams_for_search,
 export function initialize_stream_cursor() {
     stream_cursor = new ListCursor({
         list: {
-            scroll_container_sel: "#left_sidebar_scroll_container",
+            scroll_container_selector: "#left_sidebar_scroll_container",
             find_li(opts) {
                 const stream_id = opts.key;
-                const li = get_stream_li(stream_id);
-                return li;
+                const $li = get_stream_li(stream_id);
+                return $li;
             },
             first_key: stream_list_sort.first_stream_id,
             prev_key: stream_list_sort.prev_stream_id,
@@ -689,6 +755,7 @@ export function initialize({on_stream_click}) {
     initialize_stream_cursor();
     set_event_handlers({on_stream_click});
 
+<<<<<<< HEAD
 }
 
 // DRC MODIFICATION - add event listeners for folders
@@ -710,6 +777,20 @@ export function set_folder_listeners({on_stream_click}) {
 
         stream_sidebar.build_subfolder_rows(folder_name);
         // stream_sidebar.update_sidebar_unread_count(null);
+=======
+    $("#stream_filters").on("click", ".show-more-topics", (e) => {
+        zoom_in();
+
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    $(".show-all-streams").on("click", (e) => {
+        zoom_out();
+
+        e.preventDefault();
+        e.stopPropagation();
+>>>>>>> 8.0
     });
 }
 
@@ -720,7 +801,6 @@ export function set_event_handlers({on_stream_click}) {
             return;
         }
         const stream_id = stream_id_for_elt($(e.target).parents("li"));
-        popovers.hide_all();
         on_stream_click(stream_id, "sidebar");
 
         clear_and_hide_search();
@@ -753,7 +833,7 @@ export function set_event_handlers({on_stream_click}) {
         const scroll_position = $(
             "#left_sidebar_scroll_container .simplebar-content-wrapper",
         ).scrollTop();
-        const pm_list_height = $("#private_messages_list").height();
+        const pm_list_height = $("#direct-messages-list").height();
         if (scroll_position > pm_list_height) {
             $("#toggle_private_messages_section_icon").addClass("fa-caret-right");
             $("#toggle_private_messages_section_icon").removeClass("fa-caret-down");
@@ -810,16 +890,6 @@ export function searching() {
     return $(".stream-list-filter").expectOne().is(":focus");
 }
 
-export function escape_search() {
-    const $filter = $(".stream-list-filter").expectOne();
-    if ($filter.val() === "") {
-        clear_and_hide_search();
-        return;
-    }
-    $filter.val("");
-    update_streams_for_search();
-}
-
 export function clear_search(e) {
     e.stopPropagation();
     const $filter = $(".stream-list-filter").expectOne();
@@ -833,11 +903,13 @@ export function clear_search(e) {
 }
 
 export function show_search_section() {
+    $("#streams_header").addClass("showing-stream-search-section");
     $(".stream_search_section").expectOne().removeClass("notdisplayed");
     resize.resize_stream_filters_container();
 }
 
 export function hide_search_section() {
+    $("#streams_header").removeClass("showing-stream-search-section");
     $(".stream_search_section").expectOne().addClass("notdisplayed");
     resize.resize_stream_filters_container();
 }
@@ -853,12 +925,12 @@ export function initiate_search() {
     const $filter = $(".stream-list-filter").expectOne();
 
     if (
-        // Check if left column is a popover and is not visible.
+        // Check if left column is a overlay and is not visible.
         $("#streamlist-toggle").is(":visible") &&
-        !$(".app-main .column-left").hasClass("expanded")
+        !sidebar_ui.left_sidebar_expanded_as_overlay
     ) {
         popovers.hide_all();
-        stream_popover.show_streamlist_sidebar();
+        sidebar_ui.show_streamlist_sidebar();
     }
     $filter.trigger("focus");
 
@@ -866,6 +938,7 @@ export function initiate_search() {
 }
 
 export function clear_and_hide_search() {
+<<<<<<< HEAD
     hide_search_section();
     stream_sidebar.clear_sidebar();
     stream_sidebar.build_stream_folder();
@@ -873,6 +946,9 @@ export function clear_and_hide_search() {
     stream_sidebar.update_sidebar_unread_count();
 
     const $filter = $(".stream-list-filter");
+=======
+    const $filter = $(".stream-list-filter").expectOne();
+>>>>>>> 8.0
     if ($filter.val() !== "") {
         $filter.val("");
         update_streams_for_search();

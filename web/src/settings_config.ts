@@ -4,6 +4,7 @@ import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults";
 import type {StreamSpecificNotificationSettings} from "./sub_store";
+import {StreamPostPolicy} from "./sub_store";
 import type {
     FollowedTopicNotificationSettings,
     PmNotificationSettings,
@@ -78,7 +79,7 @@ export const web_stream_unreads_count_display_policy_values = {
     },
     unmuted_streams: {
         code: 2,
-        description: $t({defaultMessage: "Unmuted streams"}),
+        description: $t({defaultMessage: "Unmuted streams and topics"}),
     },
     no_streams: {
         code: 3,
@@ -86,7 +87,11 @@ export const web_stream_unreads_count_display_policy_values = {
     },
 };
 
-export const default_view_values = {
+export const web_home_view_values = {
+    inbox: {
+        code: "inbox",
+        description: $t({defaultMessage: "Inbox"}),
+    },
     recent_topics: {
         code: "recent_topics",
         description: $t({defaultMessage: "Recent conversations"}),
@@ -94,10 +99,6 @@ export const default_view_values = {
     all_messages: {
         code: "all_messages",
         description: $t({defaultMessage: "All messages"}),
-    },
-    inbox: {
-        code: "inbox",
-        description: $t({defaultMessage: "Inbox"}),
     },
 };
 
@@ -552,7 +553,7 @@ export const display_settings_labels = {
                 "Display names of reacting users when few users have reacted to a message",
         }),
     ),
-    escape_navigates_to_default_view: $t({defaultMessage: "Escape key navigates to default view"}),
+    web_escape_navigates_to_home_view: $t({defaultMessage: "Escape key navigates to home view"}),
     default_language_settings_label: $t({defaultMessage: "Language"}),
 };
 
@@ -579,6 +580,15 @@ export const notification_settings_labels = {
     realm_name_in_email_notifications_policy: $t({
         defaultMessage: "Include organization name in subject of message notification emails",
     }),
+    automatically_follow_topics_policy: $t({
+        defaultMessage: "Automatically follow topics",
+    }),
+    automatically_unmute_topics_in_muted_streams_policy: $t({
+        defaultMessage: "Automatically unmute topics in muted streams",
+    }),
+    automatically_follow_topics_where_mentioned: $t({
+        defaultMessage: "Automatically follow topics where I'm mentioned",
+    }),
 };
 
 export const realm_user_settings_defaults_labels = {
@@ -597,6 +607,12 @@ export const realm_user_settings_defaults_labels = {
     realm_presence_enabled_parens_text: $t({defaultMessage: "invisible mode off"}),
     realm_enter_sends: $t({defaultMessage: "Enter sends when composing a message"}),
     realm_send_read_receipts: $t({defaultMessage: "Allow other users to view read receipts"}),
+    realm_send_private_typing_notifications: $t({
+        defaultMessage: "Let recipients see when a user is typing direct messages",
+    }),
+    realm_send_stream_typing_notifications: $t({
+        defaultMessage: "Let recipients see when a user is typing stream messages",
+    }),
 };
 
 // NOTIFICATIONS
@@ -741,6 +757,9 @@ const other_notification_settings = [
     "email_notifications_batching_period_seconds",
     "realm_name_in_email_notifications_policy",
     "notification_sound",
+    "automatically_follow_topics_policy",
+    "automatically_unmute_topics_in_muted_streams_policy",
+    "automatically_follow_topics_where_mentioned",
 ];
 
 export const all_notification_settings = [
@@ -756,6 +775,7 @@ type NotificationSettingCheckbox = {
     setting_name: string;
     is_disabled: boolean;
     is_checked: boolean;
+    is_mobile_checkbox: boolean;
 };
 
 export function get_notifications_table_row_data(
@@ -769,6 +789,7 @@ export function get_notifications_table_row_data(
                 setting_name: "",
                 is_disabled: true,
                 is_checked: false,
+                is_mobile_checkbox: false,
             };
         }
 
@@ -782,9 +803,11 @@ export function get_notifications_table_row_data(
             setting_name,
             is_disabled: !page_params.is_admin && !page_params.is_owner && !page_params.is_moderator,
             is_checked: checked,
+            is_mobile_checkbox: false,
         };
         if (column === "mobile") {
             checkbox.is_disabled = !page_params.realm_push_notifications_enabled;
+            checkbox.is_mobile_checkbox = true;
         }
         return checkbox;
     });
@@ -860,14 +883,18 @@ export const realm_name_in_email_notifications_policy_values = {
 export const desktop_icon_count_display_values = {
     messages: {
         code: 1,
-        description: $t({defaultMessage: "All unreads"}),
+        description: $t({defaultMessage: "All unread messages"}),
     },
-    notifiable: {
+    dm_mention_followed_topic: {
         code: 2,
-        description: $t({defaultMessage: "Direct messages and mentions"}),
+        description: $t({defaultMessage: "DMs, mentions, and followed topics"}),
+    },
+    dm_mention: {
+        code: 3,
+        description: $t({defaultMessage: "DMs and mentions"}),
     },
     none: {
-        code: 3,
+        code: 4,
         description: $t({defaultMessage: "None"}),
     },
 };
@@ -925,3 +952,80 @@ export const user_topic_visibility_policy_values = {
         description: $t({defaultMessage: "Default for stream"}),
     },
 };
+
+export const automatically_follow_or_unmute_topics_policy_values = {
+    participation: {
+        code: 1,
+        description: $t({defaultMessage: "Topics I participate in"}),
+    },
+    send: {
+        code: 2,
+        description: $t({defaultMessage: "Topics I send a message to"}),
+    },
+    initiation: {
+        code: 3,
+        description: $t({defaultMessage: "Topics I start"}),
+    },
+    never: {
+        code: 4,
+        description: $t({defaultMessage: "Never"}),
+    },
+};
+
+export const stream_privacy_policy_values = {
+    web_public: {
+        code: "web-public",
+        name: $t({defaultMessage: "Web-public"}),
+        description: $t({
+            defaultMessage:
+                "Organization members can join (guests must be invited by a subscriber); anyone on the Internet can view complete message history without creating an account",
+        }),
+    },
+    public: {
+        code: "public",
+        name: $t({defaultMessage: "Public"}),
+        description: $t({
+            defaultMessage:
+                "Organization members can join (guests must be invited by a subscriber); organization members can view complete message history without joining",
+        }),
+    },
+    private_with_public_history: {
+        code: "invite-only-public-history",
+        name: $t({defaultMessage: "Private, shared history"}),
+        description: $t({
+            defaultMessage:
+                "Must be invited by a subscriber; new subscribers can view complete message history; hidden from non-administrator users",
+        }),
+    },
+    private: {
+        code: "invite-only",
+        name: $t({defaultMessage: "Private, protected history"}),
+        description: $t({
+            defaultMessage:
+                "Must be invited by a subscriber; new subscribers can only see messages sent after they join; hidden from non-administrator users",
+        }),
+    },
+};
+
+export const stream_post_policy_values = {
+    // These strings should match the strings in the
+    // Stream.POST_POLICIES object in zerver/models.py.
+    everyone: {
+        code: StreamPostPolicy.EVERYONE,
+        description: $t({defaultMessage: "Everyone"}),
+    },
+    non_new_members: {
+        code: StreamPostPolicy.RESTRICT_NEW_MEMBERS,
+        description: $t({defaultMessage: "Admins, moderators and full members"}),
+    },
+    moderators: {
+        code: StreamPostPolicy.MODERATORS,
+        description: $t({
+            defaultMessage: "Admins and moderators",
+        }),
+    },
+    admins: {
+        code: StreamPostPolicy.ADMINS,
+        description: $t({defaultMessage: "Admins only"}),
+    },
+} as const;

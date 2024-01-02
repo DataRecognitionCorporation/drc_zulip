@@ -1,7 +1,9 @@
-import datetime
+import json
 import os
 import shutil
+import uuid
 from collections import defaultdict
+from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Dict, FrozenSet, Iterable, List, Optional, Set, Tuple
 from unittest.mock import patch
 
@@ -9,7 +11,9 @@ import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q, QuerySet
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from analytics.models import UserCount
 from zerver.actions.alert_words import do_add_alert_words
@@ -62,6 +66,7 @@ from zerver.models import (
     Huddle,
     Message,
     MutedUser,
+    OnboardingStep,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -71,9 +76,9 @@ from zerver.models import (
     ScheduledMessage,
     Stream,
     Subscription,
+    SystemGroups,
     UserGroup,
     UserGroupMembership,
-    UserHotspot,
     UserMessage,
     UserPresence,
     UserProfile,
@@ -89,8 +94,8 @@ from zerver.models import (
 )
 
 
-def make_datetime(val: float) -> datetime.datetime:
-    return datetime.datetime.fromtimestamp(val, tz=datetime.timezone.utc)
+def make_datetime(val: float) -> datetime:
+    return datetime.fromtimestamp(val, tz=timezone.utc)
 
 
 def get_output_dir() -> str:
@@ -140,6 +145,7 @@ class ExportFile(ZulipTestCase):
     """This class is a container for shared helper functions
     used for both the realm-level and user-level export tests."""
 
+    @override
     def setUp(self) -> None:
         super().setUp()
         assert settings.LOCAL_UPLOADS_DIR is not None
@@ -327,6 +333,13 @@ class RealmImportExportTest(ExportFile):
                 consent_message_id=consent_message_id,
                 public_only=public_only,
             )
+
+            # This is a unique field and thus the cycle of export->import
+            # within the same server (which is what happens in our tests)
+            # will cause a conflict - so rotate it.
+            realm.uuid = uuid.uuid4()
+            realm.save()
+
             export_usermessages_batch(
                 input_path=os.path.join(output_dir, "messages-000001.json.partial"),
                 output_path=os.path.join(output_dir, "messages-000001.json"),
@@ -785,9 +798,9 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(reaction.emoji_code, str(realm_emoji.id))
 
         # data to test import of hotspots
-        UserHotspot.objects.create(
+        OnboardingStep.objects.create(
             user=sample_user,
-            hotspot="intro_streams",
+            onboarding_step="intro_streams",
         )
 
         # data to test import of muted topic
@@ -819,7 +832,7 @@ class RealmImportExportTest(ExportFile):
             message_to=[Stream.objects.get(name="Denmark", realm=original_realm).id],
             topic_name="test-import",
             message_content="test message",
-            deliver_at=timezone_now() + datetime.timedelta(days=365),
+            deliver_at=timezone_now() + timedelta(days=365),
             realm=original_realm,
         )
         original_scheduled_message = ScheduledMessage.objects.filter(realm=original_realm).last()
@@ -1048,8 +1061,8 @@ class RealmImportExportTest(ExportFile):
         @getter
         def get_group_names_for_group_settings(r: Realm) -> Set[str]:
             return {
-                getattr(r, permmission_name).name
-                for permmission_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
+                getattr(r, permission_name).name
+                for permission_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
             }
 
         # test recipients
@@ -1124,7 +1137,11 @@ class RealmImportExportTest(ExportFile):
         @getter
         def get_realm_audit_log_event_type(r: Realm) -> Set[int]:
             realmauditlogs = RealmAuditLog.objects.filter(realm=r).exclude(
-                event_type__in=[RealmAuditLog.REALM_PLAN_TYPE_CHANGED, RealmAuditLog.STREAM_CREATED]
+                event_type__in=[
+                    RealmAuditLog.REALM_PLAN_TYPE_CHANGED,
+                    RealmAuditLog.STREAM_CREATED,
+                    RealmAuditLog.REALM_IMPORTED,
+                ]
             )
             realmauditlog_event_type = {log.event_type for log in realmauditlogs}
             return realmauditlog_event_type
@@ -1174,8 +1191,8 @@ class RealmImportExportTest(ExportFile):
         @getter
         def get_user_hotspots(r: Realm) -> Set[str]:
             user_id = get_user_id(r, "King Hamlet")
-            hotspots = UserHotspot.objects.filter(user_id=user_id)
-            user_hotspots = {hotspot.hotspot for hotspot in hotspots}
+            hotspots = OnboardingStep.objects.filter(user_id=user_id)
+            user_hotspots = {hotspot.onboarding_step for hotspot in hotspots}
             return user_hotspots
 
         # test muted topics
@@ -1377,6 +1394,40 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(realm_user_default.default_language, "en")
         self.assertEqual(realm_user_default.twenty_four_hour_time, False)
 
+    @override_settings(PUSH_NOTIFICATION_BOUNCER_URL="https://push.zulip.org.example.com")
+    def test_import_realm_notify_bouncer(self) -> None:
+        original_realm = Realm.objects.get(string_id="zulip")
+
+        self.export_realm(original_realm)
+
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"), patch(
+            "zerver.lib.remote_server.send_to_push_bouncer"
+        ) as m:
+            get_response = {
+                "last_realm_count_id": 0,
+                "last_installation_count_id": 0,
+                "last_realmauditlog_id": 0,
+            }
+
+            def mock_send_to_push_bouncer_response(  # type: ignore[return]
+                method: str, *args: Any
+            ) -> Optional[Dict[str, int]]:
+                if method == "GET":
+                    return get_response
+
+            m.side_effect = mock_send_to_push_bouncer_response
+
+            with self.captureOnCommitCallbacks(execute=True):
+                new_realm = do_import_realm(get_output_dir(), "test-zulip")
+
+        self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
+        calls_args_for_assert = m.call_args_list[1][0]
+        self.assertEqual(calls_args_for_assert[0], "POST")
+        self.assertEqual(calls_args_for_assert[1], "server/analytics")
+        self.assertIn(
+            new_realm.id, [realm["id"] for realm in json.loads(m.call_args_list[1][0][2]["realms"])]
+        )
+
     def test_import_files_from_local(self) -> None:
         user = self.example_user("hamlet")
         realm = user.realm
@@ -1536,25 +1587,31 @@ class RealmImportExportTest(ExportFile):
         self.export_realm(realm)
 
         with self.settings(BILLING_ENABLED=True), self.assertLogs(level="INFO"):
-            realm = do_import_realm(get_output_dir(), "test-zulip-1")
-            self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_LIMITED)
-            self.assertEqual(realm.max_invites, 100)
-            self.assertEqual(realm.upload_quota_gb, 5)
-            self.assertEqual(realm.message_visibility_limit, 10000)
+            imported_realm = do_import_realm(get_output_dir(), "test-zulip-1")
+            self.assertEqual(imported_realm.plan_type, Realm.PLAN_TYPE_LIMITED)
+            self.assertEqual(imported_realm.max_invites, 100)
+            self.assertEqual(imported_realm.upload_quota_gb, 5)
+            self.assertEqual(imported_realm.message_visibility_limit, 10000)
             self.assertTrue(
                 RealmAuditLog.objects.filter(
-                    realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
+                    realm=imported_realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
                 ).exists()
             )
+
+        # Importing the same export data twice would cause conflict on unique fields,
+        # so instead re-export the original realm via self.export_realm, which handles
+        # this issue.
+        self.export_realm(realm)
+
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            realm = do_import_realm(get_output_dir(), "test-zulip-2")
-            self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
-            self.assertEqual(realm.max_invites, 100)
-            self.assertEqual(realm.upload_quota_gb, None)
-            self.assertEqual(realm.message_visibility_limit, None)
+            imported_realm = do_import_realm(get_output_dir(), "test-zulip-2")
+            self.assertEqual(imported_realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
+            self.assertEqual(imported_realm.max_invites, 100)
+            self.assertEqual(imported_realm.upload_quota_gb, None)
+            self.assertEqual(imported_realm.message_visibility_limit, None)
             self.assertTrue(
                 RealmAuditLog.objects.filter(
-                    realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
+                    realm=imported_realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
                 ).exists()
             )
 
@@ -1589,8 +1646,8 @@ class RealmImportExportTest(ExportFile):
         # corresponding system groups.
         for user in UserProfile.objects.filter(realm=imported_realm):
             expected_group_names = {UserGroup.SYSTEM_USER_GROUP_ROLE_MAP[user.role]["name"]}
-            if UserGroup.MEMBERS_GROUP_NAME in expected_group_names:
-                expected_group_names.add(UserGroup.FULL_MEMBERS_GROUP_NAME)
+            if SystemGroups.MEMBERS in expected_group_names:
+                expected_group_names.add(SystemGroups.FULL_MEMBERS)
             self.assertSetEqual(logged_membership_by_user_id[user.id], expected_group_names)
 
 
@@ -1901,12 +1958,12 @@ class SingleUserExportTest(ExportFile):
             (rec,) = records
             self.assertEqual(rec["value"], 42)
 
-        UserHotspot.objects.create(user=cordelia, hotspot="topics")
-        UserHotspot.objects.create(user=othello, hotspot="bogus")
+        OnboardingStep.objects.create(user=cordelia, onboarding_step="topics")
+        OnboardingStep.objects.create(user=othello, onboarding_step="bogus")
 
         @checker
-        def zerver_userhotspot(records: List[Record]) -> None:
-            self.assertEqual(records[-1]["hotspot"], "topics")
+        def zerver_onboardingstep(records: List[Record]) -> None:
+            self.assertEqual(records[-1]["onboarding_step"], "topics")
 
         """
         The zerver_realmauditlog checker basically assumes that

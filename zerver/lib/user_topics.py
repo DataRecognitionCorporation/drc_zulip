@@ -1,6 +1,7 @@
-import datetime
 import logging
-from typing import Callable, List, Optional, Tuple, TypedDict
+from collections import defaultdict
+from datetime import datetime
+from typing import Callable, Dict, List, Optional, Tuple, TypedDict
 
 from django.db import transaction
 from django.db.models import QuerySet
@@ -80,7 +81,7 @@ def set_topic_visibility_policy(
     user_profile: UserProfile,
     topics: List[List[str]],
     visibility_policy: int,
-    last_updated: Optional[datetime.datetime] = None,
+    last_updated: Optional[datetime] = None,
 ) -> None:
     """
     This is only used in tests.
@@ -108,6 +109,21 @@ def set_topic_visibility_policy(
         )
 
 
+def get_topic_visibility_policy(
+    user_profile: UserProfile,
+    stream_id: int,
+    topic_name: str,
+) -> int:
+    try:
+        user_topic = UserTopic.objects.get(
+            user_profile=user_profile, stream_id=stream_id, topic_name__iexact=topic_name
+        )
+        visibility_policy = user_topic.visibility_policy
+    except UserTopic.DoesNotExist:
+        visibility_policy = UserTopic.VisibilityPolicy.INHERIT
+    return visibility_policy
+
+
 @transaction.atomic(savepoint=False)
 def bulk_set_user_topic_visibility_policy_in_database(
     user_profiles: List[UserProfile],
@@ -116,7 +132,7 @@ def bulk_set_user_topic_visibility_policy_in_database(
     *,
     visibility_policy: int,
     recipient_id: Optional[int] = None,
-    last_updated: Optional[datetime.datetime] = None,
+    last_updated: Optional[datetime] = None,
 ) -> List[UserProfile]:
     # returns the list of user_profiles whose user_topic row
     # is either deleted, updated, or created.
@@ -233,24 +249,32 @@ def exclude_topic_mutes(
     return [*conditions, condition]
 
 
-def build_topic_mute_checker(user_profile: UserProfile) -> Callable[[int, str], bool]:
-    rows = UserTopic.objects.filter(
-        user_profile=user_profile, visibility_policy=UserTopic.VisibilityPolicy.MUTED
-    ).values(
+def build_get_topic_visibility_policy(
+    user_profile: UserProfile,
+) -> Callable[[int, str], int]:
+    """Prefetch the visibility policies the user has configured for
+    various topics.
+
+    The prefetching helps to avoid the db queries later in the loop
+    to determine the user's visibility policy for a topic.
+    """
+    rows = UserTopic.objects.filter(user_profile=user_profile).values(
         "recipient_id",
         "topic_name",
+        "visibility_policy",
     )
 
-    tups = set()
+    topic_to_visibility_policy: Dict[Tuple[int, str], int] = defaultdict(int)
     for row in rows:
         recipient_id = row["recipient_id"]
         topic_name = row["topic_name"]
-        tups.add((recipient_id, topic_name.lower()))
+        visibility_policy = row["visibility_policy"]
+        topic_to_visibility_policy[(recipient_id, topic_name)] = visibility_policy
 
-    def is_muted(recipient_id: int, topic: str) -> bool:
-        return (recipient_id, topic.lower()) in tups
+    def get_topic_visibility_policy(recipient_id: int, topic: str) -> int:
+        return topic_to_visibility_policy[(recipient_id, topic.lower())]
 
-    return is_muted
+    return get_topic_visibility_policy
 
 
 def get_users_with_user_topic_visibility_policy(

@@ -1,11 +1,11 @@
 import base64
-import datetime
 import itertools
 import os
 import signal
 import time
 from collections import defaultdict
 from contextlib import contextmanager, suppress
+from datetime import datetime, timedelta, timezone
 from inspect import isabstract
 from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional
 from unittest.mock import MagicMock, patch
@@ -15,7 +15,7 @@ import time_machine
 from django.conf import settings
 from django.db.utils import IntegrityError
 from django.test import override_settings
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, override
 
 from zerver.lib.email_mirror import RateLimitedRealmMirror
 from zerver.lib.email_mirror_helpers import encode_email_address
@@ -161,9 +161,7 @@ class WorkerTest(ZulipTestCase):
         events = [hamlet_event1, hamlet_event2, othello_event]
 
         mmw = MissedMessageWorker()
-        batch_duration = datetime.timedelta(
-            seconds=hamlet.email_notifications_batching_period_seconds
-        )
+        batch_duration = timedelta(seconds=hamlet.email_notifications_batching_period_seconds)
         assert (
             hamlet.email_notifications_batching_period_seconds
             == othello.email_notifications_batching_period_seconds
@@ -181,7 +179,7 @@ class WorkerTest(ZulipTestCase):
 
         def check_row(
             row: ScheduledMessageNotificationEmail,
-            scheduled_timestamp: datetime.datetime,
+            scheduled_timestamp: datetime,
             mentioned_user_group_id: Optional[int],
         ) -> None:
             self.assertEqual(row.trigger, NotificationTriggers.DIRECT_MESSAGE)
@@ -213,7 +211,7 @@ class WorkerTest(ZulipTestCase):
         self.assertFalse(has_timeout)
 
         # Enqueues the events to the internal queue, as if from RabbitMQ
-        time_zero = datetime.datetime(2021, 1, 1, tzinfo=datetime.timezone.utc)
+        time_zero = datetime(2021, 1, 1, tzinfo=timezone.utc)
         with time_machine.travel(time_zero, tick=False), patch.object(
             mmw.cv, "notify"
         ) as notify_mock:
@@ -252,7 +250,7 @@ class WorkerTest(ZulipTestCase):
         # If another event is received, test that it gets saved with the same
         # `expected_scheduled_timestamp` as the earlier events.
 
-        few_moments_later = time_zero + datetime.timedelta(seconds=3)
+        few_moments_later = time_zero + timedelta(seconds=3)
         with time_machine.travel(few_moments_later, tick=False), patch.object(
             mmw.cv, "notify"
         ) as notify_mock:
@@ -269,14 +267,14 @@ class WorkerTest(ZulipTestCase):
 
         # Now let us test `maybe_send_batched_emails`
         # If called too early, it shouldn't process the emails.
-        one_minute_premature = expected_scheduled_timestamp - datetime.timedelta(seconds=60)
+        one_minute_premature = expected_scheduled_timestamp - timedelta(seconds=60)
         with time_machine.travel(one_minute_premature, tick=False):
             has_timeout = advance()
         self.assertTrue(has_timeout)
         self.assertEqual(ScheduledMessageNotificationEmail.objects.count(), 4)
 
         # If called after `expected_scheduled_timestamp`, it should process all emails.
-        one_minute_overdue = expected_scheduled_timestamp + datetime.timedelta(seconds=60)
+        one_minute_overdue = expected_scheduled_timestamp + timedelta(seconds=60)
         with time_machine.travel(one_minute_overdue, tick=True):
             with send_mock as sm, self.assertLogs(level="INFO") as info_logs:
                 has_timeout = advance()
@@ -342,7 +340,7 @@ class WorkerTest(ZulipTestCase):
         # Verify that we make forward progress if one of the messages
         # throws an exception.  First, enqueue the messages, and get
         # them to create database rows:
-        time_zero = datetime.datetime(2021, 1, 1, tzinfo=datetime.timezone.utc)
+        time_zero = datetime(2021, 1, 1, tzinfo=timezone.utc)
         with time_machine.travel(time_zero, tick=False), patch.object(
             mmw.cv, "notify"
         ) as notify_mock:
@@ -359,7 +357,7 @@ class WorkerTest(ZulipTestCase):
             if user.id == hamlet.id:
                 raise RuntimeError
 
-        one_minute_overdue = expected_scheduled_timestamp + datetime.timedelta(seconds=60)
+        one_minute_overdue = expected_scheduled_timestamp + timedelta(seconds=60)
         with time_machine.travel(one_minute_overdue, tick=False), self.assertLogs(
             level="ERROR"
         ) as error_logs, send_mock as sm:
@@ -626,6 +624,7 @@ class WorkerTest(ZulipTestCase):
 
         @queue_processors.assign_queue("unreliable_worker", is_test_queue=True)
         class UnreliableWorker(queue_processors.QueueProcessingWorker):
+            @override
             def consume(self, data: Mapping[str, Any]) -> None:
                 if data["type"] == "unexpected behaviour":
                     raise Exception("Worker task not performing as expected!")
@@ -661,6 +660,7 @@ class WorkerTest(ZulipTestCase):
 
         @queue_processors.assign_queue("unreliable_loopworker", is_test_queue=True)
         class UnreliableLoopWorker(queue_processors.LoopQueueProcessingWorker):
+            @override
             def consume_batch(self, events: List[Dict[str, Any]]) -> None:
                 for event in events:
                     if event["type"] == "unexpected behaviour":
@@ -702,6 +702,7 @@ class WorkerTest(ZulipTestCase):
         class TimeoutWorker(queue_processors.QueueProcessingWorker):
             MAX_CONSUME_SECONDS = 1
 
+            @override
             def consume(self, data: Mapping[str, Any]) -> None:
                 if data["type"] == "timeout":
                     time.sleep(1.5)
@@ -755,6 +756,7 @@ class WorkerTest(ZulipTestCase):
         class TimeoutWorker(FetchLinksEmbedData):
             MAX_CONSUME_SECONDS = 1
 
+            @override
             def consume(self, data: Mapping[str, Any]) -> None:
                 # Send SIGALRM to ourselves to simulate a timeout.
                 pid = os.getpid()
@@ -785,6 +787,7 @@ class WorkerTest(ZulipTestCase):
             def __init__(self) -> None:
                 super().__init__()
 
+            @override
             def consume(self, data: Mapping[str, Any]) -> None:
                 pass  # nocoverage # this is intentionally not called
 

@@ -2,14 +2,27 @@ from argparse import ArgumentParser
 from typing import Any
 
 from django.core.management.base import CommandError
+from typing_extensions import override
 
 from zerver.actions.users import (
     do_change_can_create_users,
     do_change_can_forge_sender,
+    do_change_is_billing_admin,
     do_change_user_role,
 )
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import UserProfile
+
+ROLE_CHOICES = [
+    "owner",
+    "admin",
+    "moderator",
+    "member",
+    "guest",
+    "can_forge_sender",
+    "can_create_users",
+    "is_billing_admin",
+]
 
 
 class Command(ZulipBaseCommand):
@@ -18,21 +31,14 @@ class Command(ZulipBaseCommand):
 ONLY perform this on customer request from an authorized person.
 """
 
+    @override
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("email", metavar="<email>", help="email of user to change role")
         parser.add_argument(
             "new_role",
             metavar="<new_role>",
-            choices=[
-                "owner",
-                "admin",
-                "moderator",
-                "member",
-                "guest",
-                "can_forge_sender",
-                "can_create_users",
-            ],
-            help="new role of the user",
+            choices=ROLE_CHOICES,
+            help="new role of the user; choose from " + ", ".join(ROLE_CHOICES),
         )
         parser.add_argument(
             "--revoke",
@@ -42,6 +48,7 @@ ONLY perform this on customer request from an authorized person.
         )
         self.add_realm_args(parser, required=True)
 
+    @override
     def handle(self, *args: Any, **options: Any) -> None:
         email = options["email"]
         realm = self.get_realm(options)
@@ -56,7 +63,7 @@ ONLY perform this on customer request from an authorized person.
             "guest": UserProfile.ROLE_GUEST,
         }
 
-        if options["new_role"] not in ["can_forge_sender", "can_create_users"]:
+        if options["new_role"] not in ["can_forge_sender", "can_create_users", "is_billing_admin"]:
             new_role = user_role_map[options["new_role"]]
             if not options["grant"]:
                 raise CommandError(
@@ -83,9 +90,17 @@ ONLY perform this on customer request from an authorized person.
             print(
                 f"{user.delivery_email} changed to {granted_text} {options['new_role']} permission."
             )
-        else:
+        elif options["new_role"] == "can_create_users":
             if user.can_create_users and options["grant"]:
                 raise CommandError("User can already create users for this realm.")
             elif not user.can_create_users and not options["grant"]:
                 raise CommandError("User can't create users for this realm.")
             do_change_can_create_users(user, options["grant"])
+        else:
+            assert options["new_role"] == "is_billing_admin"
+            if user.is_billing_admin and options["grant"]:
+                raise CommandError("User already is a billing admin for this realm.")
+            elif not user.is_billing_admin and not options["grant"]:
+                raise CommandError("User is not a billing admin for this realm.")
+
+            do_change_is_billing_admin(user, options["grant"])

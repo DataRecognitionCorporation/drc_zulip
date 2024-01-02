@@ -4,6 +4,7 @@ from typing import Any, List, Match
 from markdown import Markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
+from typing_extensions import override
 
 from zerver.lib.markdown.priorities import PREPROCESSOR_PRIORITES
 
@@ -56,11 +57,6 @@ link_mapping = {
         "Organization settings",
         "Authentication methods",
         "/#organization/auth-methods",
-    ],
-    "user-groups-admin": [
-        "Organization settings",
-        "User groups",
-        "/#organization/user-groups-admin",
     ],
     "user-list-admin": ["Organization settings", "Users", "/#organization/user-list-admin"],
     "deactivated-users-admin": [
@@ -131,6 +127,7 @@ def getMarkdown(setting_type_name: str, setting_name: str, setting_link: str) ->
 
 
 class SettingHelpExtension(Extension):
+    @override
     def extendMarkdown(self, md: Markdown) -> None:
         """Add SettingHelpExtension to the Markdown instance."""
         md.registerExtension(self)
@@ -146,6 +143,7 @@ def set_relative_settings_links(value: bool) -> None:
 
 
 class Setting(Preprocessor):
+    @override
     def run(self, lines: List[str]) -> List[str]:
         done = False
         while not done:

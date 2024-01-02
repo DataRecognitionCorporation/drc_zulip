@@ -170,20 +170,22 @@ management command:
 This will sync the fields declared in `AUTH_LDAP_USER_ATTR_MAP` for
 all of your users.
 
-We recommend running this command in a **regular cron job**, to pick
-up changes made on your LDAP server.
+We recommend running this command in a **regular cron job** at
+whatever frequency your organization prefers for synchronizing changes
+made on your LDAP server to Zulip.
 
 All of these data synchronization options have the same model:
 
 - New users will be populated automatically with the
   name/avatar/etc. from LDAP (as configured) on account creation.
-- The `manage.py sync_ldap_user_data` cron job will automatically
-  update existing users with any changes that were made in LDAP.
+- `manage.py sync_ldap_user_data` will automatically update existing
+  users with any changes that were made in LDAP.
 - You can easily test your configuration using `manage.py query_ldap`.
   Once you're happy with the configuration, remember to restart the
   Zulip server with
   `/home/zulip/deployments/current/scripts/restart-server` so that
   your configuration changes take effect.
+- Logs are available in `/var/log/zulip/ldap.log`.
 
 When using this feature, you may also want to
 [prevent users from changing their display name in the Zulip UI][restrict-name-changes],
@@ -211,6 +213,61 @@ if you have a custom profile field `LinkedIn Profile` and the
 corresponding LDAP attribute is `linkedinProfile` then you just need
 to add `'custom_profile_field__linkedin_profile': 'linkedinProfile'`
 to the `AUTH_LDAP_USER_ATTR_MAP`.
+
+#### Synchronizing groups
+
+Zulip supports syncing [Zulip groups][zulip-groups] with LDAP
+groups. To configure this feature:
+
+1. Review the [django-auth-ldap
+   documentation](https://django-auth-ldap.readthedocs.io/en/latest/groups.html)
+   to determine which of its supported group type configurations
+   matches how your LDAP directory stores groups.
+
+1. Set `AUTH_LDAP_GROUP_TYPE` to the appropriate class instance for
+   that LDAP group type:
+
+   ```python
+   from django_auth_ldap.config import ActiveDirectoryGroupType
+   AUTH_LDAP_GROUP_TYPE = ActiveDirectoryGroupType()
+   ```
+
+   The default is `GroupOfUniqueNamesType`.
+
+1. Configure `AUTH_LDAP_GROUP_SEARCH` to specify how to find groups in
+   your LDAP directory:
+
+   ```python
+   AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
+       "ou=groups,dc=www,dc=example,dc=com", ldap.SCOPE_SUBTREE,
+       "(objectClass=groupOfUniqueNames)"
+   )
+   ```
+
+1. Configure which LDAP groups you want to sync into
+   Zulip. `LDAP_SYNCHRONIZED_GROUPS_BY_REALM` is a map where the keys
+   are subdomains of the realms being configured (use `""` for the
+   root domain), and the value corresponding to the key being a list
+   the names of groups to sync:
+
+   ```python
+   LDAP_SYNCHRONIZED_GROUPS_BY_REALM = {
+     "subdomain1" : [
+         "group1",
+         "group2",
+     ]
+   }
+   ```
+
+   In this example configuration, for the Zulip realm with subdomain
+   `subdomain1`, user membership in the Zulip groups named `group1`
+   and `group2` will match their membership in LDAP groups with those
+   names.
+
+1. Test your configuration and restart the server into the new
+   configuration as [documented above](#synchronizing-data).
+
+[zulip-groups]: https://zulip.com/help/user-groups
 
 #### Synchronizing email addresses
 
@@ -265,12 +322,12 @@ or `NO` otherwise. You can configure a mapping for `deactivated` in
 `AUTH_LDAP_USER_ATTR_MAP`. For example, `"deactivated": "nsAccountLock",` is a correct mapping for a
 [FreeIPA](https://www.freeipa.org/) LDAP database.
 
-Disabled users will be immediately unable to log in
-to Zulip, since Zulip queries the LDAP/Active Directory server on
-every login attempt. The user will be fully deactivated the next time
-your `manage.py sync_ldap_user_data` cron job runs (at which point
-they will be forcefully logged out from all active browser sessions,
-appear as deactivated in the Zulip UI, etc.).
+Users who are disabled in LDAP will be immediately unable to log in to
+Zulip using LDAP authentication, since Zulip queries the LDAP/Active
+Directory server on every login attempt. The user will be fully
+deactivated the next time you run `manage.py sync_ldap_user_data` (at
+which point they will be forcibly logged out from all active browser
+sessions, appear as deactivated in the Zulip UI, etc.).
 
 This feature works by checking for the `ACCOUNTDISABLE` flag on the
 `userAccountControl` field in Active Directory. See
@@ -279,15 +336,15 @@ for details on the various `userAccountControl` flags.
 
 #### Deactivating non-matching users
 
-Zulip supports automatically deactivating
-users if they are not found by the `AUTH_LDAP_USER_SEARCH` query
-(either because the user is no longer in LDAP/Active Directory, or
-because the user no longer matches the query). This feature is
-enabled by default if LDAP is the only authentication backend
-configured on the Zulip server. Otherwise, you can enable this
-feature by setting `LDAP_DEACTIVATE_NON_MATCHING_USERS` to `True` in
+Zulip supports automatically deactivating users if they are not found
+by the `AUTH_LDAP_USER_SEARCH` query (either because the user is no
+longer in LDAP/Active Directory, or because the user no longer matches
+the query). This feature is enabled by default if LDAP is the only
+authentication backend configured on the Zulip server. Otherwise, you
+can enable this feature by setting
+`LDAP_DEACTIVATE_NON_MATCHING_USERS` to `True` in
 `/etc/zulip/settings.py`. Nonmatching users will be fully deactivated
-the next time your `manage.py sync_ldap_user_data` cron job runs.
+the next time you run `manage.py sync_ldap_user_data`.
 
 #### Other fields
 
@@ -328,7 +385,7 @@ You can restrict access to your Zulip server to a set of LDAP groups
 using the `AUTH_LDAP_REQUIRE_GROUP` and `AUTH_LDAP_DENY_GROUP`
 settings in `/etc/zulip/settings.py`.
 
-An example configation for Active Directory group restriction can be:
+An example configuration for Active Directory group restriction can be:
 
 ```python
 import django_auth_ldap
@@ -374,10 +431,35 @@ More complex access control rules are possible via the
 2. If `org_membership` is not set or does not allow access,
    `AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL` will control access.
 
-This contains a map keyed by the organization's subdomain. The
-organization list with multiple maps, that contain a map with an attribute, and a required
-value for that attribute. If for any of the attribute maps, all user's
-LDAP attributes match what is configured, access is granted.
+`AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL` is a dictionary keyed by the
+organization's subdomain. The corresponding value is a list of
+`attribute: value` pair sets such that a user is permitted to access
+the organization if and only if the `attribute: value` pairs in at
+least one of these sets match the user's LDAP attributes. If this
+setting is enabled, organizations not explicitly configured in it
+will not be affected - they'll allow normal LDAP login, unless restricted
+by other settings.
+This is better illustrated with an example:
+
+```
+AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL = {
+    "zulip": [
+        {
+            "department": "main",
+            "employeeType": "staff"
+        },
+        {
+            "office": "Dallas"
+        }
+    ]
+}
+```
+
+This means that the organization `"zulip"` will be accessible via ldap
+authentication only for users whose ldap attributes either contain
+both `department: main` `employeeType: staff` or just `office:
+Dallas`. LDAP authentication will proceed normally for all other
+organizations.
 
 :::{warning}
 Restricting access using these mechanisms only affects authentication via LDAP,
@@ -653,6 +735,44 @@ integration](../production/scim.md).
          importing, only the certificate will be displayed (not the private
          key).
 
+### Using Authentik as a SAML IdP
+
+1. Make sure you reviewed [this article](https://goauthentik.io/integrations/services/zulip/), which
+   details how to integrate Zulip with Authentik.
+1. Verify that `SOCIAL_AUTH_SAML_ENABLED_IDPS[{idp_name}]['entity_id']` and
+   `SOCIAL_AUTH_SAML_ENABLED_IDPS[{idp_name}]['url']` are correct in your Zulip
+   configuration. Specifically, if `entity_id` is
+   `https://authentik.example.com/`, then `url`
+   should be
+   `https://authentik.company/application/saml/<application slug>/sso/binding/redirect/` where `<application slug>`
+   is the application slug you've assigned to this application in Authentik settings (e.g `zulip`).
+1. Update the attribute mapping in your new entry in `SOCIAL_AUTH_SAML_ENABLED_IDPS` to match how
+   Authentik specifies attributes in its `SAMLResponse`:
+
+   ```
+   "attr_user_permanent_id": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+   "attr_first_name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+   "attr_last_name": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
+   "attr_username": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+   "attr_email": "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
+   ```
+
+1. Your Authentik public certificate must be saved on the Zulip server
+   as `/etc/zulip/saml/idps/{idp_name}.crt`. You can obtain the
+   certificate from the Authentik UI in the `Certificates` section or directly
+   from the provider's page.
+
+   (Alternatively, open the settings page of the provider you created and copy the certificate embedded in the
+   SAML Metadata's `<ds:X509Certificate>` field.).
+
+   Save the certificate in a new `{idp_name}.crt` file constructed as follows:
+
+   ```
+   -----BEGIN CERTIFICATE-----
+   {Paste the content here}
+   -----END CERTIFICATE-----
+   ```
+
 ### SAML Single Logout
 
 Zulip supports both IdP-initiated and SP-initiated SAML Single
@@ -661,7 +781,7 @@ these instructions are for that provider; please [contact
 us](https://zulip.com/help/contact-support) if you need help using
 this with another IdP.
 
-#### IdP-initated Single Logout
+#### IdP-initiated Single Logout
 
 1. In the KeyCloak configuration for Zulip, enable `Force Name ID Format`
    and set `Name ID Format` to `email`. Zulip needs to receive
@@ -671,7 +791,7 @@ this with another IdP.
    Disable `Force POST Binding`, as Zulip only supports the Redirect binding.
 1. In `Fine Grain SAML Endpoint Configuration`, set `Logout Service Redirect Binding URL`
    to the same value you provided for `SSO URL` above.
-1. Add the IdP's `Redirect Binding URL`for `SingleLogoutService` to
+1. Add the IdP's `Redirect Binding URL` for `SingleLogoutService` to
    your IdP configuration dict in `SOCIAL_AUTH_SAML_ENABLED_IDPS` in
    `/etc/zulip/settings.py` as `slo_url`. For example it may look like
    this:

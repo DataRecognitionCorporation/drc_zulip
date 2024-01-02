@@ -459,6 +459,19 @@
       "expected_output": "<p><a href=\"https://github.com\">https://github.com</a></p>"
     },
     {
+      "name": "only_inline_video",
+      "input": "https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4",
+      "expected_output": "<div class=\"message_inline_image message_inline_video\"><a href=\"https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4\"><video data-video-original-url=\"https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4\" preload=\"metadata\" src=\"https://external-content.zulipcdn.net/external_content/785b3eb6f6165491371895ba42ead0e3661ae44b/68747470733a2f2f66696c652d6578616d706c65732d636f6d2e6769746875622e696f2f75706c6f6164732f323031372f30342f66696c655f6578616d706c655f4d50345f3438305f315f354d472e6d7034\"></video></a></div>",
+      "backend_only_rendering": true
+    },
+    {
+      "name": "only_named_inline_video",
+      "input": "[Google link](https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4)",
+      "expected_output": "<p><a href=\"https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4\">Google link</a></p>\n<div class=\"message_inline_image message_inline_video\"><a href=\"https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4\" title=\"Google link\"><video data-video-original-url=\"https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_480_1_5MG.mp4\" preload=\"metadata\" src=\"https://external-content.zulipcdn.net/external_content/785b3eb6f6165491371895ba42ead0e3661ae44b/68747470733a2f2f66696c652d6578616d706c65732d636f6d2e6769746875622e696f2f75706c6f6164732f323031372f30342f66696c655f6578616d706c655f4d50345f3438305f315f354d472e6d7034\"></video></a></div>",
+      "backend_only_rendering": true,
+      "text_content": "Google link\n"
+    },
+    {
       "name": "link_with_text",
       "input": "[hello](https://github.com)",
       "expected_output": "<p><a href=\"https://github.com\">hello</a></p>"
@@ -834,7 +847,8 @@
     {
       "name": "tex_inline",
       "input": "$$1 \\oplus 0 = 1$$",
-      "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mn>1</mn><mo>⊕</mo><mn>0</mn><mo>=</mo><mn>1</mn></mrow><annotation encoding=\"application/x-tex\">1 \\oplus 0 = 1</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.7278em;vertical-align:-0.0833em;\"></span><span class=\"mord\">1</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">⊕</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6444em;\"></span><span class=\"mord\">0</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6444em;\"></span><span class=\"mord\">1</span></span></span></span></p>"
+      "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mn>1</mn><mo>⊕</mo><mn>0</mn><mo>=</mo><mn>1</mn></mrow><annotation encoding=\"application/x-tex\">1 \\oplus 0 = 1</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.7278em;vertical-align:-0.0833em;\"></span><span class=\"mord\">1</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">⊕</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6444em;\"></span><span class=\"mord\">0</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.6444em;\"></span><span class=\"mord\">1</span></span></span></span></p>",
+      "text_content": "$$1 \\oplus 0 = 1$$"
     },
     {
       "name": "tex_complex",
@@ -849,7 +863,8 @@
     {
       "name": "tex_fenced_math",
       "input": "```math\na^2 = b^2 + c^2\n```",
-      "expected_output": "<p><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><msup><mi>a</mi><mn>2</mn></msup><mo>=</mo><msup><mi>b</mi><mn>2</mn></msup><mo>+</mo><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding=\"application/x-tex\">a^2 = b^2 + c^2</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8641em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">a</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8641em;\"><span style=\"top:-3.113em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.9474em;vertical-align:-0.0833em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">b</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8641em;\"><span style=\"top:-3.113em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.8641em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">c</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8641em;\"><span style=\"top:-3.113em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span></span></span></span></span></p>"
+      "expected_output": "<p><span class=\"katex-display\"><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><semantics><mrow><msup><mi>a</mi><mn>2</mn></msup><mo>=</mo><msup><mi>b</mi><mn>2</mn></msup><mo>+</mo><msup><mi>c</mi><mn>2</mn></msup></mrow><annotation encoding=\"application/x-tex\">a^2 = b^2 + c^2</annotation></semantics></math></span><span class=\"katex-html\" aria-hidden=\"true\"><span class=\"base\"><span class=\"strut\" style=\"height:0.8641em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">a</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8641em;\"><span style=\"top:-3.113em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.9474em;vertical-align:-0.0833em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">b</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8641em;\"><span style=\"top:-3.113em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span><span class=\"mbin\">+</span><span class=\"mspace\" style=\"margin-right:0.2222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.8641em;\"></span><span class=\"mord\"><span class=\"mord mathnormal\">c</span><span class=\"msupsub\"><span class=\"vlist-t\"><span class=\"vlist-r\"><span class=\"vlist\" style=\"height:0.8641em;\"><span style=\"top:-3.113em;margin-right:0.05em;\"><span class=\"pstrut\" style=\"height:2.7em;\"></span><span class=\"sizing reset-size6 size3 mtight\"><span class=\"mord mtight\">2</span></span></span></span></span></span></span></span></span></span></span></span></p>",
+      "text_content": "$$a^2 = b^2 + c^2$$"
     },
     {
       "name": "tex_fenced_tex",
@@ -1187,11 +1202,6 @@
       "http://fr.wikipedia.org/wiki/Fichier:SMirC-facepalm.svg"
     ],
     [
-      "https://en.wikipedia.org/wiki/File:Methamphetamine_from_ephedrine_with_HI_en.mov",
-      "<p>%s</p>",
-      "https://en.wikipedia.org/wiki/File:Methamphetamine_from_ephedrine_with_HI_en.mov"
-    ],
-    [
       "https://jira.atlassian.com/browse/JRA-31953?page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel",
       "<p>%s</p>",
       "https://jira.atlassian.com/browse/JRA-31953?page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel"
@@ -1320,11 +1330,6 @@
       "hash it http://foo.com/blah_(wikipedia)_blah#cite-1",
       "<p>hash it %s</p>",
       "http://foo.com/blah_(wikipedia)_blah#cite-1"
-    ],
-    [
-      "http://technet.microsoft.com/en-us/library/Cc751099.rk20_25_big(l=en-us).mov",
-      "<p>%s</p>",
-      "http://technet.microsoft.com/en-us/library/Cc751099.rk20_25_big(l=en-us).mov"
     ],
     [
       "https://metacpan.org/module/Image::Resize::OpenCV",

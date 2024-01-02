@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 const {page_params, user_settings} = require("./lib/zpage_params");
 
@@ -15,7 +15,6 @@ page_params.realm_users = [];
 // We use this with override.
 let num_unread_for_stream;
 let stream_has_any_unread_mentions;
-const noop = () => {};
 
 mock_esm("../src/narrow_state", {
     active: () => false,
@@ -458,7 +457,7 @@ test_ui("narrowing", ({mock_template}) => {
         topics_closed = true;
     };
 
-    stream_list.handle_narrow_deactivated();
+    stream_list.handle_message_view_deactivated();
     assert.equal(removed_classes, "active-filter stream-expanded");
     assert.ok(topics_closed);
 });

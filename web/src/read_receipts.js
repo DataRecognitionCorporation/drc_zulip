@@ -8,14 +8,13 @@ import * as channel from "./channel";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as message_store from "./message_store";
-import * as overlays from "./overlays";
+import * as modals from "./modals";
 import * as people from "./people";
-import * as popovers from "./popovers";
 import * as ui_report from "./ui_report";
 
 export function show_user_list(message_id) {
     $("body").append(render_read_receipts_modal());
-    overlays.open_modal("read_receipts_modal", {
+    modals.open("read_receipts_modal", {
         autoremove: true,
         on_show() {
             const message = message_store.get(message_id);
@@ -33,7 +32,7 @@ export function show_user_list(message_id) {
                     url: `/json/messages/${message_id}/read_receipts`,
                     success(data) {
                         const users = data.user_ids.map((id) => {
-                            const user = people.get_by_user_id(id);
+                            const user = people.get_user_by_id_assert_valid(id);
                             return {
                                 user_id: user.user_id,
                                 full_name: user.full_name,
@@ -78,10 +77,6 @@ export function show_user_list(message_id) {
                     },
                 });
             }
-        },
-        on_hide() {
-            // Ensure any user info popovers are closed
-            popovers.hide_all();
         },
     });
 }

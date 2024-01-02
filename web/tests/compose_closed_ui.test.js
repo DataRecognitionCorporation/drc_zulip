@@ -4,13 +4,9 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const $ = require("./lib/zjquery");
 
-mock_esm("../src/recent_view_util", {
-    is_visible: () => false,
-});
-const noop = () => {};
 // Mocking and stubbing things
 set_global("document", "document-stub");
 const message_lists = mock_esm("../src/message_lists");
@@ -32,7 +28,7 @@ const {MessageList} = zrequire("message_list");
 
 // Helper test function
 function test_reply_label(expected_label) {
-    const label = $(".compose_reply_button_label").text();
+    const label = $("#left_bar_compose_reply_button_big").text();
     const prepend_text_length = "translated: Message ".length;
     assert.equal(
         label.slice(prepend_text_length),
@@ -134,6 +130,6 @@ run_test("test_custom_message_input", () => {
 run_test("empty_narrow", () => {
     message_lists.current.visibly_empty = () => true;
     compose_closed_ui.update_reply_recipient_label();
-    const label = $(".compose_reply_button_label").text();
+    const label = $("#left_bar_compose_reply_button_big").text();
     assert.equal(label, "translated: Compose message");
 });

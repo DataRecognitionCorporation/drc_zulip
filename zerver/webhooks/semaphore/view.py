@@ -1,12 +1,12 @@
 # Webhooks for external integrations.
 from typing import Optional, Tuple
-from urllib.parse import urlparse
+from urllib.parse import urlsplit
 
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.response import json_success
-from zerver.lib.typed_endpoint import WebhookPayload, typed_endpoint
+from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.webhooks.git import get_short_sha
@@ -97,7 +97,7 @@ def api_semaphore_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    payload: WebhookPayload[WildValue],
+    payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     content, project_name, branch_name, event = (
         semaphore_classic(payload) if "event" in payload else semaphore_2(payload)
@@ -224,7 +224,7 @@ def semaphore_2(payload: WildValue) -> Tuple[str, str, Optional[str], str]:
 
 
 def is_github_repo(repo_url: str) -> bool:
-    return urlparse(repo_url).hostname == "github.com"
+    return urlsplit(repo_url).hostname == "github.com"
 
 
 def summary_line(message: str) -> str:

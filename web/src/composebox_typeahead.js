@@ -4,6 +4,7 @@ import _ from "lodash";
 import * as typeahead from "../shared/src/typeahead";
 import render_topic_typeahead_hint from "../templates/topic_typeahead_hint.hbs";
 
+import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
@@ -18,6 +19,7 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as realm_playground from "./realm_playground";
 import * as rows from "./rows";
+import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
@@ -151,38 +153,80 @@ export function should_enter_send(e) {
     return this_enter_sends;
 }
 
-export function handle_enter($textarea, e) {
-    // Used only if Enter doesn't send.
-
-    // Since this Enter doesn't send, we just want to do
-    // the browser's default behavior for the "Enter" key.
-    // Letting the browser handle it works great if the
-    // key actually pressed was Enter or Shift-Enter.
-
-    // But the default browser behavior for Ctrl/Alt/Meta
-    // + Enter is to do nothing, so we need to emulate
-    // the browser behavior for "Enter" in those cases.
-    //
-    // We do this using caret and range from jquery-caret.
-    const has_non_shift_modifier_key = e.ctrlKey || e.metaKey || e.altKey;
-    if (!has_non_shift_modifier_key) {
-        // Use the native browser behavior.
+function handle_bulleting_or_numbering($textarea, e) {
+    // We only want this functionality if the cursor is not in a code block
+    if (compose_ui.cursor_inside_code_block($textarea)) {
         return;
     }
-
-    // To properly emulate browser "Enter", if the
-    // user had selected something in the textarea,
-    // we need those characters to be cleared.
-    const range = $textarea.range();
-    if (range.length > 0) {
-        $textarea.range(range.start, range.end).range("");
+    // handles automatic insertion or removal of bulleting or numbering
+    const before_text = split_at_cursor($textarea.val(), $textarea)[0];
+    const previous_line = bulleted_numbered_list_util.get_last_line(before_text);
+    let to_append = "";
+    // if previous line was bulleted, automatically add a bullet to the new line
+    if (bulleted_numbered_list_util.is_bulleted(previous_line)) {
+        // if previous line had only bullet, remove it and stay on the same line
+        if (bulleted_numbered_list_util.strip_bullet(previous_line) === "") {
+            // below we select and replace the last 2 characters in the textarea before
+            // the cursor - the bullet syntax - with an empty string
+            $textarea[0].setSelectionRange($textarea.caret() - 2, $textarea.caret());
+            compose_ui.insert_and_scroll_into_view("", $textarea);
+            e.preventDefault();
+            return;
+        }
+        // use same bullet syntax as the previous line
+        to_append = previous_line.slice(0, 2);
+    } else if (bulleted_numbered_list_util.is_numbered(previous_line)) {
+        // if previous line was numbered, continue numbering with the new line
+        const previous_number_string = previous_line.slice(0, previous_line.indexOf("."));
+        // if previous line had only numbering, remove it and stay on the same line
+        if (bulleted_numbered_list_util.strip_numbering(previous_line) === "") {
+            // below we select then replaces the last few characters in the textarea before
+            // the cursor - the numbering syntax - with an empty string
+            $textarea[0].setSelectionRange(
+                $textarea.caret() - previous_number_string.length - 2,
+                $textarea.caret(),
+            );
+            compose_ui.insert_and_scroll_into_view("", $textarea);
+            e.preventDefault();
+            return;
+        }
+        const previous_number = Number.parseInt(previous_number_string, 10);
+        to_append = previous_number + 1 + ". ";
     }
-
-    // Now add the newline, remembering to resize the
-    // textarea if needed.
-    $textarea.caret("\n");
-    compose_ui.autosize_textarea($textarea);
+    // if previous line was neither numbered nor bulleted, only add
+    // a new line to emulate default behaviour (to_append is blank)
+    // else we add the bulleting / numbering syntax to the new line
+    compose_ui.insert_and_scroll_into_view("\n" + to_append, $textarea);
     e.preventDefault();
+}
+
+export function handle_enter($textarea, e) {
+    // Used only if Enter doesn't send. We need to emulate the
+    // browser's native "Enter" behavior because this code path
+    // includes `Ctrl+Enter` and other modifier key variants that
+    // should add a newline in the compose box in the enter-sends
+    // configuration.
+    //
+    // And while we're at it, we implement some fancy behavior for
+    // bulleted lists.
+
+    // To properly emulate browser "Enter", if the user had selected
+    // something in the textarea, we clear those characters
+
+    // If the selectionStart and selectionEnd are not the same, that
+    // means that some text was selected.
+    if ($textarea[0].selectionStart !== $textarea[0].selectionEnd) {
+        // Replace it with the newline, remembering to resize the
+        // textarea if needed.
+        compose_ui.insert_and_scroll_into_view("\n", $textarea);
+        e.preventDefault();
+    } else {
+        // if nothing had been selected in the texarea we
+        // don't just want to emulate the browser's default
+        // behavior for the "Enter" key, but also handle automatic
+        // insertion or removal of bulleting / numbering.
+        handle_bulleting_or_numbering($textarea, e);
+    }
 }
 
 // nextFocus is set on a keydown event to indicate where we should focus on keyup.
@@ -202,7 +246,7 @@ function handle_keydown(e, {on_enter_send}) {
             target_sel = `#${CSS.escape(e.target.id)}`;
         }
 
-        const on_topic = target_sel === "#stream_message_recipient_topic";
+        const on_topic = target_sel === "input#stream_message_recipient_topic";
         const on_pm = target_sel === "#private_message_recipient";
         const on_compose = target_sel === "#compose-textarea";
 
@@ -237,11 +281,11 @@ function handle_keydown(e, {on_enter_send}) {
                     return;
                 }
 
-                handle_enter($("#compose-textarea"), e);
+                handle_enter($("textarea#compose-textarea"), e);
             }
         } else if (on_topic || on_pm) {
             // We are doing the focusing on keyup to not abort the typeahead.
-            $nextFocus = $("#compose-textarea");
+            $nextFocus = $("textarea#compose-textarea");
         }
     }
 }
@@ -333,20 +377,28 @@ export function tokenize_compose_str(s) {
     return "";
 }
 
-export function broadcast_mentions() {
-    if (!compose_validate.wildcard_mention_allowed()) {
-        return [];
-    }
-    const wildcard_mention_array = ["all", "everyone"];
-    let wildcard_string = "";
+function get_wildcard_string(mention) {
     if (compose_state.get_message_type() === "private") {
-        wildcard_string = $t({defaultMessage: "Notify recipients"});
-    } else {
-        wildcard_string = $t({defaultMessage: "Notify stream"});
-        wildcard_mention_array.push("stream");
+        return $t({defaultMessage: "Notify recipients"});
     }
+    if (mention === "topic") {
+        return $t({defaultMessage: "Notify topic"});
+    }
+    return $t({defaultMessage: "Notify stream"});
+}
+
+export function broadcast_mentions() {
+    let wildcard_mention_array = [];
+    if (compose_state.get_message_type() === "private") {
+        wildcard_mention_array = ["all", "everyone"];
+    } else if (compose_validate.stream_wildcard_mention_allowed()) {
+        wildcard_mention_array = ["all", "everyone", "stream", "topic"];
+    } else if (compose_validate.topic_wildcard_mention_allowed()) {
+        wildcard_mention_array = ["topic"];
+    }
+
     return wildcard_mention_array.map((mention, idx) => ({
-        special_item_text: `${mention} (${wildcard_string})`,
+        special_item_text: `${mention} (${get_wildcard_string(mention)})`,
         email: mention,
 
         // Always sort above, under the assumption that names will
@@ -406,6 +458,7 @@ export const slash_commands = [
         text: $t({defaultMessage: "/me is excited (Display action text)"}),
         name: "me",
         aliases: "",
+        placeholder: $t({defaultMessage: "is …"}),
     },
     {
         text: $t({defaultMessage: "/poll Where should we go to lunch today? (Create a poll)"}),
@@ -426,7 +479,7 @@ export function filter_and_sort_mentions(is_silent, query, opts) {
     opts = {
         want_broadcast: !is_silent,
         filter_pills: false,
-        filter_groups: !is_silent,
+        filter_groups_for_mention: !is_silent,
         ...opts,
     };
     return get_person_suggestions(query, opts);
@@ -438,6 +491,7 @@ export function get_pm_people(query) {
         filter_pills: true,
         stream_id: compose_state.stream_id(),
         topic: compose_state.topic(),
+        filter_groups_for_guests: true,
     };
     return get_person_suggestions(query, opts);
 }
@@ -464,8 +518,19 @@ export function get_person_suggestions(query, opts) {
     }
 
     let groups;
-    if (opts.filter_groups) {
+    if (opts.filter_groups_for_mention) {
         groups = user_groups.get_user_groups_allowed_to_mention();
+    } else if (opts.filter_groups_for_guests && !settings_data.user_can_access_all_other_users()) {
+        groups = user_groups.get_realm_user_groups().filter((group) => {
+            const group_members = group.members;
+            for (const user_id of group_members) {
+                const person = people.maybe_get_user_by_id(user_id, true);
+                if (person === undefined || person.is_inaccessible_user) {
+                    return false;
+                }
+            }
+            return true;
+        });
     } else {
         groups = user_groups.get_realm_user_groups();
     }
@@ -822,15 +887,20 @@ export function content_typeahead_selected(item, event) {
                 // that functionality yet, and we haven't gotten much
                 // feedback on this being an actual pitfall.
             } else {
-                const mention_text = people.get_mention_syntax(
+                let mention_text = people.get_mention_syntax(
                     item.full_name,
                     item.user_id,
                     is_silent,
                 );
-                beginning += mention_text + " ";
-                if (!is_silent) {
+                if (!is_silent && !item.is_broadcast) {
                     compose_validate.warn_if_mentioning_unsubscribed_user(item, $textbox);
+                    mention_text = compose_validate.convert_mentions_to_silent_in_direct_messages(
+                        mention_text,
+                        item.full_name,
+                        item.user_id,
+                    );
                 }
+                beginning += mention_text + " ";
             }
             break;
         }
@@ -1093,7 +1163,7 @@ export function initialize({on_enter_send}) {
     $("form#send_message_form").on("keydown", (e) => handle_keydown(e, {on_enter_send}));
     $("form#send_message_form").on("keyup", handle_keyup);
 
-    $("#stream_message_recipient_topic").typeahead({
+    $("input#stream_message_recipient_topic").typeahead({
         source() {
             return topics_seen_for(compose_state.stream_id());
         },
@@ -1104,10 +1174,16 @@ export function initialize({on_enter_send}) {
         },
         sorter(items) {
             const sorted = typeahead_helper.sorter(this.query, items, (x) => x);
-            if (sorted.length > 0 && !sorted.includes(this.query)) {
+            if (!sorted.includes(this.query)) {
                 sorted.unshift(this.query);
             }
             return sorted;
+        },
+        option_label(matching_items, item) {
+            if (!matching_items.includes(item)) {
+                return `<em>${$t({defaultMessage: "New"})}</em>`;
+            }
+            return false;
         },
         header: render_topic_typeahead_hint,
     });
@@ -1130,10 +1206,15 @@ export function initialize({on_enter_send}) {
             if (user_groups.is_user_group(item)) {
                 for (const user_id of item.members) {
                     const user = people.get_by_user_id(user_id);
-                    // filter out inserted users and current user from pill insertion
+                    // filter out inactive users, inserted users and current user
+                    // from pill insertion
                     const inserted_users = user_pill.get_user_ids(compose_pm_pill.widget);
                     const current_user = people.is_current_user(user.email);
-                    if (!inserted_users.includes(user.user_id) && !current_user) {
+                    if (
+                        people.is_person_active(user_id) &&
+                        !inserted_users.includes(user.user_id) &&
+                        !current_user
+                    ) {
                         compose_pm_pill.set_from_typeahead(user);
                     }
                 }
@@ -1149,7 +1230,7 @@ export function initialize({on_enter_send}) {
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter
     });
 
-    initialize_compose_typeahead("#compose-textarea");
+    initialize_compose_typeahead("textarea#compose-textarea");
 
     $("#private_message_recipient").on("blur", function () {
         const val = $(this).val();

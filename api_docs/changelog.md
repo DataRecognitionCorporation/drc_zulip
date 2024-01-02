@@ -20,6 +20,272 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 237**
+
+No changes; feature level used for Zulip 8.0 release.
+
+**Feature level 236**
+
+* [`POST /messages`](/api/send-message), [`POST
+  /scheduled_messages`](/api/create-scheduled-message): The new
+  `read_by_sender` parameter lets the client override the heuristic
+  that determines whether the new message will be initially marked
+  read by its sender.
+
+**Feature level 235**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added a new user setting, `automatically_follow_topics_where_mentioned`,
+  that allows the user to automatically follow topics where the user is mentioned.
+
+**Feature level 234**
+
+* Mobile push notifications now include a `realm_name` field.
+* [`POST /mobile_push/test_notification`](/api/test-notify) now sends
+  a test notification with `test` rather than `test-by-device-token`
+  in the `event` field.
+
+**Feature level 233**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events):
+  Renamed the event type `hotspots` and the `hotspots` array field in it
+  to `onboarding_steps` as this event is sent to clients with remaining
+  onboarding steps data that includes hotspots and one-time notices to display.
+  Earlier, we had hotspots only. Added a `type` field to the objects in
+  the renamed `onboarding_steps` array to distinguish between the two type
+  of onboarding steps.
+
+* `POST /users/me/onboarding_steps`: Added a new endpoint that
+  deprecates the `/users/me/hotspots` endpoint. Added support for
+  displaying one-time notices in addition to existing hotspots.
+  This is now used as a common endpoint to mark both types of
+  onboarding steps, i.e., 'hotspot' and 'one_time_notice'.
+  There is no compatibility support for `/users/me/hotspots` as
+  no client other than web app has this feature currently.
+
+**Feature level 232**
+
+* [`POST /register`](/api/register-queue): Added a new
+  `user_list_incomplete` [client
+  capability](/api/register-queue#parameter-client_capabilities)
+  controlling whether `realm_users` contains "Unknown user"
+  placeholder objects for users that the current user cannot access
+  due to a `can_access_all_users_group` policy.
+
+* [`GET /events`](/api/get-events): The new `user_list_incomplete`
+  [client
+  capability](/api/register-queue#parameter-client_capabilities)
+  controls whether to send `realm_user` events with `op: "add"`
+  containing "Unknown user" placeholder objects to clients when a new
+  user is created that the client does not have access to due to a
+  `can_access_all_users_group` policy.
+
+**Feature level 231**
+
+* [`POST /register`](/api/register-queue):
+  `realm_push_notifications_enabled` now represents more accurately
+  whether push notifications are actually enabled via the mobile push
+  notifications service. Added
+  `realm_push_notifications_enabled_end_timestamp` field to realm
+  data.
+
+* [`GET /events`](/api/get-events): A `realm` update event is now sent
+  whenever `push_notifications_enabled` or
+  `push_notifications_enabled_end_timestamp` changes.
+
+**Feature level 230**
+
+* [`GET /events`](/api/get-events): Added `has_trigger` field in
+  hotspots events to identify if a hotspot will activate only when
+  some specific event occurs.
+
+**Feature level 229**
+
+* [`PATCH /messages/{message_id}`](/api/update-message), [`POST
+  /messages`](/api/send-message): Topic wildcard mentions involving
+  large numbers of participants are now restricted by
+  `wildcard_mention_policy`. The server now uses the
+  `STREAM_WILDCARD_MENTION_NOT_ALLOWED` and
+  `TOPIC_WILDCARD_MENTION_NOT_ALLOWED` error codes when a message is
+  rejected because of `wildcard_mention_policy`.
+
+**Feature level 228**
+
+* [`GET /events`](/api/get-events): `realm_user` events with `op: "update"`
+  are now only sent to users who can access the modified user.
+
+* [`GET /events`](/api/get-events): `presence` events are now only sent to
+  users who can access the user who comes back online if the
+  `CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE` server setting is set
+  to `true`.
+
+* [`GET /events`](/api/get-events): `user_status` events are now only
+  sent to users who can access the modified user.
+
+* [`GET /realm/presence`](/api/get-presence): The endpoint now returns
+  presence information of accessible users only if the
+  `CAN_ACCESS_ALL_USERS_GROUP_LIMITS_PRESENCE` server setting is set
+  to `true`.
+
+* [`GET /events`](/api/get-events): `realm_user` events with `op: "add"`
+  are now also sent when a guest user gains access to a user.
+
+* [`GET /events`](/api/get-events): `realm_user` events with `op: "remove"`
+  are now also sent when a guest user loses access to a user.
+
+**Feature level 227**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added `DMs, mentions, and followed topics` option for `desktop_icon_count_display`
+  setting, and renumbered the options.
+  The total unread count of DMs, mentions, and followed topics appears in
+  desktop sidebar and browser tab when this option is configured.
+
+**Feature level 226**
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`GET /users/me/subscriptions`](/api/get-subscriptions): Removed
+  `email_address` field from subscription objects.
+
+* [`GET /streams/{stream_id}/email_address`](/api/get-stream-email-address):
+  Added new endpoint to get email address of a stream.
+
+**Feature level 225**
+
+* `PATCH /realm`, [`POST /register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `can_access_all_users_group_id`
+  realm setting, which is the ID of the user group whose members can
+  access all the users in the oragnization.
+
+* [`POST /register`](/api/register-queue): Added `allowed_system_groups`
+  field to configuration data object of permission settings passed in
+  `server_supported_permission_settings`.
+
+**Feature level 224**
+
+* [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
+  [`GET /messages/{message_id}`](/api/get-message): The `wildcard_mentioned`
+  flag was deprecated, replaced with `stream_wildcard_mentioned` and
+  `topic_wildcard_mentioned`, but it is still available for backwards compatibility.
+
+**Feature level 223**
+
+* `POST /users/me/apns_device_token`:
+  The `appid` parameter is now required.
+  Previously it defaulted to the server setting `ZULIP_IOS_APP_ID`,
+  defaulting to "org.zulip.Zulip".
+
+* `POST /remotes/server/register`: The `ios_app_id` parameter is now
+  required when `kind` is 1, i.e. when registering an APNs token.
+  Previously it was ignored, and the push bouncer effectively
+  assumed its value was the server setting `APNS_TOPIC`,
+  defaulting to "org.zulip.Zulip".
+
+**Feature level 222**
+
+* [`GET /events`](/api/get-events): When a user is deactivated or
+  reactivated, the server uses `realm_user` events with `op: "update"`
+  updating the `is_active` field, instead of `realm_user` events with
+  `op: "remove"` and `op: "add"`, respectively.
+
+* [`GET /events`](/api/get-events): When a bot is deactivated or
+  reactivated, the server sends `realm_bot` events with `op: "update"`
+  updating the `is_active` field, instead of `realm_bot` events with
+  `op: "remove"` and `op: "add"`, respectively.
+
+**Feature level 221**
+
+* [`POST /register`](/api/register-queue): Added `server_supported_permission_settings`
+  field in the response which contains configuration data for various permission
+  settings.
+
+**Feature level 220**
+
+* [`GET /events`](/api/get-events): Stream creation events for web-public
+  streams are now sent to all guest users in the organization as well.
+
+* [`GET /events`](/api/get-events): The `subscription` events for `op:
+  "peer_add"` and `op: "peer_remove"` are now sent to subscribed guest
+  users for public streams and to all the guest users for web-public
+  streams; previously, they incorrectly only received these for
+  private streams.
+
+**Feature level 219**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults)
+  [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`PATCH /settings`](/api/update-settings): Renamed `default_view` and
+  `escape_navigates_to_default_view` settings to `web_home_view` and
+  `web_escape_navigates_to_home_view` respectively.
+* [`POST /user_topics`](/api/update-user-topic), [`POST
+  register`](/api/register-queue), [`GET /events`](/api/get-events):
+  Added followed as a supported value for visibility policies in
+  `user_topic` objects.
+
+**Feature level 218**
+
+* [`POST /messages`](/api/send-message): Added an optional
+  `automatic_new_visibility_policy` enum field in the success response
+  to indicate the new visibility policy value due to the [visibility policy settings](/help/mute-a-topic)
+  during the send message action.
+
+**Feature level 217**
+
+* [`POST /mobile_push/test_notification`](/api/test-notify): Added new endpoint
+  to send a test push notification to a mobile device or devices.
+
+**Feature level 216**:
+
+* `PATCH /realm`, [`POST register`](/api/register-queue),
+  [`GET /events`](/api/get-events): Added `enable_guest_user_indicator`
+  setting to control whether "(guest)" is added to user names in UI.
+
+**Feature level 215**
+
+* [`GET /events`](/api/get-events): Replaced the value `private`
+  with `direct` in the `message_type` field for the `typing` events
+  sent when a user starts or stops typing a message.
+
+* [`POST /typing`](/api/set-typing-status): Stopped supporting `private`
+  as a valid value for the `type` parameter.
+
+* [`POST /typing`](/api/set-typing-status): Stopped using the `to` parameter
+  for the `"stream"` type. Previously, in the case of the `"stream"` type, it
+  accepted a single-element list containing the ID of the stream. Added an
+  optional parameter, `stream_id`. Now, `to` is used only for `"direct"` type.
+  In the case of `"stream"` type, `stream_id` and `topic` are used.
+
+* Note that stream typing notifications were not enabled in any Zulip client
+  prior to feature level 215.
+
+**Feature level 214**
+
+* [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults),
+  [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings):
+  Added two new user settings, `automatically_follow_topics_policy` and
+  `automatically_unmute_topics_in_muted_streams_policy`. The settings control the
+  user's preference on which topics the user will automatically 'follow' and
+  'unmute in muted streams' respectively.
+
+**Feature level 213**
+
+* [`POST /register`](/api/register-queue): Fixed incorrect handling of
+  unmuted and followed topics in calculating the `mentions` and
+  `count` fields of the `unread_msgs` object.
+
+**Feature level 212**
+
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue),
+  `PATCH /realm`: Added the `jitsi_server_url` field to the `realm` object,
+  allowing organizations to set a custom Jitsi Meet server. Previously, this
+  was only available as a server-level configuration.
+
+* [`POST /register`](/api/register-queue): Added `server_jitsi_server_url`
+  fields to the `realm` object. The existing `jitsi_server_url` will now be
+  calculated as `realm_jitsi_server_url || server_jitsi_server_url`.
+
 **Feature level 211**
 
 * [`POST /streams/{stream_id}/delete_topic`](/api/delete-topic),
@@ -911,7 +1177,7 @@ No changes; feature level used for Zulip 5.0 release.
 * [`POST /register`](/api/register-queue), [`PATCH /settings`](/api/update-settings),
   [`PATCH /realm/user_settings_defaults`](/api/update-realm-user-settings-defaults):
   Added user setting `escape_navigates_to_default_view` to allow users to
-  [disable the keyboard shortcut](/help/configure-default-view) for the `Esc` key that
+  [disable the keyboard shortcut](/help/configure-home-view) for the `Esc` key that
   navigates the app to the default view.
 
 **Feature level 106**
@@ -1413,7 +1679,7 @@ field with an integer field `invite_to_realm_policy`.
 **Feature level 42**
 
 * `PATCH /settings/display`: Added a new `default_view` setting allowing
-  the user to [set the default view](/help/configure-default-view).
+  the user to [set the default view](/help/configure-home-view).
 
 **Feature level 41**
 

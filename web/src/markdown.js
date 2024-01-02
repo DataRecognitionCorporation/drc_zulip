@@ -16,11 +16,10 @@ import marked from "../third/marked/lib/marked";
 // If we see preview-related syntax in our content, we will need the
 // backend to render it.
 const preview_regexes = [
-    // Inline image previews, check for contiguous chars ending in image suffix
+    // Inline image and video previews, check for contiguous chars ending in image and video suffix
     // To keep the below regexes simple, split them out for the end-of-message case
 
-    /\S*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp)\)?\s+/m,
-    /\S*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp)\)?$/m,
+    /\S*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp|\.mp4|\.webm)\)?(\s+|$)/m,
 
     // Twitter and youtube links are given previews
 
@@ -86,13 +85,22 @@ function contains_problematic_linkifier({content, get_linkifier_map}) {
     return false;
 }
 
+function contains_topic_wildcard_mention(content) {
+    // If the content has topic wildcard mention (@**topic**) then don't
+    // render it locally. We have only server-side restriction check for
+    // @topic mention. This helps to show the error message (no permission)
+    // via the compose banner and not to local-echo then fail due to restriction.
+    return content.includes("@**topic**");
+}
+
 function content_contains_backend_only_syntax({content, get_linkifier_map}) {
     // Try to guess whether or not a message contains syntax that only the
     // backend Markdown processor can correctly handle.
     // If it doesn't, we can immediately render it client-side for local echo.
     return (
         contains_preview_link(content) ||
-        contains_problematic_linkifier({content, get_linkifier_map})
+        contains_problematic_linkifier({content, get_linkifier_map}) ||
+        contains_topic_wildcard_mention(content)
     );
 }
 
@@ -105,7 +113,8 @@ function parse_with_options({raw_content, helper_config, options}) {
 
     let mentioned = false;
     let mentioned_group = false;
-    let mentioned_wildcard = false;
+    let mentioned_stream_wildcard = false;
+    let mentioned_topic_wildcard = false;
 
     const marked_options = {
         ...options,
@@ -118,7 +127,7 @@ function parse_with_options({raw_content, helper_config, options}) {
                     display_text = mention;
                 } else {
                     // Stream Wildcard mention
-                    mentioned_wildcard = true;
+                    mentioned_stream_wildcard = true;
                     display_text = "@" + mention;
                     classes = "user-mention";
                 }
@@ -133,7 +142,7 @@ function parse_with_options({raw_content, helper_config, options}) {
                     display_text = mention;
                 } else {
                     // Topic Wildcard mention
-                    mentioned_wildcard = true;
+                    mentioned_topic_wildcard = true;
                     display_text = "@" + mention;
                     classes = "topic-mention";
                 }
@@ -272,7 +281,8 @@ function parse_with_options({raw_content, helper_config, options}) {
             // flash of mention styling.
             mentioned = false;
             mentioned_group = false;
-            mentioned_wildcard = false;
+            mentioned_stream_wildcard = false;
+            mentioned_topic_wildcard = false;
             return quote;
         },
     };
@@ -287,8 +297,11 @@ function parse_with_options({raw_content, helper_config, options}) {
     if (mentioned || mentioned_group) {
         flags.push("mentioned");
     }
-    if (mentioned_wildcard) {
-        flags.push("wildcard_mentioned");
+    if (mentioned_stream_wildcard) {
+        flags.push("stream_wildcard_mentioned");
+    }
+    if (mentioned_topic_wildcard) {
+        flags.push("topic_wildcard_mentioned");
     }
 
     return {content, flags};
@@ -575,7 +588,7 @@ export function parse({raw_content, helper_config}) {
 
     // Disable _emphasis_ (keeping *emphasis*)
     // Text inside ** must start and end with a word character
-    // to prevent mis-parsing things like "char **x = (char **)y"
+    // to prevent misparsing things like "char **x = (char **)y"
     marked.InlineLexer.rules.zulip.em = /^\*(?!\s+)((?:\*\*|[\S\s])+?)(\S)\*(?!\*)/;
 
     // Disable autolink as (a) it is not used in our backend and (b) it interferes with @mentions

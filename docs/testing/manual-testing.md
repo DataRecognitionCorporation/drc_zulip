@@ -185,7 +185,7 @@ through the following views for Cordelia (and have Hamlet send new
 messages after each narrow):
 
 - Go to All messages view.
-- Go to Direct messages view.
+- Go to All direct messages view.
 - Go to Direct messages w/Hamlet.
 - Go to Direct messages w/Hamlet and Othello.
 - Go to Verona view.
@@ -217,9 +217,9 @@ populated and where the focus is placed.
 - Buttons
 
   - Narrow to a stream and click on "New topic"
-  - Narrow "Direct messages" and click on "New topic"
+  - Narrow "All direct messages" and click on "New topic"
   - Narrow to a stream and click on "New direct message"
-  - Narrow "Direct messages" and click on "New direct message"
+  - Narrow "All direct messages" and click on "New direct message"
 
 - Topics
 
@@ -446,7 +446,7 @@ Test subscribe/unsubscribe:
 
 - Log in as Hamlet and go to his stream settings.
 - As Cordelia, unsubscribe from "public1" using the checkmark in the
-  streams settings page.
+  stream settings page.
 - Verify that Hamlet sees that Cordelia has unsubscribed (and the
   subscriber count should decrement).
 - As Cordelia, resubscribe to "public1."

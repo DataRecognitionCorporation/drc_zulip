@@ -9,13 +9,13 @@ from django.utils.translation import override as override_language
 from zerver.actions.message_send import do_send_messages, internal_prep_private_message
 from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
-    bulk_add_members_to_user_group,
+    bulk_add_members_to_user_groups,
+    bulk_remove_members_from_user_groups,
     check_add_user_group,
     check_delete_user_group,
     do_change_user_group_permission_setting,
     do_update_user_group_description,
     do_update_user_group_name,
-    remove_members_from_user_group,
     remove_subgroups_from_user_group,
 )
 from zerver.decorator import require_member_or_admin, require_user_group_edit_permission
@@ -70,11 +70,7 @@ def add_user_group(
                 setting_value_group_id,
                 user_profile,
                 setting_name=setting_name,
-                require_system_group=permission_config.require_system_group,
-                allow_internet_group=permission_config.allow_internet_group,
-                allow_owners_group=permission_config.allow_owners_group,
-                allow_nobody_group=permission_config.allow_nobody_group,
-                allow_everyone_group=permission_config.allow_everyone_group,
+                permission_configuration=permission_config,
             )
             group_settings_map[setting_name] = setting_value_group
 
@@ -136,11 +132,7 @@ def edit_user_group(
                 setting_value_group_id,
                 user_profile,
                 setting_name=setting_name,
-                require_system_group=permission_config.require_system_group,
-                allow_internet_group=permission_config.allow_internet_group,
-                allow_owners_group=permission_config.allow_owners_group,
-                allow_nobody_group=permission_config.allow_nobody_group,
-                allow_everyone_group=permission_config.allow_everyone_group,
+                permission_configuration=permission_config,
             )
             do_change_user_group_permission_setting(
                 user_group, setting_name, setting_value_group, acting_user=user_profile
@@ -258,7 +250,7 @@ def add_members_to_group_backend(
             )
 
     member_user_ids = [member_user.id for member_user in member_users]
-    bulk_add_members_to_user_group(user_group, member_user_ids, acting_user=user_profile)
+    bulk_add_members_to_user_groups([user_group], member_user_ids, acting_user=user_profile)
     notify_for_user_group_subscription_changes(
         acting_user=user_profile,
         recipient_users=member_users,
@@ -285,7 +277,7 @@ def remove_members_from_group_backend(
             )
 
     user_profile_ids = [user.id for user in user_profiles]
-    remove_members_from_user_group(user_group, user_profile_ids, acting_user=user_profile)
+    bulk_remove_members_from_user_groups([user_group], user_profile_ids, acting_user=user_profile)
     notify_for_user_group_subscription_changes(
         acting_user=user_profile,
         recipient_users=user_profiles,

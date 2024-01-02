@@ -6,6 +6,7 @@ const {zrequire} = require("./lib/namespace");
 const {run_test} = require("./lib/test");
 
 const scheduled_messages = zrequire("scheduled_messages");
+const scheduled_messages_popover = zrequire("scheduled_messages_popover");
 
 const per_day_stamps = {
     "2023-04-30": {
@@ -141,30 +142,11 @@ run_test("scheduled_modal_opts", () => {
     }
 });
 
-run_test("missing_or_expired_timestamps", () => {
-    let now_in_seconds = new Date("2023-05-03T08:54:00").getTime();
-    // The today at 9am option is not expired as of 8:54am (false)
-    assert.ok(
-        !scheduled_messages.is_send_later_timestamp_missing_or_expired(
-            per_day_stamps["2023-05-03"].today_nine_am / 1000,
-            now_in_seconds / 1000,
-        ),
-    );
-    // The today at 9am option is expired as of 8:57am (true)
-    now_in_seconds = new Date("2023-05-03T08:57:00").getTime();
-    assert.ok(
-        scheduled_messages.is_send_later_timestamp_missing_or_expired(
-            per_day_stamps["2023-05-03"].today_nine_am / 1000,
-            now_in_seconds / 1000,
-        ),
-    );
-});
-
 run_test("should_update_send_later_options", () => {
     // We should rerender at midnight
     const start_of_the_day = new Date();
     start_of_the_day.setHours(0, 0);
-    assert.ok(scheduled_messages.should_update_send_later_options(start_of_the_day));
+    assert.ok(scheduled_messages_popover.should_update_send_later_options(start_of_the_day));
 
     function get_minutes_to_hour(minutes) {
         const date = new Date();
@@ -179,10 +161,10 @@ run_test("should_update_send_later_options", () => {
         const current_time = get_minutes_to_hour(minute);
         if (minute === 55) {
             // Should rerender
-            assert.ok(scheduled_messages.should_update_send_later_options(current_time));
+            assert.ok(scheduled_messages_popover.should_update_send_later_options(current_time));
         } else {
             // Should not rerender
-            assert.ok(!scheduled_messages.should_update_send_later_options(current_time));
+            assert.ok(!scheduled_messages_popover.should_update_send_later_options(current_time));
         }
     }
 });

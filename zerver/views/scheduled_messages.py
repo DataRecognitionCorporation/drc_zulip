@@ -8,16 +8,15 @@ from zerver.actions.scheduled_messages import (
     check_schedule_message,
     delete_scheduled_message,
     edit_scheduled_message,
-    extract_direct_message_recipient_ids,
-    extract_stream_id,
 )
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.recipient_parsing import extract_direct_message_recipient_ids, extract_stream_id
 from zerver.lib.request import REQ, RequestNotes, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.scheduled_messages import get_undelivered_scheduled_messages
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import REQ_topic
-from zerver.lib.validator import check_int, check_string_in, to_non_negative_int
+from zerver.lib.validator import check_bool, check_int, check_string_in, to_non_negative_int
 from zerver.models import Message, UserProfile
 
 
@@ -116,6 +115,7 @@ def create_scheduled_message_backend(
     topic_name: Optional[str] = REQ_topic(),
     message_content: str = REQ("content"),
     scheduled_delivery_timestamp: int = REQ(json_validator=check_int),
+    read_by_sender: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     recipient_type_name = req_type
     if recipient_type_name == "direct":
@@ -133,7 +133,8 @@ def create_scheduled_message_backend(
     assert client is not None
 
     if recipient_type_name == "stream":
-        message_to = extract_stream_id(req_to)
+        stream_id = extract_stream_id(req_to)
+        message_to = [stream_id]
     else:
         message_to = extract_direct_message_recipient_ids(req_to)
 
@@ -147,5 +148,6 @@ def create_scheduled_message_backend(
         deliver_at,
         realm=user_profile.realm,
         forwarder_user_profile=user_profile,
+        read_by_sender=read_by_sender,
     )
     return json_success(request, data={"scheduled_message_id": scheduled_message_id})

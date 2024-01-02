@@ -56,6 +56,7 @@ from django.core.validators import URLValidator, validate_email
 from django.utils.translation import gettext as _
 from pydantic import ValidationInfo, model_validator
 from pydantic.functional_validators import ModelWrapValidatorHandler
+from typing_extensions import override
 
 from zerver.lib.exceptions import InvalidJSONError, JsonableError
 from zerver.lib.timezone import canonicalize_timezone
@@ -388,6 +389,22 @@ def check_url(var_name: str, val: object) -> str:
         raise ValidationError(_("{var_name} is not a URL").format(var_name=var_name))
 
 
+def check_capped_url(max_length: int) -> Validator[str]:
+    def validator(var_name: str, val: object) -> str:
+        # Ensure val is a string and length of the string does not
+        # exceed max_length.
+        s = check_capped_string(max_length)(var_name, val)
+        # Validate as URL.
+        validate = URLValidator()
+        try:
+            validate(s)
+            return s
+        except ValidationError:
+            raise ValidationError(_("{var_name} is not a URL").format(var_name=var_name))
+
+    return validator
+
+
 def check_external_account_url_pattern(var_name: str, val: object) -> str:
     s = check_string(var_name, val)
 
@@ -648,6 +665,7 @@ class WildValue:
     def __bool__(self) -> bool:
         return bool(self.value)
 
+    @override
     def __eq__(self, other: object) -> bool:
         return self.value == other
 
@@ -658,6 +676,7 @@ class WildValue:
             )
         return len(self.value)
 
+    @override
     def __str__(self) -> NoReturn:
         raise TypeError("cannot convert WildValue to string; try .tame(check_string)")
 
@@ -698,10 +717,12 @@ class WildValue:
 class WildValueList(WildValue):
     value: List[object]
 
+    @override
     def __iter__(self) -> Iterator[WildValue]:
         for i, item in enumerate(self.value):
             yield wrap_wild_value(f"{self.var_name}[{i}]", item)
 
+    @override
     def __getitem__(self, key: Union[int, str]) -> WildValue:
         if not isinstance(key, int):
             return super().__getitem__(key)
@@ -719,9 +740,11 @@ class WildValueList(WildValue):
 class WildValueDict(WildValue):
     value: Dict[str, object]
 
+    @override
     def __contains__(self, key: str) -> bool:
         return key in self.value
 
+    @override
     def __getitem__(self, key: Union[int, str]) -> WildValue:
         if not isinstance(key, str):
             return super().__getitem__(key)
@@ -735,19 +758,23 @@ class WildValueDict(WildValue):
 
         return wrap_wild_value(var_name, item)
 
+    @override
     def get(self, key: str, default: object = None) -> WildValue:
         item = self.value.get(key, default)
         if isinstance(item, WildValue):
             return item
         return wrap_wild_value(f"{self.var_name}[{key!r}]", item)
 
+    @override
     def keys(self) -> Iterator[str]:
         yield from self.value.keys()
 
+    @override
     def values(self) -> Iterator[WildValue]:
         for key, value in self.value.items():
             yield wrap_wild_value(f"{self.var_name}[{key!r}]", value)
 
+    @override
     def items(self) -> Iterator[Tuple[str, WildValue]]:
         for key, value in self.value.items():
             yield key, wrap_wild_value(f"{self.var_name}[{key!r}]", value)

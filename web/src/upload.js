@@ -4,17 +4,22 @@ import $ from "jquery";
 
 import render_upload_banner from "../templates/compose_banner/upload_banner.hbs";
 
-import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
+import * as compose_reply from "./compose_reply";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
+import * as compose_validate from "./compose_validate";
 import {csrf_token} from "./csrf";
 import {$t} from "./i18n";
-import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import {page_params} from "./page_params";
 import * as rows from "./rows";
+
+let drag_drop_img = null;
+export let compose_upload_object;
+export const upload_objects_by_message_edit_row = new Map();
+
 // Show the upload button only if the browser supports it.
 export function feature_check($upload_button) {
     if (window.XMLHttpRequest && new window.XMLHttpRequest().upload) {
@@ -34,7 +39,7 @@ export function get_item(key, config, file_id) {
     if (config.mode === "compose") {
         switch (key) {
             case "textarea":
-                return $("#compose-textarea");
+                return $("textarea#compose-textarea");
             case "send_button":
                 return $("#compose-send-button");
             case "banner_container":
@@ -126,7 +131,11 @@ export function get_item(key, config, file_id) {
 export function hide_upload_banner(uppy, config, file_id) {
     get_item("upload_banner", config, file_id).remove();
     if (uppy.getFiles().length === 0) {
-        get_item("send_button", config).prop("disabled", false);
+        if (config.mode === "compose") {
+            compose_validate.set_upload_in_progress(false);
+        } else {
+            get_item("send_button", config).prop("disabled", false);
+        }
     }
 }
 
@@ -154,7 +163,6 @@ export function show_error_message(
     message = $t({defaultMessage: "An unknown error occurred."}),
     file_id = null,
 ) {
-    get_item("send_button", config).prop("disabled", false);
     if (file_id) {
         $(`${get_item("upload_banner_identifier", config, file_id)} .moving_bar`).hide();
         get_item("upload_banner", config, file_id).removeClass("info").addClass("error");
@@ -192,8 +200,6 @@ export async function upload_files(uppy, config, files) {
         get_item("markdown_preview_hide_button", config).trigger("click");
     }
 
-    get_item("send_button", config).prop("disabled", true);
-
     for (const file of files) {
         try {
             compose_ui.insert_syntax_and_focus(
@@ -214,6 +220,11 @@ export async function upload_files(uppy, config, files) {
             continue;
         }
 
+        if (config.mode === "compose") {
+            compose_validate.set_upload_in_progress(true);
+        } else {
+            get_item("send_button", config).prop("disabled", true);
+        }
         add_upload_banner(
             config,
             "info",
@@ -284,7 +295,7 @@ export function setup_upload(config) {
         });
     });
 
-    $("body").on("change", get_item("file_input_identifier", config), (event) => {
+    $(get_item("file_input_identifier", config)).on("change", (event) => {
         const files = event.target.files;
         upload_files(uppy, config, files);
         get_item("textarea", config).trigger("focus");
@@ -310,7 +321,7 @@ export function setup_upload(config) {
         event.stopPropagation();
         const files = event.originalEvent.dataTransfer.files;
         if (config.mode === "compose" && !compose_state.composing()) {
-            compose_actions.respond_to_message({trigger: "file drop or paste"});
+            compose_reply.respond_to_message({trigger: "file drop or paste"});
         }
         upload_files(uppy, config, files);
     });
@@ -337,7 +348,7 @@ export function setup_upload(config) {
         // present a plain-text version of the file name.
         event.preventDefault();
         if (config.mode === "compose" && !compose_state.composing()) {
-            compose_actions.respond_to_message({trigger: "file drop or paste"});
+            compose_reply.respond_to_message({trigger: "file drop or paste"});
         }
         upload_files(uppy, config, files);
     });
@@ -402,7 +413,13 @@ export function setup_upload(config) {
     });
 
     uppy.on("upload-error", (file, _error, response) => {
+        // The files with failed upload should be removed since uppy doesn't allow files in the store
+        // to be re-uploaded again.
+        uppy.removeFile(file.id);
+
         const message = response ? response.body.msg : undefined;
+        // Hide the upload status banner on error so only the error banner shows
+        hide_upload_banner(uppy, config, file.id);
         show_error_message(config, message, file.id);
         compose_ui.replace_syntax(get_translated_status(file), "", get_item("textarea", config));
         compose_ui.autosize_textarea(get_item("textarea", config));
@@ -417,18 +434,34 @@ export function setup_upload(config) {
 }
 
 export function initialize() {
-    // Allow the main panel to receive drag/drop events.
-    $(".app-main").on("dragover", (event) => event.preventDefault());
+    compose_upload_object = setup_upload({
+        mode: "compose",
+    });
+
+    $(".app, #navbar-fixed-container").on("dragstart", (event) => {
+        if (event.target.nodeName === "IMG") {
+            drag_drop_img = event.target;
+        } else {
+            drag_drop_img = null;
+        }
+    });
+
+    // Allow the app panel to receive drag/drop events.
+    $(".app, #navbar-fixed-container").on("dragover", (event) => event.preventDefault());
 
     // TODO: Do something visual to hint that drag/drop will work.
-    $(".app-main").on("dragenter", (event) => event.preventDefault());
+    $(".app, #navbar-fixed-container").on("dragenter", (event) => event.preventDefault());
 
-    $(".app-main").on("drop", (event) => {
+    $(".app, #navbar-fixed-container").on("drop", (event) => {
         event.preventDefault();
+
+        if (event.target.nodeName === "IMG" && event.target === drag_drop_img) {
+            drag_drop_img = null;
+            return;
+        }
 
         const $drag_drop_edit_containers = $(".message_edit_form form");
         const files = event.originalEvent.dataTransfer.files;
-        const compose_upload_object = compose.get_compose_upload_object();
         const $last_drag_drop_edit_container = $drag_drop_edit_containers.last();
 
         // Handlers registered on individual inputs will ensure that
@@ -449,12 +482,12 @@ export function initialize() {
             if (!$drag_drop_container.closest("html").length) {
                 return;
             }
-            const edit_upload_object = message_edit.get_upload_object_from_row(row_id);
+            const edit_upload_object = upload_objects_by_message_edit_row.get(row_id);
 
             upload_files(edit_upload_object, {mode: "edit", row: row_id}, files);
         } else if (message_lists.current.selected_message()) {
             // Start a reply to selected message, if viewing a message feed.
-            compose_actions.respond_to_message({trigger: "drag_drop_file"});
+            compose_reply.respond_to_message({trigger: "drag_drop_file"});
             upload_files(compose_upload_object, {mode: "compose"}, files);
         } else {
             // Start a new message in other views.

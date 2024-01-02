@@ -1,4 +1,3 @@
-import datetime
 import logging
 import os
 import posixpath
@@ -7,6 +6,7 @@ import secrets
 import shutil
 import zipfile
 from collections import defaultdict
+from datetime import datetime, timezone
 from email.headerregistry import Address
 from typing import Any, Dict, Iterator, List, Optional, Set, Tuple, Type, TypeVar
 from urllib.parse import urlsplit
@@ -822,6 +822,11 @@ def get_messages_iterator(
                     # change this to point to slackbot instead, but
                     # skipping those messages is simpler.
                     continue
+                if message.get("mimetype") == "application/vnd.slack-docs":
+                    # This is a Slack "Post" which is HTML-formatted,
+                    # and we don't have a clean way to import at the
+                    # moment.  We skip them on import.
+                    continue
                 if dir_name in added_channels:
                     message["channel_name"] = dir_name
                 elif dir_name in added_mpims:
@@ -967,9 +972,7 @@ def channel_message_to_zerver_message(
         # a counter among topics on that day.
         topic_name = "imported from Slack"
         if convert_slack_threads and "thread_ts" in message:
-            thread_ts = datetime.datetime.fromtimestamp(
-                float(message["thread_ts"]), tz=datetime.timezone.utc
-            )
+            thread_ts = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
             thread_ts_str = thread_ts.strftime(r"%Y/%m/%d %H:%M:%S")
             # The topic name is "2015-08-18 Slack thread 2", where the counter at the end is to disambiguate
             # threads with the same date.
@@ -1363,7 +1366,7 @@ def do_convert_data(
             # Slack's export doesn't set the UTF-8 flag on each
             # filename entry, despite encoding them as such, so
             # zipfile mojibake's the output.  Explicitly re-interpret
-            # it as UTF-8 mis-decoded as cp437, the default.
+            # it as UTF-8 misdecoded as cp437, the default.
             for fileinfo in zipObj.infolist():
                 fileinfo.flag_bits |= 0x800
                 fileinfo.filename = fileinfo.filename.encode("cp437").decode("utf-8")

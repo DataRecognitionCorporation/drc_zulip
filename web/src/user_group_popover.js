@@ -1,15 +1,14 @@
 import $ from "jquery";
 
-import render_user_group_info_popover from "../templates/user_group_info_popover.hbs";
+import render_user_group_info_popover from "../templates/popovers/user_group_info_popover.hbs";
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
-import {media_breakpoints_num} from "./css_variables";
+import * as hash_util from "./hash_util";
 import * as message_lists from "./message_lists";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popover_menus from "./popover_menus";
-import * as popovers from "./popovers";
-import {popover_items_handle_keyboard} from "./popovers";
 import * as rows from "./rows";
 import * as ui_util from "./ui_util";
 import * as user_groups from "./user_groups";
@@ -45,7 +44,7 @@ function get_user_group_popover_items() {
 
 export function handle_keyboard(key) {
     const $items = get_user_group_popover_items();
-    popover_items_handle_keyboard(key, $items);
+    popover_menus.popover_items_handle_keyboard(key, $items);
 }
 
 // element is the target element to pop off of;
@@ -58,14 +57,6 @@ export function toggle_user_group_info_popover(element, message_id) {
     const $elt = $(element);
     const user_group_id = Number.parseInt($elt.attr("data-user-group-id"), 10);
     const group = user_groups.get_user_group_from_id(user_group_id);
-
-    let show_as_overlay = false;
-
-    // If the window is mobile-sized, we will render the
-    // user group popover centered on the screen with the overlay.
-    if (window.innerWidth <= media_breakpoints_num.md) {
-        show_as_overlay = true;
-    }
 
     popover_menus.toggle_popover_menu(
         element,
@@ -83,7 +74,6 @@ export function toggle_user_group_info_popover(element, message_id) {
                 ],
             },
             onCreate(instance) {
-                popovers.hide_all_except_sidebars();
                 if (message_id) {
                     message_lists.current.select_id(message_id);
                 }
@@ -94,6 +84,8 @@ export function toggle_user_group_info_popover(element, message_id) {
                     group_name: group.name,
                     group_description: group.description,
                     members: sort_group_members(fetch_group_members([...group.members])),
+                    group_edit_url: hash_util.group_edit_url(group),
+                    is_guest: page_params.is_guest,
                 };
                 instance.setContent(ui_util.parse_html(render_user_group_info_popover(args)));
             },
@@ -101,7 +93,9 @@ export function toggle_user_group_info_popover(element, message_id) {
                 hide();
             },
         },
-        {show_as_overlay},
+        {
+            show_as_overlay_on_mobile: true,
+        },
     );
 }
 
@@ -123,19 +117,23 @@ export function register_click_handlers() {
 }
 
 function fetch_group_members(member_ids) {
-    return member_ids
-        .map((m) => people.maybe_get_user_by_id(m))
-        .filter((m) => m !== undefined)
-        .map((p) => ({
-            ...p,
-            user_circle_class: buddy_data.get_user_circle_class(p.user_id),
-            is_active: people.is_active_user_for_popover(p.user_id),
-            user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
-        }));
+    return (
+        member_ids
+            .map((m) => people.get_user_by_id_assert_valid(m))
+            // We need to include inaccessible users here separately, since
+            // we do not include them in active_user_dict, but we want to
+            // show them in the popover as "Unknown user".
+            .filter((m) => people.is_active_user_for_popover(m.user_id) || m.is_inaccessible_user)
+            .map((p) => ({
+                ...p,
+                user_circle_class: buddy_data.get_user_circle_class(p.user_id),
+                user_last_seen_time_status: buddy_data.user_last_seen_time_status(p.user_id),
+            }))
+    );
 }
 
 function sort_group_members(members) {
-    return members.sort((a, b) => util.strcmp(a.full_name, b.fullname));
+    return members.sort((a, b) => util.strcmp(a.full_name, b.full_name));
 }
 
 // exporting these functions for testing purposes

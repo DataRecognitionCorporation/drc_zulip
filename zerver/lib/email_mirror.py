@@ -6,6 +6,7 @@ from email.message import EmailMessage
 from typing import Dict, List, Match, Optional, Tuple
 
 from django.conf import settings
+from typing_extensions import override
 
 from zerver.actions.message_send import (
     check_send_message,
@@ -119,6 +120,7 @@ def get_usable_missed_message_address(address: str) -> MissedMessageEmailAddress
         mm_address = MissedMessageEmailAddress.objects.select_related(
             "user_profile",
             "user_profile__realm",
+            "user_profile__realm__can_access_all_users_group",
             "message",
             "message__sender",
             "message__recipient",
@@ -527,9 +529,11 @@ class RateLimitedRealmMirror(RateLimitedObject):
         self.realm = realm
         super().__init__()
 
+    @override
     def key(self) -> str:
         return f"{type(self).__name__}:{self.realm.string_id}"
 
+    @override
     def rules(self) -> List[Tuple[int, int]]:
         return settings.RATE_LIMITING_MIRROR_REALM_RULES
 

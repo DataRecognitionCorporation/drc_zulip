@@ -2,6 +2,7 @@ import ClipboardJS from "clipboard";
 import $ from "jquery";
 
 import * as resolved_topic from "../shared/src/resolved_topic";
+import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
 import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.hbs";
 import render_confirm_moving_messages_modal from "../templates/confirm_dialog/confirm_moving_messages.hbs";
 import render_message_edit_form from "../templates/message_edit_form.hbs";
@@ -10,14 +11,16 @@ import render_topic_edit_form from "../templates/topic_edit_form.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_banner from "./compose_banner";
+import * as compose_call from "./compose_call";
+import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as compose_validate from "./compose_validate";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as confirm_dialog from "./confirm_dialog";
+import {show_copied_confirmation} from "./copied_tooltip";
 import * as dialog_widget from "./dialog_widget";
 import * as echo from "./echo";
 import * as giphy from "./giphy";
@@ -30,12 +33,12 @@ import * as message_live_update from "./message_live_update";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import {page_params} from "./page_params";
+import * as people from "./people";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
-import {show_copied_confirmation} from "./tippyjs";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
 import * as util from "./util";
@@ -44,8 +47,6 @@ const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
 let currently_topic_editing_messages = [];
 const currently_echoing_messages = new Map();
-const upload_objects_by_row = new Map();
-
 // These variables are designed to preserve the user's most recent
 // choices when editing a group of messages, to make it convenient to
 // move several topics in a row with the same settings.
@@ -154,12 +155,23 @@ export function is_content_editable(message, edit_limit_seconds_buffer = 0) {
     return false;
 }
 
+export function is_message_sent_by_my_bot(message) {
+    const user = people.get_by_user_id(message.sender_id);
+    if (user.bot_owner_id === undefined || user.bot_owner_id === null) {
+        // The message was not sent by a bot or the message was sent
+        // by a cross-realm bot which does not have an owner.
+        return false;
+    }
+
+    return people.is_my_user_id(user.bot_owner_id);
+}
+
 export function get_deletability(message) {
     if (page_params.is_admin) {
         return true;
     }
 
-    if (!message.sent_by_me) {
+    if (!message.sent_by_me && !is_message_sent_by_my_bot(message)) {
         return false;
     }
     if (message.locally_echoed) {
@@ -276,8 +288,9 @@ export function hide_message_edit_spinner($row) {
 }
 
 export function show_message_edit_spinner($row) {
-    const using_dark_theme = settings_data.using_dark_theme();
-    loading.show_button_spinner($row.find(".loader"), using_dark_theme);
+    // Always show the white spinner like we
+    // do for send button in compose box.
+    loading.show_button_spinner($row.find(".loader"), true);
     $row.find(".message_edit_save span").hide();
     $row.find(".message_edit_save").addClass("disable-btn");
     $row.find(".message_edit_cancel").addClass("disable-btn");
@@ -460,10 +473,10 @@ function edit_message($row, raw_content) {
 
     $form
         .find(".message-edit-feature-group .video_link")
-        .toggle(compose.compute_show_video_chat_button());
+        .toggle(compose_call.compute_show_video_chat_button());
     $form
         .find(".message-edit-feature-group .audio_link")
-        .toggle(compose.compute_show_audio_chat_button());
+        .toggle(compose_call.compute_show_audio_chat_button());
     upload.feature_check($(`#edit_form_${CSS.escape(rows.id($row))} .compose_upload_file`));
 
     const $message_edit_content = $row.find("textarea.message_edit_content");
@@ -567,7 +580,7 @@ function start_edit_with_content($row, content, edit_box_open_callback) {
         mode: "edit",
         row: row_id,
     });
-    upload_objects_by_row.set(row_id, upload_object);
+    upload.upload_objects_by_message_edit_row.set(row_id, upload_object);
 }
 
 export function start($row, edit_box_open_callback) {
@@ -719,12 +732,17 @@ export function toggle_resolve_topic(
         url: "/json/messages/" + message_id,
         data: request,
         success() {
-            const $spinner = $row.find(".toggle_resolve_topic_spinner");
-            loading.destroy_indicator($spinner);
+            if ($row) {
+                const $spinner = $row.find(".toggle_resolve_topic_spinner");
+                loading.destroy_indicator($spinner);
+            }
         },
         error(xhr) {
-            const $spinner = $row.find(".toggle_resolve_topic_spinner");
-            loading.destroy_indicator($spinner);
+            if ($row) {
+                const $spinner = $row.find(".toggle_resolve_topic_spinner");
+                loading.destroy_indicator($spinner);
+            }
+
             if (xhr.responseJSON) {
                 if (xhr.responseJSON.code === "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED") {
                     handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved);
@@ -751,7 +769,7 @@ export function start_inline_topic_edit($recipient_row) {
     const msg_id = rows.id_for_recipient_row($recipient_row);
     const message = message_lists.current.get(msg_id);
     let topic = message.topic;
-    if (topic === compose.empty_topic_placeholder()) {
+    if (topic === compose_state.empty_topic_placeholder()) {
         topic = "";
     }
     const $inline_topic_edit_input = $form.find(".inline_topic_edit");
@@ -772,18 +790,14 @@ export function end_inline_topic_edit($row) {
     message_lists.current.hide_edit_topic_on_recipient_row($row);
 }
 
-export function get_upload_object_from_row(row_id) {
-    return upload_objects_by_row.get(row_id);
-}
-
 function remove_uploads_from_row(row_id) {
-    const uploads_for_row = upload_objects_by_row.get(row_id);
+    const uploads_for_row = upload.upload_objects_by_message_edit_row.get(row_id);
     // We need to cancel all uploads, reset their progress,
     // and clear the files upon ending the edit.
     uploads_for_row?.cancelAll();
     // Since we removed all the uploads from the row, we should
     // now remove the corresponding upload object from the store.
-    upload_objects_by_row.delete(row_id);
+    upload.upload_objects_by_message_edit_row.delete(row_id);
 }
 
 export function end_message_row_edit($row) {
@@ -810,7 +824,7 @@ export function end_message_row_edit($row) {
         message_lists.current.hide_edit_message($row);
         message_viewport.scrollTop(original_scrollTop - scroll_by);
 
-        compose.abort_video_callbacks(message.id);
+        compose_call.abort_video_callbacks(message.id);
     }
     if ($row.find(".condensed").length !== 0) {
         condense.show_message_expander($row);
@@ -946,13 +960,13 @@ export function save_message_row_edit($row) {
         changed = old_content !== new_content;
     }
 
-    const already_has_wildcard_mention = message.wildcard_mentioned;
-    if (!already_has_wildcard_mention) {
-        const wildcard_mention = util.find_wildcard_mentions(new_content);
+    const already_has_stream_wildcard_mention = message.stream_wildcard_mentioned;
+    if (!already_has_stream_wildcard_mention) {
+        const stream_wildcard_mention = util.find_stream_wildcard_mentions(new_content);
         const is_stream_message_mentions_valid = compose_validate.validate_stream_message_mentions({
             stream_id,
             $banner_container,
-            wildcard_mention,
+            stream_wildcard_mention,
         });
 
         if (!is_stream_message_mentions_valid) {
@@ -1027,7 +1041,13 @@ export function save_message_row_edit($row) {
                 delete message.local_edit_timestamp;
                 currently_echoing_messages.delete(message_id);
             }
-            hide_message_edit_spinner($row);
+            // Ordinarily, in a code path like this, we'd make
+            // a call to `hide_message_edit_spinner()`. But in
+            // this instance, we want to avoid a momentary flash
+            // of the Save button text before the edited message
+            // re-renders. Note that any subsequent editing will
+            // create a fresh Save button, without the spinner
+            // class attached.
         },
         error(xhr) {
             if (msg_list === message_lists.current) {
@@ -1057,15 +1077,30 @@ export function save_message_row_edit($row) {
                 }
 
                 hide_message_edit_spinner($row);
-                const message = channel.xhr_error_message("", xhr);
-                const $container = compose_banner.get_compose_banner_container(
-                    $row.find("textarea"),
-                );
-                compose_banner.show_error_message(
-                    message,
-                    compose_banner.CLASSNAMES.generic_compose_error,
-                    $container,
-                );
+                if (xhr.readyState !== 0) {
+                    const $container = compose_banner.get_compose_banner_container(
+                        $row.find("textarea"),
+                    );
+
+                    if (xhr.responseJSON?.code === "TOPIC_WILDCARD_MENTION_NOT_ALLOWED") {
+                        const new_row = render_wildcard_mention_not_allowed_error({
+                            banner_type: compose_banner.ERROR,
+                            classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
+                        });
+                        compose_banner.append_compose_banner_to_banner_list(new_row, $container);
+                        return;
+                    }
+
+                    const message = channel.xhr_error_message(
+                        $t({defaultMessage: "Error editing message"}),
+                        xhr,
+                    );
+                    compose_banner.show_error_message(
+                        message,
+                        compose_banner.CLASSNAMES.generic_compose_error,
+                        $container,
+                    );
+                }
             }
         },
     });
@@ -1123,7 +1158,7 @@ export function delete_message(msg_id) {
                     (id) => id !== msg_id,
                 );
                 dialog_widget.hide_dialog_spinner();
-                dialog_widget.close_modal();
+                dialog_widget.close();
             },
             error(xhr) {
                 currently_deleting_messages = currently_deleting_messages.filter(
@@ -1258,7 +1293,7 @@ export function move_topic_containing_message_to_stream(
             // The main UI will update via receiving the event
             // from server_events.js.
             reset_modal_ui();
-            dialog_widget.close_modal();
+            dialog_widget.close();
         },
         error(xhr) {
             reset_modal_ui();
@@ -1277,7 +1312,7 @@ export function move_topic_containing_message_to_stream(
 
                 const partial_move_confirmation_modal_callback = () =>
                     handle_message_move_failure_due_to_time_limit(xhr, handle_confirm);
-                dialog_widget.close_modal(partial_move_confirmation_modal_callback);
+                dialog_widget.close(partial_move_confirmation_modal_callback);
                 return;
             }
             ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $("#dialog_error"));
@@ -1318,5 +1353,41 @@ export function with_first_message_id(stream_id, topic_name, success_cb, error_c
             success_cb(message_id);
         },
         error: error_cb,
+    });
+}
+
+export function is_message_oldest_or_newest(
+    stream_id,
+    topic_name,
+    message_id,
+    success_callback,
+    error_callback,
+) {
+    const data = {
+        anchor: message_id,
+        num_before: 1,
+        num_after: 1,
+        narrow: JSON.stringify([
+            {operator: "stream", operand: stream_id},
+            {operator: "topic", operand: topic_name},
+        ]),
+    };
+
+    channel.get({
+        url: "/json/messages",
+        data,
+        success(data) {
+            let is_oldest = true;
+            let is_newest = true;
+            for (const message of data.messages) {
+                if (message.id < message_id) {
+                    is_oldest = false;
+                } else if (message.id > message_id) {
+                    is_newest = false;
+                }
+            }
+            success_callback(is_oldest, is_newest);
+        },
+        error: error_callback,
     });
 }

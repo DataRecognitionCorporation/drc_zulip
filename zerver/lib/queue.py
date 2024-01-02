@@ -18,7 +18,7 @@ from pika.adapters.blocking_connection import BlockingChannel
 from pika.channel import Channel
 from pika.spec import Basic
 from tornado import ioloop
-from typing_extensions import TypeAlias
+from typing_extensions import TypeAlias, override
 
 from zerver.lib.utils import assert_is_not_none
 
@@ -148,6 +148,7 @@ class QueueClient(Generic[ChannelT], metaclass=ABCMeta):
 class SimpleQueueClient(QueueClient[BlockingChannel]):
     connection: Optional[pika.BlockingConnection]
 
+    @override
     def _connect(self) -> None:
         start = time.time()
         self.connection = pika.BlockingConnection(self._get_parameters())
@@ -155,6 +156,7 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
         self.channel.basic_qos(prefetch_count=self.prefetch)
         self.log.info("SimpleQueueClient connected (connecting took %.3fs)", time.time() - start)
 
+    @override
     def _reconnect(self) -> None:
         self.connection = None
         self.channel = None
@@ -165,6 +167,7 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
         if self.connection is not None:
             self.connection.close()
 
+    @override
     def ensure_queue(self, queue_name: str, callback: Callable[[BlockingChannel], object]) -> None:
         """Ensure that a given queue has been declared, and then call
         the callback with no arguments."""
@@ -215,7 +218,8 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
                             callback(events)
                             channel.basic_ack(max_processed, multiple=True)
                         except BaseException:
-                            channel.basic_nack(max_processed, multiple=True)
+                            if channel.is_open:
+                                channel.basic_nack(max_processed, multiple=True)
                             raise
                         events = []
                     last_process = now
@@ -272,6 +276,7 @@ class TornadoQueueClient(QueueClient[Channel]):
         self._on_open_cbs: List[Callable[[Channel], None]] = []
         self._connection_failure_count = 0
 
+    @override
     def _connect(self) -> None:
         self.log.info("Beginning TornadoQueueClient connection")
         self.connection = ExceptionFreeTornadoConnection(
@@ -281,6 +286,7 @@ class TornadoQueueClient(QueueClient[Channel]):
             on_close_callback=self._on_connection_closed,
         )
 
+    @override
     def _reconnect(self) -> None:
         self.connection = None
         self.channel = None
@@ -351,6 +357,7 @@ class TornadoQueueClient(QueueClient[Channel]):
             self.connection.close()
             self.connection = None
 
+    @override
     def ensure_queue(self, queue_name: str, callback: Callable[[Channel], object]) -> None:
         def set_qos(frame: Any) -> None:
             assert self.channel is not None

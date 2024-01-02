@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta
 from operator import itemgetter
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 from unittest import mock
@@ -35,6 +35,7 @@ from zerver.models import (
     Message,
     Realm,
     Stream,
+    SystemGroups,
     UserGroup,
     UserMessage,
     UserProfile,
@@ -54,7 +55,7 @@ class EditMessageTestCase(ZulipTestCase):
 
     def check_message(self, msg_id: int, topic_name: str, content: str) -> None:
         # Make sure we saved the message correctly to the DB.
-        msg = Message.objects.get(id=msg_id)
+        msg = Message.objects.select_related("realm").get(id=msg_id)
         self.assertEqual(msg.topic_name(), topic_name)
         self.assertEqual(msg.content, content)
 
@@ -74,6 +75,8 @@ class EditMessageTestCase(ZulipTestCase):
                 apply_markdown=False,
                 client_gravatar=False,
                 allow_edit_history=True,
+                user_profile=None,
+                realm=msg.realm,
             )
 
         self.assert_length(queries, 1)
@@ -335,7 +338,7 @@ class EditMessageTest(EditMessageTestCase):
         response_dict = self.assert_json_success(result)
         self.assertEqual(response_dict["raw_content"], "Personal message")
         self.assertEqual(response_dict["message"]["id"], msg_id)
-        self.assertEqual(response_dict["message"]["flags"], [])
+        self.assertEqual(response_dict["message"]["flags"], ["read"])
 
         # Send message to web-public stream where hamlet is not subscribed.
         # This will test case of user having no `UserMessage` but having access
@@ -1106,7 +1109,7 @@ class EditMessageTest(EditMessageTestCase):
             self.example_user("iago"), "Denmark", content="content", topic_name="topic"
         )
         message = Message.objects.get(id=id_)
-        message.date_sent = message.date_sent - datetime.timedelta(seconds=180)
+        message.date_sent = message.date_sent - timedelta(seconds=180)
         message.save()
 
         # test the various possible message editing settings
@@ -1184,7 +1187,7 @@ class EditMessageTest(EditMessageTestCase):
             self.example_user("hamlet"), "Denmark", content="content", topic_name="topic"
         )
         message = Message.objects.get(id=id_)
-        message.date_sent = message.date_sent - datetime.timedelta(seconds=180)
+        message.date_sent = message.date_sent - timedelta(seconds=180)
         message.save()
 
         # Guest user must be subscribed to the stream to access the message.
@@ -1209,9 +1212,9 @@ class EditMessageTest(EditMessageTestCase):
         hamlet = self.example_user("hamlet")
         do_set_realm_property(cordelia.realm, "waiting_period_threshold", 10, acting_user=None)
 
-        cordelia.date_joined = timezone_now() - datetime.timedelta(days=9)
+        cordelia.date_joined = timezone_now() - timedelta(days=9)
         cordelia.save()
-        hamlet.date_joined = timezone_now() - datetime.timedelta(days=9)
+        hamlet.date_joined = timezone_now() - timedelta(days=9)
         hamlet.save()
         do_edit_message_assert_error(
             id_, "C", "You don't have permission to edit this message", "cordelia"
@@ -1222,9 +1225,9 @@ class EditMessageTest(EditMessageTestCase):
             id_, "C", "You don't have permission to edit this message", "hamlet"
         )
 
-        cordelia.date_joined = timezone_now() - datetime.timedelta(days=11)
+        cordelia.date_joined = timezone_now() - timedelta(days=11)
         cordelia.save()
-        hamlet.date_joined = timezone_now() - datetime.timedelta(days=11)
+        hamlet.date_joined = timezone_now() - timedelta(days=11)
         hamlet.save()
         do_edit_message_assert_success(id_, "C", "cordelia")
         do_edit_message_assert_success(id_, "CD", "hamlet")
@@ -1262,7 +1265,7 @@ class EditMessageTest(EditMessageTestCase):
 
         # non-admin users cannot edit topics sent > 1 week ago including
         # sender of the message.
-        message.date_sent = message.date_sent - datetime.timedelta(seconds=604900)
+        message.date_sent = message.date_sent - timedelta(seconds=604900)
         message.save()
         set_message_editing_params(True, "unlimited", Realm.POLICY_EVERYONE)
         do_edit_message_assert_success(id_, "E", "iago")
@@ -2127,7 +2130,7 @@ class EditMessageTest(EditMessageTestCase):
             [
                 {
                     "id": hamlet.id,
-                    "flags": ["wildcard_mentioned"],
+                    "flags": ["read", "topic_wildcard_mentioned"],
                 },
                 {
                     "id": cordelia.id,
@@ -2181,13 +2184,19 @@ class EditMessageTest(EditMessageTestCase):
         )
         message_id = self.send_stream_message(hamlet, stream_name, "Hello everyone")
 
-        def notify(user_id: int) -> Dict[str, Any]:
-            return {
-                "id": user_id,
-                "flags": ["wildcard_mentioned"],
-            }
-
-        users_to_be_notified = sorted(map(notify, [cordelia.id, hamlet.id]), key=itemgetter("id"))
+        users_to_be_notified = sorted(
+            [
+                {
+                    "id": hamlet.id,
+                    "flags": ["read", "stream_wildcard_mentioned"],
+                },
+                {
+                    "id": cordelia.id,
+                    "flags": ["stream_wildcard_mentioned"],
+                },
+            ],
+            key=itemgetter("id"),
+        )
         result = self.client_patch(
             f"/json/messages/{message_id}",
             {
@@ -2228,7 +2237,7 @@ class EditMessageTest(EditMessageTestCase):
             [
                 {
                     "id": hamlet.id,
-                    "flags": ["wildcard_mentioned"],
+                    "flags": ["read", "topic_wildcard_mentioned"],
                 },
                 {
                     "id": cordelia.id,
@@ -2277,18 +2286,11 @@ class EditMessageTest(EditMessageTestCase):
             acting_user=None,
         )
 
-        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17):
-            result = self.client_patch(
-                "/json/messages/" + str(message_id),
-                {
-                    "content": "Hello @**topic**",
-                },
-            )
-        self.assert_json_error(
-            result, "You do not have permission to use wildcard mentions in this stream."
-        )
-
-        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=14):
+        # Less than 'Realm.WILDCARD_MENTION_THRESHOLD' participants
+        participants_user_ids = set(range(1, 10))
+        with mock.patch(
+            "zerver.actions.message_edit.participants_for_topic", return_value=participants_user_ids
+        ):
             result = self.client_patch(
                 "/json/messages/" + str(message_id),
                 {
@@ -2297,9 +2299,27 @@ class EditMessageTest(EditMessageTestCase):
             )
         self.assert_json_success(result)
 
+        # More than 'Realm.WILDCARD_MENTION_THRESHOLD' participants.
+        participants_user_ids = set(range(1, 20))
+        with mock.patch(
+            "zerver.actions.message_edit.participants_for_topic", return_value=participants_user_ids
+        ):
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                {
+                    "content": "Hello @**topic**",
+                },
+            )
+        self.assert_json_error(
+            result, "You do not have permission to use topic wildcard mentions in this topic."
+        )
+
+        # Shiva is moderator
         self.login("shiva")
         message_id = self.send_stream_message(shiva, stream_name, "Hi everyone")
-        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17):
+        with mock.patch(
+            "zerver.actions.message_edit.participants_for_topic", return_value=participants_user_ids
+        ):
             result = self.client_patch(
                 "/json/messages/" + str(message_id),
                 {
@@ -2319,13 +2339,19 @@ class EditMessageTest(EditMessageTestCase):
         self.login_user(hamlet)
         message_id = self.send_stream_message(hamlet, stream_name, "Hello everyone")
 
-        def notify(user_id: int) -> Dict[str, Any]:
-            return {
-                "id": user_id,
-                "flags": ["wildcard_mentioned"],
-            }
-
-        users_to_be_notified = sorted(map(notify, [cordelia.id, hamlet.id]), key=itemgetter("id"))
+        users_to_be_notified = sorted(
+            [
+                {
+                    "id": hamlet.id,
+                    "flags": ["read", "stream_wildcard_mentioned"],
+                },
+                {
+                    "id": cordelia.id,
+                    "flags": ["stream_wildcard_mentioned"],
+                },
+            ],
+            key=itemgetter("id"),
+        )
         result = self.client_patch(
             f"/json/messages/{message_id}",
             {
@@ -2376,7 +2402,7 @@ class EditMessageTest(EditMessageTestCase):
                 },
             )
         self.assert_json_error(
-            result, "You do not have permission to use wildcard mentions in this stream."
+            result, "You do not have permission to use stream wildcard mentions in this stream."
         )
 
         with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=14):
@@ -2413,7 +2439,7 @@ class EditMessageTest(EditMessageTestCase):
         support = check_add_user_group(othello.realm, "support", [othello], acting_user=None)
 
         moderators_system_group = UserGroup.objects.get(
-            realm=iago.realm, name=UserGroup.MODERATORS_GROUP_NAME, is_system_group=True
+            realm=iago.realm, name=SystemGroups.MODERATORS, is_system_group=True
         )
 
         self.login("cordelia")
@@ -2725,15 +2751,15 @@ class EditMessageTest(EditMessageTestCase):
         )
 
         message = Message.objects.get(id=id1)
-        message.date_sent = message.date_sent - datetime.timedelta(days=10)
+        message.date_sent = message.date_sent - timedelta(days=10)
         message.save()
 
         message = Message.objects.get(id=id2)
-        message.date_sent = message.date_sent - datetime.timedelta(days=8)
+        message.date_sent = message.date_sent - timedelta(days=8)
         message.save()
 
         message = Message.objects.get(id=id3)
-        message.date_sent = message.date_sent - datetime.timedelta(days=5)
+        message.date_sent = message.date_sent - timedelta(days=5)
         message.save()
 
         verona = get_stream("Verona", user_profile.realm)
@@ -2921,19 +2947,19 @@ class EditMessageTest(EditMessageTestCase):
         self.send_stream_message(hamlet, "privatestream", topic_name="topic1")
 
         message = Message.objects.get(id=id1)
-        message.date_sent = message.date_sent - datetime.timedelta(days=10)
+        message.date_sent = message.date_sent - timedelta(days=10)
         message.save()
 
         message = Message.objects.get(id=id2)
-        message.date_sent = message.date_sent - datetime.timedelta(days=9)
+        message.date_sent = message.date_sent - timedelta(days=9)
         message.save()
 
         message = Message.objects.get(id=id3)
-        message.date_sent = message.date_sent - datetime.timedelta(days=8)
+        message.date_sent = message.date_sent - timedelta(days=8)
         message.save()
 
         message = Message.objects.get(id=id4)
-        message.date_sent = message.date_sent - datetime.timedelta(days=6)
+        message.date_sent = message.date_sent - timedelta(days=6)
         message.save()
 
         self.login("hamlet")
@@ -3606,7 +3632,7 @@ class EditMessageTest(EditMessageTestCase):
         # non-admin and non-moderator users cannot move messages sent > 1 week ago
         # including sender of the message.
         message = Message.objects.get(id=msg_id)
-        message.date_sent = message.date_sent - datetime.timedelta(seconds=604900)
+        message.date_sent = message.date_sent - timedelta(seconds=604900)
         message.save()
         check_move_message_to_stream(
             cordelia,
@@ -4777,7 +4803,7 @@ class DeleteMessageTest(ZulipTestCase):
         set_message_deleting_params(Realm.POLICY_EVERYONE, "unlimited")
         msg_id = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id)
-        message.date_sent = message.date_sent - datetime.timedelta(seconds=600)
+        message.date_sent = message.date_sent - timedelta(seconds=600)
         message.save()
 
         result = test_delete_message_by_other_user(msg_id=msg_id)
@@ -4790,12 +4816,12 @@ class DeleteMessageTest(ZulipTestCase):
         set_message_deleting_params(Realm.POLICY_EVERYONE, 240)
         msg_id_1 = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id_1)
-        message.date_sent = message.date_sent - datetime.timedelta(seconds=120)
+        message.date_sent = message.date_sent - timedelta(seconds=120)
         message.save()
 
         msg_id_2 = self.send_stream_message(hamlet, "Denmark")
         message = Message.objects.get(id=msg_id_2)
-        message.date_sent = message.date_sent - datetime.timedelta(seconds=360)
+        message.date_sent = message.date_sent - timedelta(seconds=360)
         message.save()
 
         result = test_delete_message_by_other_user(msg_id=msg_id_1)
@@ -4828,6 +4854,98 @@ class DeleteMessageTest(ZulipTestCase):
             m.side_effect = Message.DoesNotExist()
             result = test_delete_message_by_owner(msg_id=msg_id)
             self.assert_json_error(result, "Message already deleted")
+
+    def test_delete_message_sent_by_bots(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        def set_message_deleting_params(
+            delete_own_message_policy: int, message_content_delete_limit_seconds: Union[int, str]
+        ) -> None:
+            result = self.api_patch(
+                iago,
+                "/api/v1/realm",
+                {
+                    "delete_own_message_policy": delete_own_message_policy,
+                    "message_content_delete_limit_seconds": orjson.dumps(
+                        message_content_delete_limit_seconds
+                    ).decode(),
+                },
+            )
+            self.assert_json_success(result)
+
+        def test_delete_message_by_admin(msg_id: int) -> "TestHttpResponse":
+            result = self.api_delete(iago, f"/api/v1/messages/{msg_id}")
+            return result
+
+        def test_delete_message_by_bot_owner(msg_id: int) -> "TestHttpResponse":
+            result = self.api_delete(hamlet, f"/api/v1/messages/{msg_id}")
+            return result
+
+        def test_delete_message_by_other_user(msg_id: int) -> "TestHttpResponse":
+            result = self.api_delete(cordelia, f"/api/v1/messages/{msg_id}")
+            return result
+
+        set_message_deleting_params(Realm.POLICY_ADMINS_ONLY, "unlimited")
+
+        hamlet = self.example_user("hamlet")
+        test_bot = self.create_test_bot("test-bot", hamlet)
+        msg_id = self.send_stream_message(test_bot, "Denmark")
+
+        result = test_delete_message_by_other_user(msg_id)
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        result = test_delete_message_by_bot_owner(msg_id)
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        result = test_delete_message_by_admin(msg_id)
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(test_bot, "Denmark")
+        set_message_deleting_params(Realm.POLICY_EVERYONE, "unlimited")
+
+        result = test_delete_message_by_other_user(msg_id)
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        result = test_delete_message_by_bot_owner(msg_id)
+        self.assert_json_success(result)
+
+        msg_id = self.send_stream_message(test_bot, "Denmark")
+        set_message_deleting_params(Realm.POLICY_EVERYONE, 600)
+
+        message = Message.objects.get(id=msg_id)
+        message.date_sent = timezone_now() - timedelta(seconds=700)
+        message.save()
+
+        result = test_delete_message_by_other_user(msg_id)
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        result = test_delete_message_by_bot_owner(msg_id)
+        self.assert_json_error(result, "The time limit for deleting this message has passed")
+
+        result = test_delete_message_by_admin(msg_id)
+        self.assert_json_success(result)
+
+        # Check that the bot can also delete the messages sent by them
+        # depending on the realm permissions for message deletion.
+        set_message_deleting_params(Realm.POLICY_ADMINS_ONLY, 600)
+        msg_id = self.send_stream_message(test_bot, "Denmark")
+        result = self.api_delete(test_bot, f"/api/v1/messages/{msg_id}")
+        self.assert_json_error(result, "You don't have permission to delete this message")
+
+        set_message_deleting_params(Realm.POLICY_EVERYONE, 600)
+        message = Message.objects.get(id=msg_id)
+        message.date_sent = timezone_now() - timedelta(seconds=700)
+        message.save()
+
+        result = self.api_delete(test_bot, f"/api/v1/messages/{msg_id}")
+        self.assert_json_error(result, "The time limit for deleting this message has passed")
+
+        message.date_sent = timezone_now() - timedelta(seconds=400)
+        message.save()
+        result = self.api_delete(test_bot, f"/api/v1/messages/{msg_id}")
+        self.assert_json_success(result)
 
     def test_delete_message_according_to_delete_own_message_policy(self) -> None:
         def check_delete_message_by_sender(
@@ -4871,12 +4989,12 @@ class DeleteMessageTest(ZulipTestCase):
         )
         do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
         cordelia = self.example_user("cordelia")
-        cordelia.date_joined = timezone_now() - datetime.timedelta(days=9)
+        cordelia.date_joined = timezone_now() - timedelta(days=9)
         cordelia.save()
         check_delete_message_by_sender(
             "cordelia", "You don't have permission to delete this message"
         )
-        cordelia.date_joined = timezone_now() - datetime.timedelta(days=11)
+        cordelia.date_joined = timezone_now() - timedelta(days=11)
         cordelia.save()
         check_delete_message_by_sender("cordelia")
 

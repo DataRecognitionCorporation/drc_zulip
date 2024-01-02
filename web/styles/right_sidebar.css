@@ -7,13 +7,20 @@ $user_status_emoji_width: 24px;
     }
 }
 
+.right-sidebar-title {
+    color: var(--color-text-sidebar-heading);
+    font-size: inherit;
+    font-weight: normal;
+    display: inline;
+}
+
 #buddy_list_wrapper {
     position: relative;
     margin-left: 0;
     overflow: auto;
 }
 
-#user_presences {
+#buddy-list-users-matching-view {
     max-width: 95%;
     overflow-x: hidden;
     list-style-position: inside; /* Draw the bullets inside our box */
@@ -85,6 +92,14 @@ $user_status_emoji_width: 24px;
         display: block;
     }
 
+    .empty-list-message {
+        font-size: 1.2em;
+
+        &:hover {
+            background-color: inherit;
+        }
+    }
+
     & a {
         color: inherit;
         margin-left: 0;
@@ -131,9 +146,9 @@ $user_status_emoji_width: 24px;
 
 .user_list_style_values {
     .user-name-and-status-emoji {
-        display: block;
+        display: flex;
+        align-items: center;
         width: 100%;
-        height: 20px;
 
         .user-name {
             display: inline-block;
@@ -144,7 +159,7 @@ $user_status_emoji_width: 24px;
 
         .status-emoji {
             line-height: 20px;
-            top: -2px;
+            margin-left: 6px;
         }
     }
 
@@ -185,14 +200,18 @@ $user_status_emoji_width: 24px;
     &.user-with-count .unread_count {
         display: block;
         margin-left: 4px;
+
+        &:empty {
+            /* Hide otherwise empty unread count pill
+               after DMs have been read, but before the
+               count has been removed from the DOM. */
+            display: none;
+        }
     }
 }
 
 #userlist-toggle {
     display: none;
-    position: absolute;
-    top: 0;
-    right: 0;
     text-align: center;
     vertical-align: middle;
 }
@@ -200,11 +219,6 @@ $user_status_emoji_width: 24px;
 #userlist-toggle-button {
     text-decoration: none;
     color: hsl(0deg 0% 60%);
-    display: block;
-    width: 45px;
-    height: 19px;
-    padding-top: 12px;
-    padding-bottom: 9px;
 
     &:hover {
         color: inherit;
@@ -242,17 +256,6 @@ $user_status_emoji_width: 24px;
         opacity: 1;
         cursor: pointer;
     }
-}
-
-#keyboard-icon {
-    position: relative;
-    cursor: pointer;
-    font-size: 20px;
-    margin-right: 15px;
-}
-
-#sidebar-keyboard-shortcuts {
-    color: inherit;
 }
 
 .right-sidebar-shortcuts {

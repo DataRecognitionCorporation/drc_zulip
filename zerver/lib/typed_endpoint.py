@@ -99,7 +99,7 @@ class ApiParamConfig:
 
 # Commonly used for webhook views, where the payload has a content type of
 # application/json. It reads the data from request body and parse it from JSON.
-WebhookPayload: TypeAlias = Annotated[Json[T], ApiParamConfig(argument_type_is_body=True)]
+JsonBodyPayload: TypeAlias = Annotated[Json[T], ApiParamConfig(argument_type_is_body=True)]
 # A shorthand to declare path only variables that should not be parsed from the
 # request by the @typed_endpoint decorator.
 PathOnly: TypeAlias = Annotated[T, ApiParamConfig(path_only=True)]
@@ -364,6 +364,9 @@ def parse_value_for_parameter(parameter: FuncParam[T], value: object) -> T:
         # This condition matches our StringRequiredConstraint
         elif error["type"] == "string_too_short" and error["ctx"].get("min_length") == 1:
             error_template = _("{var_name} cannot be blank")
+        elif error["type"] == "value_error":
+            context["msg"] = error["msg"]
+            error_template = _("Invalid {var_name}: {msg}")
 
         assert error_template is not None, MISSING_ERROR_TEMPLATE.format(
             error_type=error["type"],

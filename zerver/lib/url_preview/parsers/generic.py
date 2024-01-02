@@ -1,13 +1,15 @@
 from typing import Optional
-from urllib.parse import urlparse
+from urllib.parse import urlsplit
 
 from bs4.element import Tag
+from typing_extensions import override
 
 from zerver.lib.url_preview.parsers.base import BaseParser
 from zerver.lib.url_preview.types import UrlEmbedData
 
 
 class GenericParser(BaseParser):
+    @override
     def extract_data(self) -> UrlEmbedData:
         return UrlEmbedData(
             title=self._get_title(),
@@ -51,9 +53,9 @@ class GenericParser(BaseParser):
             if isinstance(first_image, Tag) and first_image["src"] != "":
                 assert isinstance(first_image["src"], str)
                 try:
-                    # We use urlparse and not URLValidator because we
+                    # We use urlsplit and not URLValidator because we
                     # need to support relative URLs.
-                    urlparse(first_image["src"])
+                    urlsplit(first_image["src"])
                 except ValueError:
                     return None
                 return first_image["src"]

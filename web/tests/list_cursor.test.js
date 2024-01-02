@@ -3,20 +3,15 @@
 const {strict: assert} = require("assert");
 
 const {zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 const blueslip = require("./lib/zblueslip");
 const $ = require("./lib/zjquery");
 
 const {ListCursor} = zrequire("list_cursor");
 
-run_test("config errors", () => {
-    blueslip.expect("error", "Programming error");
-    new ListCursor({});
-});
-
 function basic_conf({first_key, prev_key, next_key}) {
     const list = {
-        scroll_container_sel: "whatever",
+        scroll_container_selector: "whatever",
         find_li() {},
         first_key,
         prev_key,
@@ -76,7 +71,7 @@ run_test("single item list", ({override}) => {
     };
 
     override(conf.list, "find_li", () => $li_stub);
-    override(cursor, "adjust_scroll", () => {});
+    override(cursor, "adjust_scroll", noop);
 
     cursor.go_to(valid_key);
 
@@ -96,7 +91,7 @@ run_test("multiple item list", ({override}) => {
         prev_key: (key) => (key > 1 ? key - 1 : undefined),
     });
     const cursor = new ListCursor(conf);
-    override(cursor, "adjust_scroll", () => {});
+    override(cursor, "adjust_scroll", noop);
 
     function li(key) {
         return $.create(`item-${key}`, {children: ["stub"]});

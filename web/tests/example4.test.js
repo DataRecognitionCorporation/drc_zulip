@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, zrequire} = require("./lib/namespace");
-const {run_test} = require("./lib/test");
+const {run_test, noop} = require("./lib/test");
 
 /*
 
@@ -55,7 +55,7 @@ const {run_test} = require("./lib/test");
 */
 
 // We are going to use mock versions of some of our libraries.
-const activity = mock_esm("../src/activity");
+const activity_ui = mock_esm("../src/activity_ui");
 const message_live_update = mock_esm("../src/message_live_update");
 const pm_list = mock_esm("../src/pm_list");
 const settings_users = mock_esm("../src/settings_users");
@@ -84,7 +84,7 @@ run_test("add users with event", ({override}) => {
 
     // We need to override a stub here before dispatching the event.
     // Keep reading to see how overriding works!
-    override(settings_users, "redraw_bots_list", () => {});
+    override(settings_users, "redraw_bots_list", noop);
     // Let's simulate dispatching our event!
     server_events_dispatch.dispatch_normal_event(event);
 
@@ -132,11 +132,11 @@ run_test("update user with event", ({override}) => {
     // verify that they run. Fortunately, the run_test()
     // wrapper will tell us if we override a method that
     // doesn't get called!
-    override(activity, "redraw", () => {});
-    override(message_live_update, "update_user_full_name", () => {});
-    override(pm_list, "update_private_messages", () => {});
-    override(settings_users, "update_user_data", () => {});
-    override(settings_users, "update_bot_data", () => {});
+    override(activity_ui, "redraw", noop);
+    override(message_live_update, "update_user_full_name", noop);
+    override(pm_list, "update_private_messages", noop);
+    override(settings_users, "update_user_data", noop);
+    override(settings_users, "update_bot_data", noop);
 
     // Dispatch the realm_user/update event, which will update
     // data structures and have other side effects that are
