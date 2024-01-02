@@ -14,6 +14,7 @@ import * as dropdown_widget from "./dropdown_widget";
 import * as hash_util from "./hash_util";
 import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
+import {page_params} from "./page_params";
 import * as popover_menus from "./popover_menus";
 import {left_sidebar_tippy_options} from "./popover_menus";
 import * as popovers from "./popovers";
@@ -116,6 +117,7 @@ function build_stream_popover(opts) {
 
     popovers.hide_all_except_sidebars();
     const content = render_stream_sidebar_actions({
+        is_not_guest_or_member: page_params.is_admin || page_params.is_owner || page_params.is_moderator,
         stream: sub_store.get(stream_id),
     });
 
