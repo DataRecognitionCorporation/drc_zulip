@@ -1,16 +1,12 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Jonas Schulz <krokantkilla17@gmail.com>, 2022
-# Sven Stark <sven.stark.1989@gmail.com>, 2022
-# 
-#, fuzzy
+# Sven Stark <sven.stark.1989@gmail.com>, 2020
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-14 20:29+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
@@ -480,7 +476,7 @@ msgstr "Människor"
 
 #: templates/analytics/stats.html:95
 msgid "Bots"
-msgstr "Bottar"
+msgstr "Botar"
 
 #: templates/analytics/stats.html:100
 msgid "Messages read over time"
@@ -858,19 +854,6 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/accounts_send_confirm.html:25
-<<<<<<< HEAD
-msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>."
-msgstr ""
-"Fortfarande inget mejl? Vi kan <a href=\"#\" id=\"resend_email_link\">skicka"
-" det igen</a>."
-
-#: templates/zerver/accounts_send_confirm.html:26
-msgid "Just in case, take a look at your Spam folder."
-msgstr "Kolla in skräpmapp för säkerhets skull."
-
-#: templates/zerver/app/index.html:121
-=======
->>>>>>> 8.0
 msgid ""
 "If you don't see a confirmation email in your Inbox or Spam folder, we can "
 "<a href=\"#\" id=\"resend_email_link\">resend it</a>."
@@ -989,10 +972,7 @@ msgid ""
 "\n"
 "                            No account found for %(email)s.\n"
 "                            "
-msgstr ""
-"\n"
-"                            Inget konto med adressen %(email)s hittades.\n"
-"                            "
+msgstr "\n                            Inget konto med adressen %(email)s hittades.\n                            "
 
 #: templates/zerver/confirm_continue_registration.html:30
 msgid "Log in with another account"
@@ -1356,10 +1336,7 @@ msgid ""
 "We received a request to change the email address for the Zulip account on "
 "%(realm_uri)s from %(old_email)s to %(new_email)s. To confirm this change, "
 "please click below:"
-msgstr ""
-"Vi har fått en begäran om att ändra mejladressan för  %(realm_uri)s från "
-"%(old_email)s till %(new_email)s. Bekräfta detta genom att klicka på länken "
-"nedan:"
+msgstr "Vi har fått en begäran om att ändra mejladressan för  %(realm_uri)s från %(old_email)s till %(new_email)s. Bekräfta detta genom att klicka på länken nedan:"
 
 #: templates/zerver/emails/confirm_new_email.html:11
 msgid "Confirm email change"

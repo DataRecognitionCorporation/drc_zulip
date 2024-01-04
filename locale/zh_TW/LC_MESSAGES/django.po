@@ -1,23 +1,17 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Sean Yuan <sean@meepshop.com>, 2022
-# Yutong Shang, 2022
-# jeff lin <jefflin0902@gmail.com>, 2022
-# Charle Chang <epson12332@gmail.com>, 2022
-# Sean Yuan <pinshan.yuan@gmail.com>, 2022
-# Richard Chen <yihsun.r.chen@gmail.com>, 2022
-# s s <sshiuan2+transifex.com@gmail.com>, 2022
-# Leon H., 2022
-# 林恩衍, 2023
-# 
-#, fuzzy
+# Charle Chang <epson12332@gmail.com>, 2019
+# jeff lin <jefflin0902@gmail.com>, 2020
+# Leon H., 2020
+# Sean Yuan <sean@meepshop.com>, 2021
+# s s <sshiuan2+transifex.com@gmail.com>, 2020-2021
+# Tim Abbott <tabbott@kandralabs.com>, 2021-2022
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-14 20:29+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
@@ -40,11 +34,11 @@ msgstr "無效的組織"
 
 #: analytics/views/stats.py:317
 msgid "Public streams"
-msgstr "公開頻道"
+msgstr "公開串流"
 
 #: analytics/views/stats.py:318
 msgid "Private streams"
-msgstr "私人頻道"
+msgstr "私人串流"
 
 #: analytics/views/stats.py:319
 msgid "Direct messages"
@@ -86,9 +80,7 @@ msgid ""
 "new users. Please [increase the number of licenses]({billing_page_link}) or "
 "[deactivate inactive users]({deactivate_user_help_page_link}) to allow new "
 "users to join."
-msgstr ""
-"您的社群沒有剩餘的 Zulip 許可證，並且不能再接受新用戶。請[增加許可數量]({billing_page_link}) "
-"或[停用非活動用戶]({deactivate_user_help_page_link}) 以允許新用戶加入。"
+msgstr "您的社群沒有剩餘的 Zulip 許可證，並且不能再接受新用戶。請[增加許可數量]({billing_page_link}) 或[停用非活動用戶]({deactivate_user_help_page_link}) 以允許新用戶加入。"
 
 #: corporate/lib/registration.py:36
 #, python-brace-format
@@ -97,9 +89,7 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than one user to "
 "join."
-msgstr ""
-"您的社群只剩下一個 Zulip 許可證。您可以 [增加許可證數量]({billing_page_link}) 或 "
-"[停用非活動用戶]({deactivate_user_help_page_link}) 以允許多個用戶加入。"
+msgstr "您的社群只剩下一個 Zulip 許可證。您可以 [增加許可證數量]({billing_page_link}) 或 [停用非活動用戶]({deactivate_user_help_page_link}) 以允許多個用戶加入。"
 
 #: corporate/lib/registration.py:41
 #, python-brace-format
@@ -108,9 +98,7 @@ msgid ""
 "the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than two users to "
 "join."
-msgstr ""
-"您的社群只剩下兩個 Zulip 許可證。您可以 [增加許可證數量]({billing_page_link}) 或 "
-"[停用非活動用戶]({deactivate_user_help_page_link}) 以允許兩個以上的用戶加入。"
+msgstr "您的社群只剩下兩個 Zulip 許可證。您可以 [增加許可證數量]({billing_page_link}) 或 [停用非活動用戶]({deactivate_user_help_page_link}) 以允許兩個以上的用戶加入。"
 
 #: corporate/lib/registration.py:46
 #, python-brace-format
@@ -119,9 +107,7 @@ msgid ""
 " the number of licenses]({billing_page_link}) or [deactivate inactive "
 "users]({deactivate_user_help_page_link}) to allow more than three users to "
 "join."
-msgstr ""
-"您的組織只剩下三個 Zulip 許可證。您可以 [增加許可證數量]({billing_page_link}) 或 "
-"[停用非活動使用者]({deactivate_user_help_page_link}) 以允許兩個以上的使用者加入。"
+msgstr "您的社群只剩下三個 Zulip 許可證。您可以 [增加許可證數量]({billing_page_link}) 或 [停用非活動用戶]({deactivate_user_help_page_link}) 以允許兩個以上的用戶加入。"
 
 #: corporate/lib/registration.py:57
 #, python-brace-format
@@ -187,7 +173,7 @@ msgstr "付款失敗，請聯絡 {email}"
 
 #: corporate/lib/stripe.py:385
 msgid "Something went wrong. Please reload the page."
-msgstr "發生錯誤。請重新整理頁面。"
+msgstr "發生錯誤。請重新更新頁面。"
 
 #: corporate/lib/stripe.py:476
 msgid "Something went wrong. Please wait a few seconds and try again."
@@ -429,11 +415,11 @@ msgstr "活躍的使用者"
 
 #: templates/analytics/stats.html:40
 msgid "Daily actives"
-msgstr "每日活躍使用者數"
+msgstr "日活躍"
 
 #: templates/analytics/stats.html:41
 msgid "15 day actives"
-msgstr "每15天活躍使用者數"
+msgstr "15 天活躍"
 
 #: templates/analytics/stats.html:42
 msgid "Total users"
@@ -445,7 +431,7 @@ msgstr "使用者"
 
 #: templates/analytics/stats.html:58
 msgid "Messages sent by recipient type"
-msgstr "按收訊者類別的已發送訊息"
+msgstr "訊息已發送 by recipient type"
 
 #: templates/analytics/stats.html:61 templates/analytics/stats.html:91
 #: templates/analytics/stats.html:113 templates/analytics/stats.html:124
@@ -475,7 +461,7 @@ msgstr "全部時間"
 
 #: templates/analytics/stats.html:78
 msgid "Messages sent over time"
-msgstr "按時間先後的已發送訊息"
+msgstr "訊息已發送 over time"
 
 #: templates/analytics/stats.html:81 templates/analytics/stats.html:103
 msgid "Daily"
@@ -491,7 +477,7 @@ msgstr "累計"
 
 #: templates/analytics/stats.html:93
 msgid "Humans"
-msgstr "人類"
+msgstr "人"
 
 #: templates/analytics/stats.html:95
 msgid "Bots"
@@ -499,11 +485,11 @@ msgstr "機器人"
 
 #: templates/analytics/stats.html:100
 msgid "Messages read over time"
-msgstr "按時間先後的已讀訊息"
+msgstr "根據時間的已讀訊息"
 
 #: templates/analytics/stats.html:121
 msgid "Messages sent by client"
-msgstr "用戶端已發送的訊息"
+msgstr "訊息已發送 by client"
 
 #: templates/analytics/stats.html:143
 msgid "Last update"
@@ -530,11 +516,7 @@ msgid ""
 "            This confirms that the email address for your Zulip account has changed\n"
 "            from %(old_email_html_tag)s to %(new_email_html_tag)s\n"
 "            "
-msgstr ""
-"\n"
-"            本信確認您 Zulip 帳號的電子郵件地址已由\n"
-"             %(old_email_html_tag)s 改成 %(new_email_html_tag)s\n"
-"            "
+msgstr "\n            本信確認您Zulip 帳號的電子郵件地址已由\n             %(old_email_html_tag)s 改成 %(new_email_html_tag)s\n            "
 
 #: templates/confirmation/confirm_preregistrationuser.html:5
 msgid "Confirming your email address"
@@ -555,10 +537,7 @@ msgid ""
 "\n"
 "                    Anyway, shoot us a line at %(support_email_html_tag)s and we'll get this resolved shortly.\n"
 "                    "
-msgstr ""
-"\n"
-"                    別擔心，請寄信至 %(support_email_html_tag)s，我們將盡速解決此問題。 \n"
-"                    "
+msgstr "\n                    別擔心，請寄信至 %(support_email_html_tag)s，我們將盡速解決此問題。 \n                    "
 
 #: templates/confirmation/link_expired.html:4
 msgid "Confirmation link expired or deactivated"
@@ -625,7 +604,7 @@ msgstr ""
 #: templates/corporate/communities.html:39
 #: templates/zerver/integrations/index.html:47
 msgid "Filter by category"
-msgstr "按類別篩選"
+msgstr "篩選 by category"
 
 #: templates/corporate/communities.html:58
 #: templates/zerver/integrations/index.html:76
@@ -709,91 +688,12 @@ msgstr ""
 msgid "Education pricing"
 msgstr ""
 
-<<<<<<< HEAD
-#: templates/corporate/hello.html:62
-msgid "Streams in Zulip"
-msgstr "在 Zulip 的頻道"
-
-#: templates/corporate/hello.html:66 templates/corporate/hello.html:81
-#: templates/corporate/hello.html:96
-msgid "Streams in Slack"
-msgstr "在 Slack 的頻道"
-
-#: templates/corporate/hello.html:77
-msgid "Topics in Zulip"
-msgstr "在 Zulip 的主題"
-
-#: templates/corporate/hello.html:92
-msgid "Stream topics in Zulip"
-msgstr "在 Zulip 的頻道主題"
-
-#: templates/corporate/hello.html:104 templates/corporate/hello.html:105
-#: templates/corporate/hello.html:111 templates/corporate/hello.html:113
-msgid "The Tuesday night catering topic in Zulip"
-msgstr "每週二晚上在 Zulip 滿足需求的主題"
-
-#: templates/corporate/hello.html:115
-msgid "The Tuesday night catering topic in Zulip - compose box"
-msgstr "每週二晚上在 Zulip 滿足需求的主題 - compose box"
-
-#: templates/corporate/hello.html:122 templates/corporate/hello.html:124
-msgid "The Tuesday night catering topic in Slack"
-msgstr "每週二晚上在 Slack 滿足需求的主題"
-
-#: templates/corporate/hello.html:133 templates/corporate/hello.html:556
-msgid "See plans and pricing"
-msgstr ""
-
-#: templates/corporate/hello.html:152
-msgid "Previous"
-msgstr ""
-
-#: templates/corporate/hello.html:157 templates/zerver/realm_redirect.html:36
-msgid "Next"
-msgstr "下一個"
-
-#: templates/corporate/hello.html:405
-msgid "Travis logo"
-msgstr "Travis 標誌"
-
-#: templates/corporate/hello.html:412
-msgid "GitHub logo"
-msgstr "GitHub 標誌"
-
-#: templates/corporate/hello.html:419
-msgid "Heroku logo"
-msgstr "Heroku 標誌"
-
-#: templates/corporate/hello.html:426
-msgid "Zendesk logo"
-msgstr "Zendesk 標誌"
-
-#: templates/corporate/hello.html:433
-msgid "Jira logo"
-msgstr "Jira 標誌"
-
-#: templates/corporate/hello.html:440
-msgid "Sentry logo"
-msgstr "Sentry 標誌"
-
-#: templates/corporate/hello.html:447
-msgid "Pagerduty logo"
-msgstr "Pagerduty 標誌"
-
-#: templates/corporate/hello.html:552
-msgid "Log in now"
-msgstr "立即登入"
-
-#: templates/corporate/self-hosting.html:27
-msgid "Features & pricing"
-=======
 #: templates/corporate/for/use-cases.html:26
 msgid "View pricing"
 msgstr ""
 
 #: templates/corporate/remote_billing_server_deactivate.html:5
 msgid "Deactivate server registration?"
->>>>>>> 8.0
 msgstr ""
 
 #: templates/corporate/self-hosting.html:31
@@ -856,48 +756,9 @@ msgstr ""
 msgid "Upgrade"
 msgstr ""
 
-<<<<<<< HEAD
-#: templates/corporate/upgrade.html:23
-#, python-format
-msgid "Upgrade to %(plan)s"
-msgstr "升級至 %(plan)s"
-
-#: templates/corporate/upgrade.html:72 templates/corporate/upgrade.html:194
-msgid "Payment schedule"
-msgstr "付款排程"
-
-#: templates/corporate/upgrade.html:82
-msgid "Pay monthly"
-msgstr "月付"
-
-#: templates/corporate/upgrade.html:89 templates/corporate/upgrade.html:198
-msgid "Pay annually"
-msgstr "年付"
-
-#: templates/corporate/upgrade.html:101
-msgid "License management"
-msgstr "授權管理"
-
-#: templates/corporate/upgrade.html:105
-msgid "Automatic"
-msgstr "自動"
-
-#: templates/corporate/upgrade.html:106
-msgid "Most convenient"
-msgstr "最方便"
-
-#: templates/corporate/upgrade.html:112
-msgid "Manual"
-msgstr "手動"
-
-#: templates/corporate/upgrade.html:113
-msgid "Most control"
-msgstr "最可控制"
-=======
 #: templates/corporate/upgrade.html:199
 msgid "Convert demo organization before upgrading."
 msgstr ""
->>>>>>> 8.0
 
 #: templates/corporate/zulipchat_migration_tos.html:3
 msgid ""
@@ -1583,7 +1444,7 @@ msgstr ""
 
 #: templates/zerver/emails/digest.html:27
 msgid "New streams"
-msgstr "新頻道"
+msgstr "新串流"
 
 #: templates/zerver/emails/digest.html:34
 msgid "Click here to log in to Zulip and catch up."
@@ -1905,9 +1766,7 @@ msgid ""
 "\n"
 "Do not reply to this email. This Zulip server is not configured to accept\n"
 "incoming emails. Help:\n"
-msgstr ""
-"\n"
-"請勿回覆此email。Zulip伺服器並不接收email。幫助文章：\n"
+msgstr "\n請勿回覆此email。Zulip伺服器並不接收email。幫助文章：\n"
 
 #: templates/zerver/emails/missed_message.txt:62
 msgid "Manage email preferences: "
@@ -2720,11 +2579,7 @@ msgid ""
 "                        You are using old version of the Zulip desktop\n"
 "                        app that is no longer supported.\n"
 "                        "
-msgstr ""
-"\n"
-"                        您正在使用的舊版本 Zulip 桌面版應用程式\n"
-"                        已經不在支援。\n"
-"                        "
+msgstr "\n                        您正在使用的舊版本 Zulip 桌面版應用程式\n                        已經不在支援。\n                        "
 
 #: templates/zerver/insecure_desktop_app.html:25
 msgid ""
@@ -2732,11 +2587,7 @@ msgid ""
 "                        The auto-update feature in this old version of\n"
 "                        Zulip desktop app no longer works.\n"
 "                        "
-msgstr ""
-"\n"
-"                        自動更新功能在舊版本\n"
-"                        Zulip 桌面版應用程式裡，不再正常運行。\n"
-"                        "
+msgstr "\n                        自動更新功能在舊版本\n                        Zulip 桌面版應用程式裡，不再正常運行。\n                        "
 
 #: templates/zerver/insecure_desktop_app.html:34
 msgid "Download the latest release."
@@ -3049,7 +2900,7 @@ msgstr "不知道貴組織的網址嗎？"
 
 #: templates/zerver/realm_redirect.html:39
 msgid "Find your organization."
-msgstr "尋找貴組織。"
+msgstr "查詢您的組織。"
 
 #: templates/zerver/realm_redirect.html:47
 msgid "Need to get your group started on Zulip?"
@@ -3188,10 +3039,7 @@ msgid ""
 "\n"
 "        <h1 class=\"get-started\">Select account</h1>\n"
 "        "
-msgstr ""
-"\n"
-"        <h1 class=\"get-started\">選擇帳號</h1>\n"
-"        "
+msgstr "\n        <h1 class=\"get-started\">選擇帳號</h1>\n        "
 
 #: templates/zerver/social_auth_select_email.html:67
 msgid ""
@@ -3330,23 +3178,6 @@ msgstr "無效的順序映射"
 msgid "Field id {id} not found."
 msgstr "找不到欄位 id {id}。"
 
-<<<<<<< HEAD
-#: zerver/actions/default_streams.py:21
-msgid "Invalid default stream group name '{}'"
-msgstr "無效的預設頻道群組名稱 '{}'"
-
-#: zerver/actions/default_streams.py:24
-msgid "Default stream group name too long (limit: {} characters)"
-msgstr "預設頻道群組名稱過長（限制：{} 字元）"
-
-#: zerver/actions/default_streams.py:31
-msgid "Default stream group name '{}' contains NULL (0x00) characters."
-msgstr "預設頻道群組名稱 '{}' 含有 NULL (0x00) 字元。"
-
-#: zerver/actions/default_streams.py:45
-msgid "Invalid default stream group {}"
-msgstr "無效的預設頻道群組 {}"
-=======
 #: zerver/actions/default_streams.py:25
 #, python-brace-format
 msgid "Invalid default stream group name '{group_name}'"
@@ -3367,50 +3198,37 @@ msgstr ""
 #, python-brace-format
 msgid "Invalid default stream group {group_name}"
 msgstr ""
->>>>>>> 8.0
 
 #: zerver/actions/default_streams.py:101 zerver/actions/default_streams.py:128
 #, python-brace-format
 msgid ""
 "'{stream_name}' is a default stream and cannot be added to '{group_name}'"
-msgstr "'{stream_name}' 是預設頻道，不能被加到 '{group_name}'"
+msgstr "'{stream_name}' 是預設串流，不能被加到 '{group_name}'"
 
 #: zerver/actions/default_streams.py:112 zerver/actions/default_streams.py:173
 #, python-brace-format
 msgid "Default stream group '{group_name}' already exists"
-msgstr "預設頻道群組 '{group_name}' 已存在"
+msgstr "預設串流群組 '{group_name}' 已存在"
 
 #: zerver/actions/default_streams.py:134
 #, python-brace-format
 msgid ""
 "Stream '{stream_name}' is already present in default stream group "
 "'{group_name}'"
-msgstr "頻道 '{stream_name}' 已經存在於預設頻道群組 '{group_name}'"
+msgstr "串流 '{stream_name}' 已經存在於預設串流群組 '{group_name}'"
 
 #: zerver/actions/default_streams.py:151
 #, python-brace-format
 msgid ""
 "Stream '{stream_name}' is not present in default stream group '{group_name}'"
-msgstr "頻道 '{stream_name}' 不存在於預設頻道群組 '{group_name}'"
+msgstr "串流 '{stream_name}' 不存在於預設串流群組 '{group_name}'"
 
-<<<<<<< HEAD
-#: zerver/actions/default_streams.py:155
-msgid "This default stream group is already named '{}'"
-msgstr "此預設頻道群組已被更名為 '{}'"
-
-#: zerver/actions/default_streams.py:159
-msgid "Default stream group '{}' already exists"
-msgstr "預設頻道群組 '{}' 已存在"
-
-#: zerver/actions/invites.py:161
-=======
 #: zerver/actions/default_streams.py:166
 #, python-brace-format
 msgid "This default stream group is already named '{group_name}'"
 msgstr ""
 
 #: zerver/actions/invites.py:170
->>>>>>> 8.0
 msgid ""
 "To protect users, Zulip limits the number of invitations you can send in one"
 " day. Because you have reached the limit, no invitations were sent."
@@ -3454,7 +3272,7 @@ msgstr "無效的非主題編輯 propagate_mode"
 
 #: zerver/actions/message_edit.py:115
 msgid "Cannot change message content while changing stream"
-msgstr "當改變頻道時，無法修改訊息內容"
+msgstr "當改變串流時，無法修改訊息內容"
 
 #: zerver/actions/message_edit.py:119
 msgid "Widgets cannot be edited."
@@ -3521,15 +3339,7 @@ msgstr "可編輯此訊息的時間已過"
 msgid "The time limit for editing this message's topic has passed."
 msgstr ""
 
-<<<<<<< HEAD
-#: zerver/actions/message_edit.py:1248 zerver/actions/message_send.py:1428
-msgid "You do not have permission to use wildcard mentions in this stream."
-msgstr "您沒有權限在這個頻道使用標註所有人"
-
-#: zerver/actions/message_edit.py:1257
-=======
 #: zerver/actions/message_edit.py:1308
->>>>>>> 8.0
 msgid "You don't have permission to move this message"
 msgstr "您沒有權限移動此訊息"
 
@@ -3563,11 +3373,11 @@ msgstr "無法渲染訊息"
 
 #: zerver/actions/message_send.py:1271
 msgid "Expected exactly one stream"
-msgstr "只有預期一個頻道"
+msgstr "預期至少一個串流"
 
 #: zerver/actions/message_send.py:1282
 msgid "Invalid data type for stream"
-msgstr "無效的頻道資料類型"
+msgstr "無效的串流資料類型"
 
 #: zerver/actions/message_send.py:1298 zerver/actions/message_send.py:1308
 #: zerver/lib/recipient_parsing.py:25
@@ -3583,23 +3393,21 @@ msgstr "接收者清單可包含 emails 或是使用者 IDs，但不能兩個同
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream ID {stream_id}, "
 "but there is no stream with that ID."
-msgstr "您的機器人 {bot_identity} 嘗試發送訊息至頻道 ID {stream_id}，但該頻道 ID 不存在"
+msgstr "您的機器人 {bot_identity} 嘗試發送訊息至串流 ID {stream_id}，但無串流是該 ID。"
 
 #: zerver/actions/message_send.py:1485
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}, but"
 " that stream does not exist. Click [here]({new_stream_link}) to create it."
-msgstr ""
-"您的機器人 {bot_identity} 嘗試發送訊息至頻道 {stream_name}，但該頻道不存在。點擊 "
-"[此處]({new_stream_link}) 新建頻道。"
+msgstr "您的機器人 {bot_identity} 嘗試發送訊息至串流 {stream_name}，但該串流不存在。點擊 [此處]({new_stream_link}) 以新建他。"
 
 #: zerver/actions/message_send.py:1497
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}. The"
 " stream exists but does not have any subscribers."
-msgstr "您的機器人 {bot_identity} 嘗試發送訊息至頻道 {stream_name}。該頻道存在，但沒有訂閱者。"
+msgstr "您的機器人 {bot_identity} 嘗試發送訊息至串流 {stream_name}。該串流存在，但沒有訂閱者。"
 
 #: zerver/actions/message_send.py:1544
 msgid "Direct messages are disabled in this organization."
@@ -3696,7 +3504,7 @@ msgstr ""
 #: zerver/actions/streams.py:1471
 #, python-brace-format
 msgid "{user_name} renamed stream {old_stream_name} to {new_stream_name}."
-msgstr "{user_name} 重新命名頻道 {old_stream_name} 變成 {new_stream_name}."
+msgstr "{user_name} 重新命名串流 {old_stream_name} 變成 {new_stream_name}."
 
 #: zerver/actions/streams.py:1487 zerver/actions/streams.py:1489
 #: zerver/views/streams.py:798
@@ -3905,11 +3713,11 @@ msgstr "缺少主題"
 
 #: zerver/lib/addressee.py:113
 msgid "Cannot send to multiple streams"
-msgstr "無法發送至多個頻道"
+msgstr "無法發送至多個串流"
 
 #: zerver/lib/addressee.py:125
 msgid "Missing stream"
-msgstr "缺少頻道"
+msgstr "缺少串流"
 
 #: zerver/lib/addressee.py:136
 msgid "Message must have recipients"
@@ -4081,12 +3889,12 @@ msgstr "未登入：必須有 API authentication 或 user session"
 #: zerver/lib/exceptions.py:176
 #, python-brace-format
 msgid "Stream '{stream}' does not exist"
-msgstr "頻道 '{stream}' 不存在"
+msgstr "串流 '{stream}' 不存在"
 
 #: zerver/lib/exceptions.py:189
 #, python-brace-format
 msgid "Stream with ID '{stream_id}' does not exist"
-msgstr "頻道 ID '{stream_id}' 不存在"
+msgstr "串流 ID '{stream_id}' 不存在"
 
 #: zerver/lib/exceptions.py:198
 msgid "organization owner"
@@ -4240,13 +4048,13 @@ msgstr "無效的外部帳號類型"
 
 #: zerver/lib/hotspots.py:34
 msgid "Catch up on a stream"
-msgstr "趕上一個頻道"
+msgstr "跟進一個串流"
 
 #: zerver/lib/hotspots.py:36
 msgid ""
 "Messages sent to a stream are seen by everyone subscribed to that stream. "
 "Try clicking on one of the stream links below."
-msgstr "訊息已發送至頻道並且所有該頻道訂閱者都已讀。嘗試點擊以下任一頻道連結。"
+msgstr "訊息已發送至串流並且所有該串流訂閱者都已讀。嘗試點擊以下任一串流連結。"
 
 #: zerver/lib/hotspots.py:42
 msgid "Topics"
@@ -4503,27 +4311,25 @@ msgstr ""
 msgid ""
 "This is a private stream, as indicated by the lock icon next to the stream "
 "name."
-msgstr "這是私人頻道，可以由頻道名稱旁的鎖定圖示看出來。"
+msgstr "這是私人串流，可以由串流名稱旁的鎖定圖示看出來。"
 
 #: zerver/lib/onboarding.py:272
 msgid "Private streams are only visible to stream members."
-msgstr "私人頻道只有該頻道成員可見"
+msgstr "私人串流只有該串流成員可見"
 
 #: zerver/lib/onboarding.py:276
 #, python-brace-format
 msgid ""
 "To manage this stream, go to [Stream settings]({stream_settings_url}) and "
 "click on `{initial_private_stream_name}`."
-msgstr ""
-"管理此頻道，至 [頻道設定]({stream_settings_url}) 點擊 `{initial_private_stream_name}`。"
+msgstr "管理此串流，至 [串流設定]({stream_settings_url}) 點擊 `{initial_private_stream_name}`。"
 
 #: zerver/lib/onboarding.py:286
 #, python-brace-format
 msgid ""
 "This is a message on stream #**{default_notification_stream_name}** with the"
 " topic `topic demonstration`."
-msgstr ""
-"這是一則訊息在頻道 #**{default_notification_stream_name}** 與主題 `topic demonstration`."
+msgstr "這是一則訊息在串流 #**{default_notification_stream_name}** 與主題 `topic demonstration`."
 
 #: zerver/lib/onboarding.py:292
 msgid "Topics are a lightweight tool to keep conversations organized."
@@ -4534,15 +4340,14 @@ msgstr "主題是一個輕量化的工具，可以持續有系統的對談。"
 msgid ""
 "You can learn more about topics at [Streams and "
 "topics]({about_topics_help_url})."
-msgstr "您可在[頻道跟主題]({about_topics_help_url})學習更多有關於主題的事項。"
+msgstr "您可在[串流跟主題]({about_topics_help_url})學習更多有關於主題的事項。"
 
 #: zerver/lib/onboarding.py:299
 #, python-brace-format
 msgid ""
 "This is a message on stream #**{default_notification_stream_name}** with the"
 " topic `swimming turtles`."
-msgstr ""
-"這是一則在頻道 #**{default_notification_stream_name}** 的主題下 `swimming turtles`的訊息。"
+msgstr "者是一則訊息在串流 #**{default_notification_stream_name}** 與主題 `swimming turtles`."
 
 #: zerver/lib/onboarding.py:308
 #, python-brace-format
@@ -4676,7 +4481,7 @@ msgstr ""
 
 #: zerver/lib/streams.py:241
 msgid "Only organization administrators can send to this stream."
-msgstr "只有組織管理者可在此頻道發文。"
+msgstr "只有組織管理者可發送至此串流。"
 
 #: zerver/lib/streams.py:247
 msgid ""
@@ -4689,18 +4494,12 @@ msgstr ""
 
 #: zerver/lib/streams.py:255
 msgid "New members cannot send to this stream."
-msgstr "新成員不可發送至此頻道。"
+msgstr "新成員不可發送至此串流。"
 
-<<<<<<< HEAD
-#: zerver/lib/streams.py:301
-msgid "Not authorized to send to stream '{}'"
-msgstr "未授權發送至此頻道 '{}'"
-=======
 #: zerver/lib/streams.py:315
 #, python-brace-format
 msgid "Not authorized to send to stream '{stream_name}'"
 msgstr ""
->>>>>>> 8.0
 
 #: zerver/lib/streams.py:321
 msgid "Please supply 'stream'."
@@ -4716,19 +4515,6 @@ msgstr "請選擇其一： 'stream' or 'stream_id'."
 msgid "Invalid stream ID"
 msgstr ""
 
-<<<<<<< HEAD
-#: zerver/lib/streams.py:459
-msgid "Stream name '{}' is already taken."
-msgstr "頻道名稱 '{}' 已存在。"
-
-#: zerver/lib/streams.py:467 zerver/lib/streams.py:587
-msgid "Invalid stream name '{}'"
-msgstr "無效的頻道名稱 '{}'"
-
-#: zerver/lib/streams.py:731
-msgid "Stream(s) ({}) do not exist"
-msgstr "頻道(s) ({}) 不存在"
-=======
 #: zerver/lib/streams.py:475
 #, python-brace-format
 msgid "Stream name '{stream_name}' is already taken."
@@ -4742,7 +4528,6 @@ msgstr ""
 #: zerver/lib/streams.py:749 zerver/views/streams.py:307
 msgid "A default stream cannot be private."
 msgstr ""
->>>>>>> 8.0
 
 #: zerver/lib/streams.py:753
 #, python-brace-format
@@ -4753,33 +4538,18 @@ msgstr ""
 msgid "Web-public streams are not enabled."
 msgstr ""
 
-<<<<<<< HEAD
-#: zerver/lib/streams.py:767
-msgid "Default stream group with id '{}' does not exist."
-msgstr "預設頻道群組 id '{}' 不存在"
-=======
 #: zerver/lib/streams.py:792
 #, python-brace-format
 msgid "Default stream group with id '{group_id}' does not exist."
 msgstr ""
->>>>>>> 8.0
 
 #: zerver/lib/string_validation.py:41
 msgid "Stream name can't be empty!"
 msgstr ""
 
-<<<<<<< HEAD
-#: zerver/lib/string_validation.py:42
-msgid "Stream name too long (limit: {} characters)."
-msgstr "頻道名稱過長（限制：{} 字元）。"
-
-#: zerver/lib/string_validation.py:48
-msgid "Invalid character in stream name, at position {}!"
-=======
 #: zerver/lib/string_validation.py:45
 #, python-brace-format
 msgid "Stream name too long (limit: {max_length} characters)."
->>>>>>> 8.0
 msgstr ""
 
 #: zerver/lib/string_validation.py:53
@@ -4798,11 +4568,11 @@ msgstr ""
 
 #: zerver/lib/subscription_info.py:324
 msgid "Subscriber data is not available for this stream"
-msgstr "此頻道訂閱者資料不可用"
+msgstr "此串流訂閱者資料不可用"
 
 #: zerver/lib/subscription_info.py:331
 msgid "Unable to retrieve subscribers for private stream"
-msgstr "無法取得該私人頻道的訂閱者"
+msgstr "無法取得該私人串流的訂閱者"
 
 #: zerver/lib/typed_endpoint.py:313 zerver/lib/typed_endpoint.py:314
 #: zerver/lib/validator.py:206
@@ -5157,7 +4927,7 @@ msgstr ""
 
 #: zerver/models.py:556
 msgid "stream events"
-msgstr "頻道事件"
+msgstr "串流事件"
 
 #: zerver/models.py:687
 msgid "Available on Zulip Cloud Standard. Upgrade to access."
@@ -5507,13 +5277,6 @@ msgstr ""
 msgid "You must specify at least one email address."
 msgstr ""
 
-<<<<<<< HEAD
-#: zerver/views/invite.py:82
-msgid "Stream does not exist with id: {}. No invites were sent."
-msgstr "不存在頻道 id：{}。邀請未發送。"
-
-=======
->>>>>>> 8.0
 #: zerver/views/invite.py:87
 #, python-brace-format
 msgid "Stream does not exist with id: {stream_id}. No invites were sent."
@@ -5770,7 +5533,7 @@ msgstr "無效的 \"op\" 值。指定為 \"add\" 或 \"remove\"。"
 
 #: zerver/views/streams.py:362
 msgid "Stream already has that name!"
-msgstr "頻道已經是該名稱！"
+msgstr "串流已經是該名稱！"
 
 #: zerver/views/streams.py:441 zerver/views/user_groups.py:169
 #: zerver/views/user_groups.py:366
@@ -5780,35 +5543,35 @@ msgstr ""
 #: zerver/views/streams.py:525
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the stream {stream_name}."
-msgstr "{user_full_name} 已為您訂閱頻道 {stream_name}."
+msgstr "{user_full_name} 已為您訂閱串流 {stream_name}."
 
 #: zerver/views/streams.py:531
 #, python-brace-format
 msgid "{user_full_name} subscribed you to the following streams:"
-msgstr "{user_full_name} 已為您訂閱頻道："
+msgstr "{user_full_name} 已為您訂閱串流："
 
 #: zerver/views/streams.py:647
 #, python-brace-format
 msgid "Unable to access stream ({stream_name})."
-msgstr "無法存取頻道 ({stream_name})."
+msgstr "無法存取串流 ({stream_name})."
 
 #: zerver/views/streams.py:660
 msgid "You can only invite other Zephyr mirroring users to private streams."
-msgstr "你只能邀請 Zephyr mirroring 使用者至私人頻道。"
+msgstr "你只能邀請 Zephyr mirroring 使用者至私人串流。"
 
 #: zerver/views/streams.py:772
 #, python-brace-format
 msgid "{user_name} created the following streams: {stream_str}."
-msgstr "{user_name} 已創建頻道：{stream_str}."
+msgstr "{user_name} 已創建串流：{stream_str}."
 
 #: zerver/views/streams.py:774
 #, python-brace-format
 msgid "{user_name} created a new stream {stream_str}."
-msgstr "{user_name} 已創建一個新頻道 {stream_str}。"
+msgstr "{user_name} 已創建一個新串流 {stream_str}."
 
 #: zerver/views/streams.py:775
 msgid "new streams"
-msgstr "新頻道"
+msgstr "新串流"
 
 #: zerver/views/streams.py:807
 #, python-brace-format
@@ -5820,16 +5583,10 @@ msgstr ""
 msgid "Unknown subscription property: {property}"
 msgstr ""
 
-<<<<<<< HEAD
-#: zerver/views/streams.py:1054
-msgid "Not subscribed to stream id {}"
-msgstr "未訂閱頻道 id {}"
-=======
 #: zerver/views/streams.py:1076
 #, python-brace-format
 msgid "Not subscribed to stream id {stream_id}"
 msgstr ""
->>>>>>> 8.0
 
 #: zerver/views/submessage.py:38
 msgid "Invalid json for submessage"
@@ -5993,9 +5750,7 @@ msgstr "修改所有者失敗，機器人不能擁有其他機器人"
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
-msgstr ""
-"直到 FAKE_EMAIL_DOMAIN 被正確的設定前，都不能新建機器人。\n"
-"請聯繫您伺服器的管理者。"
+msgstr "直到 FAKE_EMAIL_DOMAIN 被正確的設定前，都不能新建機器人。\n請聯繫您伺服器的管理者。"
 
 #: zerver/views/users.py:509
 msgid "Embedded bots are not enabled."

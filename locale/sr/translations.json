@@ -213,13 +213,9 @@
   "Browse 1 more stream": "Прегледај још 1 ток",
   "Browse recent conversations": "Прегледај недавне разговоре",
   "Browse streams": "Претражи токове",
-<<<<<<< HEAD
-  "Business": "Компаније",
-=======
   "Browse {can_subscribe_stream_count} more streams": "Прегледај још {can_subscribe_stream_count} токова",
   "Bulleted list": "Списак ставки",
   "Business": "Компанија",
->>>>>>> 8.0
   "Busy": "Заузет",
   "By deactivating your account, you will be logged out immediately.": "Деактивирањен вашег налога бићете одмах излоговани.",
   "Call provider": "Провајдер позива",
@@ -870,11 +866,7 @@
   "Nobody": "Нико",
   "Nobody in this Zulip organization will be able to see this email address.": "Нико у овој Зулип организацији неће моћи да види ову адресу е-поште.",
   "Non-profit (registered)": "Непрофитна (регистрована)",
-<<<<<<< HEAD
-  "None": "Без",
-=======
   "None": "Ништа",
->>>>>>> 8.0
   "Note that any bots that you maintain will be disabled.": "Имајте на уму да ће сви ботови које ви одржавате бити онемогућени.",
   "Note that organizations are limited to five exports per week.": "Имајте на уму да су организације ограничене на пет извоза недељно.",
   "Nothing to preview": "Ништа за преглед",
@@ -953,12 +945,8 @@
   "Password is too weak": "Лозинка је превише слаба",
   "Password should be at least {length} characters long": "Лозинка би требала да садржи барем {length} карактера",
   "Pattern": "Шаблон",
-<<<<<<< HEAD
-  "Personal": "Лична",
-=======
   "Personal": "Лично",
   "Personal menu": "Лични мени",
->>>>>>> 8.0
   "Personal settings": "Лична подешавања",
   "Pin stream to top": "Закачи ток на врх",
   "Pin stream to top of left sidebar": "Закачи ток на врх траке са леве стране",

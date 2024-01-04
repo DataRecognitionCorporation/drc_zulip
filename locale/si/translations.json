@@ -23,7 +23,7 @@
   "24-hour clock (17:00)": "පැය 24 ඔරලෝසුව (17:00)",
   "3 days": "දවස් 3",
   "30 days": "",
-  "30 minutes": "",
+  "30 minutes": "විනාඩි 30",
   "5 minutes": "විනාඩි 5",
   "6 hours": "පැය 6",
   "<b>Total messages</b>: {total_messages}": "<b>මුළු පණිවිඩ</b>: {total_messages}",
@@ -57,9 +57,9 @@
   "A wide image (200×25 pixels) for the upper left corner of the app.": "",
   "API documentation": "යෙ.ක්‍ර.ම්‍ර. ප්‍රලේඛනය",
   "API key": "යෙ.ක්‍ර.මු. යතුර",
-  "About Zulip": "සුලිප් පිළිබඳව",
-  "Account": "",
-  "Account & privacy": "",
+  "About Zulip": "සුලිප් ගැන",
+  "Account": "ගිණුම",
+  "Account & privacy": "ගිණුම සහ පෞද්ගලිකත්වය",
   "Action": "ක්‍රියාමාර්ගය",
   "Actions": "ක්‍රියාමාර්ග",
   "Active": "ක්‍රියාත්මකයි",
@@ -218,12 +218,8 @@
   "Business": "",
   "Busy": "",
   "By deactivating your account, you will be logged out immediately.": "",
-<<<<<<< HEAD
-  "Cancel": "අවලංගු",
-=======
   "Call provider": "",
   "Cancel": "අවලංගු කරන්න",
->>>>>>> 8.0
   "Cancel compose": "",
   "Cancel compose and save draft": "",
   "Cannot join group {name}": "",
@@ -268,7 +264,7 @@
   "Collapse views": "",
   "Collapse/show selected message": "",
   "Community": "",
-  "Commuting": "ගමන් කරමින්",
+  "Commuting": "ගමන් කිරමින්",
   "Compact": "",
   "Complete": "සම්පූර්ණයි",
   "Complete your <z-link>organization profile</z-link>, which is displayed on your organization's registration and login pages.": "",
@@ -421,9 +417,9 @@
   "Download botserverrc": "බොට්සර්වර්ක් බාගන්න",
   "Download config of all active outgoing webhook bots in Zulip Botserver format.": "",
   "Download file": "ගොනුව බාගන්න",
-  "Download the latest version.": "",
+  "Download the latest version.": "නවතම අනුවාදය බාගන්න.",
   "Download zuliprc": "zuliprc බාගන්න",
-  "Download {filename}": "",
+  "Download {filename}": "{filename} බාගන්න",
   "Drafts": "කටුපිටපත්",
   "Drafts are not synced to other devices and browsers.": "",
   "Drafts from conversation with {recipient}": "",
@@ -518,7 +514,7 @@
   "Failed to generate preview": "පෙරදසුන ජනනය කිරීමට අසමත් විය",
   "Failed to upload %'{file}'": "%'{file}' උඩුගත කිරීමට අසමත් විය",
   "Failed!": "අසමත්!",
-  "Failed: A custom emoji with this name already exists.": "",
+  "Failed: A custom emoji with this name already exists.": "අසමත් විය: මෙම නම සහිත අභිරුචි ඉමොජි දැනටමත් පවතී.",
   "Failed: Emoji name is required.": "අසමත් විය: ඉමොජි නම අවශ්‍යයි.",
   "Failed: There is a default emoji with this name. Only administrators can override default emoji.": "",
   "February": "නවම්",
@@ -548,7 +544,7 @@
   "Filter uploaded files": "",
   "Filter uploads": "උඩුගත කිරීම් පෙරන්න",
   "Filter users": "පරිශීලකයින් පෙරන්න",
-  "First message": "",
+  "First message": "පළමු පණිවිඩය",
   "First time? Read our <z-link>guidelines</z-link> for creating and naming streams.": "",
   "First time? Read our <z-link>guidelines</z-link> for creating user groups.": "",
   "Follow": "",
@@ -563,12 +559,8 @@
   "Full name": "සම්පූර්ණ නම",
   "GIPHY attribution": "",
   "GIPHY integration": "",
-<<<<<<< HEAD
-  "General": "",
-=======
   "General": "පොදු",
   "Generate URL for an integration": "",
->>>>>>> 8.0
   "Generate email address": "",
   "Generate invite link": "ඇරයුම් සබැඳියක් ජනනය කරන්න",
   "Generate new API key": "නව යෙ.ක්‍ර.මු. යතුරක් ජනනය කරන්න",
@@ -592,21 +584,12 @@
   "Group permissions": "",
   "Group settings": "",
   "Guest": "අමුත්තා",
-<<<<<<< HEAD
-  "Guest users cannot edit custom emoji.": "",
-  "Guests": "",
-=======
   "Guests": "අමුත්තන්",
->>>>>>> 8.0
   "Guests cannot edit custom emoji.": "අමුත්තන්ට අභිරුචි ඉමොජි සංස්කරණය කළ නොහැකිය.",
   "Header": "",
   "Help center": "උපකාරක මධ්‍යස්ථානය",
   "Help menu": "",
   "Hide muted message again": "නිහඬ කළ පණිවිඩය යළි සඟවන්න",
-<<<<<<< HEAD
-  "Hide notice": "",
-=======
->>>>>>> 8.0
   "Hide password": "මුරපදය සඟවන්න",
   "Hide starred message count": "තරු යෙදූ පණිවිඩ ගණන සඟවන්න",
   "High contrast mode": "",
@@ -632,13 +615,9 @@
   "Include organization name in subject of message notification emails": "පණිවිඩ දැනුම් දීමේ වි-තැපැල් වලට සංවිධානයේ නම ඇතුළත් කරන්න",
   "Includes muted streams and topics": "",
   "Initiate a search": "",
-<<<<<<< HEAD
-  "Insert new line": "",
-=======
   "Insert new line": "නව රේඛාවක් ඇතුළු කරන්න",
   "Integration": "",
   "Integration URL will appear here.": "",
->>>>>>> 8.0
   "Integrations": "අනුකලන",
   "Interface": "අතුරුමුහුණත",
   "Invalid URL": "වලංගු නොවන ඒ.ස.නි.",
@@ -763,7 +742,7 @@
   "Messages will not be automatically marked as read because this is not a conversation view. <z-link>Change setting</z-link>": "",
   "Messages will not be automatically marked as read. <z-link>Change setting</z-link>": "",
   "Mobile": "ජංගම",
-  "Mobile message notifications": "",
+  "Mobile message notifications": "ජංගම පණිවිඩ දැනුම්දීම්",
   "Mobile notifications": "ජංගම දැනුම්දීම්",
   "Mobile push notifications are not enabled on this server.": "",
   "Mobile push notifications are not enabled on this server. <z-link>Learn more</z-link>": "",
@@ -892,7 +871,7 @@
   "Note that organizations are limited to five exports per week.": "සංවිධාන සතියකට නිර්යාත පහකට සීමා වී ඇති බව සලකන්න.",
   "Nothing to preview": "පෙරදසුන් සඳහා කිසි දෙයක් නැත",
   "Notification of account deactivation on {realm_name}": "",
-  "Notification settings": "",
+  "Notification settings": "දැනුම්දීම් සැකසුම්",
   "Notification sound": "දැනුම් දීමේ ශබ්දය",
   "Notification triggers": "",
   "Notifications": "දැනුම්දීම්",
@@ -921,13 +900,9 @@
   "Only stream members can add users to a private stream.": "",
   "Only subscribers can access or join private streams, so you will lose access to this stream if you convert it to a private stream while not subscribed to it.": "",
   "Only subscribers to this stream can edit stream permissions.": "",
-<<<<<<< HEAD
-  "Open": "",
-=======
   "Only topics you follow": "",
   "Open": "විවෘත",
   "Open help menu": "",
->>>>>>> 8.0
   "Open message menu": "",
   "Open personal menu": "",
   "Open reactions menu": "",
@@ -976,12 +951,8 @@
   "Pin stream to top": "",
   "Pin stream to top of left sidebar": "",
   "Pinned": "",
-<<<<<<< HEAD
-  "Plans and pricing": "",
-=======
   "Plan management": "",
   "Plans and pricing": "සැලසුම් සහ මිලකරණය",
->>>>>>> 8.0
   "Play sound": "ශබ්දය වාදනය",
   "Please <z-link-support>contact support</z-link-support> for an exception or <z-link-invite-help>add users with a reusable invite link</z-link-invite-help>.": "",
   "Please ask a billing administrator to <z-link-billing>increase the number of licenses</z-link-billing> or <z-link-help-page>deactivate inactive users</z-link-help-page>, and try again.": "",
@@ -1089,16 +1060,11 @@
   "See how to configure email.": "",
   "Select a stream": "",
   "Select a stream below or change topic name.": "",
-<<<<<<< HEAD
-  "Select date and time": "",
-  "Select emoji": "",
-=======
   "Select a stream to subscribe": "",
   "Select all drafts": "",
   "Select an integration": "",
   "Select draft": "",
   "Select emoji": "ඉමොජි තෝරන්න",
->>>>>>> 8.0
   "Select language": "",
   "Select stream": "",
   "Send": "යවන්න",
@@ -1121,8 +1087,8 @@
   "Sent! Your message is outside your current narrow.": "",
   "Sent! Your recent message is outside the current search.": "යැවිණි! ඔබගේ මෑත පණිවිඩය වත්මන් සෙවුමෙන් පිටත ය.",
   "September": "බිනර",
-  "Set a status": "තත්‍වයක් සකසන්න",
-  "Set status": "",
+  "Set a status": "තත්වයක් සකසන්න",
+  "Set status": "තත්ත්වය සකසන්න",
   "Set up two factor authentication": "",
   "Settings": "සැකසුම්",
   "Setup": "පිහිටුවීම",
@@ -1131,8 +1097,8 @@
   "Show counts for starred messages": "",
   "Show fewer": "වඩා අඩුවෙන් පෙන්වන්න",
   "Show images in thread": "",
-  "Show keyboard shortcuts": "",
-  "Show less": "",
+  "Show keyboard shortcuts": "යතුරු පුවරුවේ කෙටිමං පෙන්වන්න",
+  "Show less": "අඩුවෙන් පෙන්වන්න",
   "Show message sender's user card": "",
   "Show more": "තව පෙන්වන්න",
   "Show password": "මුරපදය පෙන්වන්න",
@@ -1142,12 +1108,8 @@
   "Show status text": "",
   "Show unread counts for": "",
   "Show/change your API key": "ඔබගේ යෙ.ක්‍ර.මු. යතුර පෙන්වන්න/වෙනස් කරන්න",
-<<<<<<< HEAD
-  "Sign up": "ලියාපදිංචිය",
-=======
   "Showing messages since {time_string}.": "",
   "Sign up": "ලියාපදිංචි වන්න",
->>>>>>> 8.0
   "Silent mentions do not trigger notifications.": "",
   "Size": "ප්‍රමාණය",
   "Slack compatible": "",
@@ -1205,7 +1167,7 @@
   "Task list": "",
   "Test desktop notification": "",
   "The administrators provided the following comment:": "",
-  "The basics": "",
+  "The basics": "මූලික කරුණු",
   "The group description cannot contain newline characters.": "",
   "The recipient {recipient} is not valid.": "",
   "The recipients {recipients} are not valid.": "",
@@ -1361,7 +1323,7 @@
   "User identity": "පරිශීලක අනන්යතාව",
   "User is already not subscribed.": "",
   "User is deactivated": "",
-  "User list": "",
+  "User list": "පරිශීලක ලැයිස්තුව",
   "User list style": "",
   "User list style changed successfully!": "",
   "User role": "පරිශීලක භූමිකාව",

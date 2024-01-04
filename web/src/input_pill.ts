@@ -145,11 +145,8 @@ export function create<T>(opts: InputPillCreateOptions<T>): InputPillContainer<T
                 display_value: item.display_value,
                 has_image,
                 deactivated: item.deactivated,
-<<<<<<< HEAD
                 is_guest: page_params.is_guest,
-=======
                 should_add_guest_user_indicator: item.should_add_guest_user_indicator,
->>>>>>> 8.0
             };
 
             if (has_image) {

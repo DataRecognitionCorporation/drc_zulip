@@ -252,7 +252,7 @@
   "Click on the pencil (<z-pencil-icon></z-pencil-icon>) icon to edit and reschedule a message.": "",
   "Click to change notifications for this topic.": "",
   "Click to view or download.": "",
-  "Close": "Dichtbij",
+  "Close": "Sluiten",
   "Close modal": "",
   "Close this dialog window": "",
   "Code": "Code",
@@ -353,7 +353,7 @@
   "Default user settings": "Standaard gebruikersinstellingen",
   "Delay before sending message notification emails": "",
   "Delay period (minutes)": "",
-  "Delete": "Verwijder",
+  "Delete": "Verwijderen",
   "Delete alert word": "Standaard waarschuwingswoord",
   "Delete all drafts": "",
   "Delete all selected drafts": "",
@@ -449,7 +449,7 @@
   "Education (for-profit)": "",
   "Education (non-profit)": "",
   "Effect": "Effect",
-  "Email": "E-mail",
+  "Email": "E-mailadres",
   "Email address": "E-mailadres",
   "Email address changes are disabled in this organization.": "E-mail adreswijzigingen uitgeschakeld in deze organisatie.",
   "Email copied": "",
@@ -653,12 +653,8 @@
   "July": "Juli",
   "June": "Juni",
   "Just now": "Net",
-<<<<<<< HEAD
-  "Keyboard shortcuts": "Sneltoetsen",
-=======
   "Keyboard shortcuts": "Toetsenbord sneltoetsen",
   "LaTeX": "",
->>>>>>> 8.0
   "Label": "Label",
   "Language": "Taal",
   "Language for automated messages and invitation emails": "",
@@ -767,14 +763,10 @@
   "Moving messages": "",
   "Must be invited by a subscriber; new subscribers can only see messages sent after they join; hidden from non-administrator users": "",
   "Must be invited by a subscriber; new subscribers can view complete message history; hidden from non-administrator users": "",
-<<<<<<< HEAD
-  "Mute stream": "Kanaal dempen",
-=======
   "Mute": "",
   "Mute stream": "Kanaal stilzetten",
->>>>>>> 8.0
   "Mute this user": "",
-  "Mute topic": "Onderwerp dempen",
+  "Mute topic": "Onderwerp stilzetten",
   "Mute user": "",
   "Muted": "Gedempt",
   "Muted user": "Gedempte gebruiker",

@@ -127,11 +127,7 @@
   "Alert word \"{alert_word}\" removed successfully!": "Сигнальное слово \"{alert_word}\" удалено успешно!",
   "Alert word already exists!": "Сигнальное слово уже существует!",
   "Alert words": "Сигнальные слова",
-<<<<<<< HEAD
-  "Alert words allow you to be notified as if you were @-mentioned when certain words or phrases are used in Zulip. Alert words are not case sensitive.": "Сигнальные слова позволяют получать уведомления, как если бы вас упомянули с помощью @, в случае, если в Zulip используются определенные слова или фразы. Сигнальные слова не чувствительны к регистру.",
-=======
   "Alert words allow you to be notified as if you were @-mentioned when certain words or phrases are used in Zulip. Alert words are not case sensitive.": "Сигнальные слова позволяют получать уведомления при использовании определенных слов или фраз в Zulip, как при @-упоминании вас. Сигнальные слова не чувствительны к регистру.",
->>>>>>> 8.0
   "Alerted messages": "Сообщения с сигналами",
   "All direct messages": "Все личные сообщения",
   "All groups": "Все группы",
@@ -453,11 +449,7 @@
   "Education (for-profit)": "Образование (коммерческое)",
   "Education (non-profit)": "Образование (некоммерческое)",
   "Effect": "Результат",
-<<<<<<< HEAD
-  "Email": "Адрес эл. почты",
-=======
   "Email": "Email",
->>>>>>> 8.0
   "Email address": "Адрес электронной почты",
   "Email address changes are disabled in this organization.": "Изменение адреса электронной почты отключено в этой организации.",
   "Email copied": "Электронная почта скопирована",
@@ -592,14 +584,8 @@
   "Group permissions": "Разрешения группы",
   "Group settings": "Настройки групп",
   "Guest": "Гость",
-<<<<<<< HEAD
-  "Guest users cannot edit custom emoji.": "Гости не могут редактировать пользовательские эмодзи.",
-  "Guests": "Гостей",
-  "Guests cannot edit custom emoji.": "Гости не могут редактировать дополнительные эмодзи.",
-=======
   "Guests": "Гости",
   "Guests cannot edit custom emoji.": "Гости не могут редактировать собственные эмодзи.",
->>>>>>> 8.0
   "Header": "Заголовок",
   "Help center": "Центр помощи",
   "Help menu": "Меню справки",
@@ -761,7 +747,7 @@
   "Mobile push notifications are not enabled on this server.": "Мобильные push-уведомления не включены на этом сервере.",
   "Mobile push notifications are not enabled on this server. <z-link>Learn more</z-link>": "Мобильные push-уведомления не включены на этом сервере. <z-link>Подробности</z-link>",
   "Moderator": "Модератор",
-  "Moderators": "Модераторов",
+  "Moderators": "Модераторы",
   "Monday": "Понедельник",
   "Monday at {time}": "В понедельник в {time}",
   "Move all messages in <strong>{topic_name}</strong>": "Перенести все сообщения <strong>{topic_name}</strong>",
@@ -900,7 +886,7 @@
   "October": "Октябрь",
   "Old password": "Старый пароль",
   "Once you leave this group, you will not be able to rejoin.": "Если вы покинете эту группу, вы не сможете вновь к ней присоединиться.",
-  "Once you leave this stream, you will not be able to rejoin.": "Если вы покинете этот канал, вы не сможете вновь к нему подписаться.",
+  "Once you leave this stream, you will not be able to rejoin.": "Если вы покините этот канала, вы не сможете вновь к нему присоединиться.",
   "One or more email addresses...": "Один или несколько адресов электронной почты...",
   "One or more of these users do not exist!": "Одного или нескольких из этих пользователей не существует!",
   "Only 2 custom profile fields can be displayed on the user card.": "В карточке пользователя можно отобразить только два дополнительных поля.",
@@ -925,12 +911,8 @@
   "Optional": "Необязательно",
   "Options": "Варианты",
   "Organization": "Организация",
-<<<<<<< HEAD
-  "Organization administrators": "Администраторов организации",
-=======
   "Organization URL": "URL организации",
   "Organization administrators": "Администраторы организации",
->>>>>>> 8.0
   "Organization administrators can change the announcement stream in the organization settings.": "Администраторы организации могут изменить канал для объявлений в настройках организации.",
   "Organization administrators can reactivate deactivated users.": "Администраторы организации могут вновь активировать отключенных пользователей.",
   "Organization description": "Описание организации.",
@@ -938,7 +920,7 @@
   "Organization members can join (guests must be invited by a subscriber); anyone on the Internet can view complete message history without creating an account": "Участники организации могут подписаться (гости должны быть приглашены подписчиком); любому пользователю интернета доступна полная история сообщений, не создавая учетной записи",
   "Organization members can join (guests must be invited by a subscriber); organization members can view complete message history without joining": "Участники организации могут подписаться (гости должны быть приглашены подписчиком); вся история сообщений доступна участникам организации, в том числе без подписки.",
   "Organization name": "Название организации",
-  "Organization owners": "Владельцев организации",
+  "Organization owners": "Владельцы организации",
   "Organization permissions": "Разрешения организации",
   "Organization profile": "Профиль организации",
   "Organization profile picture": "Картинка профиля организации",
@@ -1013,7 +995,7 @@
   "Reactivate this user": "Повторно активировать этого пользователя",
   "Reactivate user": "Повторно активировать пользователя",
   "Reactivate {name}": "Повторно активировать {name}",
-  "Read receipts": "Подтверждения о прочтении",
+  "Read receipts": "Уведомления о прочтении",
   "Read receipts are currently disabled in this organization.": "Уведомления о прочтении в настоящее время отключены в этой организации.",
   "Read receipts are not available for Notification Bot messages.": "Подтверждение о прочтении недоступны для сообщений бота оповещений.",
   "Receives new stream announcements": "Получает объявления о новых каналах",

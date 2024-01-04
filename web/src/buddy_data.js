@@ -152,11 +152,8 @@ export function info_for(user_id) {
         user_circle_class,
         status_text,
         user_list_style,
-<<<<<<< HEAD
-        is_admin: person.is_admin
-=======
+        is_admin: person.is_admin,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
->>>>>>> 8.0
     };
 }
 

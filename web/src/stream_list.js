@@ -499,12 +499,7 @@ function set_stream_unread_count(
 }
 
 export function update_streams_sidebar(force_rerender) {
-<<<<<<< HEAD
-
     if (!force_rerender && topic_zoom.is_zoomed_in()) {
-=======
-    if (!force_rerender && is_zoomed_in()) {
->>>>>>> 8.0
         // We do our best to update topics that are displayed
         // in case user zoomed in. Streams list will be updated,
         // once the user zooms out. This avoids user being zoomed out
@@ -755,7 +750,6 @@ export function initialize({on_stream_click}) {
     initialize_stream_cursor();
     set_event_handlers({on_stream_click});
 
-<<<<<<< HEAD
 }
 
 // DRC MODIFICATION - add event listeners for folders
@@ -777,20 +771,6 @@ export function set_folder_listeners({on_stream_click}) {
 
         stream_sidebar.build_subfolder_rows(folder_name);
         // stream_sidebar.update_sidebar_unread_count(null);
-=======
-    $("#stream_filters").on("click", ".show-more-topics", (e) => {
-        zoom_in();
-
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
-    $(".show-all-streams").on("click", (e) => {
-        zoom_out();
-
-        e.preventDefault();
-        e.stopPropagation();
->>>>>>> 8.0
     });
 }
 
@@ -938,7 +918,6 @@ export function initiate_search() {
 }
 
 export function clear_and_hide_search() {
-<<<<<<< HEAD
     hide_search_section();
     stream_sidebar.clear_sidebar();
     stream_sidebar.build_stream_folder();
@@ -946,9 +925,6 @@ export function clear_and_hide_search() {
     stream_sidebar.update_sidebar_unread_count();
 
     const $filter = $(".stream-list-filter");
-=======
-    const $filter = $(".stream-list-filter").expectOne();
->>>>>>> 8.0
     if ($filter.val() !== "") {
         $filter.val("");
         update_streams_for_search();

@@ -9,21 +9,12 @@
             <thead>
                 <tr>
                     <th rowspan="2" width="30%"></th>
-<<<<<<< HEAD
                     <th colspan="2" width="28%" class="{{#if show_push_notifications_tooltip.is_guest_or_member}}control-label-disabled{{/if}}">{{t "Desktop"}}</th>
                     <th rowspan="2" width="14%" class="{{#if show_push_notifications_tooltip.push_notifications}}control-label-disabled{{else if show_push_notifications_tooltip.is_guest_or_member}}control-label-disabled{{/if}}">
                         {{t "Mobile"}}
                         {{#if (not realm_push_notifications_enabled) }}
                         <i class="fa fa-question-circle settings-info-icon tippy-zulip-tooltip" data-tippy-content="{{t 'Mobile push notifications are not configured on this server.' }}"></i>
                         {{/if}}
-=======
-                    <th colspan="2" width="28%">{{t "Desktop"}}</th>
-                    <th rowspan="2" width="14%">
-                        <span {{#if (not realm_push_notifications_enabled) }}class="control-label-disabled tippy-zulip-tooltip" data-tooltip-template-id="mobile-push-notification-tooltip-template"{{/if}}>
-                            {{t "Mobile"}}
-                        </span>
-                        {{> ../help_link_widget link="/help/mobile-notifications#enabling-push-notifications-for-self-hosted-servers" }}
->>>>>>> 8.0
                     </th>
                     <th rowspan="2" width="14%" class="{{#if show_push_notifications_tooltip.is_guest_or_member}}control-label-disabled{{/if}}">{{t "Email"}}</th>
                     <th rowspan="2" width="14%" class="{{#if show_push_notifications_tooltip.is_guest_or_member}}control-label-disabled{{/if}}">@all

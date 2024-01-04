@@ -7,11 +7,8 @@ import assert from "minimalistic-assert";
 import copy_invite_link from "../templates/copy_invite_link.hbs";
 import render_invitation_failed_error from "../templates/invitation_failed_error.hbs";
 import render_invite_user_modal from "../templates/invite_user_modal.hbs";
-<<<<<<< HEAD:web/src/invite.js
 import render_invite_subscription_rows from "../templates/invite_subscription_rows.hbs";
-=======
 import render_invite_tips_banner from "../templates/modal_banner/invite_tips_banner.hbs";
->>>>>>> 8.0:web/src/invite.ts
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
 import * as channel from "./channel";
@@ -230,21 +227,15 @@ function generate_multiuse_invite(): void {
     });
 }
 
-<<<<<<< HEAD:web/src/invite.js
 export function get_invite_streams() {
     if(stream_list == undefined) {
         stream_list = new StreamList();
     }
-    let streams = stream_list.get_streams();   
-=======
-export function get_invite_streams(): stream_data.InviteStreamData[] {
-    const streams = stream_data.get_invite_stream_data();
->>>>>>> 8.0:web/src/invite.ts
+    let streams = stream_list.get_streams();
     streams.sort((a, b) => util.strcmp(a.name, b.name));
     return streams;
 }
 
-<<<<<<< HEAD:web/src/invite.js
 function render_invite_rows() {
     let html_streams = render_invite_subscription_rows({
         streams: get_invite_streams()
@@ -267,9 +258,6 @@ function render_filtered_invite_rows(filter_text) {
 
 function valid_to(expires_in) {
     const time_valid = Number.parseFloat(expires_in);
-=======
-function valid_to(time_valid: number): string {
->>>>>>> 8.0:web/src/invite.ts
     if (!time_valid) {
         return $t({defaultMessage: "Never expires"});
     }
@@ -333,12 +321,11 @@ function set_streams_to_join_list_visibility(): void {
     } else {
         $("#streams_to_add .invite-stream-controls").show();
         $("#invite-stream-checkboxes").show();
-        $(".stream-filter").show(); 
-        $("#invite-streams").show();  
+        $(".stream-filter").show();
+        $("#invite-streams").show();
     }
 }
 
-<<<<<<< HEAD:web/src/invite.js
 function add_listners() {
     $(".stream_checkbox_invite").on("click", (e) => {
         let id = $(e.target).val();
@@ -347,7 +334,6 @@ function add_listners() {
 }
 
 function open_invite_user_modal(e) {
-=======
 function generate_invite_tips_data(): Record<string, boolean> {
     const {realm_description, realm_icon_source, custom_profile_fields} = page_params;
 
@@ -361,7 +347,6 @@ function generate_invite_tips_data(): Record<string, boolean> {
 }
 
 function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void {
->>>>>>> 8.0:web/src/invite.ts
     e.stopPropagation();
     e.preventDefault();
 
@@ -431,7 +416,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                 $t({defaultMessage: "Inviting..."}),
             );
             toggle_invite_submit_button();
-            reset_error_messages();            
+            reset_error_messages();
         });
 
         $("#invite-user-modal").on("change", "#generate_multiuse_invite_radio", () => {
@@ -480,14 +465,14 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         $('#stream_search').on('input', (e) => {
             let streams = stream_list.get_streams_filtered($(e.target).val())
             render_filtered_invite_rows($(e.target).val());
-            
+
         });
 
         $(document).on("click", "#invite_check_all_button", () => {
             $("#invite-stream-checkboxes :checkbox").prop("checked", true);
             stream_list.check_all();
         });
-    
+
 
         $("#invite_uncheck_all_button").on("click", () => {
             $("#invite-stream-checkboxes input[type=checkbox]").prop("checked", false);
@@ -529,12 +514,8 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         $("#invite-user-form .setup-tips-container").html(render_invite_tips_banner(context));
     }
 
-<<<<<<< HEAD:web/src/invite.js
     function invite_users() {
         render_invite_rows();
-=======
-    function invite_users(): void {
->>>>>>> 8.0:web/src/invite.ts
         const is_generate_invite_link = $("#generate_multiuse_invite_radio").prop("checked");
         if (is_generate_invite_link) {
             generate_multiuse_invite();
@@ -552,7 +533,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         on_click: invite_users,
         post_render: invite_user_modal_post_render,
     });
-    
+
 }
 
 export function initialize(): void {

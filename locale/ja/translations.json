@@ -37,13 +37,8 @@
   "<strong>{name}</strong> is not subscribed to this stream. They will not be notified if you mention them.": "<strong>{name}</strong>はこのストリームをフォローしていないため、メンションしても通知されません。",
   "<strong>{name}</strong> is not subscribed to this stream. They will not be notified unless you subscribe them.": "<strong>{name}</strong>はこのストリームをフォローしていないため、あなたがフォロワーに追加しない限り通知されません。",
   "<strong>{username}</strong> has {number_of_invites_by_user} unexpired invitations.": "",
-<<<<<<< HEAD
-  "<z-button>Subscribe</z-button>": "<z-button>フォロー</z-button>",
-  "<z-link>Click here</z-link> to learn about exporting private streams and messages.": "<z-link>ここをクリック</z-link>してプライベートストリームとメッセージをエクスポートする方法について確認する",
-=======
   "<z-button>Subscribe</z-button>": "<z-button>登録する</z-button>",
   "<z-link>Click here</z-link> to learn about exporting private streams and direct messages.": "",
->>>>>>> 8.0
   "<z-link>Upgrade</z-link> for more space.": "",
   "<z-shortcut></z-shortcut> to add a new line": "<z-shortcut></z-shortcut>で改行",
   "<z-shortcut></z-shortcut> to send": "<z-shortcut></z-shortcut> で送信",
@@ -186,7 +181,7 @@
   "Are you sure you want to unstar all messages in <stream-topic></stream-topic>?  This action cannot be undone.": "本当に<stream-topic></stream-topic>内のすべてのメッセージからスターを外しますか？この操作はもとに戻すことができません。",
   "Are you sure you want to unstar all starred messages?  This action cannot be undone.": "本当にすべてのメッセージからスターを外しますか？この操作はもとに戻すことができません。",
   "Ask me later": "あとで確認する",
-  "At the office": "オフィスにいます",
+  "At the office": "オフィスで",
   "Audible": "",
   "Audible desktop notifications": "音声通知",
   "August": "8月",
@@ -217,13 +212,9 @@
   "Bots": "ボット",
   "Browse 1 more stream": "",
   "Browse recent conversations": "",
-<<<<<<< HEAD
-  "Browse streams": "ストリームの一覧を見る",
-=======
   "Browse streams": "ストリームを探す",
   "Browse {can_subscribe_stream_count} more streams": "{can_subscribe_stream_count}件のストリームを閲覧",
   "Bulleted list": "箇条書き",
->>>>>>> 8.0
   "Business": "ビジネス",
   "Busy": "忙しい",
   "By deactivating your account, you will be logged out immediately.": "アカウントを無効にすると、すぐにログアウトされます。",
@@ -512,7 +503,7 @@
   "Expires at": "",
   "Expires on {date} at {time}": "",
   "Export failed": "エクスポートに失敗しました",
-  "Export organization": "組織をエクスポート",
+  "Export organization": "組織を書き出し",
   "Export started. Check back in a few minutes.": "エクスポートを開始しました。数分後に確認してください。",
   "Exports all users, settings, and all data visible in public streams.": "すべてのユーザーと設定、公開ストリームで閲覧可能なすべてのデータをエクスポートします。",
   "External account type": "外部アカウントタイプ",
@@ -593,10 +584,6 @@
   "Group permissions": "",
   "Group settings": "グループの設定",
   "Guest": "ゲスト",
-<<<<<<< HEAD
-  "Guest users cannot edit custom emoji.": "ゲストユーザーはカスタム絵文字を編集できません。",
-=======
->>>>>>> 8.0
   "Guests": "ゲスト",
   "Guests cannot edit custom emoji.": "ゲストはカスタム絵文字を編集することができません。",
   "Header": "ヘッダー",
@@ -930,8 +917,8 @@
   "Organization administrators can reactivate deactivated users.": "組織の管理者のみ無効化されたアカウントを有効化することができます。",
   "Organization description": "組織の説明",
   "Organization logo": "組織のロゴ",
-  "Organization members can join (guests must be invited by a subscriber); anyone on the Internet can view complete message history without creating an account": "組織のメンバーは参加できます（ゲストは他のフォロワーから招待される必要があります）。アカウントを作成することなく、インターネット上の誰でも、全てのメッセージを閲覧できます。",
-  "Organization members can join (guests must be invited by a subscriber); organization members can view complete message history without joining": "組織のメンバーは参加できます（ゲストは他のフォロワーから招待される必要があります）。組織の誰でも、フォローせずに全てのメッセージを閲覧できます。",
+  "Organization members can join (guests must be invited by a subscriber); anyone on the Internet can view complete message history without creating an account": "組織のメンバーは参加できます（ゲストは他の登録者から招待される必要があります）。インターネット上の全員が、アカウントを作成しなくても全てのメッセージ履歴を閲覧できます",
+  "Organization members can join (guests must be invited by a subscriber); organization members can view complete message history without joining": "組織のメンバーは参加できます。（ただしゲストは、フォロワーから招待される必要があります。）組織のメンバーは、参加しなくても全てのメッセージ履歴を表示できます。",
   "Organization name": "組織名",
   "Organization owners": "組織オーナー",
   "Organization permissions": "組織の権限",
@@ -963,14 +950,9 @@
   "Personal settings": "個人設定",
   "Pin stream to top": "ストリームをトップに固定",
   "Pin stream to top of left sidebar": "左サイドバーのトップにストリームを固定",
-<<<<<<< HEAD
-  "Pinned": "ピン留め",
-  "Plans and pricing": "プランと価格",
-=======
   "Pinned": "ピン留め済み",
   "Plan management": "",
   "Plans and pricing": "プラント価格",
->>>>>>> 8.0
   "Play sound": "サウンドを再生",
   "Please <z-link-support>contact support</z-link-support> for an exception or <z-link-invite-help>add users with a reusable invite link</z-link-invite-help>.": "",
   "Please ask a billing administrator to <z-link-billing>increase the number of licenses</z-link-billing> or <z-link-help-page>deactivate inactive users</z-link-help-page>, and try again.": "",
@@ -1161,23 +1143,14 @@
   "Stream successfully created!": "ストリームが作成されました！",
   "Streams": "ストリーム",
   "Streams they should join": "招待ユーザーが購読するストリーム",
-<<<<<<< HEAD
-  "Subject": "件名",
-  "Subscribe": "フォロー",
-=======
   "Strikethrough": "打ち消し",
   "Subject": "券名",
   "Subscribe": "購読",
->>>>>>> 8.0
   "Subscribe them": "フォロワーに追加",
   "Subscribe to <z-stream></z-stream>": "",
   "Subscribe to/unsubscribe from selected stream": "選択したストリームをフォローまたは解除",
-<<<<<<< HEAD
-  "Subscribed": "フォロー済み",
-=======
   "Subscribe {full_name} to streams": "",
   "Subscribed": "購読済み",
->>>>>>> 8.0
   "Subscribed streams": "フォロー中のストリーム",
   "Subscribed successfully!": "購読しました！",
   "Subscriber count": "フォロワー数",
@@ -1241,14 +1214,10 @@
   "This organization is configured so that only administrators can add generic bots.": "この組織は管理者のみが汎用ボットを追加できるように設定しています。",
   "This organization is configured to restrict editing of message content to {minutes_to_edit} minutes after it is sent.": "この組織は、送信後{minutes_to_edit}分間メッセージの編集ができないように設定されています。",
   "This stream does not exist or is private.": "このストリームは存在しないか、非公開です。",
-  "This stream does not yet have a description.": "まだ説明がありません。",
+  "This stream does not yet have a description.": "はまだ説明がありません。",
   "This stream has been deactivated": "このストリームは停止状態にされました",
-<<<<<<< HEAD
-  "This stream has {count} subscribers.": "{count} 人がフォローしています",
-=======
   "This stream has no subscribers.": "",
   "This stream has {sub_count, plural, =0 {no subscribers} one {# subscriber} other {# subscribers}}.": "",
->>>>>>> 8.0
   "This user does not exist!": "このユーザーは存在しません！",
   "This user has been deactivated.": "ユーザーは無効化されています",
   "This view is still loading messages.": "",
@@ -1586,17 +1555,11 @@
   "{minutes} min to edit": "編集可能時間{minutes}分",
   "{minutes} minutes ago": "{minutes}分前",
   "{modal_heading_text}": "{modal_heading_text}",
-<<<<<<< HEAD
-  "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, other {}}",
-  "{seconds} sec to edit": "{seconds}秒前",
-  "{user_time} local time": "",
-=======
   "{name} (guest)": "",
   "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, other {{num_of_people} 人がこのメッセージを<z-link>読みました</z-link>：}}",
   "{seconds} sec to edit": "{seconds}秒前",
   "{server_jitsi_server_url} (default)": "",
   "{user_time} local time": "現地時間 {user_time}",
->>>>>>> 8.0
   "{username} [said]({link_to_message}):": "{username} [said]({link_to_message}):",
   "{username} reacted with {emoji_name}": "{username} が {emoji_name} で反応しました"
 }

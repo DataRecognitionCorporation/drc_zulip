@@ -42,16 +42,10 @@
   "<z-link>Upgrade</z-link> for more space.": "<z-link>Upgrade</z-link> für mehr Platz.",
   "<z-shortcut></z-shortcut> to add a new line": "<z-shortcut></z-shortcut>, um eine neue Zeile einzufügen",
   "<z-shortcut></z-shortcut> to send": "<z-shortcut></z-shortcut> zum Absenden",
-<<<<<<< HEAD
-  "<z-user></z-user> will have the same properties as it did prior to deactivation, including role, owner and stream subscriptions.": "<z-user></z-user> werden dieselben Eigenschaften zugeteilt wie vor der Deaktivierung, einschließlich Rolle, Besitzer und Stream-Abonnements.",
-  "<z-user></z-user> will have the same role, stream subscriptions, user group memberships, and other settings and permissions as they did prior to deactivation.": "<z-user></z-user> wird die gleiche Rolle, die gleichen Stream-Abonnements und Nutzergruppen-Mitgliedschaften sowie Einstellungen und Rechte haben wie vor der Deaktivierung.",
-  "A Topic Move already in progress.": "Ein Thema wird gerade schon bewegt.",
-=======
   "<z-user></z-user> will have the same properties as it did prior to deactivation, including role, owner and stream subscriptions.": "<z-user></z-user> werden dieselben Eigenschaften zugeteilt wie vor der Deaktivierung, einschließlich Rolle, Besitzer:in und Stream-Abonnements.",
   "<z-user></z-user> will have the same role, stream subscriptions, user group memberships, and other settings and permissions as they did prior to deactivation.": "<z-user></z-user> wird die gleiche Rolle, die gleichen Stream-Abonnements und Nutzergruppen-Mitgliedschaften sowie Einstellungen und Rechte haben wir vor der Deaktivierung.",
   "@{name} (guest)": "@{name} (Gast)",
   "A Topic Move already in progress.": "Ein Thema wird bereits verschoben.",
->>>>>>> 8.0
   "A deactivated bot cannot send messages, access data, or take any other action.": "Ein deaktivierter Bot kann keine Nachrichten senden, nicht auf Daten zugreifen und keinerlei anderen Aktionen ausführen.",
   "A deactivated emoji will remain visible in existing messages and emoji reactions, but cannot be used on new messages.": "Ein deaktiviertes Emoji bleibt in bestehenden Nachrichten und Emoji-Reaktionen sichtbar, kann aber nicht mehr in neuen Nachrichten verwendet werden.",
   "A language is marked as 100% translated only if every string in the web, desktop, and mobile apps is translated, including administrative UI and error messages.": "Eine Sprache wird nur dann als zu 100 % übersetzt gekennzeichnet, wenn sämtliche Zeichenketten in Web-, Desktop- und Mobil-Apps übersetzt sind, einschließlich der Verwaltungsoberfläche und Fehlermeldungen.",
@@ -433,7 +427,7 @@
   "Drafts older than <strong>{draft_lifetime}</strong> days are automatically removed.": "Entwürfe, die älter als <strong>{draft_lifetime}</strong> Tage sind, werden automatisch entfernt.",
   "Duration deletion is allowed after posting (minutes)": "Zeit, innerhalb der nach dem Posten noch Löschen möglich ist (in Minuten)",
   "Duration editing is allowed after posting (minutes)": "Zeit, innerhalb der nachdem Posten noch Bearbeitung möglich ist (in Minuten)",
-  "EDITED": "BEARBEITET",
+  "EDITED": "EDITIERT",
   "Edit": "Bearbeiten",
   "Edit #{stream_name}": "#{stream_name} bearbeiten",
   "Edit and reschedule message": "Nachricht bearbeiten und umplanen",
@@ -568,7 +562,7 @@
   "General": "Allgemein",
   "Generate URL for an integration": "URL für eine Integration generieren",
   "Generate email address": "E-Mail-Adresse generieren",
-  "Generate invite link": "erstelle Einladungs-Link",
+  "Generate invite link": "Erstelle Einladungs-Link",
   "Generate new API key": "Neuen API-Schlüssel generieren",
   "Generate stream email address": "E-Mail-Adresse für Stream generieren",
   "Generating link...": "Link wird erstellt …",
@@ -644,11 +638,7 @@
   "Invited by": "Eingeladen von",
   "Invitee": "Eingeladener",
   "Invites": "Einladungen",
-<<<<<<< HEAD
-  "Inviting...": "Lade ein...",
-=======
   "Inviting...": "Wird eingeladen …",
->>>>>>> 8.0
   "Italic": "Kursiv",
   "January": "Januar",
   "Jitsi server URL": "Jitsi-Server-URL",
@@ -896,15 +886,9 @@
   "October": "Oktober",
   "Old password": "Altes Passwort",
   "Once you leave this group, you will not be able to rejoin.": "Wenn du die Gruppe verlassen hast, kannst du ihr nicht wieder beitreten.",
-<<<<<<< HEAD
-  "Once you leave this stream, you will not be able to rejoin.": "Sobald du diesen Stream verlässt, kannst du ihm nicht wieder beitreten.",
-  "One or more email addresses...": "Eine oder mehrere E-Mail-Adressen...",
-  "One or more of these users do not exist!": "Einer oder mehrere dieser Nutzer existieren nicht!",
-=======
   "Once you leave this stream, you will not be able to rejoin.": "Sobald du diesen Stream verlässt, wirst du ihm nicht wieder beitreten können.",
   "One or more email addresses...": "Eine oder mehrere E-Mail-Adressen …",
   "One or more of these users do not exist!": "Eine:r oder mehrere dieser Nutzer:innen existieren nicht!",
->>>>>>> 8.0
   "Only 2 custom profile fields can be displayed on the user card.": "Nur zwei benutzerdefinierte Profilfelder können auf der Nutzerkarte dargestellt werden.",
   "Only group members can add users to a group.": "Nur Mitglieder der Gruppe können ihr weitere Nutzer:innen hinzufügen.",
   "Only in conversation views": "Nur bei Ansicht einer bestimmten Unterhaltung",
@@ -1055,7 +1039,7 @@
   "Save failed": "Speichern fehlgeschlagen",
   "Saved": "Gespeichert",
   "Saved as draft": "Als Entwurf gespeichert",
-  "Saved. Please <z-link>reload</z-link> for the change to take effect.": "Gespeichert. Bitte <z-link>lade die Seite neu</z-link>, um die Änderungen zu sehen.",
+  "Saved. Please <z-link>reload</z-link> for the change to take effect.": "Gespeichert. Bitte <z-link>lade die Seite neu</z-link> um die Änderungen zu aktivieren.",
   "Saving": "Wird gespeichert",
   "Schedule for {deliver_at}": "Planen für {deliver_at}",
   "Schedule for {formatted_send_later_time}": "Planen für {formatted_send_later_time}",
@@ -1190,13 +1174,8 @@
   "The sender's email address": "Die E-Mail-Adresse des Absenders",
   "The stream <b>#{stream_name}</b> does not exist. Manage your subscriptions <z-link>on your Streams page</z-link>.": "Der Stream <b>#{stream_name}</b> existiert nicht. Verwalte deine Abonnements <z-link>auf deiner Stream-Seite</z-link>.",
   "The stream description cannot contain newline characters.": "Die Streambeschreibung darf keine Zeichen mit Zeilenumbruch enthalten.",
-<<<<<<< HEAD
-  "Their password will be cleared from our systems, and any bots they maintain will be disabled.": "Ihr Passwort wird von unserem System gelöscht, und alle Bots, die sie verwalten, werden deaktiviert.",
-  "Theme": "Theme",
-=======
   "Their password will be cleared from our systems, and any bots they maintain will be disabled.": "Sein:ihr Passwort wird aus unseren Systemen gelöscht und alle Bots, die sie:er betreibt, werden deaktiviert.",
   "Theme": "Farbschema",
->>>>>>> 8.0
   "There are no current alert words.": "Es gibt derzeit keine Signalwörter.",
   "There are no messages here.": "Hier gibt es keine Nachrichten.",
   "There are no streams you can view in this organization.": "In dieser Organisation gibt es keine Streams, die du anzeigen kannst.",
@@ -1314,13 +1293,8 @@
   "Unsubscribe {full_name} from <z-link></z-link>?": "{full_name} von <z-link></z-link> deabonnieren?",
   "Unsubscribed successfully!": "Erfolgreich ausgetragen!",
   "Up to {time_limit} after posting": "Bis zu {time_limit} nach dem Senden einer Nachricht",
-<<<<<<< HEAD
-  "Update successful: Subdomains allowed for {domain}": "Aktualisierung erfolgreich: Subdomains für {domain} erlaubt.",
-  "Update successful: Subdomains no longer allowed for {domain}": "Aktualisierung erfolgreich: Subdomains für {domain} nicht mehr erlaubt.",
-=======
   "Update successful: Subdomains allowed for {domain}": "Aktualisierung erfolgreich: Subdomains für {domain} erlaubt",
   "Update successful: Subdomains no longer allowed for {domain}": "Aktualisierung erfolgreich: Subdomains für {domain} nicht mehr erlabut",
->>>>>>> 8.0
   "Upgrade to the latest release": "Zur neuesten Version upgraden",
   "Upgrade to {standard_plan_name}": "Zu {standard_plan_name} upgraden",
   "Upload avatar": "Avatar hochladen",
@@ -1346,10 +1320,6 @@
   "User group name": "Name der Nutzergruppe",
   "User group settings": "Nutzergruppen-Einstellungen",
   "User groups": "Nutzergruppen",
-<<<<<<< HEAD
-  "User groups allow you to <z-link>mention</z-link> multiple users at once. When you mention a user group, everyone in the group is notified as if they were individually mentioned.": "Nutzergruppen ermöglichen es dir, mehrere Nutzer auf einmal <z-link>zu erwähnen</z-link>. Wenn du eine Nutzergruppe erwähnst, bekommen alle in der Gruppe eine Benachrichtigung, als hättest du sie einzeln erwähnt.",
-=======
->>>>>>> 8.0
   "User identity": "Nutzeridentität",
   "User is already not subscribed.": "Nutzer:in ist bereits deabonniert.",
   "User is deactivated": "Nutzer:in ist deaktiviert",
@@ -1392,13 +1362,8 @@
   "Warning: <strong>#{stream_name}</strong> is a private stream.": "Achtung: <strong>#{stream_name}</strong> ist ein privater Stream.",
   "We are about to have a poll.  Please wait for the question.": "Wir haben gleich eine Umfrage. Bitte warte auf die Frage.",
   "We strongly recommend enabling desktop notifications. They help Zulip keep your team connected.": "Wir empfehlen dir dringend, Desktop-Benachrichtigungen zu aktivieren. Sie helfen Zulip, dein Team zu verbinden.",
-<<<<<<< HEAD
-  "We've replaced the \"{originalHotkey}\" hotkey with \"{replacementHotkey}\" to make this common shortcut easier to trigger.": "Wir haben \"{originalHotkey}\" hotkey erstezt mit \"{replacementHotkey}\", damit der shortcut leichter benutzt werden kann.",
-  "Web-public": "öffentlich im Netz",
-=======
   "We've replaced the \"{originalHotkey}\" hotkey with \"{replacementHotkey}\" to make this common shortcut easier to trigger.": "Wir haben das Tastenkürzel „{originalHotkey}“ durch „{replacementHotkey}“ ersetzt, um das Auslösen dieser häufigen Tastenkombination zu erleichtern.",
   "Web-public": "Öffentlich im Netz",
->>>>>>> 8.0
   "Wednesday": "Mittwoch",
   "Week of {date}": "Woche {date}",
   "Welcome back!": "Willkommen zurück!",
@@ -1590,12 +1555,8 @@
   "{minutes} min to edit": "{minutes} Minuten zum Bearbeiten",
   "{minutes} minutes ago": "vor {minutes} Minuten",
   "{modal_heading_text}": "{modal_heading_text}",
-<<<<<<< HEAD
-  "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, one {Diese Nachricht wurde von {num_of_people} Person <z-link>gelesen</z-link>:} other {Diese Nachricht wurde von {num_of_people} Personen <z-link>gelesen</z-link>:}}",
-=======
   "{name} (guest)": "{name} (Gast)",
   "{num_of_people, plural, one {This message has been <z-link>read</z-link> by {num_of_people} person:} other {This message has been <z-link>read</z-link> by {num_of_people} people:}}": "{num_of_people, plural, one {Diese Nachricht wurde von {num_of_people} Person <z-link>gelesen</z-link>.} other {Diese Nachricht wurde von {num_of_people} Personen <z-link>gelesen</z-link>:}}",
->>>>>>> 8.0
   "{seconds} sec to edit": "{seconds} Sekunden zum Bearbeiten",
   "{server_jitsi_server_url} (default)": "{server_jitsi_server_url} (Standard)",
   "{user_time} local time": "{user_time} Ortszeit",

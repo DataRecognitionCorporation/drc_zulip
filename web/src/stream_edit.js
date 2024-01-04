@@ -168,23 +168,11 @@ export function stream_settings(sub) {
         const ret = {
             name: setting,
             label: settings_labels[setting],
-<<<<<<< HEAD
-            disabled_realm_setting: page_params.is_guest || (setting == "push_notifications" && !page_params.realm_push_notifications_enabled),
-            is_disabled: page_params.is_guest || (setting == "push_notifications" && !page_params.realm_push_notifications_enabled),
-            is_notification_setting: is_notification_setting(setting),
-        };
-        // Disable email and wildcard notifications for members
-        if ((ret.name === "email_notifications" || ret.name === "wildcard_mentions_notify") && !page_params.is_guest) {
-            ret.disabled_realm_setting = ret.is_disabled = !page_params.is_admin && !page_params.is_owner && !page_params.is_moderator && !page_params.is_guest;
-        }
-        if (is_notification_setting(setting)) {
-=======
             disabled_realm_setting: check_realm_setting[setting],
             is_disabled: check_realm_setting[setting],
             has_global_notification_setting: has_global_notification_setting(setting),
         };
         if (has_global_notification_setting(setting)) {
->>>>>>> 8.0
             // This block ensures we correctly display to users the
             // current state of stream-level notification settings
             // with a value of `null`, which inherit the user's global
@@ -244,16 +232,12 @@ export function show_settings_for(node) {
 
     const other_settings = [];
     const notification_settings = all_settings.filter((setting) => {
-<<<<<<< HEAD
         //DRC MODIFICATION - if user is not admin... always return false so mute checkbox
         // is not displayed
         if(setting.name == "is_muted" && !page_params.is_admin){
           return false;
         }
         if (setting.is_notification_setting) {
-=======
-        if (is_notification_setting(setting.name)) {
->>>>>>> 8.0
             return true;
         }
         other_settings.push(setting);
@@ -264,15 +248,12 @@ export function show_settings_for(node) {
         sub,
         notification_settings,
         other_settings,
-<<<<<<< HEAD
         is_admin: page_params.is_admin,
         is_guest: page_params.is_guest,
         stream_post_policy_values: stream_data.stream_post_policy_values,
         stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
-=======
         stream_post_policy_values: settings_config.stream_post_policy_values,
         stream_privacy_policy_values: settings_config.stream_privacy_policy_values,
->>>>>>> 8.0
         stream_privacy_policy: stream_data.get_stream_privacy_policy(stream_id),
         check_default_stream: stream_data.is_default_stream_id(stream_id),
         zulip_plan_is_not_limited: page_params.zulip_plan_is_not_limited,
