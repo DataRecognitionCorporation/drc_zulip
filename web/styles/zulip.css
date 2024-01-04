@@ -1,26 +1,3 @@
-/*
-This is the header, aka the navbar.
-*/
-$header_height: 40px;
-
-/*
-We have a 10px gutter below the header,
-which often needs to be respected by both
-the elements above it and below it on
-the y-axis, due to absolute positioning.
-*/
-$header_padding_bottom: 10px;
-
-/*
-Our sidebars (and anything that top-align
-with them such as floating recipient bars)
-go beneath the header.
-*/
-$sidebar_top: calc($header_height + $header_padding_bottom);
-
-$left_sidebar_collapse_widget_gutter: 10px;
-$left_sidebar_width: 450px;
-$right_sidebar_width: 250px;
 html {
     overflow: hidden scroll;
     overscroll-behavior-y: none;
@@ -123,7 +100,7 @@ body {
     with them) go beneath the header.
     */
     --left-sidebar-collapse-widget-gutter: 10px;
-    --left-sidebar-width: 310px;
+    --left-sidebar-width: 270px;
     --right-sidebar-width: 250px;
     --left-sidebar-header-icon-width: 15px;
 
@@ -2141,22 +2118,7 @@ td.pointer {
     background-color: var(--color-background-private-message-content);
 
     .date_row {
-        background-color: hsla(192, 19%, 75%, 0.2);
-        /* The 5th parameter here is a spread-radius, which, when negative,
-         * causes the shadow to shrink (be smaller than the target
-         * element), resulting in a visual width of 3px-1px=2px. This
-         * is a workaround for a regression found in Electron
-         * v18.3.15+ where the box-shadow with spread-radius >= 0
-         * would cause horizontal separator lines to appear between
-         * messages in the color of the left ruler. The root cause of
-         * that regression is yet unknown.
-         *
-         * Similar CSS for stream messages is present directly in the
-         * Handlebars templates, since the color used there is the
-         * stream's configured color.
-         */
-        box-shadow: inset 3px 0 0 -1px hsl(0, 0%, 27%),
-            -1px 0 0 0 hsl(0, 0%, 27%);
+        background-color: var(--color-background-private-message-content);
     }
 }
 
@@ -2419,3 +2381,1415 @@ div.focused-message-list {
 }
 
 .message_length_controller {
+    .message_length_toggle {
+        display: none;
+        width: 100%;
+        height: 24px;
+        margin-bottom: 4px;
+        color: var(--color-text-show-more-less-button);
+        background-color: var(--color-show-more-less-button-background);
+        border-radius: 4px;
+        border: none;
+        outline: none;
+        font-variant: all-small-caps;
+
+        &:hover {
+            background-color: var(
+                --color-show-more-less-button-background-hover
+            );
+        }
+
+        &:active {
+            background-color: var(
+                --color-show-more-less-button-background-active
+            );
+            scale: 0.98;
+        }
+    }
+}
+
+.bookend {
+    margin-top: 10px;
+    background-color: transparent;
+}
+
+.inline_profile_picture {
+    display: inline-block;
+    width: var(--message-box-avatar-width);
+    height: var(--message-box-avatar-height);
+    /* Don't inherit the line-height from message-avatar;
+       this preserves the dimensions and rounded corners
+       on the image itself. */
+    line-height: 1;
+    margin-right: 11px;
+    vertical-align: top;
+    border-radius: 4px;
+    overflow: hidden;
+
+    &.guest-avatar::after {
+        outline: 2px solid hsl(0deg 0% 100%);
+    }
+}
+
+.home-error-bar {
+    margin-top: 5px;
+    display: none;
+
+    .alert {
+        margin-bottom: auto;
+    }
+}
+
+.streamname {
+    font-weight: bold;
+}
+
+.search_icon {
+    /* These rules match the .dropdown-toggle CSS for the gear menu. */
+    color: inherit;
+    opacity: 0.5;
+    text-decoration: none;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.top-navbar-container {
+    /* Calculate right margin so that title and description
+       elements can truncate and not collide with or run underneath
+       with the search section. */
+    margin-right: calc(
+        var(--search-box-width) + var(--navbar-content-righthand-offset)
+    );
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#message_view_header {
+    color: var(--color-text-message-view-header);
+    z-index: 2;
+    float: left;
+    height: var(--header-height);
+    width: 100%;
+    line-height: var(--header-height);
+    display: flex;
+    align-items: baseline;
+    white-space: nowrap;
+    cursor: default;
+
+    .hidden {
+        display: none;
+    }
+
+    .message-header-stream-settings-button,
+    .navbar_title {
+        font-weight: 600;
+        font-size: 16px;
+        padding: 0 2px 0 6px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: inherit;
+        text-decoration: none;
+        /* Create a flex container for the icon and
+           stream name. */
+        display: flex;
+        /* We want to use baseline alignment so that the
+           stream name and narrow description sit on
+           the same invisible line. */
+        align-items: baseline;
+
+        .zulip-icon {
+            font-size: 14px;
+            /* Pull the icon out of baseline alignment,
+               and center with stream name. */
+            align-self: center;
+        }
+
+        .zulip-icon-inbox {
+            font-size: 16px;
+        }
+
+        .fa-envelope {
+            /* The squatter envelope icon appears
+               better vertically centered when aligned
+               to the baseline of the adjacent DM partners. */
+            align-self: baseline;
+        }
+
+        @media (height < $short_navbar_cutoff_height) {
+            padding: 0 3.5px; /* based on having ~41.66% decrease */
+        }
+
+        & i {
+            margin: 0 6px 0 5px;
+            /* Align all icons to center. */
+            align-self: center;
+        }
+
+        .fa {
+            .fa-envelope {
+                font-size: 14px;
+                margin: 0 5px;
+            }
+
+            .fa-hashtag {
+                font-size: 1.2rem;
+                margin: 0 2px 0 5px;
+            }
+        }
+    }
+
+    .message-header-navbar-title {
+        /* Allow long navbar titles (e.g., stream names) to collapse. */
+        flex: 0 1 auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .narrow_description {
+        /* the actual value of flex shrink does not matter, it is the
+           ratio of this value to other flex items that determines the
+           behavior while shrinking, here the other item has the .stream
+           class and a flex of 1, so the value here *is* the ratio, and
+           is chosen such that the narrow description shrinks to close
+           before the stream name must begin to shrink */
+        flex-shrink: 100;
+        background: none;
+        font-size: 14px;
+        color: inherit;
+        font-weight: 400;
+        padding-left: 10px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* The very last element in the navbar is the search icon, the second
+       last element is either the narrow description (for stream narrows) or
+       the "title" (for other narrows). The flex-grow property ensures these
+       elements take up the entirety of the white space, while flex-shrink
+       accommodates narrower viewports. Setting flex-basis 0 enables an
+       ellipsis to be displayed, as the 0 takes the place of the max-content
+       default that would otherwise run titles under the search box. */
+    .navbar_title,
+    .narrow_description {
+        flex: 1 1 0;
+        margin: 0;
+    }
+}
+
+#streamlist-toggle {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    text-align: center;
+}
+
+.hide-streamlist-toggle-visibility,
+.hide-navbar-buttons-visibility {
+    visibility: hidden;
+}
+
+#streamlist-toggle-button {
+    text-decoration: none;
+    color: var(--color-navbar-icon);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+
+    &:hover {
+        background-color: var(--color-header-button-hover);
+
+        #streamlist-toggle-unreadcount {
+            border-color: var(--color-header-button-hover-no-alpha);
+        }
+    }
+
+    &:active {
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:focus {
+        outline: 0;
+    }
+
+    &:focus-visible {
+        outline: none;
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:active,
+    &:focus-visible {
+        #streamlist-toggle-unreadcount {
+            border-color: var(--color-header-button-focus-no-alpha);
+        }
+    }
+}
+
+#streamlist-toggle-unreadcount {
+    position: absolute;
+    display: none;
+    height: 6px;
+    width: 6px;
+    background-color: var(--color-navbar-icon);
+    top: 10px;
+    right: 9px;
+    border: 2px solid var(--color-background-navbar);
+    border-radius: 6px;
+    padding: 0;
+    font-size: 0;
+}
+
+.nav .dropdown-menu {
+    left: auto;
+    right: -7px;
+    top: 35px;
+    /* Match the width of the right sidebar so that we don't have
+       the presence dots distracting you when looking at this. */
+    min-width: 240px;
+    box-shadow: 0 0 5px hsl(0deg 0% 0% / 20%);
+
+    &::after {
+        position: absolute;
+        width: 0;
+        height: 0;
+        top: -7px;
+        right: 19px;
+        display: inline-block;
+        border-right: 7px solid transparent;
+        border-bottom: 7px solid hsl(0deg 0% 67%);
+        border-left: 7px solid transparent;
+        content: "";
+        z-index: 10;
+    }
+}
+
+.nav .dropdown-menu a,
+.typeahead.dropdown-menu a {
+    color: inherit;
+}
+
+.typeahead.dropdown-menu {
+    .active {
+        color: hsl(0deg 0% 100%);
+
+        .unsubscribed_icon {
+            display: block;
+            float: right;
+            margin-top: 5px;
+            margin-right: -12px;
+            font-size: 0.8em;
+            color: hsl(96deg 7% 73%);
+        }
+    }
+
+    .unsubscribed_icon {
+        display: none;
+    }
+}
+
+.typeahead-image {
+    display: inline-block;
+    height: 21px;
+    width: 21px;
+    position: relative;
+    margin-top: -4px;
+    vertical-align: middle;
+    top: 2px;
+    right: 8px;
+    border-radius: 4px;
+
+    /* For FontAwesome icons used in place of images for some users. */
+    font-size: 19px;
+    text-align: center;
+
+    &.no-presence-circle {
+        margin-left: 9px;
+        top: 3px;
+    }
+}
+
+nav {
+    .column-left {
+        text-align: left;
+        margin-left: 15px;
+
+        .nav-logo {
+            display: inline-block;
+            vertical-align: top;
+            margin-top: 8px;
+            height: 25px;
+            max-width: 200px;
+
+            @media (height < $short_navbar_cutoff_height) {
+                height: 15px;
+            }
+        }
+    }
+
+    & a {
+        &.no-style:hover {
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .no-style {
+            text-decoration: none;
+        }
+    }
+}
+
+#bottom_whitespace {
+    display: block;
+    height: var(--max-unexpanded-compose-height);
+}
+
+.operator_value {
+    font-family: "Source Code Pro", monospace;
+    color: hsl(353deg 70% 65%);
+}
+
+.operator {
+    font-family: "Source Code Pro", monospace;
+}
+
+#loading_older_messages_indicator,
+#loading_newer_messages_indicator {
+    margin: 10px;
+}
+
+#loading_older_messages_indicator_box_container,
+#loading_newer_messages_indicator_box_container {
+    position: absolute;
+    left: 50%;
+}
+
+#loading_older_messages_indicator_box,
+#loading_newer_messages_indicator_box {
+    position: relative;
+    left: -50%;
+    top: -43px;
+    z-index: 1;
+    border-radius: 6px;
+}
+
+#page_loading_indicator {
+    margin: 10px auto;
+}
+
+#page_loading_indicator_box_container {
+    position: absolute;
+    left: 50%;
+}
+
+#page_loading_indicator_box {
+    position: relative;
+    left: -50%;
+    top: -43px;
+    z-index: 1;
+    border-radius: 6px;
+}
+
+#create_stream_subscribers {
+    margin-top: 10px;
+
+    .checkbox {
+        display: block;
+
+        & input[type="checkbox"] {
+            margin: 5px 0;
+            float: none;
+        }
+    }
+}
+
+.sub_button_row {
+    text-align: center;
+}
+
+.small_square_button {
+    padding: 0;
+    border: none;
+    font-size: 12px;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    margin-bottom: 3px;
+
+    &:focus {
+        outline: none;
+    }
+
+    &.small_square_x {
+        background-color: hsl(0deg 0% 100%);
+        color: hsl(0deg 0% 47%);
+
+        &:hover {
+            color: hsl(0deg 0% 18%);
+        }
+    }
+}
+
+div.topic_edit_spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    margin-top: -1px;
+    padding: 2px;
+    vertical-align: middle;
+}
+
+div.toggle_resolve_topic_spinner {
+    margin-top: -12px;
+    padding-left: 9px;
+}
+
+div.topic_edit_spinner .loading_indicator_spinner,
+div.toggle_resolve_topic_spinner .loading_indicator_spinner {
+    width: 14px;
+    height: 14px;
+
+    & path {
+        fill: var(--color-recipient-bar-controls-spinner);
+    }
+}
+
+.message_edit_spinner {
+    margin-right: 8px;
+    padding-top: 5px;
+}
+
+.message_edit_spinner .loading_indicator_spinner {
+    width: 20px;
+    height: 20px;
+}
+
+textarea.invitee_emails {
+    min-height: 40px;
+    max-height: 300px;
+    width: 96%;
+    max-width: 96%;
+    resize: vertical !important;
+
+    color: hsl(0deg 0% 33%);
+    background-color: hsl(0deg 0% 100%);
+    border-radius: 4px;
+    vertical-align: middle;
+    border: 1px solid hsl(0deg 0% 80%);
+    padding: 4px 6px;
+
+    box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+    transition:
+        border linear 0.2s,
+        box-shadow linear 0.2s;
+
+    &:focus {
+        border-color: hsl(206.5deg 80% 62% / 80%);
+        outline: 0;
+
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206.5deg 80% 62% / 60%);
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        background-color: hsl(0deg 0% 93%);
+    }
+}
+
+#custom-expiration-time-input,
+#invite-user-form {
+    margin: 0;
+}
+
+select.invite-expires-in,
+select.custom-expiration-time,
+select.invite-as {
+    width: 220px;
+    height: 30px;
+    padding: 0 6px;
+    color: hsl(0deg 0% 33%);
+    border-radius: 4px;
+    border: 1px solid hsl(0deg 0% 80%);
+    cursor: pointer;
+    background-color: hsl(0deg 0% 100%);
+    vertical-align: middle;
+}
+
+#multiuse_invite_link {
+    width: 370px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+}
+
+#invite-stream-checkboxes {
+    & i.zulip-icon-globe {
+        font-size: 80%;
+    }
+}
+
+.invite_type_radio_section {
+    margin: 2px 2px 2px 5px;
+
+    & div {
+        width: fit-content;
+    }
+
+    & input[type="radio"] {
+        cursor: pointer;
+
+        &:disabled {
+            cursor: not-allowed;
+        }
+    }
+
+    .control-label-disabled label {
+        pointer-events: none;
+        cursor: not-allowed;
+    }
+}
+
+#custom-expiration-time-input {
+    width: 5ch;
+    margin-right: 15px;
+
+    padding: 4px 6px;
+    color: hsl(0deg 0% 33%);
+    border-radius: 4px;
+    border: 1px solid hsl(0deg 0% 80%);
+    box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+    transition:
+        border linear 0.2s,
+        box-shadow linear 0.2s;
+
+    &:focus {
+        border-color: hsl(206deg 80% 62% / 80%);
+        outline: 0;
+        box-shadow:
+            inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+            0 0 8px hsl(206deg 80% 62% / 60%);
+    }
+}
+
+#custom-expiration-time-unit {
+    width: auto;
+}
+
+.empty_feed_notice {
+    padding: 3em 1em;
+    text-align: center;
+}
+
+.empty-feed-notice-title {
+    font-size: 1.5em;
+    font-weight: 400;
+    word-wrap: break-word;
+}
+
+.empty-feed-notice-description {
+    font-size: 1.1em;
+}
+
+.message-fade,
+.user_sidebar_entry.user-fade {
+    opacity: 0.4;
+}
+
+.emoji {
+    height: 25px;
+    width: 25px;
+    /* Maintain `vertical-align` for inline-block styles in messages: */
+    vertical-align: middle;
+    /* But, for all others, use flexbox and its align-self property.
+      What is excellent about this is that flexbox will ignore the
+      `vertical-align` value, while inline-block contexts will ignore
+      the `align-self` property: */
+    align-self: center;
+}
+
+.status-emoji {
+    height: 16px;
+    width: 16px;
+    /* We are setting minimum width here because when the user's name is very long,
+    emoji's width decreases and causes it to break. */
+    min-width: 16px;
+    /* In most contexts, status emoji appear immediately after a name
+      field with no margin. Position the status emoji with 3px of left
+      margin to space it from the name, and set no right margin so
+      that any components to the right appear equally distant as they
+      would be from a name. */
+    margin-left: 3px;
+    margin-right: 0;
+}
+
+/* FIXME: Combine this rule with the one in portico.css somehow? */
+#pw_strength {
+    width: 100%;
+    height: 10px;
+    margin-bottom: 0;
+}
+
+#pw_change_controls {
+    display: none;
+}
+
+.sub-unsub-message,
+.date_row {
+    padding-bottom: 10px;
+}
+
+.date_row {
+    text-align: right;
+}
+
+.sub-unsub-message span,
+.date_row span {
+    display: block;
+    padding: 4px;
+    overflow: hidden;
+    text-transform: uppercase;
+}
+
+.sub-unsub-message .stream-status {
+    opacity: 0.6;
+
+    & i {
+        font-size: 10px;
+        position: relative;
+        top: 1px;
+        margin-left: 2px;
+    }
+
+    .zulip-icon.zulip-icon-lock {
+        font-size: 12px;
+    }
+}
+
+.sub-unsub-message {
+    text-align: center;
+}
+
+.sub-unsub-message span {
+    font-size: 1em;
+    text-transform: none;
+}
+
+.sub-unsub-message span::before,
+.sub-unsub-message span::after,
+.date_row span::before,
+.date_row span::after {
+    display: inline-block;
+    position: relative;
+    content: " ";
+    vertical-align: middle;
+    height: 0;
+    opacity: 0.15;
+    border-bottom: 1px solid hsl(0deg 0% 0%);
+}
+
+.sub-unsub-message span::before,
+.sub-unsub-message span::after {
+    width: 50%;
+}
+
+.date_row span::before {
+    width: 100%;
+}
+
+.date_row span::after {
+    width: 6px;
+    left: 0.25em;
+    /* Align date with message time and recipient bar date. */
+    margin-right: -1px;
+}
+
+.sub-unsub-message span::before,
+.date_row span::before {
+    right: 0.25em;
+    margin-left: -50%;
+}
+
+.sub-unsub-message span::after {
+    left: 0.25em;
+    margin-right: -50%;
+}
+
+.message_edit {
+    display: none;
+}
+
+/* Reduce some of the heavy padding from Bootstrap. */
+.message_edit_form {
+    margin-bottom: 10px;
+    cursor: default;
+
+    .edit-controls {
+        margin-left: 0;
+        margin-top: 0;
+    }
+
+    /* Override the default border-radius to properly align
+       the button corners with `stream_header_colorblock`. */
+    .dropdown-toggle {
+        border-radius: 1px 4px 4px 1px !important;
+    }
+
+    .dropdown-list-widget,
+    .stream_header_colorblock {
+        margin-bottom: 10px;
+    }
+
+    & textarea {
+        width: 100%;
+        min-width: 206px;
+        box-sizing: border-box;
+        /* Setting resize as none hides the bottom right diagonal box
+           (which even has a background color of its own!). */
+        resize: none !important;
+        color: hsl(0deg 0% 33%);
+        background-color: hsl(0deg 0% 100%);
+        border-radius: 4px;
+        vertical-align: middle;
+        border: 1px solid hsl(0deg 0% 80%);
+        padding: 4px 6px;
+        margin-bottom: 10px;
+
+        box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
+        transition:
+            border linear 0.2s,
+            box-shadow linear 0.2s;
+
+        &:focus {
+            border-color: hsl(206.5deg 80% 62% / 80%);
+            outline: 0;
+
+            box-shadow:
+                inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
+                0 0 8px hsl(206.5deg 80% 62% / 60%);
+        }
+
+        &:read-only,
+        &:disabled {
+            cursor: not-allowed;
+            background-color: hsl(0deg 0% 93%);
+        }
+    }
+}
+
+#topic_edit_form {
+    display: inline-block;
+    margin: 0;
+    height: 22px;
+    padding-left: 20px;
+    padding-right: 3px;
+    line-height: 22px;
+    margin-left: -15px;
+}
+
+.screen {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: hsl(0deg 0% 0%);
+    z-index: 20000;
+}
+
+.deactivated_user .deactivated-user-icon {
+    color: inherit;
+    margin-left: 2px;
+    font-size: 0.9em;
+}
+
+.no-drag {
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
+.user_popover_email {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: all 0.4s ease;
+
+    & i {
+        cursor: pointer;
+
+        &.hide_copy_icon {
+            display: none;
+        }
+    }
+}
+
+.email_copied,
+.user_popover_email i:hover {
+    color: hsl(170deg 48% 54%);
+}
+
+.email_copied i {
+    display: none !important;
+}
+
+.flatpickr-calendar {
+    /* Hide the up and down arrows in the Flatpickr datepicker year */
+    .flatpickr-months .numInputWrapper span {
+        display: none;
+    }
+
+    .flatpickr-time-separator {
+        position: relative;
+        left: 5px;
+    }
+
+    .flatpickr-time input {
+        margin: 0 5px;
+        min-height: 30px;
+    }
+
+    .flatpickr-confirm {
+        color: hsl(0deg 0% 100%);
+        background-color: hsl(213deg 90% 65%);
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    @media (width < $md_min) {
+        /* Center align flatpickr on mobile
+         * devices so that it doesn't go out of
+         * the viewport. */
+        left: 0 !important;
+        right: 0 !important;
+        margin: auto;
+
+        &::after,
+        &::before {
+            border-top-width: 0 !important;
+        }
+    }
+}
+
+#about-zulip {
+    .exit {
+        font-size: 1.5rem;
+        font-weight: 600;
+        background-color: transparent;
+        border: none;
+        position: absolute;
+        right: 8px;
+        z-index: 1;
+        color: hsl(0deg 0% 67%);
+    }
+
+    .overlay-content {
+        width: 440px;
+        border-radius: 4px;
+    }
+
+    .about-zulip-logo {
+        text-align: center;
+        margin: 30px;
+    }
+
+    .about-zulip-logo img {
+        height: 40px;
+    }
+
+    & i.fa-copy {
+        cursor: pointer;
+    }
+
+    .fa-copy:hover {
+        color: hsl(170deg 48% 54%);
+    }
+
+    .overlay-body {
+        max-height: 60vh;
+        padding: 15px;
+    }
+}
+
+@media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
+    .spectator-view {
+        #navbar-middle {
+            /* = (width of button, square with header) * 3 (number of buttons) + 10px extra margin. */
+            margin-right: calc(var(--header-height) * 3 + 10px);
+        }
+
+        #help-menu,
+        #gear-menu {
+            position: relative;
+            right: var(--header-height);
+        }
+    }
+}
+
+@media (width < $xl_min) {
+    .app-main,
+    .header-main {
+        min-width: 750px;
+    }
+
+    .column-right {
+        display: none;
+
+        &.expanded {
+            display: block;
+            position: absolute;
+            float: none;
+            right: 15px;
+            top: 0;
+
+            .simplebar-track.simplebar-vertical {
+                right: 0;
+            }
+
+            .right-sidebar {
+                box-shadow: 0 -2px 3px 0 hsl(0deg 0% 0% / 10%);
+                border-left: 1px solid hsl(0deg 0% 87%);
+                padding-right: 15px;
+                padding-left: 15px;
+                height: 100%;
+                right: 0;
+                background-color: var(--color-background);
+            }
+        }
+    }
+
+    .nav .dropdown-menu {
+        min-width: 180px;
+        box-shadow: 0 0 5px hsl(0deg 0% 0% / 20%);
+
+        &::after {
+            right: 21px;
+        }
+    }
+
+    .column-middle {
+        margin-right: 7px;
+    }
+
+    #navbar-middle {
+        /* = (width of button, square with header) * 4 (number of buttons) + 10px extra margin. */
+        margin-right: calc(var(--header-height) * 4 + 10px);
+    }
+}
+
+@media (width < $md_min) {
+    body {
+        padding: 0;
+    }
+
+    .column-left {
+        display: none;
+
+        &.expanded {
+            display: block;
+            position: absolute;
+            float: none;
+            left: 0;
+            top: 0;
+
+            .left-sidebar {
+                background-color: var(--color-background);
+                box-shadow: 0 2px 3px 0 hsl(0deg 0% 0% / 10%);
+                border-right: 1px solid hsl(0deg 0% 87%);
+                height: 100%;
+                padding-left: 10px;
+                width: var(--left-sidebar-width);
+            }
+        }
+    }
+
+    body,
+    html,
+    .app-main,
+    .header-main {
+        min-width: 350px;
+    }
+
+    .column-middle,
+    .app-main .column-middle {
+        margin-left: 7px;
+        margin-right: 7px;
+    }
+
+    .header-main .column-middle {
+        margin-left: 0;
+    }
+
+    .column-middle-inner {
+        margin-left: 0;
+    }
+
+    .app-main .column-middle .column-middle-inner {
+        margin-right: 0;
+    }
+
+    #streamlist-toggle {
+        display: block;
+    }
+
+    .top-navbar-container {
+        margin-left: 40px;
+    }
+
+    .zulip-icon-search {
+        right: 115px;
+    }
+
+    .dropdown-menu ul {
+        margin: 0 -25px 0 0;
+        background: transparent;
+
+        & li {
+            width: 100%;
+
+            & a {
+                white-space: normal;
+            }
+        }
+    }
+}
+
+@media (height < $short_navbar_cutoff_height) {
+    .column-right.expanded .right-sidebar,
+    .column-left.expanded .left-sidebar {
+        margin-top: var(--navbar-fixed-height);
+        /* For very short screen sizes, skip the relatively large top padding. */
+        padding-top: 0;
+    }
+
+    /* TODO: Properly and accurately align the
+       topmost headers on the left and right
+       sidebar. */
+    .column-right.expanded .right-sidebar-items {
+        margin-top: 10px;
+    }
+
+    .column-left.expanded .left-sidebar-navigation-area {
+        margin-top: 10px;
+    }
+
+    .nav .dropdown-menu {
+        right: -13px;
+    }
+
+    /* Usually the styling is applied directly to the icon, but here
+    the icon is `position: static`, so we can't. */
+    .search_closed {
+        top: 5px;
+    }
+
+    #streamlist-toggle,
+    #message_view_header,
+    #searchbox,
+    .header {
+        line-height: var(--header-height);
+        height: var(--header-height);
+    }
+
+    .spectator_narrow_login_button {
+        height: var(--header-height) !important;
+    }
+
+    #streamlist-toggle-button {
+        height: var(--header-height);
+    }
+
+    #streamlist-toggle-unreadcount {
+        /* Adjust in response to shorter navbar. */
+        top: 5px;
+    }
+
+    .column-right #personal-menu .header-button-avatar {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+@media (width < $mm_min) {
+    html {
+        overflow-x: hidden;
+    }
+
+    body,
+    html,
+    .app-main,
+    .header-main {
+        min-width: 320px;
+    }
+}
+
+@media (width < $md_min) {
+    #feedback_container {
+        width: calc(90% - 30px);
+        left: 5%;
+        top: 5%;
+    }
+}
+
+#scroll-to-bottom-button-container {
+    display: block;
+    position: absolute;
+    bottom: 41px;
+    right: 0;
+    visibility: hidden;
+    opacity: 0;
+    transition:
+        visibility 500ms,
+        opacity 500ms ease-in-out;
+
+    &.show {
+        visibility: visible;
+        opacity: 1;
+    }
+
+    #scroll-to-bottom-button-clickable-area {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+
+        &:hover #scroll-to-bottom-button {
+            background: hsl(240deg 96% 68%);
+        }
+
+        #scroll-to-bottom-button {
+            text-align: center;
+            width: 40px;
+            height: 40px;
+            background: hsl(240deg 96% 68% / 50%);
+            border-radius: 50%;
+
+            & i {
+                color: hsl(0deg 0% 100%);
+                margin: 0 auto;
+                font-size: 21px;
+                position: relative;
+                top: 8px;
+            }
+        }
+    }
+}
+
+.tooltip_right_arrow {
+    position: relative;
+    top: -1px;
+    font-weight: 600;
+}
+
+.spectator_login_for_image_button {
+    max-width: 250px;
+    height: 50px;
+
+    :hover {
+        text-decoration: none;
+    }
+
+    .login_button {
+        padding: 5px;
+        margin-top: 5px;
+
+        .fa {
+            top: 1px;
+        }
+    }
+}
+
+.simplebar-content-wrapper {
+    /* `simplebar-content-wrapper` has `tabindex=0` set, which makes it focusable
+        but we don't want it to have an outline when focused anywhere in the app. */
+    outline: none;
+
+    /* This prevents the popover from closing once the top/bottom is reached */
+    overscroll-behavior: contain;
+}
+
+.dropdown-list-container {
+    .dropdown-list-search {
+        display: flex;
+
+        .dropdown-list-search-input {
+            background: var(--color-background-widget-input);
+            color: var(--color-text-dropdown-input);
+            width: 100%;
+            margin: 4px 4px 2px;
+
+            &:focus {
+                background: hsl(0deg 0% 100%);
+                border: 1px solid hsl(229.09deg 21.57% 10% / 80%);
+                box-shadow: 0 0 6px hsl(228deg 9.8% 20% / 30%);
+            }
+        }
+    }
+
+    .dropdown-list-wrapper {
+        /* Sync with `max-height` in dropdown_widget. */
+        max-height: 210px;
+        min-width: 200px;
+
+        .dropdown-list {
+            list-style: none;
+            margin: 0;
+
+            .list-item:focus {
+                background-color: hsl(220deg 12% 4.9% / 5%);
+                outline: none;
+            }
+        }
+
+        .no-dropdown-items {
+            color: hsl(0deg 0% 60%);
+            display: none;
+        }
+    }
+}
+
+.dropdown-list-container .dropdown-list-item-common-styles {
+    display: block;
+    color: hsl(0deg 0% 20%);
+    padding: 3px 10px 3px 8px;
+    font-weight: 400;
+    line-height: 20px;
+    white-space: normal;
+
+    .stream-privacy-type-icon {
+        font-size: 13px;
+        width: 13px;
+        height: 13px;
+        padding-right: 2px;
+    }
+
+    &:hover {
+        text-decoration: none;
+        background-color: hsl(220deg 12% 4.9% / 5%);
+    }
+
+    &:focus {
+        text-decoration: none;
+        outline: none;
+    }
+}
+
+.dropdown-list-item-common-styles .dropdown-list-bold-selected {
+    font-weight: 700;
+}
+
+#scheduled_messages_overlay .error-icon-message-recipient {
+    width: 15px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-grow: 1;
+    color: var(--color-failed-message-send-icon);
+
+    .zulip-icon {
+        padding: 5px;
+    }
+}
+
+#unstar_all_messages,
+.emoji-popover-tab-item {
+    .zulip-icon-star {
+        position: relative;
+        top: 2px;
+    }
+}
+
+.typeahead-option-label {
+    display: flex !important;
+    justify-content: space-between;
+
+    > strong {
+        margin-right: 14px;
+    }
+}
+
+.header-main .column-right {
+    display: flex;
+    /* Make the top navbar right column its full width,
+       less 7px of space on the left and right. */
+    width: calc(var(--right-sidebar-width) - 7px - 7px);
+    justify-content: flex-end;
+    align-items: center;
+    /* Move the column to the right with absolute
+       positioning, rather than margin. */
+    right: 7px;
+
+    @media (width < $xl_min) or (height < $short_navbar_cutoff_height) {
+        /* For a diminutive right column in the navbar,
+           allow the width to be that of the flexing
+           button elements. */
+        width: auto;
+    }
+
+    & a:focus {
+        filter: none;
+        outline: 0;
+    }
+}
+
+.header-button {
+    width: var(--header-height);
+    height: var(--header-height);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    &:hover,
+    &:focus {
+        text-decoration: none;
+    }
+
+    &:hover {
+        background-color: var(--color-header-button-hover);
+    }
+
+    &:active {
+        background-color: var(--color-header-button-focus);
+    }
+
+    &:focus-visible {
+        outline: none;
+        background-color: var(--color-header-button-focus);
+    }
+
+    .zulip-icon {
+        color: var(--color-navbar-icon);
+    }
+
+    .zulip-icon-gear {
+        font-size: 18px;
+    }
+
+    .zulip-icon-help-bigger,
+    .zulip-icon-triple-users {
+        font-size: 20px;
+    }
+
+    .zulip-icon-help {
+        position: relative;
+        top: 0.5px;
+        right: -0.5px;
+    }
+}
+
+#personal-menu {
+    .header-button-avatar {
+        width: 24px;
+        height: 24px;
+        background-size: cover;
+        border-radius: 4px;
+        background-color: var(--color-background-image-loader);
+        border: 1px solid var(--color-border-personal-menu-avatar);
+    }
+}

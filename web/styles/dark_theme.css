@@ -647,7 +647,6 @@
     .narrow_to_compose_recipients,
     .expand_composebox_button,
     .collapse_composebox_button,
-    .invite_clear_search_button,
     .clear_search_button,
     .clear_search_button:focus,
     .clear_search_button:active,
@@ -658,40 +657,6 @@
 
     .clear_search_button:hover {
         color: hsl(0deg 0% 100%);
-    }
-
-    .invite_clear_search_button:hover {
-        color: hsl(0, 0%, 100%);
-    }
-
-    .spectator_login_buttons a {
-        color: hsl(236deg 33% 90%);
-
-        &:hover {
-            color: hsl(0deg 0% 100%);
-        }
-    }
-
-    .spectator_narrow_login_button .login_button i {
-        color: hsl(236deg 33% 90%);
-    }
-
-    #streamlist-toggle,
-    #userlist-toggle {
-        color: inherit;
-    }
-
-    #streamlist-toggle-button {
-        color: inherit;
-        background-color: inherit;
-    }
-
-    #userlist-toggle-button {
-        color: hsl(221deg 9% 54%);
-
-        &:hover {
-            color: inherit;
-        }
     }
 
     .zoom-in {

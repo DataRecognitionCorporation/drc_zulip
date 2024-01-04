@@ -7,7 +7,6 @@ import assert from "minimalistic-assert";
 import copy_invite_link from "../templates/copy_invite_link.hbs";
 import render_invitation_failed_error from "../templates/invitation_failed_error.hbs";
 import render_invite_user_modal from "../templates/invite_user_modal.hbs";
-import render_invite_subscription_rows from "../templates/invite_subscription_rows.hbs";
 import render_invite_tips_banner from "../templates/modal_banner/invite_tips_banner.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
@@ -26,13 +25,6 @@ import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
-
-import {
-    StreamList
-} from "./inivte_drc"
-import { more_private_conversations_li } from "./pm_list_dom";
-
-let stream_list;
 
 let custom_expiration_time_input = 10;
 let custom_expiration_time_unit = "days";
@@ -227,37 +219,13 @@ function generate_multiuse_invite(): void {
     });
 }
 
-export function get_invite_streams() {
-    if(stream_list == undefined) {
-        stream_list = new StreamList();
-    }
-    let streams = stream_list.get_streams();
+export function get_invite_streams(): stream_data.InviteStreamData[] {
+    const streams = stream_data.get_invite_stream_data();
     streams.sort((a, b) => util.strcmp(a.name, b.name));
     return streams;
 }
 
-function render_invite_rows() {
-    let html_streams = render_invite_subscription_rows({
-        streams: get_invite_streams()
-    })
-    let $parent = $("#invite-streams");
-    $parent.empty();
-    $parent.append(html_streams);
-    add_listners();
-}
-
-function render_filtered_invite_rows(filter_text) {
-    let html_streams = render_invite_subscription_rows({
-        streams: stream_list.get_streams_filtered(filter_text)
-    })
-    let $parent = $("#invite-streams");
-    $parent.empty();
-    $parent.append(html_streams)
-    add_listners();
-}
-
-function valid_to(expires_in) {
-    const time_valid = Number.parseFloat(expires_in);
+function valid_to(time_valid: number): string {
     if (!time_valid) {
         return $t({defaultMessage: "Never expires"});
     }
@@ -316,24 +284,12 @@ function set_streams_to_join_list_visibility(): void {
     if (default_streams_selected) {
         $("#streams_to_add .invite-stream-controls").hide();
         $("#invite-stream-checkboxes").hide();
-        $(".stream-filter").hide();
-        $("#invite-streams").hide();
     } else {
         $("#streams_to_add .invite-stream-controls").show();
         $("#invite-stream-checkboxes").show();
-        $(".stream-filter").show();
-        $("#invite-streams").show();
     }
 }
 
-function add_listners() {
-    $(".stream_checkbox_invite").on("click", (e) => {
-        let id = $(e.target).val();
-        stream_list.switch_checked(id);
-    });
-}
-
-function open_invite_user_modal(e) {
 function generate_invite_tips_data(): Record<string, boolean> {
     const {realm_description, realm_icon_source, custom_profile_fields} = page_params;
 
@@ -456,37 +412,17 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             $("#custom_expires_on").text(valid_to(get_expiration_time_in_minutes()));
         });
 
-        $(".stream_checkbox_invite").on("click", (e) => {
-            let id = $(e.target).val()
-            stream_list.switch_checked();
+        $("#invite_check_all_button").on("click", () => {
+            $("#invite-stream-checkboxes input[type=checkbox]").prop("checked", true);
+            toggle_invite_submit_button();
         });
-
-
-        $('#stream_search').on('input', (e) => {
-            let streams = stream_list.get_streams_filtered($(e.target).val())
-            render_filtered_invite_rows($(e.target).val());
-
-        });
-
-        $(document).on("click", "#invite_check_all_button", () => {
-            $("#invite-stream-checkboxes :checkbox").prop("checked", true);
-            stream_list.check_all();
-        });
-
 
         $("#invite_uncheck_all_button").on("click", () => {
             $("#invite-stream-checkboxes input[type=checkbox]").prop("checked", false);
-            stream_list.uncheck_all();
         });
 
         $("#invite_select_default_streams").on("change", () => {
             set_streams_to_join_list_visibility();
-            render_invite_rows();
-        });
-
-        $(".invite_clear_search_button").on("click", (e) => {
-            $(".filter_text_input").val("");
-            render_invite_rows();
         });
 
         if (!user_has_email_set) {
@@ -514,8 +450,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         $("#invite-user-form .setup-tips-container").html(render_invite_tips_banner(context));
     }
 
-    function invite_users() {
-        render_invite_rows();
+    function invite_users(): void {
         const is_generate_invite_link = $("#generate_multiuse_invite_radio").prop("checked");
         if (is_generate_invite_link) {
             generate_multiuse_invite();
@@ -533,7 +468,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         on_click: invite_users,
         post_render: invite_user_modal_post_render,
     });
-
 }
 
 export function initialize(): void {
