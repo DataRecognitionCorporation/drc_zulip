@@ -87,6 +87,14 @@ export function compare_function(a, b) {
 export function sort_users(user_ids) {
     // TODO sort by unread count first, once we support that
     user_ids.sort(compare_function);
+    // Order the roles in descending order: Current user, then guest, then member, then anything else
+    const current_user = user_ids[0];
+    // Uncomment the if statement below to only order the roles for guests and members
+    if (people.maybe_get_user_by_id(current_user).role >= 400) {
+        user_ids = user_ids.slice(1).sort((a, b) => parseFloat(people.maybe_get_user_by_id(b).role) - parseFloat(people.maybe_get_user_by_id(a).role));
+        user_ids.splice(0, 0, current_user);
+    }
+
     return user_ids;
 }
 
@@ -96,9 +104,6 @@ function get_num_unread(user_id) {
 
 export function user_last_seen_time_status(user_id) {
     const status = presence.get_status(user_id);
-    if (status === "active") {
-        return $t({defaultMessage: "Active now"});
-    }
 
     if (status === "idle") {
         // When we complete our presence API rewrite to have the data
