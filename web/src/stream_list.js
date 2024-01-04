@@ -35,7 +35,6 @@ import {
     StreamSidebar,
     build_stream_folder
 } from "./stream_list_drc"
-import { sorted_user_ids } from "./stream_create_subscribers_data";
 
 export let stream_cursor;
 
