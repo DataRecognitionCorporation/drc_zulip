@@ -179,7 +179,7 @@
   "Are you sure you want to revoke this invitation link?": "Opravdu chcete zrušit tento odkaz na pozvánku?",
   "Are you sure you want to send @-mention notifications to the <strong>{subscriber_count}</strong> users subscribed to #{stream_name}? If not, please edit your message to remove the <strong>@{stream_wildcard_mention}</strong> mention.": "Jste si jisti, že chcete zasílat oznámení o @-zmínkách <strong>{subscriber_count}</strong> uživatelům odebírajícím #{stream_name}? Pokud ne, upravte prosím svou zprávu tak, abyste odstranili  zmínku <strong>@{stream_wildcard_mention}</strong>.",
   "Are you sure you want to unstar all messages in <stream-topic></stream-topic>?  This action cannot be undone.": "Chcete odhvězdičkovat všechny ohvězdičkované zprávy v <stream-topic></stream-topic>?  Tento krok nelze vrátit zpět.",
-  "Are you sure you want to unstar all starred messages?  This action cannot be undone.": "Opravdu chcete odhvězdičkovat všechny ohvězdičkované zprávy? Tento krok nelze vrátit zpět.",
+  "Are you sure you want to unstar all starred messages?  This action cannot be undone.": "Chcete odhvězdičkovat všechny ohvězdičkované zprávy? Tento krok nelze vrátit zpět.",
   "Ask me later": "Zeptat se později",
   "At the office": "V kanceláři",
   "Audible": "Slyšitelné",
@@ -744,12 +744,8 @@
   "Mobile": "Telefon",
   "Mobile message notifications": "Mobilní oznámení o zprávách",
   "Mobile notifications": "Telefonní oznámení",
-<<<<<<< HEAD
-  "Mobile push notifications are not configured on this server.": "Oznámení po telefonu nejsou na tomto serveru nastaveny.",
-=======
   "Mobile push notifications are not enabled on this server.": "Telefonní krátká oznámení nejsou na tomto serveru povolena.",
   "Mobile push notifications are not enabled on this server. <z-link>Learn more</z-link>": "Telefonní krátká oznámení nejsou na tomto serveru povolena. <z-link>Zjistit více</z-link>",
->>>>>>> 8.0
   "Moderator": "Moderátor",
   "Moderators": "Moderátoři",
   "Monday": "Pondělí",
@@ -835,16 +831,11 @@
   "No default streams found.": "Nebyly nalezeny žádné výchozí kanály.",
   "No default streams match your current filter.": "Vašemu nynějšímu filtru neodpovídají žádné výchozí kanály.",
   "No description.": "Žádný popis.",
-<<<<<<< HEAD
-  "No drafts.": "Žádné návrhy textu.",
-  "No exports.": "Žádná uložená data.",
-=======
   "No drafts selected": "Žádné vybrané návrhy",
   "No drafts.": "Žádné návrhy.",
   "No exports found.": "Nebyla nalezena žádná uložená data.",
   "No group members match your current filter.": "Nynějšímu filtru neodpovídají žádní členové skupiny.",
   "No invites found.": "Nebyly nalezeny žádné pozvánky.",
->>>>>>> 8.0
   "No invites match your current filter.": "Vašemu nynějšímu filtru neodpovídají žádné pozvánky.",
   "No language set": "Nenastaven žádný jazyk",
   "No linkifiers match your current filter.": "Vašemu nynějšímu filtru neodpovídají žádné odkazovače.",
@@ -1385,7 +1376,7 @@
   "Who can access user's email address": "Kdo může přistupovat k adresám elektronické pošty uživatelů",
   "Who can access your email address": "Kdo může přistupovat k vaší adrese elektronické pošty",
   "Who can add bots": "Kdo může přidávat roboty",
-  "Who can add custom emoji": "Kdo může přidat vlastní obrázečky",
+  "Who can add custom emoji": "Kdo může přidat vlastní emoji",
   "Who can add users to streams": "Kdo může přidat uživatele do kanálů",
   "Who can create and manage user groups": "Kdo může vytvářet a spravovat uživatelské skupiny",
   "Who can create private streams": "Kdo může vytvářet soukromé kanály",
@@ -1569,6 +1560,6 @@
   "{seconds} sec to edit": "{seconds} sekund na upravení",
   "{server_jitsi_server_url} (default)": "{server_jitsi_server_url} (výchozí)",
   "{user_time} local time": "{user_time} místní čas",
-  "{username} [said]({link_to_message}):": "{username} [napsal]({link_to_message}):",
+  "{username} [said]({link_to_message}):": "{username} [said]({link_to_message}):",
   "{username} reacted with {emoji_name}": "{username} odpověděl {emoji_name}"
 }

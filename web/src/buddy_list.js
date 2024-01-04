@@ -244,7 +244,6 @@ export class BuddyList extends BuddyListConf {
         const user_id = opts.user_id;
         const item = opts.item;
 
-<<<<<<< HEAD
         // For some dumb reason keys is initialized to 0 if there is no buddy list... not an
         // empty array.
         // DRC MODIFICATION
@@ -253,9 +252,6 @@ export class BuddyList extends BuddyListConf {
         }
 
         this.maybe_remove_key({key});
-=======
-        this.maybe_remove_user_id({user_id});
->>>>>>> 8.0
 
         const pos = this.find_position({
             user_id,

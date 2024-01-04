@@ -1,19 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Jordi Divins <j.divins@iskra.cat>, 2022
-# Joan <sacoo2@hotmail.com>, 2022
-# Akash Nimare <svnitakash@gmail.com>, 2022
-# Marc Hernández <noviluni@gmail.com>, 2022
-# Gonçal Garcés, 2022
-# 
-#, fuzzy
+# Gonçal Garcés, 2020-2021
+# Marc Hernández <noviluni@gmail.com>, 2018
+# Joan <sacoo2@hotmail.com>, 2020
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-14 20:29+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
@@ -1810,9 +1805,7 @@ msgstr ""
 msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: "
 "%(user_email)s"
-msgstr ""
-"Organització: %(organization_url)s Hora: %(login_time)s E-mail: "
-"%(user_email)s"
+msgstr "Organització: %(organization_url)s Hora: %(login_time)s E-mail: %(user_email)s"
 
 #: templates/zerver/emails/notify_new_login.html:12
 #: templates/zerver/emails/notify_new_login.txt:1
@@ -3738,8 +3731,7 @@ msgstr "Fitxer adjunt no vàlid"
 #: zerver/lib/attachments.py:33
 msgid ""
 "An error occurred while deleting the attachment. Please try again later."
-msgstr ""
-"S'ha produït un error a l'adjuntar el fitxer. Torneu a intentar-ho més tard."
+msgstr "S'ha produït un error a l'adjuntar el fitxer. Torneu a intentar-ho més tard."
 
 #: zerver/lib/bot_lib.py:104
 msgid "Message must have recipients!"
@@ -5308,8 +5300,7 @@ msgstr ""
 
 #: zerver/views/message_edit.py:99
 msgid "Message edit history is disabled in this organization"
-msgstr ""
-"L'historial d'edicions de missatge està desactivat en aquesta organització"
+msgstr "L'historial d'edicions de missatge està desactivat en aquesta organització"
 
 #: zerver/views/message_edit.py:151 zerver/views/message_edit.py:154
 msgid "You don't have permission to delete this message"

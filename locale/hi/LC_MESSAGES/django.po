@@ -1,24 +1,18 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
 # Aruna Maurya, 2022
-# Kunal Tyagi <kunal.tyagi.3.1994@gmail.com>, 2022
-# Tim Abbott <tabbott@kandralabs.com>, 2022
-# Kunal Gupta <kunall.gupta17@gmail.com>, 2022
-# Mukul Agrawal <amukul28@yahoo.com>, 2022
-# Akash Nimare <svnitakash@gmail.com>, 2022
-# sid shah <sidshah203@gmail.com>, 2022
-# Vishwesh Jainkuniya <vishwesh03071998@gmail.com>, 2022
-# dev sapariya <devsapariya94@gmail.com>, 2022
-# Ayan Raj <ayanujju351@gmail.com>, 2022
-# 
-#, fuzzy
+# Ayan Raj <ayanujju351@gmail.com>, 2019
+# dev sapariya <devsapariya94@gmail.com>, 2021
+# Mukul Agrawal <amukul28@yahoo.com>, 2018
+# sid shah <sidshah203@gmail.com>, 2020
+# Tim Abbott <tabbott@kandralabs.com>, 2019
+# Vishwesh Jainkuniya <vishwesh03071998@gmail.com>, 2017
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-14 20:29+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
@@ -72,9 +66,7 @@ msgstr ""
 
 #: analytics/views/stats.py:383 analytics/views/stats.py:418
 msgid "No analytics data available. Please contact your server administrator."
-msgstr ""
-"कोई विश्लेषण डेटा उपलब्ध नहीं है। कृपया अपने सर्वर व्यवस्थापक से संपर्क "
-"करें।"
+msgstr "कोई विश्लेषण डेटा उपलब्ध नहीं है। कृपया अपने सर्वर व्यवस्थापक से संपर्क करें।"
 
 #: analytics/views/support.py:188 analytics/views/support.py:427
 #: zerver/views/streams.py:291 zerver/views/streams.py:295
@@ -868,19 +860,6 @@ msgid ""
 msgstr ""
 
 #: templates/zerver/accounts_send_confirm.html:25
-<<<<<<< HEAD
-msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>."
-msgstr ""
-"फिर भी कोई ईमेल नहीं? हम इसे <a href=\"#\" id=\"resend_email_link\">पुनः "
-"भेज</a> सकते हैं।"
-
-#: templates/zerver/accounts_send_confirm.html:26
-msgid "Just in case, take a look at your Spam folder."
-msgstr "बस मामले में, अपने स्पैम फ़ोल्डर पर एक नज़र डालें।"
-
-#: templates/zerver/app/index.html:121
-=======
->>>>>>> 8.0
 msgid ""
 "If you don't see a confirmation email in your Inbox or Spam folder, we can "
 "<a href=\"#\" id=\"resend_email_link\">resend it</a>."
@@ -2739,7 +2718,7 @@ msgstr ""
 
 #: templates/zerver/login.html:100
 msgid "Username"
-msgstr "उपयोगकर्ता का नाम"
+msgstr "उपयोगकर्ता नाम"
 
 #: templates/zerver/login.html:111 templates/zerver/register.html:137
 #: templates/zerver/register.html:150 templates/zerver/reset_confirm.html:31
@@ -3260,9 +3239,7 @@ msgstr ""
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
-msgstr ""
-"इस संगठन के लिए आमंत्रण भेजने के लिए आपका खाता बहुत नया है। एक संगठन "
-"व्यवस्थापक, या एक अधिक अनुभवी उपयोगकर्ता से पूछें।"
+msgstr "इस संगठन के लिए आमंत्रण भेजने के लिए आपका खाता बहुत नया है। एक संगठन व्यवस्थापक, या एक अधिक अनुभवी उपयोगकर्ता से पूछें।"
 
 #: zerver/actions/invites.py:282
 msgid "Some emails did not validate, so we didn't send any invitations."
@@ -3276,9 +3253,7 @@ msgstr "हम किसी को भी आमंत्रित करने 
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr ""
-"उनमें से कुछ पते पहले से ही ज़ूलिप का उपयोग कर रहे हैं, इसलिए हमने उन्हें "
-"निमंत्रण नहीं भेजा। हमने सभी को निमंत्रण भेजा!"
+msgstr "उनमें से कुछ पते पहले से ही ज़ूलिप का उपयोग कर रहे हैं, इसलिए हमने उन्हें निमंत्रण नहीं भेजा। हमने सभी को निमंत्रण भेजा!"
 
 #: zerver/actions/message_edit.py:100 zerver/views/scheduled_messages.py:60
 msgid "Nothing to change"
@@ -3664,9 +3639,7 @@ msgstr ""
 #: zerver/forms.py:256
 #, python-brace-format
 msgid "The organization you are trying to join using {email} does not exist."
-msgstr ""
-"जिस संगठन को आप {email} के उपयोग से जोड़ने का प्रयास कर रहे हैं वह मौजूद "
-"नहीं है।"
+msgstr "जिस संगठन को आप {email} के उपयोग से जोड़ने का प्रयास कर रहे हैं वह मौजूद नहीं है।"
 
 #: zerver/forms.py:264
 #, python-brace-format
@@ -3679,9 +3652,7 @@ msgstr "कृपया संगठन व्यवस्थापक से {e
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
-msgstr ""
-"आपका ईमेल पता, {email}, उन डोमेन में से एक नहीं है, जिन्हें इस संगठन में "
-"खातों के लिए पंजीकरण करने की अनुमति है।"
+msgstr "आपका ईमेल पता, {email}, उन डोमेन में से एक नहीं है, जिन्हें इस संगठन में खातों के लिए पंजीकरण करने की अनुमति है।"
 
 #: zerver/forms.py:283
 msgid "Email addresses containing + are not allowed in this organization."
@@ -4084,9 +4055,7 @@ msgstr ""
 msgid ""
 "Messages sent to a stream are seen by everyone subscribed to that stream. "
 "Try clicking on one of the stream links below."
-msgstr ""
-"किसी स्ट्रीम में भेजे गए संदेश उस स्ट्रीम के सब्सक्राइब किए गए सभी लोगों "
-"द्वारा देखे जाते हैं। नीचे दिए गए किसी एक स्ट्रीम लिंक पर क्लिक करके देखें।"
+msgstr "किसी स्ट्रीम में भेजे गए संदेश उस स्ट्रीम के सब्सक्राइब किए गए सभी लोगों द्वारा देखे जाते हैं। नीचे दिए गए किसी एक स्ट्रीम लिंक पर क्लिक करके देखें।"
 
 #: zerver/lib/hotspots.py:42
 msgid "Topics"
@@ -4096,9 +4065,7 @@ msgstr "सभी विषय"
 msgid ""
 "Every message has a topic. Topics keep conversations easy to follow, and "
 "make it easy to reply to conversations that start while you are offline."
-msgstr ""
-"हर संदेश का एक विषय होता है। विषय बातचीत का अनुसरण करना आसान बनाते हैं, और "
-"ऑफ़लाइन होने पर शुरू होने वाली बातचीत का उत्तर देना आसान बनाते हैं।"
+msgstr "हर संदेश का एक विषय होता है। विषय बातचीत का अनुसरण करना आसान बनाते हैं, और ऑफ़लाइन होने पर शुरू होने वाली बातचीत का उत्तर देना आसान बनाते हैं।"
 
 #: zerver/lib/hotspots.py:54
 msgid "Settings"
@@ -4116,9 +4083,7 @@ msgstr "लिखें"
 msgid ""
 "Click here to start a new conversation. Pick a topic (2-3 words is best), "
 "and give it a go!"
-msgstr ""
-"एक नई बातचीत शुरू करने के लिए यहां क्लिक करें। एक विषय चुनें (2-3 शब्द सबसे "
-"अच्छा है), और इसे एक बार दें!"
+msgstr "एक नई बातचीत शुरू करने के लिए यहां क्लिक करें। एक विषय चुनें (2-3 शब्द सबसे अच्छा है), और इसे एक बार दें!"
 
 #: zerver/lib/integrations.py:38
 msgid "Integration frameworks"

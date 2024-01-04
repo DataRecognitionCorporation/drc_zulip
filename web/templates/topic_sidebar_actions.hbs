@@ -5,10 +5,9 @@
 
     <hr />
 
-<<<<<<< HEAD
     {{#unless is_guest}}
     {{#if development}}
-        <li class="hidden-for-spectators">
+        <li class="topic-menu-item hidden-for-spectators">
             <div class="tabs-container">
                 <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.MUTED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.MUTED}}" data-tippy-content="{{t 'Mute' }}" aria-label="{{t 'Mute' }}">
                     <i class="zulip-icon zulip-icon-mute-new"></i>
@@ -24,12 +23,6 @@
                 <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.FOLLOWED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.FOLLOWED}}" data-tippy-content="{{t 'Follow' }}" aria-label="{{t 'Follow' }}">
                     <i class="zulip-icon zulip-icon-follow"></i>
                 </div>
-=======
-    <li class="topic-menu-item hidden-for-spectators">
-        <div class="tabs-container">
-            <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.MUTED)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.MUTED}}" data-tippy-content="{{t 'Mute' }}" aria-label="{{t 'Mute' }}">
-                <i class="zulip-icon zulip-icon-mute-new"></i>
->>>>>>> 8.0
             </div>
             <div class="tab-option tippy-zulip-tooltip {{#if (eq visibility_policy all_visibility_policies.INHERIT)}}selected-tab{{/if}}" data-visibility-policy="{{all_visibility_policies.INHERIT}}" data-tippy-content="{{t 'Default' }}" aria-label="{{t 'Default' }}">
                 <i class="zulip-icon zulip-icon-inherit"></i>
@@ -45,7 +38,6 @@
         </div>
     </li>
 
-<<<<<<< HEAD
         <hr/>
     {{else}}
         {{#if stream_muted}}
@@ -83,9 +75,6 @@
         {{/if}}
     {{/if}}
     {{/unless}}
-=======
-    <hr class="hidden-for-spectators" />
->>>>>>> 8.0
 
     {{#if has_starred_messages}}
     <li class="topic-menu-item hidden-for-spectators">
@@ -96,12 +85,8 @@
     </li>
     {{/if}}
 
-<<<<<<< HEAD
     {{#if is_not_guest_or_member}}
-    <li class="hidden-for-spectators">
-=======
     <li class="topic-menu-item hidden-for-spectators">
->>>>>>> 8.0
         <a tabindex="0" class="sidebar-popover-mark-topic-read" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-book" aria-hidden="true"></i>
             {{t "Mark all messages as read"}}

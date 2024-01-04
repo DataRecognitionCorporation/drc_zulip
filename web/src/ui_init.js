@@ -158,7 +158,6 @@ function initialize_bottom_whitespace() {
     $("#bottom_whitespace").html(render_message_feed_bottom_whitespace());
 }
 
-<<<<<<< HEAD
 // DRC MODIFICATION - add is_admin
 function initialize_left_sidebar() {
     const rendered_sidebar = render_left_sidebar({
@@ -218,8 +217,6 @@ function initialize_right_sidebar() {
     });
 }
 
-=======
->>>>>>> 8.0
 function initialize_navbar() {
     const rendered_navbar = render_navbar({
         embedded: page_params.narrow_stream !== undefined,

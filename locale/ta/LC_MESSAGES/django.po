@@ -5071,11 +5071,7 @@ msgstr ""
 msgid "Unexpected arguments: {keys}"
 msgstr ""
 
-<<<<<<< HEAD
-#: zerver/lib/validator.py:355
-=======
 #: zerver/lib/validator.py:353
->>>>>>> 8.0
 #, python-brace-format
 msgid "{var_name} is not an allowed_type"
 msgstr ""

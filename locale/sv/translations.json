@@ -367,7 +367,7 @@
   "Delete icon": "",
   "Delete linkifier?": "",
   "Delete logo": "Ta bort logga",
-  "Delete message": "Ta bort meddelande",
+  "Delete message": "Radera meddelande",
   "Delete message?": "",
   "Delete profile picture": "Ta bort profilbild",
   "Delete scheduled message": "",
@@ -1050,7 +1050,7 @@
   "Scroll through streams": "Rulla igenom strömmar",
   "Scroll to bottom": "",
   "Scroll up": "Rulla upp",
-  "Search": "Sök",
+  "Search": "Sö",
   "Search GIFs": "",
   "Search all public streams in the organization.": "Sök i alla organisationens strömmar",
   "Search filters": "",
@@ -1149,12 +1149,8 @@
   "Subscribe them": "",
   "Subscribe to <z-stream></z-stream>": "",
   "Subscribe to/unsubscribe from selected stream": "",
-<<<<<<< HEAD
-  "Subscribed": "Prenumererar",
-=======
   "Subscribe {full_name} to streams": "",
   "Subscribed": "Prenumererad",
->>>>>>> 8.0
   "Subscribed streams": "",
   "Subscribed successfully!": "",
   "Subscriber count": "",

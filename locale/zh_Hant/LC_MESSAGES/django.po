@@ -1,18 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Ken Li Hsieh <ozakiyuyu@gmail.com>, 2022
-# Akash Nimare <svnitakash@gmail.com>, 2022
-# Kir <note351@hotmail.com>, 2022
-# Ivan Lau <ivan.lau@ahsay.com>, 2022
-# 
-#, fuzzy
+# Ivan Lau <ivan.lau@ahsay.com>, 2020
+# Ken Li Hsieh <ozakiyuyu@gmail.com>, 2017
+# Kir <note351@hotmail.com>, 2017
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-14 20:29+0000\n"
 "PO-Revision-Date: 2015-12-06 00:18+0000\n"
@@ -978,9 +974,7 @@ msgid ""
 "\n"
 "                            No account found for %(email)s.\n"
 "                            "
-msgstr ""
-"\n"
-" 沒有找到帳戶%(email)s"
+msgstr "\n 沒有找到帳戶%(email)s"
 
 #: templates/zerver/confirm_continue_registration.html:30
 msgid "Log in with another account"
