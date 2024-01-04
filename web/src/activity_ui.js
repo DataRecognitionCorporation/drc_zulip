@@ -88,6 +88,16 @@ export function render_empty_user_list_message_if_needed($container) {
     $container.append(empty_list_widget);
 }
 
+export function drc_build_user_sidebar(user_ids) {
+    if (page_params.realm_presence_disabled) {
+        return undefined;
+    }
+
+    buddy_list.populate({all_user_ids: user_ids});
+
+    return user_ids; // for testing
+}
+
 export function build_user_sidebar() {
     if (page_params.realm_presence_disabled) {
         return undefined;

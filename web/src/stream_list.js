@@ -7,7 +7,7 @@ import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
 import render_stream_subheader from "../templates/streams_subheader.hbs";
 import render_subscribe_to_more_streams from "../templates/subscribe_to_more_streams.hbs";
 
-import * as activity from "./activity";
+import * as activity_ui from "./activity_ui";
 import * as buddy_data from "./buddy_data";
 import * as blueslip from "./blueslip";
 import * as hash_util from "./hash_util";
@@ -500,7 +500,7 @@ function set_stream_unread_count(
 }
 
 export function update_streams_sidebar(force_rerender) {
-    if (!force_rerender && topic_zoom.is_zoomed_in()) {
+    if (!force_rerender && is_zoomed_in()) {
         // We do our best to update topics that are displayed
         // in case user zoomed in. Streams list will be updated,
         // once the user zooms out. This avoids user being zoomed out
@@ -683,9 +683,9 @@ export function update_stream_sidebar_for_narrow(filter) {
 
     if(page_params.is_guest && is_private){
       let user_ids = get_subscribers(stream_id);
-      activity.drc_build_user_sidebar(buddy_data.sort_users(user_ids));
+      activity_ui.drc_build_user_sidebar(buddy_data.sort_users(user_ids));
     } else if(page_params.is_guest && !is_private){
-      activity.drc_build_user_sidebar(0);
+      activity_ui.drc_build_user_sidebar(0);
     }
 
     return $stream_li;

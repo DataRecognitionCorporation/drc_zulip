@@ -100,101 +100,6 @@ li.show-more-topics {
     max-width: 18em;
 }
 
-#stream_folders {
-    list-style-type: none;
-    margin-left: 0;
-
-    a {
-        color: inherit;
-    }
-
-
-    hr {
-        margin-top: 10px;
-        margin-bottom: 10px;
-    }
-
-    li.muted_topic,
-    li.out_of_home_view {
-        opacity: 0.5;
-    }
-
-    li.out_of_home_view {
-        &:hover {
-            opacity: 0.75;
-        }
-
-        li.muted_topic {
-            /* If stream is muted, this resets opacity of muted topics in muted
-          stream to 1; since opacity is multiplied down through child
-          elements, this avoids an unreadably low opacity. */
-            opacity: 1;
-        }
-    }
-
-    /* overflow: visible; */
-    margin-bottom: 5px;
-    margin-right: 22px;
-    margin-left: 0px;
-    font-weight: normal;
-    cursor: pointer;
-
-    .subscription_block_folder {
-        margin-left: 15px;
-    }
-
-    .subscription_block_subfolder {
-        margin-right: 10px;
-        margin-left: 0px;
-    }
-    .subfolder_underline:hover {
-      text-decoration: underline;
-    }
-    .subscription_block_subfolder ul {
-        margin: 0 0 0 $far_left_gutter_size;
-    }
-
-    /*
-    .folder_unread_count {
-        margin-right: 10px;
-    }
-    */
-
-    .subfolder_unread_count {
-        margin-right: -10px;
-    }
-
-    .sidebar_row_unread {
-        margin-right: -18px;
-    }
-    .stream-name:hover {
-        text-decoration: none;
-    }
-
-    /*
-    .row_unread_count {
-        margin-right: 10px;
-    }
-    */
-
-    & li .narrow-filter {
-        margin-right: 8px;
-    }
-
-
-    .subscription_block_subfolder .stream-sidebar-menu-icon {
-        padding-right: 0px;
-        margin-right: 5px;
-        width: 13px;
-        vertical-align: middle;
-    }
-
-    & li .zulip-icon-more-vertical {
-        margin-right: -6px;
-    }
-
-}
-
 #stream_filters {
     overflow: visible;
     margin-bottom: 5px;
@@ -447,7 +352,6 @@ li.show-more-topics {
 }
 
 .active_private_messages_section {
-
     #private_messages_section,
     #direct-messages-list,
     #hide-more-direct-messages {
@@ -468,7 +372,6 @@ li.show-more-topics {
 }
 
 :not(.active-sub-filter) {
-
     &.top_left_row:hover,
     &.bottom_left_row:hover {
         background-color: var(--color-background-hover-narrow-filter);
@@ -628,7 +531,6 @@ li.active-sub-filter {
 }
 
 #stream_filters .narrow-filter.active-filter {
-
     .topic-list .filter-topics,
     > .bottom_left_row {
         background-color: var(--color-background-active-narrow-filter);
@@ -1115,6 +1017,7 @@ li.top_left_scheduled_messages {
         If you hover directly over the ellipsis itself,
         show it in black.
     */
+
     &:hover {
         color: var(--color-vdots-hover);
     }
@@ -1125,6 +1028,7 @@ li.top_left_scheduled_messages {
         presence on such devices. The following media property displays the
         icon by default for such behaviour.
     */
+
     @media (hover: none) {
         display: flex;
         /* Show dots on touchscreens in a less distracting,
@@ -1489,7 +1393,7 @@ li.topic-list-item {
 }
 
 .zoom-in {
-    .narrow-filter>.bottom_left_row {
+    .narrow-filter > .bottom_left_row {
         position: sticky;
         top: calc($sections_vertical_gutter + 20px);
         z-index: 2;

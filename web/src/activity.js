@@ -133,20 +133,6 @@ export function build_user_sidebar() {
     return user_ids; // for testing
 }
 
-export function drc_build_user_sidebar(user_ids) {
-    if (page_params.realm_presence_disabled) {
-        return undefined;
-    }
-
-    const filter_text = get_filter_text();
-
-    // const user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
-    buddy_list.populate({keys: user_ids});
-
-
-    return user_ids; // for testing
-}
-
 
 function do_update_users_for_search() {
     // Hide all the popovers but not userlist sidebar
