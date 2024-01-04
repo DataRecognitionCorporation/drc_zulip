@@ -8,6 +8,7 @@ import render_stream_subheader from "../templates/streams_subheader.hbs";
 import render_subscribe_to_more_streams from "../templates/subscribe_to_more_streams.hbs";
 
 import * as activity from "./activity";
+import * as buddy_data from "./buddy_data";
 import * as blueslip from "./blueslip";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
@@ -621,7 +622,7 @@ export function update_stream_sidebar_for_narrow(filter) {
 
     if(page_params.is_guest && is_private){
       let user_ids = get_subscribers(stream_id);
-      activity.drc_build_user_sidebar(user_ids);
+      activity.drc_build_user_sidebar(buddy_data.sort_users(user_ids));
     } else if(page_params.is_guest && !is_private){
       activity.drc_build_user_sidebar(0);
     }
