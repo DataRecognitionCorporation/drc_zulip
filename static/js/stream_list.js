@@ -38,7 +38,7 @@ import * as ui_util from "./ui_util";
 
 import {
     StreamSidebar
-} from "./stream_list_drc"
+} from "./stream_list_drc.ts"
 
 export let stream_cursor;
 
