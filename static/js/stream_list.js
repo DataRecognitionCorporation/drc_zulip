@@ -49,7 +49,6 @@ export let stream_cursor;
 let has_scrolled = false;
 
 export function update_count_in_dom($stream_li, count, stream_has_any_unread_mention_messages) {
-    console.log("update_count_in_dom")
     // The subscription_block properly excludes the topic list,
     // and it also has sensitive margins related to whether the
     // count is there or not.
@@ -284,7 +283,6 @@ export function zoom_in_topics(options) {
 
         if (stream_id_for_elt($elt) === stream_id) {
             $elt.show();
-            console.log('this is so fucking annoyting')
             // Add search box for topics list.
             $elt.children("div.bottom_left_row").append(render_filter_topics());
             $("#filter-topic-input").trigger("focus");
@@ -383,7 +381,6 @@ export function redraw_stream_privacy(sub) {
 }
 
 function set_stream_unread_count(stream_id, count, stream_has_any_unread_mention_messages) {
-    console.log("set_stream_unread_count")
     const $stream_li = get_stream_li(stream_id);
     if (!$stream_li) {
         // This can happen for legitimate reasons, but we warn
@@ -422,8 +419,6 @@ export function update_streams_sidebar(force_rerender) {
 }
 
 export function update_dom_with_unread_counts(counts) {
-    console.log("update_dom_with_unread_counts")
-    console.log(counts)
     stream_sidebar.update_sidebar_unread_count(counts);
 
     // counts.stream_count maps streams to counts
@@ -537,12 +532,9 @@ export function update_stream_sidebar_for_narrow(filter) {
     topic_list.rebuild($stream_li, stream_id);
 
     // DRC MODIFICATION
-    let stream_name = $("ul .activec-filter .stream-name").text();
+    let stream_name = $("ul .active-filter .stream-name").text();
     let id = stream_data.get_stream_id(stream_name);
     let is_private = stream_data.is_private(stream_name);
-    if(stream_name == ""){
-      return $stream_li;
-    }
 
     if(page_params.is_guest && is_private){
       let user_ids = peer_data.get_subscribers(stream_id);
@@ -596,7 +588,7 @@ function actually_update_streams_for_search() {
     // stream_sidebar.use_folders = false;
     if(stream_sidebar.use_folders){
       let render_all_streams = true;
-      build_stream_list_below_folders(render_all_streams);
+      stream_sidebar.build_stream_list_below_folders(render_all_streams);
     } else {
       let force_render = true;
       build_stream_list(force_render);
