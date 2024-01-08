@@ -405,7 +405,8 @@ def access_stream_common(
 
     # Otherwise it is a private stream and you're not on it, so throw
     # an error.
-    raise JsonableError(error)
+    # DRCM ODIFICATION: any admin can invite to any stream
+    #raise JsonableError(error)
 
 
 def access_stream_by_id(
