@@ -35,14 +35,9 @@ import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
 import * as ui from "./ui";
 import * as ui_util from "./ui_util";
-import * as unread from "./unread";
-import * as unread_ui from "./unread_ui";
 import {
-    StreamSidebarRow,
     StreamSidebar,
-    build_stream_folder
 } from "./stream_list_drc"
-import { widget } from "./compose_pm_pill";
 
 export let stream_cursor;
 
