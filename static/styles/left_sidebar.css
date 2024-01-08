@@ -155,13 +155,14 @@ li.show-more-topics {
         text-decoration: none;
     }
 
-    .row_unread_count {
-        margin-right: 10px;
+    .sidebar_row_unread {
+        margin-right: 18px;
     }
+
 
     .subscription_block_subfolder .stream-sidebar-menu-icon {
         padding-right: 0px;
-        margin-right: -10px;
+        margin-right: 3px;
         width: 13px;
         vertical-align: middle;
     }
