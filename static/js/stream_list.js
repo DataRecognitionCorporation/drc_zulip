@@ -35,8 +35,9 @@ import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
 import * as ui from "./ui";
 import * as ui_util from "./ui_util";
+
 import {
-    StreamSidebar,
+    StreamSidebar
 } from "./stream_list_drc"
 
 export let stream_cursor;
