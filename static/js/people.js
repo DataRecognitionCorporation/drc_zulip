@@ -119,6 +119,15 @@ export function can_admin_user(user) {
     );
 }
 
+export function maybe_get_user_by_id(user_id, ignore_missing = false) {
+    if (!people_by_user_id_dict.has(user_id) && !ignore_missing) {
+        blueslip.error("Unknown user_id in maybe_get_user_by_id", {user_id});
+        return undefined;
+    }
+    return people_by_user_id_dict.get(user_id);
+}
+
+
 export function id_matches_email_operand(user_id, email) {
     const person = get_by_email(email);
 

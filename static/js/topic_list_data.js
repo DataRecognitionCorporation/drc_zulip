@@ -4,6 +4,7 @@ import * as hash_util from "./hash_util";
 import * as narrow_state from "./narrow_state";
 import * as stream_topic_history from "./stream_topic_history";
 import * as topic_list from "./topic_list";
+import { is_zoomed_in } from "./topic_zoom";
 import * as unread from "./unread";
 import * as user_topics from "./user_topics";
 import * as util from "./util";
@@ -101,12 +102,17 @@ export function get_list_info(stream_id, zoomed) {
             // same code we do when zoomed.
         }
 
+        let is_zero = false;
+        if(num_unread == undefined || num_unread == 0){
+            is_zero = true;
+        }
+
         const topic_info = {
             topic_name,
             topic_resolved_prefix,
             topic_display_name,
             unread: num_unread,
-            is_zero: num_unread === 0,
+            is_zero: is_zero,
             is_muted: is_topic_muted,
             is_active_topic,
             url: hash_util.by_stream_topic_url(stream_id, topic_name),

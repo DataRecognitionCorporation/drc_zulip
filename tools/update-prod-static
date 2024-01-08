@@ -46,7 +46,7 @@ run(["./tools/setup/build_pygments_data"])
 run(["./tools/setup/build_timezone_values"])
 
 # Create webpack bundle
-run(["./tools/webpack", "--quiet"])
+run(["./tools/webpack"])
 
 # Collect the files that we're going to serve; this creates prod-static/serve.
 run(

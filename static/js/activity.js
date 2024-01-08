@@ -93,7 +93,7 @@ export function redraw_user(user_id) {
     if (page_params.realm_presence_disabled) {
         return;
     }
-    
+
     if(page_params.is_guest && buddy_list.keys != 0 && !buddy_list.keys.includes(user_id)) {
       return;
     }
@@ -138,14 +138,9 @@ export function build_user_sidebar() {
 }
 
 export function drc_build_user_sidebar(user_ids) {
-    // alert(stream_name)
     if (page_params.realm_presence_disabled) {
         return undefined;
     }
-
-    const filter_text = get_filter_text();
-
-    // const user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
 
     blueslip.measure_time("buddy_list.populate", () => {
         buddy_list.populate({keys: user_ids});

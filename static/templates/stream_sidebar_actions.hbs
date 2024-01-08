@@ -30,12 +30,14 @@
             {{/if}}
         </a>
     </li>
+    {{#if is_not_guest_or_member}}
     <li class="hidden-for-spectators">
         <a tabindex="0" class="mark_stream_as_read">
             <i class="fa fa-book" aria-hidden="true"></i>
             {{t "Mark all messages as read"}}
         </a>
     </li>
+    {{/if}}
 
     {{#if is_realm_admin}}
     <li class="hidden-for-spectators">
