@@ -40,15 +40,15 @@ OUTPUT_DIR=${OUTPUT_DIR:-$(mktemp -d)}
 TARBALL=$OUTPUT_DIR/$prefix.tar
 BASEDIR=$(pwd)
 
-git archive -o "$TARBALL" "--prefix=$prefix/" HEAD
+#git archive -o "$TARBALL" "--prefix=$prefix/" HEAD
 
-cd "$OUTPUT_DIR"
-tar -xf "$TARBALL"
+#cd "$OUTPUT_DIR"
+#tar -xf "$TARBALL"
 while read -r i; do
     rm -r --interactive=never "${OUTPUT_DIR:?}/$prefix/$i"
 done <"$OUTPUT_DIR/$prefix/tools/release-tarball-exclude.txt"
-tar -cf "$TARBALL" "$prefix"
-rm -rf "$prefix"
+#tar -cf "$TARBALL" "$prefix"
+#rm -rf "$prefix"
 
 if tar -tf "$TARBALL" | grep -q -e ^zerver/tests; then
     set +x
