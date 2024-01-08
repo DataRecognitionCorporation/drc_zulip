@@ -11,7 +11,9 @@
                     <span>{{t 'All messages' }}</span>
                     <span class="unread_count"></span>
                 </a>
+                {{#if is_not_guest_or_member}}
                 <span class="arrow all-messages-sidebar-menu-icon hidden-for-spectators"><i class="zulip-icon zulip-icon-ellipsis-v-solid" aria-hidden="true"></i></span>
+                {{/if}}
             </li>
             <li class="top_left_recent_topics top_left_row" title="{{t 'Recent conversations' }} (t)">
                 <a href="#recent">

@@ -164,6 +164,7 @@ function initialize_left_sidebar() {
     const rendered_sidebar = render_left_sidebar({
         is_admin: page_params.is_admin,
         is_guest: page_params.is_guest,
+        is_not_guest_or_member: page_params.is_admin || page_params.is_owner || page_params.is_moderator,
     });
 
     $("#left-sidebar-container").html(rendered_sidebar);

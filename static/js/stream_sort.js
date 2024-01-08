@@ -1,4 +1,5 @@
 import * as stream_data from "./stream_data";
+import * as stream_topic_history from "./stream_topic_history";
 import * as sub_store from "./sub_store";
 import * as util from "./util";
 
@@ -8,6 +9,7 @@ let previous_dormant;
 let previous_muted_active;
 let previous_muted_pinned;
 let all_streams = [];
+let filter_out_inactives = false;
 
 export function get_streams() {
     const sorted_streams = all_streams.map((stream_id) =>
@@ -24,6 +26,20 @@ function compare_function(a, b) {
     const stream_name_b = stream_b ? stream_b.name : "";
 
     return util.strcmp(stream_name_a, stream_name_b);
+}
+
+export function has_recent_activity(sub) {
+    if (!filter_out_inactives || sub.pin_to_top) {
+        // If users don't want to filter inactive streams
+        // to the bottom, we respect that setting and don't
+        // treat any streams as dormant.
+        //
+        // Currently this setting is automatically determined
+        // by the number of streams.  See the callers
+        // to set_filter_out_inactives.
+        return true;
+    }
+    return stream_topic_history.stream_has_topics(sub.stream_id) || sub.newly_subscribed;
 }
 
 export function sort_groups(streams, search_term) {

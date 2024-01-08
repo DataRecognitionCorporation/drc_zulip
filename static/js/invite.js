@@ -170,6 +170,32 @@ class StreamList {
     }
     return temp_streams;
   }
+
+  set_all_default_checked() {
+    this.set_all_checked_status(false);
+    for(const stream of this.row_list) {
+      if(stream.default_stream) {
+          stream.set_checked(true);
+      }
+    }
+  }
+
+  set_all_checked_status(checked) {
+    for (const stream of this.row_list) {
+        stream.set_checked(checked);
+    }
+  }
+
+  get_all_checked() {
+    var temp_streams = [];
+
+    for (const stream of this.row_list) {
+      if(stream.checked){
+          temp_streams.push(stream.stream_id);
+      }
+    }
+    return temp_streams;
+  }
 }
 
 export function build_stream_list() {
@@ -186,62 +212,6 @@ export function build_stream_list() {
   $parent.append(stream_list.get_streams(filter_text));
 }
 
-// export function build_stream_list_old(filter_text) {
-//     var filter_text = $("#stream_search").val()
-//     var streams = get_invite_streams();
-//     var $parent = $("#invite_rows");
-//     var elements = [];
-//
-//     if (streams.length === 0) {
-//         $parent.empty();
-//         return;
-//     }
-//     // var $streams_to_add = $("input[name='invite-stream-checkboxes']:checked");
-//
-//     const temp_stream_id_set = new Set();
-//     $("#invite-stream-checkboxes input:checked").each(function() {
-//         const stream_id = Number.parseInt($(this).val(), 10);
-//         stream_ids.add(stream_id);
-//         temp_stream_id_set.add(stream_id);
-//     });
-//
-//     const set_diff = new Set(difference(stream_ids, temp_stream_id_set));
-//     set_diff.forEach((value) => {
-//       console.log(value);
-//       stream_ids.delete(value);
-//     });
-//
-//     if (filter_text) {
-//         for (const stream of streams) {
-//             const stream_name_lower = stream.name.toLowerCase();
-//             const filter_text_lower = filter_text.toLowerCase();
-//             if (stream_name_lower.includes(filter_text_lower)) {
-//
-//                 if(stream_ids.has(stream.stream_id)){
-//                   var row_item = new StreamRow(stream, true);
-//                 } else {
-//                   var row_item = new StreamRow(stream, false);
-//                 }
-//
-//                 elements.push(row_item.get_li());
-//             }
-//         }
-//     } else {
-//         for (const stream of streams) {
-//           if(stream_ids.has(stream.stream_id)){
-//             var row_item = new StreamRow(stream, true);
-//           } else {
-//             var row_item = new StreamRow(stream, false);
-//           }
-//             elements.push(row_item.get_li());
-//         }
-//     }
-//
-//     $parent.empty();
-//
-//     $parent.append(elements);
-// }
-
 
 function get_common_invitation_data() {
     const invite_as = Number.parseInt($("#invite_as").val(), 10);
@@ -255,16 +225,6 @@ function get_common_invitation_data() {
         expires_in = Number.parseFloat($("#expires_in").val());
     }
 
-//     let stream_ids = [];
-//     const default_stream_ids = stream_data.get_default_stream_ids();
-//     if (default_stream_ids.length !== 0 && $("#invite_select_default_streams").prop("checked")) {
-//         stream_ids = default_stream_ids;
-//     } else {
-//         $("#invite-stream-checkboxes input:checked").each(function () {
-//             const stream_id = Number.parseInt($(this).val(), 10);
-//             stream_ids.push(stream_id);
-//         });
-//     }
 
     const stream_ids = [];
     $("#invite-stream-checkboxes input:checked").each(function() {
@@ -275,7 +235,7 @@ function get_common_invitation_data() {
     const data = {
         csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').attr("value"),
         invite_as,
-        stream_ids: JSON.stringify(stream_ids),
+        stream_ids: JSON.stringify(stream_list.get_all_checked()),
         invite_expires_in_minutes: expires_in,
     };
     return data;
@@ -575,14 +535,17 @@ export function initialize() {
 
     $(document).on("click", "#invite_check_all_button", () => {
         $("#invite-stream-checkboxes :checkbox").prop("checked", true);
+        stream_list.set_all_checked_status(true);
     });
 
     $(document).on("click", "#invite_uncheck_all_button", () => {
         $("#invite-stream-checkboxes :checkbox").prop("checked", false);
+        stream_list.set_all_checked_status(false);
     });
 
     $(document).on("change", "#invite_select_default_streams", () => {
         set_streams_to_join_list_visibility();
+        stream_list.set_all_default_checked();
     });
 
     $(document).on("click", ".checkbox_alert", () => {

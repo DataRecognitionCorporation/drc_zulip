@@ -31,6 +31,7 @@
         "noUnusedParameters": true,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
+        "allowJs": true,
     },
     "exclude": [
         /* Type stubs are not part of the top-level project. */
