@@ -45,9 +45,6 @@ run(["./tools/setup/build_pygments_data"])
 # Build time zone data
 run(["./tools/setup/build_timezone_values"])
 
-# Create webpack bundle
-#run(["./tools/webpack"])
-
 # Collect the files that we're going to serve; this creates prod-static/serve.
 run(
     [
@@ -64,6 +61,10 @@ run(
         "--ignore=templates",
     ]
 )
+
+# Create webpack bundle
+run(["./tools/webpack"])
+
 
 # Compile translation strings to generate `.mo` files.
 run(["./manage.py", "compilemessages", "-v0", "--ignore=*"])
