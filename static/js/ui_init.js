@@ -91,7 +91,6 @@ import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_edit_subscribers from "./stream_edit_subscribers";
 import * as stream_list from "./stream_list";
-import * as stream_list_drc from "./stream_list_drc";
 import * as stream_settings_ui from "./stream_settings_ui";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
