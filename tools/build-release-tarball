@@ -59,6 +59,7 @@ cd "$BASEDIR"
 
 # Check out a temporary full copy of the index to generate static files
 git checkout-index -f -a --prefix "$OUTPUT_DIR/$prefix/"
+ls -lah "$OUTPUT_DIR/$prefix/static/js/"
 
 # Add the Git version information file
 if [[ "$version" =~ ^[0-9]+\.[0-9]+(-[0-9a-z]+)?$ ]]; then
