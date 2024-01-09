@@ -35,7 +35,9 @@ import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
 import * as ui from "./ui";
 import * as ui_util from "./ui_util";
-import * as stream_list_drc from "./stream_list_drc";
+import {
+    StreamSidebar
+}from "./stream_list_drc";
 
 export let stream_cursor;
 
@@ -67,7 +69,7 @@ if(!page_params.is_guest) {
     use_folders = true;
 }
 
-export const stream_sidebar = new stream_list_drc.StreamSidebar(use_folders);
+export const stream_sidebar = new StreamSidebar(use_folders);
 
 export function get_search_term() {
     const $search_box = $(".stream-list-filter");
