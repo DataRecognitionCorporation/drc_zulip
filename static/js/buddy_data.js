@@ -91,7 +91,6 @@ export function sort_users(user_ids) {
     const current_user = user_ids[0];
     // Uncomment the if statement below to only order the roles for guests and members
     if (people.maybe_get_user_by_id(current_user).role >= 300) {
-        console.log("sort")
         user_ids = user_ids.slice(1).sort((a, b) => parseFloat(people.maybe_get_user_by_id(b).role) - parseFloat(people.maybe_get_user_by_id(a).role));
         user_ids.splice(0, 0, current_user);
     }
