@@ -22,6 +22,7 @@ import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
+import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
@@ -65,7 +66,7 @@ export function update_count_in_dom($stream_li, count, stream_has_any_unread_men
 // DRC MODIFICATION - streamsidebar moved to stream_list_drc.ts
 // class StreamSidebar {
 let use_folders = false;
-if(!page_params.is_guest) {
+if(page_params.owner || page_params.is_admin) {
     use_folders = true;
 }
 
@@ -531,10 +532,10 @@ export function update_stream_sidebar_for_narrow(filter) {
     let id = stream_data.get_stream_id(stream_name);
     let is_private = stream_data.is_private(stream_name);
 
-    if(page_params.is_guest && is_private){
+    if((page_params.is_guest || page_params.is_moderator ) && is_private){
       let user_ids = peer_data.get_subscribers(stream_id);
       activity.drc_build_user_sidebar(buddy_data.sort_users(user_ids));
-    } else if(page_params.is_guest && !is_private){
+    } else if((page_params.is_guest || page_params.is_moderator) && !is_private){
       activity.drc_build_user_sidebar(0);
     }
 
