@@ -117,7 +117,7 @@ export function searching() {
 }
 
 export function build_user_sidebar() {
-    if(page_params.is_guest){
+    if(page_params.is_guest || page_params.is_moderator){
       return undefined;
     }
 

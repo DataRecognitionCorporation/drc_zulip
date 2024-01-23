@@ -536,6 +536,7 @@ export function update_stream_sidebar_for_narrow(filter) {
       let user_ids = peer_data.get_subscribers(stream_id);
       activity.drc_build_user_sidebar(buddy_data.sort_users(user_ids));
     } else if((page_params.is_guest || page_params.is_moderator) && !is_private){
+      console.log('arg')
       activity.drc_build_user_sidebar(0);
     }
 
