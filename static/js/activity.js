@@ -117,7 +117,11 @@ export function searching() {
 }
 
 export function build_user_sidebar() {
-    if(page_params.is_guest || page_params.is_moderator){
+    let is_normal = !page_params.is_guest && !page_params.is_moderator &&
+        !page_params.is_admin && !page_params.is_billing_admin && !page_params.is_owner &&
+        !page_params.is_spectator
+
+    if(page_params.is_guest || is_normal){
       return undefined;
     }
 
