@@ -532,10 +532,14 @@ export function update_stream_sidebar_for_narrow(filter) {
     let id = stream_data.get_stream_id(stream_name);
     let is_private = stream_data.is_private(stream_name);
 
-    if((page_params.is_guest || page_params.is_moderator ) && is_private){
+    let is_normal = !page_params.is_guest && !page_params.is_moderator &&
+        !page_params.is_admin && !page_params.is_billing_admin && !page_params.is_owner &&
+        !page_params.is_spectator
+
+    if((page_params.is_guest || is_normal ) && is_private){
       let user_ids = peer_data.get_subscribers(stream_id);
       activity.drc_build_user_sidebar(buddy_data.sort_users(user_ids));
-    } else if((page_params.is_guest || page_params.is_moderator) && !is_private){
+    } else if((page_params.is_guest || is_normal) && !is_private){
       activity.drc_build_user_sidebar(0);
     }
 
