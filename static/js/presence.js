@@ -26,6 +26,7 @@ export function clear_internal_data() {
  * Keep in sync with zerver/tornado/event_queue.py:receiver_is_idle
  */
 const OFFLINE_THRESHOLD_SECS = 140;
+const DRC_OVERRIDE_OFFLINE_THRESHOLD_SECS = 86400;
 
 const BIG_REALM_COUNT = 250;
 
@@ -86,7 +87,7 @@ export function status_from_raw(raw) {
         };
     }
 
-    if (age(idle_timestamp) < OFFLINE_THRESHOLD_SECS) {
+    if (age(idle_timestamp) < DRC_OVERRIDE_OFFLINE_THRESHOLD_SECS) {
         return {
             status: "idle",
             last_active,
