@@ -562,8 +562,9 @@ class UserPresenceWorker(QueueProcessingWorker):
         user_profile = get_user_profile_by_id(event["user_profile_id"])
         client = get_client(event["client"])
         log_time = timestamp_to_datetime(event["time"])
+        heartbeat = timestamp_to_datetime(event["heartbeat"])
         status = event["status"]
-        do_update_user_presence(user_profile, client, log_time, status)
+        do_update_user_presence(user_profile, client, log_time, heartbeat, status)
 
 
 @assign_queue("missedmessage_emails")

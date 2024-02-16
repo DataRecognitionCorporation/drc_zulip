@@ -1,4 +1,5 @@
 import datetime
+from datetime import timezone
 from typing import Any, Dict, Optional
 
 from django.conf import settings
@@ -141,39 +142,34 @@ def update_active_status_backend(
 ) -> HttpResponse:
     status_val = UserPresence.status_from_string(status)
 
-    ret: Dict[str, Any] = {}
+    ret = get_presence_response(user_profile, slim_presence)
 
     try:
-        ret = get_presence_response(user_profile, slim_presence)
         status = list(ret['presences'][str(user_profile.id)].keys())[0]
         if('idle_timestamp' in ret['presences'][str(user_profile.id)]):
             old_idle_time = ret['presences'][str(user_profile.id)]['idle_timestamp']
         else:
-            old_idle_time = None
+            old_idle_time = timezone_now()
 
     except:
-        old_idle_time = None
-
-    update_timestamp = True
+        old_idle_time = timezone_now()
 
     # don't update timestamp if user is reporting idle
     if status == 'idle_timestamp' and status_val == 2:
-        update_timestamp = False
+        timestamp = datetime.datetime.fromtimestamp(old_idle_time, timezone.utc)
+    else:
+        timestamp = timezone_now()
 
     if status_val is None:
         raise JsonableError(_("Invalid status: {}").format(status))
-    elif user_profile.presence_enabled and update_timestamp:
+    elif user_profile.presence_enabled:
         client = RequestNotes.get_notes(request).client
         assert client is not None
-        update_user_presence(user_profile, client, timezone_now(), status_val, new_user_input)
-    elif user_profile.presence_enabled and old_idle_time != None:
-        client = RequestNotes.get_notes(request).client
-        assert client is not None
-        update_user_presence(user_profile, client, datetime.datetime.fromtimestamp(old_idle_time,
-                                                                                   datetime.timezone.utc), status_val, new_user_input)
+        update_user_presence(user_profile, client, timestamp, timezone_now(), status_val, new_user_input)
 
     if ping_only:
         ret: Dict[str, Any] = {}
+
 
     if user_profile.realm.is_zephyr_mirror_realm:
         # In zephyr mirroring realms, users can't see the presence of other

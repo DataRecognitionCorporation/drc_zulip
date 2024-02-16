@@ -793,6 +793,7 @@ class Command(BaseCommand):
                     realm_id=user.realm_id,
                     client=client,
                     timestamp=date,
+                    heartbeat_timestamp=date,
                     status=status,
                 )
 
