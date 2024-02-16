@@ -104,8 +104,6 @@ function get_num_unread(user_id) {
 
 export function user_last_seen_time_status(user_id) {
     const status = presence.get_status(user_id);
-    if(user_id == 13) {
-    }
     if (status === "active") {
         return $t({defaultMessage: "Active now"});
     }

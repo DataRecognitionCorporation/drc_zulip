@@ -4033,9 +4033,11 @@ class UserPresence(models.Model):
     # orange/idle if the timestamp is current.
     IDLE = 2
 
-    INACTIVE = 3
     # Information from the client about the user's recent interaction with
     # that client, as of `timestamp`.  Possible values above.
+    #
+    # There is no "inactive" status, because that is encoded by the
+    # timestamp being old.
     status = models.PositiveSmallIntegerField(default=ACTIVE)
 
     @staticmethod
