@@ -26,7 +26,7 @@ export function clear_internal_data() {
  * Keep in sync with zerver/tornado/event_queue.py:receiver_is_idle
  */
 const OFFLINE_THRESHOLD_SECS = 140;
-const DRC_OVERRIDE_OFFLINE_THRESHOLD_SECS = 86400;
+const DRC_OVERRIDE_OFFLINE_THRESHOLD_SECS = 14400;
 
 const BIG_REALM_COUNT = 250;
 
@@ -65,6 +65,7 @@ export function status_from_raw(raw) {
 
     const active_timestamp = raw.active_timestamp;
     const idle_timestamp = raw.idle_timestamp;
+    const heartbeat_timestamp = raw.heartbeat_timestamp;
 
     let last_active;
     if (active_timestamp !== undefined || idle_timestamp !== undefined) {
@@ -80,6 +81,7 @@ export function status_from_raw(raw) {
         show the user as active (even if there's a newer
         timestamp for idle).
     */
+
     if (age(active_timestamp) < OFFLINE_THRESHOLD_SECS) {
         return {
             status: "active",
@@ -87,9 +89,16 @@ export function status_from_raw(raw) {
         };
     }
 
-    if (age(idle_timestamp) < DRC_OVERRIDE_OFFLINE_THRESHOLD_SECS) {
+    if (age(heartbeat_timestamp) < OFFLINE_THRESHOLD_SECS) {
         return {
             status: "idle",
+            last_active,
+        };
+    }
+
+    if (age(heartbeat_timestamp) > OFFLINE_THRESHOLD_SECS) {
+        return {
+            status: "offline",
             last_active,
         };
     }
@@ -192,6 +201,7 @@ export function set_info(presences, server_timestamp) {
             server_timestamp,
             active_timestamp: info.active_timestamp || undefined,
             idle_timestamp: info.idle_timestamp || undefined,
+            heartbeat_timestamp: info.heartbeat_timestamp || undefined,
         };
 
         raw_info.set(user_id, raw);

@@ -71,6 +71,7 @@ def do_update_user_presence(
     user_profile: UserProfile,
     client: Client,
     log_time: datetime.datetime,
+    heartbeat: datetime.datetime,
     status: int,
     *,
     force_send_update: bool = False,
@@ -79,6 +80,7 @@ def do_update_user_presence(
 
     defaults = dict(
         timestamp=log_time,
+        heartbeat_timestamp=heartbeat,
         status=status,
         realm_id=user_profile.realm_id,
     )
@@ -106,7 +108,8 @@ def do_update_user_presence(
         # data it would return to a client hasn't actually changed
         # (see the UserPresence post_save hook for details).
         presence.timestamp = log_time
-        update_fields = ["timestamp"]
+        presence.heartbeat_timestamp = heartbeat
+        update_fields = ["timestamp", "heartbeat_timestamp"]
         if presence.status != status:
             presence.status = status
             update_fields.append("status")
@@ -130,6 +133,7 @@ def update_user_presence(
     user_profile: UserProfile,
     client: Client,
     log_time: datetime.datetime,
+    heartbeat: datetime.datetime,
     status: int,
     new_user_input: bool,
 ) -> None:
@@ -137,6 +141,7 @@ def update_user_presence(
         "user_profile_id": user_profile.id,
         "status": status,
         "time": datetime_to_timestamp(log_time),
+        "heartbeat": datetime_to_timestamp(heartbeat),
         "client": client.name,
     }
 
