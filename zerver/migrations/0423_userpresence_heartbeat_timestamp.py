@@ -2,18 +2,11 @@
 
 from django.db import migrations, models
 import datetime
-from django.db.backends.base.schema import BaseDatabaseSchemaEditor
-from django.db.migrations.state import StateApps
-from zerver.models import UserPresence
 
 class Migration(migrations.Migration):
     dependencies = [
         ("zerver", "0422_multiuseinvite_status"),
     ]
-
-    def set_default_time(apps, schema_editor):
-        UserPresence = apps.get_model('zerver', 'UserPresence')
-        UserPresence.objects.filter(heartbeat_timestamp=None).update(heartbeat_timestamp=1)
 
     operations = [
         migrations.AddField(
@@ -22,6 +15,4 @@ class Migration(migrations.Migration):
             field=models.DateTimeField(default=datetime.datetime.now),
             preserve_default=True,
         ),
-        #migrations.RunPython(set_default_time)
-
     ]
