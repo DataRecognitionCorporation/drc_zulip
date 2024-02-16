@@ -4019,6 +4019,9 @@ class UserPresence(models.Model):
     # The time we heard this update from the client.
     timestamp = models.DateTimeField("presence changed")
 
+    # the heartbeat timestamp from the client
+    heartbeat_timestamp = models.DateTimeField()
+
     # The user was actively using this Zulip client as of `timestamp` (i.e.,
     # they had interacted with the client recently).  When the timestamp is
     # itself recent, this is the green "active" status in the web app.
@@ -4051,16 +4054,19 @@ class UserPresence(models.Model):
         client_name: str,
         status: int,
         dt: datetime.datetime,
+        heartbeat: datetime.datetime,
         push_enabled: bool = False,
         has_push_devices: bool = False,
     ) -> Dict[str, Any]:
         presence_val = UserPresence.status_to_string(status)
 
         timestamp = datetime_to_timestamp(dt)
+        heartbeat_timestamp = datetime_to_timestamp(heartbeat)
         return dict(
             client=client_name,
             status=presence_val,
             timestamp=timestamp,
+            heartbeat_timestamp=heartbeat_timestamp,
             pushable=(push_enabled and has_push_devices),
         )
 
@@ -4069,6 +4075,7 @@ class UserPresence(models.Model):
             self.client.name,
             self.status,
             self.timestamp,
+            self.heartbeat_timestamp,
         )
 
     @staticmethod

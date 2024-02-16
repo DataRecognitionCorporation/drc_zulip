@@ -495,6 +495,7 @@ def do_change_user_setting(
             user_profile,
             get_client("website"),
             presence_time,
+            presence_time,
             status,
             force_send_update=True,
         )

@@ -34,6 +34,7 @@ def get_presence_dicts_for_rows(
 
     user_statuses: Dict[str, Dict[str, Any]] = {}
 
+
     for user_key, presence_rows in itertools.groupby(all_rows, get_user_key):
         info = get_user_presence_info(
             list(presence_rows),
@@ -59,6 +60,13 @@ def get_modern_user_presence_info(
             idle_timestamp = datetime_to_timestamp(row["timestamp"])
             break
 
+    heartbeat_timestamp = None
+    for row in reversed(presence_rows):
+        if 'heartbeat_timestamp' in row:
+            heartbeat_timestamp = datetime_to_timestamp(row['heartbeat_timestamp'])
+            break
+
+
     # Be stingy about bandwidth, and don't even include
     # keys for entities that have None values.  JS
     # code should just do a falsy check here.
@@ -69,6 +77,9 @@ def get_modern_user_presence_info(
 
     if idle_timestamp is not None:
         result["idle_timestamp"] = idle_timestamp
+
+    if heartbeat_timestamp is not None:
+        result['heartbeat_timestamp'] = heartbeat_timestamp
 
     return result
 
@@ -152,6 +163,7 @@ def get_presence_dict_by_realm(
         "client__name",
         "status",
         "timestamp",
+        "heartbeat_timestamp",
         "user_profile__email",
         "user_profile_id",
         "user_profile__enable_offline_push_notifications",
