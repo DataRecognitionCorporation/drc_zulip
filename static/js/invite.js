@@ -48,7 +48,6 @@ function reset_error_messages() {
 
 function build_stream_li(sub, checked) {
     const name = sub.name;
-    // alert(name)
     const args = {
         name,
         checked: checked,
@@ -68,11 +67,6 @@ class StreamRow {
         this.default_stream = sub.default_stream;
         this.stream_id = sub.stream_id;
         this.checked = false;
-        if(this.default_stream){
-          this.checked = true;
-        } else {
-          this.checked = false;
-        }
         this.$list_item = build_stream_li(sub, this.checked);
     }
 
@@ -101,7 +95,6 @@ class StreamRow {
 
 class StreamList {
   constructor(display_all) {
-    // this.all_streams = all_streams;
     this.row_list = [];
     this.stream_ids = new Set();
     var streams = null;
@@ -134,6 +127,30 @@ class StreamList {
       if(stream.stream_id == stream_id){
         // this.row_list.splice(index, 1);
         this.stream_ids.delete(stream_id);
+      }
+      index += 1;
+    }
+  }
+
+  set_checked(stream_id) {
+    var index = 0;
+    for(const stream of this.row_list){
+      if(stream.stream_id == stream_id){
+        var temp_obj = this.row_list[index];
+        this.row_list[index].desc = temp_obj.set_checked(true);
+        return
+      }
+      index += 1;
+    }
+  }
+
+  set_unchecked(stream_id) {
+    var index = 0;
+    for(const stream of this.row_list){
+      if(stream.stream_id == stream_id){
+        var temp_obj = this.row_list[index];
+        this.row_list[index].desc = temp_obj.set_checked(false);
+        return
       }
       index += 1;
     }
@@ -198,18 +215,37 @@ class StreamList {
   }
 }
 
-export function build_stream_list() {
+function build_stream_list_with_defaults() {
   var filter_text = $("#stream_search").val()
   var $parent = $("#invite_rows");
 
-  $("#invite-stream-checkboxes").on("click", () => {
-      const stream_id = Number.parseInt($(this).val(), 10);
-      stream_list.switch_checked(stream_id);
-  });
+  $parent.empty();
+  stream_list.set_all_default_checked();
+  $parent.append(stream_list.get_streams(filter_text));
+}
+
+export function build_stream_list() {
+  var filter_text = $("#stream_search").val()
+  var $parent = $("#invite_rows");
+  update_streams_chekced();
 
   $parent.empty();
-
   $parent.append(stream_list.get_streams(filter_text));
+}
+
+function update_streams_chekced() {
+    const stream_ids = [];
+    $("#invite-stream-checkboxes input:checked").each(function() {
+        const stream_id = Number.parseInt($(this).val(), 10);
+        stream_list.set_checked(stream_id);
+        stream_ids.push(stream_id);
+    });
+
+    $("#invite-stream-checkboxes input:not(:checked)").each(function() {
+        const stream_id = Number.parseInt($(this).val(), 10);
+        stream_list.set_unchecked(stream_id);
+        stream_ids.push(stream_id);
+    });
 }
 
 
@@ -225,12 +261,7 @@ function get_common_invitation_data() {
         expires_in = Number.parseFloat($("#expires_in").val());
     }
 
-
-    const stream_ids = [];
-    $("#invite-stream-checkboxes input:checked").each(function() {
-        const stream_id = Number.parseInt($(this).val(), 10);
-        stream_ids.push(stream_id);
-    });
+    update_streams_chekced();
 
     const data = {
         csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').attr("value"),
@@ -421,13 +452,11 @@ function prepare_form_to_be_shown() {
     reset_error_messages();
 }
 
-export function launch() {
-    $("#submit-invitation").button();
-    prepare_form_to_be_shown();
+export function launch() { $("#submit-invitation").button(); prepare_form_to_be_shown();
     $(".display_all_streams").prop("checked", false);
 
     stream_list = new StreamList(false);
-    build_stream_list();
+    build_stream_list_with_defaults();
 
     overlays.open_overlay({
         name: "invite",
@@ -483,7 +512,7 @@ function get_expiration_time_in_minutes() {
         default:
             return custom_expiration_time_input;
     }
-}
+}const stream_id = Number.parseInt($(this).val(), 10);
 
 function set_expires_on_text() {
     if ($("#expires_in").val() === "custom") {
@@ -532,7 +561,6 @@ export function initialize() {
     set_expires_on_text();
 
 
-
     $(document).on("click", "#invite_check_all_button", () => {
         $("#invite-stream-checkboxes :checkbox").prop("checked", true);
         stream_list.set_all_checked_status(true);
@@ -548,16 +576,10 @@ export function initialize() {
         stream_list.set_all_default_checked();
     });
 
-    $(document).on("click", ".checkbox_alert", () => {
-        const temp_val = $(".checkbox_alert").val();
-        // stream_ids.delete(temp_val);
-        // alert(temp_val);
-    });
 
-    // $(document).on("click", "#stream_search_btn", () => {
+    // $(document).on("click", "#stream_search_btn", () => {const stream_id = Number.parseInt($(this).val(), 10);
     $(".invite_clear_search_button").on("click", () => {
         const $filter = $(".stream_search");
-        // alert('hello')
         $filter.val("");
         build_stream_list();
     });
