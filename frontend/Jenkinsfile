@@ -7,7 +7,7 @@ ACCOUNT_NUM = null
 
 pipeline {
   environment {
-    WORKING_DIR = "logic"
+    WORKING_DIR = "frontend"
     APP_NAME = 'Zulip'
   }
   agent {
@@ -92,8 +92,7 @@ def generateTerraformTasks(def tiers) {
 
     tasks["${tierShortname}-${region}"] = {
       stage("${tierShortname}-${region}") {
-        dir("${WORKSPACE}/${env.WORKING_DIR}/frontend") {
-
+        dir("${WORKSPACE}/${env.WORKING_DIR}") {
           sh 'aws sts get-caller-identity'
           sh "make plan env=${tierShortname}"
 
