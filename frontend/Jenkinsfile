@@ -92,7 +92,7 @@ def generateTerraformTasks(def tiers) {
 
     tasks["${tierShortname}-${region}"] = {
       stage("${tierShortname}-${region}") {
-        dir("${WORKSPACE}/${env.WORKING_DIR}") {
+        dir("${WORKSPACE}/${env.WORKING_DIR}/frontend") {
 
           sh 'aws sts get-caller-identity'
           sh "make plan env=${tierShortname}"
