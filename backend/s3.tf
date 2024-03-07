@@ -7,124 +7,126 @@
 
 resource "aws_s3_bucket" "zulip_private" {
   bucket = "${var.region}-zulip-private-${var.environment}-${local.account_num}"
-  acl    = "private"
-  #   tags   = local.global_tags
-
-  #   cors_rule {
-  #     allowed_headers = [
-  #       "*"
-  #     ]
-  #     allowed_methods = [
-  #       "PUT",
-  #       "POST",
-  #       "GET",
-  #       "HEAD"
-  #     ]
-  #     allowed_origins = [
-  #       "*"
-  #     ]
-  #     max_age_seconds = 0
-  #   }
-
-  #   logging {
-  #     target_bucket = "us-east-2-drc-s3-${lookup(var.s3-logging-bucket, var.environment)}"
-  #     target_prefix = "${var.bucket_name_private}-${var.environment}"
-  #   }
-
-  #   policy = <<POLICY
-  # {
-  #     "Version": "2012-10-17",
-  #     "Id": "Policy1468991802320",
-  #     "Statement": [
-  #         {
-  #             "Sid": "Stmt1468991795370",
-  #             "Effect": "Allow",
-  #             "Principal": {
-  #                 "AWS": "ARN_PRINCIPAL_HERE"
-  #             },
-  #             "Action": [
-  #                 "s3:GetObject",
-  #                 "s3:DeleteObject",
-  #                 "s3:PutObject"
-  #             ],
-  #             "Resource": "arn:aws:s3:::BUCKET_NAME_HERE/*"
-  #         },
-  #         {
-  #             "Sid": "Stmt1468991795371",
-  #             "Effect": "Allow",
-  #             "Principal": {
-  #                 "AWS": "ARN_PRINCIPAL_HERE"
-  #             },
-  #             "Action": "s3:ListBucket",
-  #             "Resource": "arn:aws:s3:::BUCKET_NAME_HERE"
-  #         }
-  #     ]
-  # }
-  # POLICY
-
+  tags   = local.global_tags
 }
 
-# resource "aws_s3_bucket" "zulip_public" {
-#   bucket = "${var.region}-zulip-public-${var.environment}-${local.account_num}"
-#   acl    = "public-read"
+resource "aws_s3_bucket_lifecycle_configuration" "s3_lifecylce_private" {
+  bucket = aws_s3_bucket.zulip_private.id
 
-#   #   cors_rule {
-#   #     allowed_headers = [
-#   #       "*"
-#   #     ]
-#   #     allowed_methods = [
-#   #       "GET",
-#   #       "HEAD"
-#   #     ]
-#   #     allowed_origins = [
-#   #       "*"
-#   #     ]
-#   #     max_age_seconds = 0
-#   #   }
+  rule {
+    id     = "Delete old incomplete multi-part uploads"
+    status = "Enabled"
 
-#   #   logging {
-#   #     target_bucket = "us-east-2-drc-s3-${lookup(var.s3-logging-bucket, var.environment)}"
-#   #     target_prefix = "${var.bucket_name_public}-${var.environment}"
-#   #   }
+    filter {
+      prefix = ""
+    }
 
-#   #   versioning {
-#   #     enabled = true
-#   #   }
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
 
-#   policy = <<POLICY
-# {
-#     "Version": "2012-10-17",
-#     "Statement": [
-#         {
-#             "Effect": "Allow",
-#             "Principal": {
-#                 "AWS": "${local.zulip_server_iam}"
-#             },
-#             "Action": [
-#                 "s3:GetObject",
-#                 "s3:DeleteObject",
-#                 "s3:PutObject"
-#             ],
-#             "Resource": "arn:aws:s3:::${var.region}-zulip-private-${var.environment}-${local.account_num}/*"
-#         },
-#         {
-#             "Effect": "Allow",
-#             "Principal": {
-#                 "AWS": "${local.zulip_server_iam}"
-#             },
-#             "Action": "s3:ListBucket",
-#             "Resource": "arn:aws:s3:::${var.region}-zulip-private-${var.environment}-${local.account_num}"
-#         },
-#         {
-#             "Effect": "Allow",
-#             "Principal": {
-#                 "AWS": "*"
-#             },
-#             "Action": "s3:GetObject",
-#             "Resource": "arn:aws:s3:::${var.region}-zulip-private-${var.environment}-${local.account_num}/*"
-#         }
-#     ]
-# }
-# POLICY
+  rule {
+    id     = "auto-delete-noncurrent-versions-after-90-days"
+    status = "Enabled"
 
-# }
+    filter {
+      prefix = ""
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = 90
+    }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "zulip_private_versioning" {
+  bucket = aws_s3_bucket.zulip_private.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+
+
+
+
+resource "aws_s3_bucket" "zulip_public" {
+  bucket = "${var.region}-zulip-public-${var.environment}-${local.account_num}"
+  tags   = local.global_tags
+}
+
+
+resource "aws_s3_bucket_lifecycle_configuration" "s3_lifecylce_public" {
+  bucket = aws_s3_bucket.zulip_public.id
+
+  rule {
+    id     = "Delete old incomplete multi-part uploads"
+    status = "Enabled"
+
+    filter {
+      prefix = ""
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
+
+  rule {
+    id     = "auto-delete-noncurrent-versions-after-90-days"
+    status = "Enabled"
+
+    filter {
+      prefix = ""
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = 90
+    }
+  }
+}
+
+resource "aws_s3_bucket_versioning" "zulip_public_versioning" {
+  bucket = aws_s3_bucket.zulip_public.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+/*
+resource "aws_s3_bucket_policy" "zulip_public_policy" {
+  bucket = aws_s3_bucket.zulip_public.id
+  policy = data.aws_iam_policy_document.zulip_public_policy.json
+}
+
+data "aws_iam_policy_document" "zulip_public_policy" {
+  statement {
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+
+    actions = [
+      "s3:GetObject",
+    ]
+
+    resources = [
+      aws_s3_bucket.zulip_public.arn,
+    ]
+  }
+}
+resource "aws_s3_bucket_ownership_controls" "zulip_public" {
+  bucket = aws_s3_bucket.zulip_public.id
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
+resource "aws_s3_bucket_acl" "zulip_public" {
+  depends_on = [aws_s3_bucket_ownership_controls.zulip_public]
+
+  bucket = aws_s3_bucket.zulip_public.id
+  acl    = "public-read"
+}
+*/

@@ -19,25 +19,25 @@ locals {
     team        = "team-ss"
     appid       = "bd08d"
   }
-  engine_version = lookup(local.engine_version_map, var.environment)
+  engine_version = local.engine_version_map[var.environment]
   engine_version_map = {
     prod = "14.3"
-    dev  = "14.3"
+    dev  = "14.5"
   }
 
-  backup_retention_period = lookup(local.backup_retention_period_map, var.environment)
+  backup_retention_period = local.backup_retention_period_map[var.environment]
   backup_retention_period_map = {
     prod = "14"
     dev  = "7"
   }
 
-  account_num = lookup(local.account_num_map, var.environment)
+  account_num = local.account_num_map[var.environment]
   account_num_map = {
     prod = ""
     dev  = "333509430799"
   }
 
-  private_subnet_ids = lookup(local.private_subnet_ids_map[var.account_num], var.region)
+  private_subnet_ids = local.private_subnet_ids_map[var.account_num][var.region]
   private_subnet_ids_map = {
     # shared-le
     "333509430799" = {
@@ -51,7 +51,7 @@ locals {
     }
   }
 
-  vpc_id = lookup(local.vpc_id_map[var.account_num], var.region)
+  vpc_id = local.vpc_id_map[var.account_num][var.region]
   vpc_id_map = {
     # shared le
     "333509430799" = {
