@@ -117,8 +117,7 @@ def generateTerraformTasks(def tiers) {
           } else {
             println("${tierShortname} ${region}")
             if (!dryRun) {
-              println('apply')
-              // sh "make apply env=${tierShortname}"
+              sh "make apply env=${tierShortname}"
             }
           }
         }
