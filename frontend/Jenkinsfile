@@ -94,7 +94,7 @@ pipeline {
 def can_deploy(def tier) {
   def result = 'SUCCESS'
 
-  if(tier.dry_run == false) {
+  if(tier.dry_run == 'false') {
     result = drc_AskForPermissionSkip([
       name     : "Deploy ${env.APP_NAME} ${tier.region} to ${tier.name}",
       to_time  : 10,
@@ -113,7 +113,7 @@ def can_deploy(def tier) {
     println('SKIP')
   } else {
     println("${tier.name} ${region}")
-    if (tier.dry_run == false) {
+    if (tier.dry_run == 'false') {
       return true
     }
   }
