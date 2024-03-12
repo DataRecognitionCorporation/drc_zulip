@@ -5,10 +5,16 @@
 IS_DEV = true
 ACCOUNT_NUM = null
 
+def credentials = drc_AwsAssumeRoleAsEnv([
+  [account_number: '911870898277', region: 'us-east-2']
+  [account_number: '333509430799', region: 'us-east-2']
+])
+
 pipeline {
   environment {
     WORKING_DIR = "frontend"
     APP_NAME = 'Zulip'
+    REGION = 'us-east-2'
   }
   agent {
     kubernetes(
@@ -26,7 +32,6 @@ pipeline {
   parameters {
     choice(choices: ['dev'], description: 'Deploy to le or prod?', name: 'ENVIRONMENT')
     choice(choices: [true, false], description: 'Dry run (tf plan) or deploy (tf apply)?', name: 'DRYRUN')
-    choice(choices: ['us-east-2', 'us-east-1'], description: 'aws region to deploy to.', name: 'REGION')
   }
 
   stages {
@@ -41,6 +46,8 @@ pipeline {
             ACCOUNT_NUM = 333509430799
           }
           println(IS_DEV)
+
+
         }
       }
     }
@@ -53,13 +60,13 @@ pipeline {
         dir("${WORKSPACE}/${env.WORKING_DIR}") {
 
           script {
-            drc_AwsAssumeRole([jenkinsRole: 'cloud-build-jenkins-role', region: params.REGION, acctNum: ACCOUNT_NUM, appName: "${env.APP_NAME}", bldNum : "${BUILD_NUMBER}", timeout: 3600])
-            deploy_perm([name: "dev", dryRun: params.DRYRUN, region: params.REGION, account_num: ACCOUNT_NUM])
-            
+            whithEnv(credentials[ACCOUNT_NUM]) {
+              deploy_perm([name: "dev", dryRun: params.DRYRUN, region: env.REGION, account_num: ACCOUNT_NUM])
 
-            sh 'aws sts get-caller-identity'
-            sh "make plan env=${params.ENVIRONMENT}"
-            sh "make apply env=${params.ENVIRONMENT}"
+              sh 'aws sts get-caller-identity'
+              sh "make plan env=${params.ENVIRONMENT}"
+              sh "make apply env=${params.ENVIRONMENT}"
+            }
           }
         }
       }
@@ -71,10 +78,10 @@ pipeline {
       }
       steps {
         script {
-          drc_AwsAssumeRole([jenkinsRole: 'cloud-build-jenkins-role', region: params.REGION, acctNum: ACCOUNT_NUM, appName: "${env.APP_NAME}", bldNum : "${BUILD_NUMBER}", timeout: 3600])
+          drc_AwsAssumeRole([jenkinsRole: 'cloud-build-jenkins-role', region: env.REGION, acctNum: ACCOUNT_NUM, appName: "${env.APP_NAME}", bldNum : "${BUILD_NUMBER}", timeout: 3600])
 
           def tiers = [
-            [name: "prod", askForPermission: true, dryRun: params.DRYRUN, region: params.REGION, account_num: ACCOUNT_NUM]
+            [name: "prod", askForPermission: true, dryRun: params.DRYRUN, region: env.REGION, account_num: ACCOUNT_NUM]
           ]
           def terraformTasksToExec = generateTerraformTasks tiers
 
@@ -107,7 +114,8 @@ def deploy_perm(def tier) {
   } else {
     println("${tier.name} ${region}")
     if (tier.dry_run == false) {
-      sh "make apply env=${tier.name}"
+      println('apply')
+      //sh "make apply env=${tier.name}"
     }
   }
 }
