@@ -61,11 +61,11 @@ pipeline {
 
           script {
             withEnv(credentials[ACCOUNT_NUM]) {
-              deploy_perm([name: "dev", dryRun: params.DRYRUN, region: env.REGION, account_num: ACCOUNT_NUM])
 
               sh 'aws sts get-caller-identity'
               sh "make plan env=${params.ENVIRONMENT}"
-              sh "make apply env=${params.ENVIRONMENT}"
+
+              deploy_perm([name: "dev", dryRun: params.DRYRUN, region: env.REGION, account_num: ACCOUNT_NUM])
             }
           }
         }
@@ -115,6 +115,7 @@ def deploy_perm(def tier) {
     println("${tier.name} ${region}")
     if (tier.dry_run == false) {
       println('apply')
+      sh "make apply env=${tier.name}"
       //sh "make apply env=${tier.name}"
     }
   }
