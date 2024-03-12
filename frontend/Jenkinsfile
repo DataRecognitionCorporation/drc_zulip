@@ -40,10 +40,10 @@ pipeline {
         script {
           if (params.ENVIRONMENT == 'prod') {
             IS_DEV = false
-            ACCOUNT_NUM = 911870898277
+            ACCOUNT_NUM = '911870898277'
           } else {
             IS_DEV = true
-            ACCOUNT_NUM = 333509430799
+            ACCOUNT_NUM = '333509430799'
           }
           println(IS_DEV)
 
@@ -57,7 +57,7 @@ pipeline {
         expression { IS_DEV }
       }
       steps {
-        withEnv(credentials[ACCOUNT_NUM]) {
+        withEnv(credentials['333509430799']) {
           dir("${WORKSPACE}/${env.WORKING_DIR}") {
             script {
               sh 'aws sts get-caller-identity'
