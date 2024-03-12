@@ -60,7 +60,7 @@ pipeline {
         dir("${WORKSPACE}/${env.WORKING_DIR}") {
 
           script {
-            whithEnv(credentials[ACCOUNT_NUM]) {
+            withEnv(credentials[ACCOUNT_NUM]) {
               deploy_perm([name: "dev", dryRun: params.DRYRUN, region: env.REGION, account_num: ACCOUNT_NUM])
 
               sh 'aws sts get-caller-identity'
