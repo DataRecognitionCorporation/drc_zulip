@@ -6,7 +6,7 @@ IS_DEV = true
 ACCOUNT_NUM = null
 
 def credentials = drc_AwsAssumeRoleAsEnv([
-  [account_number: '911870898277', region: 'us-east-2']
+  [account_number: '911870898277', region: 'us-east-2'],
   [account_number: '333509430799', region: 'us-east-2']
 ])
 
