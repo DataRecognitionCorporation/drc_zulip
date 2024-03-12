@@ -58,11 +58,13 @@ pipeline {
       }
       steps {
         script {
-          def tiers = [
-            [name: "dev", dryRun: params.DRYRUN, region: env.REGION, account_num: ACCOUNT_NUM]
-          ]
-          def terraformTasksToExec = generateTerraformTasks tiers
-          terraformTasksToExec.each { k, v -> v() }
+          withEnv(credentials[ACCOUNT_NUM]) {
+            def tiers = [
+              [name: "dev", dryRun: params.DRYRUN, region: env.REGION, account_num: ACCOUNT_NUM]
+            ]
+            def terraformTasksToExec = generateTerraformTasks tiers
+            terraformTasksToExec.each { k, v -> v() }
+          }
         }
       }
     }
@@ -128,34 +130,32 @@ def generateTerraformTasks(def tiers) {
     tasks["${tierShortname}-${region}"] = {
       stage("${tierShortname}-${region}") {
         dir("${WORKSPACE}/${env.WORKING_DIR}") {
-          withEnv(credentials[ACCOUNT_NUM]) {
-            sh 'aws sts get-caller-identity'
-            sh "make plan env=${tierShortname}"
+          sh 'aws sts get-caller-identity'
+          sh "make plan env=${tierShortname}"
 
-            def result = 'SUCCESS'
-            if(!dryRun) {
-              result = drc_AskForPermissionSkip([
-                name     : "Deploy ${env.APP_NAME} ${region} to ${tierShortname}",
-                to_time  : 10,
-                to_unit  : 'MINUTES',
-                id       : "${env.APP_NAME}-${region}",
-                message  : "Deploy ${env.APP_NAME} ${region} to ${tierShortname} or abort?",
-                submitter: "pnambiar,grees,nkovalenko,bpoush,tjensen,atormanen,jwdunn"
-              ])
-            }
-          
-            if (result == 'ABORTED') {
-              println('pipeline aborted')
-              currentBuild.result = 'ABORTED'
-              error("Aborting the build.")
-            } else if (result == 'SKIPPED') {
-              echo "SKIP"
-            } else {
-              println("${tierShortname} ${region}")
-              if (!dryRun) {
-                println('apply')
-                // sh "make apply env=${tierShortname}"
-              }
+          def result = 'SUCCESS'
+          if(!dryRun) {
+            result = drc_AskForPermissionSkip([
+              name     : "Deploy ${env.APP_NAME} ${region} to ${tierShortname}",
+              to_time  : 10,
+              to_unit  : 'MINUTES',
+              id       : "${env.APP_NAME}-${region}",
+              message  : "Deploy ${env.APP_NAME} ${region} to ${tierShortname} or abort?",
+              submitter: "pnambiar,grees,nkovalenko,bpoush,tjensen,atormanen,jwdunn"
+            ])
+          }
+        
+          if (result == 'ABORTED') {
+            println('pipeline aborted')
+            currentBuild.result = 'ABORTED'
+            error("Aborting the build.")
+          } else if (result == 'SKIPPED') {
+            echo "SKIP"
+          } else {
+            println("${tierShortname} ${region}")
+            if (!dryRun) {
+              println('apply')
+              // sh "make apply env=${tierShortname}"
             }
           }
         }
