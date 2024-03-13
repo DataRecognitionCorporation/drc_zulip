@@ -26,9 +26,18 @@ locals {
     dev  = "333509430799"
   }
 
-  instance_type = "c7g.xlarge"
-  architecture  = "arm64"
-  key_name      = "ct-cloud"
+  key_name = "ct-cloud"
+
+  instance_type = {
+    dev  = "t4g.large"
+    prod = "c7g.xlarge"
+  }
+
+  ami_owner                 = "099720109477"
+  ami_name                  = "ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-*-server-*"
+  architecture              = "arm64"
+  health_check_grace_period = 420
+
 
   private_subnet_ids = lookup(local.private_subnet_ids_map[var.account_num], var.region)
   private_subnet_ids_map = {
