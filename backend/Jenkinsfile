@@ -2,72 +2,120 @@
 
 @Library('DRC_Global_Pipeline_Libraries@master')
 
-def account_map = ['prod': '', 'dev': '333509430799']
+IS_DEV = true
+ACCOUNT_NUM = null
+
+def credentials = drc_AwsAssumeRoleAsEnv([
+  [account_number: '911870898277', region: 'us-east-2'],
+  [account_number: '333509430799', region: 'us-east-2']
+])
 
 pipeline {
+  environment {
+    WORKING_DIR = "backend"
+    APP_NAME = 'Zulip'
+    REGION = 'us-east-2'
+  }
   agent {
-    kubernetes {
-      inheritFrom 'terraform-agent'
-      defaultContainer 'cli'
-    }
+    kubernetes(
+      drc_k8_agent(templates: [
+        [name: 'terraform', isDefault: true]
+      ])
+    )
   }
 
   options {
-    buildDiscarder(logRotator(daysToKeepStr: '3', numToKeepStr: '5', artifactDaysToKeepStr: '3'))
+    buildDiscarder(logRotator(daysToKeepStr: '3', artifactDaysToKeepStr: '3'))
     ansiColor('xterm')
   }
 
-  environment {
-    APP_NAME = 'zulip'
-  }
-
   parameters {
-    choice(name: 'environment', choices: ['dev','prod'])
-    choice(name: 'action', choices: ['plan','apply'])
+    choice(choices: ['dev'], description: 'Deploy to le or prod?', name: 'ENVIRONMENT')
+    choice(choices: [true, false], description: 'Dry run (tf plan) or deploy (tf apply)?', name: 'DRYRUN')
   }
 
- stages {
-    stage('Plan') {
+  stages {
+    stage ('Configure') {
       steps {
         script {
-          drc_AwsAssumeRole([
-            acctNum: account_map[params.environment],
-            jenkinsRole: 'cloud-build-jenkins-role',
-            appName: env.APP_NAME,
-            bldNum : env.BUILD_NUMBER
-          ])
+          if (params.ENVIRONMENT == 'prod') {
+            IS_DEV = false
+            ACCOUNT_NUM = '911870898277'
+          } else {
+            IS_DEV = true
+            ACCOUNT_NUM = '333509430799'
+          }
+          println(IS_DEV)
 
-          sh """
-            make plan env=${environment}
-          """
+
         }
       }
     }
-    stage('Apply') {
+    stage ('Dev Apply') {
       when {
-        expression { params.action == "apply" }
+        // branch 'infrastructure'
+        expression { IS_DEV }
+      }
+      steps {
+        withEnv(credentials['333509430799']) {
+          dir("${WORKSPACE}/${env.WORKING_DIR}") {
+            script {
+              sh 'aws sts get-caller-identity'
+              sh "make plan env=${params.ENVIRONMENT}"
+              if(can_deploy([name: "dev", dry_run: params.DRYRUN, region: env.REGION, account_num: ACCOUNT_NUM])) {
+                sh "make apply env=${params.ENVIRONMENT}"
+              }
+            }
+          }
+        }
+      }
+    }
+    stage ('Prod') {
+      when {
+        branch 'infrastructure'
+        expression { !IS_DEV }
       }
       steps {
         script {
-          drc_AwsAssumeRole([
-            acctNum: account_map[params.environment],
-            jenkinsRole: 'cloud-build-jenkins-role',
-            appName: env.APP_NAME,
-            bldNum : env.BUILD_NUMBER
-          ])
+          drc_AwsAssumeRole([jenkinsRole: 'cloud-build-jenkins-role', region: env.REGION, acctNum: ACCOUNT_NUM, appName: "${env.APP_NAME}", bldNum : "${BUILD_NUMBER}", timeout: 3600])
 
-          result = drc_AskForPermissionSkip([
-            name     : "Deploy Zulip ${environment} to ${region}?",
-            to_time  : 10,
-            to_unit  : 'MINUTES',
-            id       : "Deploy Zulip ${environment} to ${region}?",
-            message  : "Deploy Zulip ${environment} to ${region}?",
-            submitter: "jekelly,grees,nkovalenko,bpoush,tjensen,atormanen"
-          ])
-          
-          sh "make apply env=${environment}"
+          def tiers = [
+            [name: "prod", askForPermission: true, dryRun: params.DRYRUN, region: env.REGION, account_num: ACCOUNT_NUM]
+          ]
+          def terraformTasksToExec = generateTerraformTasks tiers
+
+          terraformTasksToExec.each { k, v -> v() }
         }
       }
     }
   }
+}
+
+def can_deploy(def tier) {
+  def result = 'SUCCESS'
+
+  if(tier.dry_run == 'false') {
+    result = drc_AskForPermissionSkip([
+      name     : "Deploy ${env.APP_NAME} ${tier.region} to ${tier.name}",
+      to_time  : 10,
+      to_unit  : 'MINUTES',
+      id       : "${env.APP_NAME}-${tier.region}",
+      message  : "Deploy ${env.APP_NAME} ${tier.region} to ${tier.name} or abort?",
+      submitter: "pnambiar,grees,nkovalenko,bpoush,tjensen,atormanen,jwdunn"
+    ])
+  }
+
+  if (result == 'ABORTED') {
+    println('pipeline aborted')
+    currentBuild.result = 'ABORTED'
+    error("Aborting the build.")
+  } else if (result == 'SKIPPED') {
+    println('SKIP')
+  } else {
+    println("${tier.name} ${region}")
+    if (tier.dry_run == 'false') {
+      return true
+    }
+  }
+  return false
 }

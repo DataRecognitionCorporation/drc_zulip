@@ -93,7 +93,7 @@ locals {
     # shared-le
     "333509430799" = {
       "us-east-1" = []
-      "us-east-2" = "arn:aws:acm:us-east-2:333509430799:certificate/84d3e06e-deec-413c-a8c1-0285cf64b76f"
+      "us-east-2" = ""
     }
     # shared prod
     "911870898277" = {
