@@ -94,7 +94,7 @@ resource "aws_s3_bucket_versioning" "zulip_public_versioning" {
   }
 }
 
-
+/*
 resource "aws_s3_bucket_policy" "zulip_public_policy" {
   bucket = aws_s3_bucket.zulip_public.id
   policy = data.aws_iam_policy_document.zulip_public_policy.json
@@ -129,4 +129,4 @@ resource "aws_s3_bucket_acl" "zulip_public" {
   bucket = aws_s3_bucket.zulip_public.id
   acl    = "public-read"
 }
-
+*/
