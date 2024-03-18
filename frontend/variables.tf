@@ -29,7 +29,7 @@ locals {
   key_name = "ct-cloud"
 
   instance_type = {
-    dev  = "t4g.large"
+    dev  = "t4g.xlarge"
     prod = "c7g.xlarge"
   }
 
@@ -37,6 +37,14 @@ locals {
   ami_name                  = "ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-*-server-*"
   architecture              = "arm64"
   health_check_grace_period = 420
+
+  private_hosted_zone_id = {
+    "dev" = "Z06089421NYRAM30RG82O"
+  }
+
+  public_hosted_zone_id = {
+    "dev" = "Z05401561SD9AVSJC0ST8"
+  }
 
 
   private_subnet_ids = lookup(local.private_subnet_ids_map[var.account_num], var.region)
@@ -91,9 +99,10 @@ locals {
   certificate = lookup(local.certificate_map[var.account_num], var.region)
   certificate_map = {
     # shared-le
+    # "us-east-2" = "arn:aws:acm:us-east-2:333509430799:certificate/e336ef09-d9d7-4143-b9da-103bd90531ac"
     "333509430799" = {
       "us-east-1" = []
-      "us-east-2" = ""
+      "us-east-2" = "arn:aws:acm:us-east-2:333509430799:certificate/84d3e06e-deec-413c-a8c1-0285cf64b76f"
     }
     # shared prod
     "911870898277" = {

@@ -32,7 +32,10 @@ resource "aws_launch_template" "zulip" {
 
   tag_specifications {
     resource_type = "instance"
-    tags          = local.global_tags
+    tags = merge(local.global_tags, {
+      Name = "zulip-${var.environment}"
+      }
+    )
   }
 }
 

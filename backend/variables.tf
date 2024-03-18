@@ -19,6 +19,11 @@ locals {
     team        = "team-ss"
     appid       = "bd08d"
   }
+
+  hosted_zone_id = {
+    "dev" = "Z06089421NYRAM30RG82O"
+  }
+
   engine_version = local.engine_version_map[var.environment]
   engine_version_map = {
     prod = "14.3"

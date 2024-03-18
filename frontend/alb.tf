@@ -14,7 +14,7 @@ resource "aws_lb_listener" "https" {
   #  ssl_policy        = "ELBSecurityPolicy-2016-08"
 
   default_action {
-    target_group_arn = aws_lb_target_group.zulip_alb_tg.arn
+    target_group_arn = aws_lb_target_group.zulip.arn
     type             = "forward"
   }
 }
@@ -25,6 +25,9 @@ resource "aws_lb_listener" "http" {
   protocol          = "HTTP"
 
   default_action {
+    target_group_arn = aws_lb_target_group.zulip.arn
+    type             = "forward"
+    /*
     type = "redirect"
 
     redirect {
@@ -32,23 +35,7 @@ resource "aws_lb_listener" "http" {
       protocol    = "HTTPS"
       status_code = "HTTP_301"
     }
+    */
   }
 }
 
-resource "aws_lb_target_group" "zulip_alb_tg" {
-  name        = "zulip-${var.environment}-tg"
-  port        = 80
-  protocol    = "HTTP"
-  target_type = "instance"
-  vpc_id      = local.vpc_id
-
-  health_check {
-    protocol            = "HTTP"
-    port                = "traffic-port"
-    path                = "/accounts/login/"
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-    timeout             = 5
-    interval            = 30
-  }
-}

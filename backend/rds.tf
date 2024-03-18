@@ -20,7 +20,8 @@ resource "aws_rds_cluster" "db" {
 }
 
 resource "aws_rds_cluster_instance" "serverless" {
-  # identifier         = "zulip-${var.environment}-instnace"  
+  count              = 1
+  identifier         = "zulip-${var.environment}-instnace-${count.index}"
   cluster_identifier = aws_rds_cluster.db.id
   instance_class     = "db.serverless"
   engine             = aws_rds_cluster.db.engine
