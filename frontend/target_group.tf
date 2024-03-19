@@ -10,5 +10,4 @@ resource "aws_lb_target_group" "zulip" {
     path     = "/login"
     matcher  = "301"
   }
-
 }

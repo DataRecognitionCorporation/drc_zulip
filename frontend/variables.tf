@@ -42,8 +42,6 @@ locals {
     "dev" = "zulip-dev-db.cloud-shared-le.drcedirect.com"
   }
 
-
-
   email_host = {
     "dev" = "email-smtp.us-east-1.amazonaws.com"
   }
@@ -64,28 +62,34 @@ locals {
     "prod" = ""
   }
 
+  cortex_dist_id_arn = {
+    "dev"  = "arn:aws:secretsmanager:us-east-2:333509430799:secret:cortex_distribution_id-4CVBCQ"
+    "prod" = ""
+  }
+
   loadbalancer_ip_range = {
-    "dev" = "10.240.0.0/16"
+    "dev"  = "10.240.0.0/16"
+    "prod" = ""
   }
 
   cloud_shared_le_hosted_zone = {
-    "dev" = "Z06089421NYRAM30RG82O"
+    "dev"  = "Z06089421NYRAM30RG82O"
+    "prod" = ""
   }
 
   ec2_domain = {
-    "dev" = "cloud-shared-le.drcedirect.com"
+    "dev"  = "cloud-shared-le.drcedirect.com"
+    "prod" = ""
   }
 
   private_subnet_ids = lookup(local.private_subnet_ids_map[var.account_num], var.region)
   private_subnet_ids_map = {
     # shared-le
     "333509430799" = {
-      "us-east-1" = []
       "us-east-2" = ["subnet-01dca7bd869008264", "subnet-000185e571a735758", "subnet-0d6b37ca7a13731a6"]
     }
     # shared prod
     "911870898277" = {
-      "us-east-1" = []
       "us-east-2" = []
     }
   }
@@ -94,12 +98,10 @@ locals {
   public_subnet_ids_map = {
     # shared-le
     "333509430799" = {
-      "us-east-1" = []
       "us-east-2" = ["subnet-0fe61f88e54395497", "subnet-04c2b1278eef93263", "subnet-03fb23405ad7d305f"]
     }
     # shared prod
     "911870898277" = {
-      "us-east-1" = []
       "us-east-2" = []
     }
   }
@@ -130,12 +132,10 @@ locals {
     # shared-le
     # "us-east-2" = "arn:aws:acm:us-east-2:333509430799:certificate/e336ef09-d9d7-4143-b9da-103bd90531ac"
     "333509430799" = {
-      "us-east-1" = []
       "us-east-2" = "arn:aws:acm:us-east-2:333509430799:certificate/478726f2-0da5-476d-86cf-87cc49a8e809"
     }
     # shared prod
     "911870898277" = {
-      "us-east-1" = []
       "us-east-2" = []
     }
   }

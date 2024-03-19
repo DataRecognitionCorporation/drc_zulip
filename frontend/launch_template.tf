@@ -41,15 +41,16 @@ resource "aws_launch_template" "zulip" {
 
 locals {
   aws_instance_user_data = templatefile("scripts/bootstrap.sh", {
-    environment     = var.environment
-    db_url          = local.db_url[var.environment]
-    email_host      = local.email_host[var.environment]
-    email_host_user = local.email_host_user[var.environment]
-    download_url    = local.artifactory_download_url
-    zulip_version   = local.zulip_version[var.environment]
-    db_password_arn = local.db_password_secret_arn[var.environment]
-    lb_ip_range     = local.loadbalancer_ip_range[var.environment]
-    hosted_zone_id  = local.cloud_shared_le_hosted_zone[var.environment]
-    domain          = local.ec2_domain[var.environment]
+    environment        = var.environment
+    db_url             = local.db_url[var.environment]
+    email_host         = local.email_host[var.environment]
+    email_host_user    = local.email_host_user[var.environment]
+    download_url       = local.artifactory_download_url
+    zulip_version      = local.zulip_version[var.environment]
+    db_password_arn    = local.db_password_secret_arn[var.environment]
+    lb_ip_range        = local.loadbalancer_ip_range[var.environment]
+    hosted_zone_id     = local.cloud_shared_le_hosted_zone[var.environment]
+    domain             = local.ec2_domain[var.environment]
+    cortex_dist_id_arn = local.cortex_dist_id_arn[var.environment]
   })
 }

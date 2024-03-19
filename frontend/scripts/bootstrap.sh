@@ -11,12 +11,12 @@ dp_password_arn=${db_password_arn}
 lb_ip_range=${lb_ip_range}
 hostedzoneid=${hosted_zone_id}
 domain=${domain}
+cortex_dist_id_arn=${cortex_dist_id_arn}
 
 package="zulip-server-$${zulip_version}.tar.gz"
 zulip_conf="/etc/zulip/zulip.conf"
 zulip_secrets="/etc/zulip/zulip-secrets.conf"
 zulip_settings="/etc/zulip/settings.py"
-
 
 hostnamectl hostname "chat-$${environment}.datarecognitioncorp.com"
 apt-get update
@@ -28,11 +28,11 @@ unzip awscliv2.zip
 sudo ./aws/install
 
 db_password=$(aws secretsmanager get-secret-value --secret-id $dp_password_arn | jq -r '.SecretString | fromjson | .password')
+cortex_dist_id=$(aws secretsmanager get-secret-value --secret-id $cortex_dist_id_arn | jq -r '.SecretString | fromjson | .password')
 
 wget $${download_url}/$${package}
 
 tar -xf "zulip-server-$${zulip_version}.tar.gz"
-
 
 ./zulip-server-*/scripts/setup/install --self-signed-cert \
     --email="atormanen@datarecognitioncorp.com" --hostname="chat-dev.datarecognitioncorp.com" --no-init-db

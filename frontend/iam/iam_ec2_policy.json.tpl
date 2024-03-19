@@ -54,7 +54,10 @@
       "Action": [
         "secretsmanager:GetSecretValue"
       ],
-      "Resource": "arn:aws:secretsmanager:us-east-2:333509430799:secret:rds!cluster-abad67f7-99de-4cc4-8a44-d6a9101c878c-CwbtEY"
+      "Resource": [
+        "arn:aws:secretsmanager:us-east-2:333509430799:secret:rds!cluster-abad67f7-99de-4cc4-8a44-d6a9101c878c-CwbtEY",
+        "arn:aws:secretsmanager:us-east-2:333509430799:secret:cortex_distribution_id-4CVBCQ"
+      ]
     },
     {
       "Effect": "Allow",
