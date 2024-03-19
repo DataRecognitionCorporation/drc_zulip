@@ -55,6 +55,18 @@
         "secretsmanager:GetSecretValue"
       ],
       "Resource": "arn:aws:secretsmanager:us-east-2:333509430799:secret:rds!cluster-abad67f7-99de-4cc4-8a44-d6a9101c878c-CwbtEY"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "route53:ChangeResourceRecordSets"
+      ],
+      "Resource": "arn:aws:route53:::hostedzone/${hosted_zone_id}",
+      "Condition": {
+        "ForAllValues:StringEquals":{
+          "route53:ChangeResourceRecordSetsNormalizedRecordNames": ["chat-${environment}-ec2.${domain}"]
+        }
+      }
     }
   ]
 }
