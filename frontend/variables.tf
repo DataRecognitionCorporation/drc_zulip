@@ -118,7 +118,7 @@ locals {
   alb_internal = lookup(local.alb_internal_map, var.environment)
   alb_internal_map = {
     prod = false
-    dev  = true
+    dev  = false
   }
 
   alb_subnet = lookup(local.alb_subnet_map, var.environment)
