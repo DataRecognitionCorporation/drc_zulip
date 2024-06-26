@@ -118,13 +118,13 @@ locals {
   alb_internal = lookup(local.alb_internal_map, var.environment)
   alb_internal_map = {
     prod = false
-    dev  = true
+    dev  = false
   }
 
   alb_subnet = lookup(local.alb_subnet_map, var.environment)
   alb_subnet_map = {
     prod = local.public_subnet_ids
-    dev  = local.private_subnet_ids
+    dev  = local.public_subnet_ids
   }
 
   certificate = lookup(local.certificate_map[var.account_num], var.region)

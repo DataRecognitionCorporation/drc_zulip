@@ -39,3 +39,12 @@ resource "aws_lb_listener" "http" {
   }
 }
 
+data "aws_wafv2_web_acl" "waf" {
+  name  = "cloud-regional-zulip"
+  scope = "REGIONAL"
+}
+
+resource "aws_wafv2_web_acl_association" "example" {
+  resource_arn = aws_lb.zulip_alb.arn
+  web_acl_arn  = data.aws_wafv2_web_acl.waf.arn
+}
