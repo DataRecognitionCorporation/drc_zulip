@@ -46,14 +46,11 @@ pipeline {
             ACCOUNT_NUM = '333509430799'
           }
           println(IS_DEV)
-
-
         }
       }
     }
-    stage ('Dev Apply') {
+    stage ('Dev') {
       when {
-        // branch 'infrastructure'
         expression { IS_DEV }
       }
       steps {
@@ -72,19 +69,21 @@ pipeline {
     }
     stage ('Prod') {
       when {
-        branch 'infrastructure'
         expression { !IS_DEV }
       }
       steps {
         script {
-          drc_AwsAssumeRole([jenkinsRole: 'cloud-build-jenkins-role', region: env.REGION, acctNum: ACCOUNT_NUM, appName: "${env.APP_NAME}", bldNum : "${BUILD_NUMBER}", timeout: 3600])
-
-          def tiers = [
-            [name: "prod", askForPermission: true, dryRun: params.DRYRUN, region: env.REGION, account_num: ACCOUNT_NUM]
-          ]
-          def terraformTasksToExec = generateTerraformTasks tiers
-
-          terraformTasksToExec.each { k, v -> v() }
+          withEnv(credentials['911870898277']) {
+            dir("${WORKSPACE}/${env.WORKING_DIR}") {
+              script {
+                sh 'aws sts get-caller-identity'
+                sh "make plan env=${params.ENVIRONMENT}"
+                if(can_deploy([name: "prod", dry_run: params.DRYRUN, region: env.REGION, account_num: ACCOUNT_NUM])) {
+                  sh "make apply env=${params.ENVIRONMENT}"
+                }
+              }
+            }
+          }
         }
       }
     }
