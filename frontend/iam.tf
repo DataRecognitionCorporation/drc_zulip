@@ -6,7 +6,7 @@ data "template_file" "iam_zulip" {
     environment    = var.environment
     account_num    = local.account_num
     domain         = local.ec2_domain[var.environment]
-    hosted_zone_id = local.cloud_shared_le_hosted_zone[var.environment]
+    hosted_zone_id = local.cloud_shared_hosted_zone[var.environment]
   }
 }
 

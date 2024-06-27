@@ -21,7 +21,8 @@ locals {
   }
 
   hosted_zone_id = {
-    "dev" = "Z06089421NYRAM30RG82O"
+    "dev"  = "Z06089421NYRAM30RG82O"
+    "prod" = "Z0789037PPB5S0IXWFAS"
   }
 
   engine_version = local.engine_version_map[var.environment]
@@ -38,7 +39,7 @@ locals {
 
   account_num = local.account_num_map[var.environment]
   account_num_map = {
-    prod = ""
+    prod = "911870898277"
     dev  = "333509430799"
   }
 
@@ -46,13 +47,11 @@ locals {
   private_subnet_ids_map = {
     # shared-le
     "333509430799" = {
-      "us-east-1" = []
       "us-east-2" = ["subnet-01dca7bd869008264", "subnet-000185e571a735758", "subnet-0d6b37ca7a13731a6"]
     }
     # shared prod
     "911870898277" = {
-      "us-east-1" = []
-      "us-east-2" = []
+      "us-east-2" = ["subnet-0221d1b468e4d950c", "subnet-0c4abed21d1597a13", "subnet-094c04752ebbe9788"]
     }
   }
 
@@ -63,7 +62,8 @@ locals {
       "us-east-1" = ""
       "us-east-2" = "vpc-026c91c0198388bda"
     }
+    "911870898277" = {
+      "us-east-2" = "vpc-0da8e5c9a6bc30fc4"
+    }
   }
-
-  zulip_server_iam = ""
 }

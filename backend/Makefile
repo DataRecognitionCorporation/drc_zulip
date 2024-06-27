@@ -1,6 +1,12 @@
 ROOT_DIR=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+
+ifeq ($(env), prod)
+BACKEND_SETTINGS=$(shell readlink --canonicalize ${ROOT_DIR}/env/_backend_prod.tfvars)
+LOCAL_SETTINGS=$(shell readlink --canonicalize ${ROOT_DIR}/env/_environment_prod.tfvars)
+else
 BACKEND_SETTINGS=$(shell readlink --canonicalize ${ROOT_DIR}/env/_backend_le.tfvars)
 LOCAL_SETTINGS=$(shell readlink --canonicalize ${ROOT_DIR}/env/_environment_le.tfvars)
+endif
 
 default: clean plan
 

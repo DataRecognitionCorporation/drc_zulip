@@ -22,7 +22,7 @@ locals {
 
   account_num = lookup(local.account_num_map, var.environment)
   account_num_map = {
-    prod = ""
+    prod = "911870898277"
     dev  = "333509430799"
   }
 
@@ -39,15 +39,18 @@ locals {
   health_check_grace_period = 3600
 
   db_url = {
-    "dev" = "zulip-dev-db.cloud-shared-le.drcedirect.com"
+    "dev"  = "zulip-dev-db.cloud-shared-le.drcedirect.com"
+    "prod" = "zulip-prod-db.cloud-shared.drcedirect.com"
   }
 
   email_host = {
-    "dev" = "email-smtp.us-east-1.amazonaws.com"
+    "dev"  = "email-smtp.us-east-1.amazonaws.com"
+    "prod" = "email-smtp.us-east-1.amazonaws.com"
   }
 
   email_host_user = {
-    "dev" = "AKIAVTWF67E4IMYWLDU6"
+    "dev"  = "AKIAVTWF67E4IMYWLDU6"
+    "prod" = "AKIAVTWF67E4IMYWLDU6"
   }
 
   artifactory_download_url = "https://artifactory.datarecognitioncorp.com/artifactory/downloads/zulip"
@@ -64,7 +67,7 @@ locals {
 
   cortex_dist_id_arn = {
     "dev"  = "arn:aws:secretsmanager:us-east-2:333509430799:secret:cortex_distribution_id-4CVBCQ"
-    "prod" = ""
+    "prod" = "arn:aws:secretsmanager:us-east-2:911870898277:secret:rds!cluster-766a3db3-1732-47e7-8bf2-07f9ea2ffb02-wZf7JE"
   }
 
   loadbalancer_ip_range = {
@@ -72,14 +75,14 @@ locals {
     "prod" = ""
   }
 
-  cloud_shared_le_hosted_zone = {
+  cloud_shared_hosted_zone = {
     "dev"  = "Z06089421NYRAM30RG82O"
-    "prod" = ""
+    "prod" = "Z0789037PPB5S0IXWFAS"
   }
 
   ec2_domain = {
     "dev"  = "cloud-shared-le.drcedirect.com"
-    "prod" = ""
+    "prod" = "cloud-shared.drcedirect.com"
   }
 
   private_subnet_ids = lookup(local.private_subnet_ids_map[var.account_num], var.region)
@@ -102,7 +105,7 @@ locals {
     }
     # shared prod
     "911870898277" = {
-      "us-east-2" = []
+      "us-east-2" = ["subnet-07e6929bcd34188d9", "subnet-0c4abed21d1597a13", "subnet-094c04752ebbe9788"]
     }
   }
 
@@ -112,6 +115,9 @@ locals {
     "333509430799" = {
       "us-east-1" = ""
       "us-east-2" = "vpc-026c91c0198388bda"
+    }
+    "911870898277" = {
+      "us-east-2" = "vpc-0da8e5c9a6bc30fc4"
     }
   }
 
@@ -136,7 +142,7 @@ locals {
     }
     # shared prod
     "911870898277" = {
-      "us-east-2" = []
+      "us-east-2" = "arn:aws:acm:us-east-2:911870898277:certificate/86fac099-761f-45c3-a491-27a42ac71b60"
     }
   }
 }
