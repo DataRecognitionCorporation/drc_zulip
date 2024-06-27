@@ -30,7 +30,7 @@ pipeline {
   }
 
   parameters {
-    choice(choices: ['dev'], description: 'Deploy to le or prod?', name: 'ENVIRONMENT')
+    choice(choices: ['dev', 'prod'], description: 'Deploy to le or prod?', name: 'ENVIRONMENT')
     choice(choices: [true, false], description: 'Dry run (tf plan) or deploy (tf apply)?', name: 'DRYRUN')
   }
 
