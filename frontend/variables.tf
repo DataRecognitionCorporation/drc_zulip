@@ -93,7 +93,7 @@ locals {
     }
     # shared prod
     "911870898277" = {
-      "us-east-2" = []
+      "us-east-2" = ["subnet-07e6929bcd34188d9", "subnet-0c4abed21d1597a13", "subnet-094c04752ebbe9788"]
     }
   }
 
@@ -105,7 +105,7 @@ locals {
     }
     # shared prod
     "911870898277" = {
-      "us-east-2" = ["subnet-07e6929bcd34188d9", "subnet-0c4abed21d1597a13", "subnet-094c04752ebbe9788"]
+      "us-east-2" = ["subnet-0da880b4d00ea7726", "subnet-019ae8ab09afca878", "subnet-02fd0b1e8de7beea3"]
     }
   }
 
@@ -124,13 +124,13 @@ locals {
   alb_internal = lookup(local.alb_internal_map, var.environment)
   alb_internal_map = {
     prod = false
-    dev  = false
+    dev  = true
   }
 
   alb_subnet = lookup(local.alb_subnet_map, var.environment)
   alb_subnet_map = {
     prod = local.public_subnet_ids
-    dev  = local.public_subnet_ids
+    dev  = local.private_subnet_ids
   }
 
   certificate = lookup(local.certificate_map[var.account_num], var.region)

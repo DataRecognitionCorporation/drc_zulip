@@ -1,47 +1,50 @@
 #!/bin/bash -ex
 
-environment="${environment}"
-zulip_db_url="${db_url}"
-email_host="${email_host}"
-email_host_user="${email_host_user}"
+ENVIRONMENT="${environment}"
+ZULIP_DB_URL="${db_url}"
+EMAIL_HOST="${email_host}"
+EMAIL_HOST_USER="${email_host_user}"
 
-download_url="${download_url}"
-zulip_version="${zulip_version}"
-dp_password_arn="${db_password_arn}"
-lb_ip_range="${lb_ip_range}"
-hostedzoneid="${hosted_zone_id}"
-domain="${domain}"
-cortex_dist_id_arn="${cortex_dist_id_arn}"
+ZULIP_DOWNLOAD_URL="${download_url}"
+ZULIP_VERSION="${zulip_version}"
+DP_PASSWORD_ARN="${db_password_arn}"
+LB_IP_RANGE="${lb_ip_range}"
+HOSTED_ZONE_ID="${hosted_zone_id}"
+EC2_DOMAIN="${domain}"
+CORTEX_DIST_ID_ARN="${cortex_dist_id_arn}"
 
-artifactory_url="https://artifactory.datarecognitioncorp.com/artifactory"
-cortex_dist_server="https://distributions.traps.paloaltonetworks.com/"
-drc_ubuntu_repo="ubuntu-22"
+ARTIFACTORY_URL="https://artifactory.datarecognitioncorp.com/artifactory"
+CORTEX_DIST_SERVER="https://distributions.traps.paloaltonetworks.com/"
+DRC_UBUTU_REPO="ubuntu-22"
 
-package="zulip-server-$${zulip_version}.tar.gz"
-zulip_conf="/etc/zulip/zulip.conf"
-zulip_secrets="/etc/zulip/zulip-secrets.conf"
-zulip_settings="/etc/zulip/settings.py"
+PACKAGE="zulip-server-$${ZULIP_VERSION}.tar.gz"
+ZULIP_CONF="/etc/zulip/zulip.conf"
+ZULIP_SECRETS="/etc/zulip/zulip-secrets.conf"
+ZULIP_SETTINGS="/etc/zulip/settings.py"
 
-hostnamectl hostname "chat-$${environment}.datarecognitioncorp.com"
+TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600" 2> /dev/null)
+LOCALIP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4 2> /dev/null)
+
+hostnamectl hostname "chat-$${ENVIRONMENT}.datarecognitioncorp.com"
 apt-get update
 apt-get upgrade -y
 apt install -y unzip jq net-tools
 
 curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
-sudo ./aws/install
+sudo ./aws/install --update
 
-db_password=$(aws secretsmanager get-secret-value --secret-id $dp_password_arn | jq -r '.SecretString | fromjson | .password')
-cortex_dist_id=$(aws secretsmanager get-secret-value --secret-id $cortex_dist_id_arn | jq -r '.SecretString | fromjson | .cortex_dist_id')
+db_password=$(aws secretsmanager get-secret-value --secret-id $DP_PASSWORD_ARN | jq -r '.SecretString | fromjson | .password')
+cortex_dist_id=$(aws secretsmanager get-secret-value --secret-id $CORTEX_DIST_ID_ARN | jq -r '.SecretString | fromjson | .cortex_dist_id')
 
-public_key_url="$${artifactory_url}/api/v2/repositories/$${drc_ubuntu_repo}/keyPairs/primary/public"
+public_key_url="$${ARTIFACTORY_URL}/api/v2/repositories/$${DRC_UBUTU_REPO}/keyPairs/primary/public"
 wget -q -P /tmp $public_key_url
-gpg --no-default-keyring --keyring=/usr/share/keyrings/drc-$${drc_ubuntu_repo}.gpg --import /tmp/public 
+gpg --no-default-keyring --keyring=/usr/share/keyrings/drc-$${DRC_UBUTU_REPO}.gpg --import /tmp/public 
 rm -f /tmp/public
 
-cat <<EOF > /etc/apt/sources.list.d/drc-$${drc_ubuntu_repo}.list
+cat <<EOF > /etc/apt/sources.list.d/drc-$${DRC_UBUTU_REPO}.list
 # DRC generic repo
-deb [signed-by=/usr/share/keyrings/drc-$${drc_ubuntu_repo}.gpg] $${artifactory_url}/$${drc_ubuntu_repo} jammy main
+deb [signed-by=/usr/share/keyrings/drc-$${DRC_UBUTU_REPO}.gpg] $${ARTIFACTORY_URL}/$${DRC_UBUTU_REPO} jammy main
 EOF
 
 apt-get update
@@ -49,40 +52,43 @@ apt-get update
 sudo mkdir -p /etc/panw
 cat <<EOF > /etc/panw/cortex.conf
 --distribution-id $${cortex_dist_id}
---distribution-server $${cortex_dist_server}
+--distribution-server $${CORTEX_DIST_SERVER}
 EOF
 
-apt-get install cortex-agent
+#apt-get install cortex-agent
 
-wget $${download_url}/$${package}
+wget $${ZULIP_DOWNLOAD_URL}/$${PACKAGE}
 
-tar -xf "zulip-server-$${zulip_version}.tar.gz"
+tar -xf "zulip-server-$${ZULIP_VERSION}.tar.gz"
 
 ./zulip-server-*/scripts/setup/install --self-signed-cert \
     --email="atormanen@datarecognitioncorp.com" --hostname="chat-dev.datarecognitioncorp.com" --no-init-db --postgresql-missing-dictionaries
 
 
-sed -i "s|#.*EMAIL_HOST = .*|EMAIL_HOST = '$email_host'|" $zulip_settings
-sed -i "s|#.*EMAIL_HOST_USER = .*|EMAIL_HOST_USER = '$email_host_user'|" $zulip_settings
-sed -i "s|#.*EMAIL_USE_TLS = .*|EMAIL_USE_TLS = True|" $zulip_settings
-sed -i "s|#.*EMAIL_PORT = .*|EMAIL_PORT = 587|" $zulip_settings
+sed -i "s|#.*ALLOWED_HOSTS = .*|ALLOWED_HOSTS = ['$LOCALIP']|" $ZULIP_SETTINGS
+sed -i "s|#.*EMAIL_HOST = .*|EMAIL_HOST = '$EMAIL_HOST'|" $ZULIP_SETTINGS
+sed -i "s|#.*EMAIL_HOST_USER = .*|EMAIL_HOST_USER = '$EMAIL_HOST_USER'|" $ZULIP_SETTINGS
+sed -i "s|#.*EMAIL_USE_TLS = .*|EMAIL_USE_TLS = True|" $ZULIP_SETTINGS
+sed -i "s|#.*EMAIL_PORT = .*|EMAIL_PORT = 587|" $ZULIP_SETTINGS
 
-sed -i "s|#.*S3_AUTH_UPLOADS_BUCKET = .*|S3_AUTH_UPLOADS_BUCKET = 'us-east-2-zulip-private-dev-333509430799'|" $zulip_settings
-sed -i "s|#.*S3_AVATAR_BUCKET = .*|S3_AVATAR_BUCKET = 'us-east-2-zulip-public-dev-333509430799'|" $zulip_settings
-sed -i "s|#.*S3_REGION = .*|S3_RGION = 'us-east-2'|" $zulip_settings
+sed -i "s|#.*S3_AUTH_UPLOADS_BUCKET = .*|S3_AUTH_UPLOADS_BUCKET = 'us-east-2-zulip-private-dev-333509430799'|" $ZULIP_SETTINGS
+sed -i "s|#.*S3_AVATAR_BUCKET = .*|S3_AVATAR_BUCKET = 'us-east-2-zulip-public-dev-333509430799'|" $ZULIP_SETTINGS
+sed -i "s|#.*S3_REGION = .*|S3_RGION = 'us-east-2'|" $ZULIP_SETTINGS
 
-sed -i "s|#.*REMOTE_POSTGRES_HOST = .*|REMOTE_POSTGRES_HOST = '$zulip_db_url'|" $zulip_settings
-sed -i "s|#.*REMOTE_POSTGRES_PORT = .*|REMOTE_POSTGRES_PORT = '5432'|" $zulip_settings
-sed -i "s|#.*REMOTE_POSTGRES_SSLMODE = .*|REMOTE_POSTGRES_SSLMODE = 'require'|" $zulip_settings
+sed -i "s|#.*REMOTE_POSTGRES_HOST = .*|REMOTE_POSTGRES_HOST = '$ZULIP_DB_URL'|" $ZULIP_SETTINGS
+sed -i "s|#.*REMOTE_POSTGRES_PORT = .*|REMOTE_POSTGRES_PORT = '5432'|" $ZULIP_SETTINGS
+sed -i "s|#.*REMOTE_POSTGRES_SSLMODE = .*|REMOTE_POSTGRES_SSLMODE = 'require'|" $ZULIP_SETTINGS
 
-echo "" >> $zulip_conf
-echo "[application_server]" >> $zulip_conf
-echo "http_only = true" >> $zulip_conf
-echo "" >> $zulip_conf
-echo "[loadbalancer]" >> $zulip_conf
-echo "ips = $${lb_ip_range}" >> $zulip_conf
+sed -i "s|#.*JITSI_SERVER_URL = .*|JITSI_SERVER_URL = '$JITSI_URL'|" $ZULIP_SETTINGS
 
-echo "postgres_password = $${db_password}" >> $zulip_secrets
+echo "" >> $ZULIP_CONF
+echo "[application_server]" >> $ZULIP_CONF
+echo "http_only = true" >> $ZULIP_CONF
+echo "" >> $ZULIP_CONF
+echo "[loadbalancer]" >> $ZULIP_CONF
+echo "ips = $${LB_IP_RANGE}" >> $ZULIP_CONF
+
+echo "postgres_password = $${db_password}" >> $ZULIP_SECRETS
 service postgresql stop
 update-rc.d postgresql disable
 
@@ -90,8 +96,6 @@ update-rc.d postgresql disable
 su - zulip -c '/home/zulip/deployments/current/scripts/restart-server'
 
 
-TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600" 2> /dev/null)
-LOCALIP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4 2> /dev/null)
 
 # Route53 update
 cat > /tmp/route53-record.txt <<- EOF
@@ -101,7 +105,7 @@ cat > /tmp/route53-record.txt <<- EOF
     {
       "Action": "UPSERT",
       "ResourceRecordSet": {
-        "Name": "chat-$environment-ec2.$domain",
+        "Name": "chat-$ENVIRONMENT-ec2.$EC2_DOMAIN",
         "Type": "A",
         "TTL": 60,
         "ResourceRecords": [
@@ -115,7 +119,7 @@ cat > /tmp/route53-record.txt <<- EOF
 }
 EOF
 
-aws route53 change-resource-record-sets --hosted-zone-id $hostedzoneid \
+aws route53 change-resource-record-sets --hosted-zone-id $HOSTED_ZONE_ID \
   --change-batch file:///tmp/route53-record.txt
 
 

@@ -5,4 +5,3 @@ resource "aws_route53_record" "zulip_ec2" {
   ttl     = 60
   records = ["127.0.0.1"]
 }
-

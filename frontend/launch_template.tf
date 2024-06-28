@@ -16,6 +16,13 @@ resource "aws_launch_template" "zulip" {
     enabled = true
   }
 
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_put_response_hop_limit = 1
+    http_tokens                 = "required"
+    instance_metadata_tags      = "enabled"
+  }
+
   block_device_mappings {
     device_name = data.aws_ami.ami.root_device_name
     ebs {

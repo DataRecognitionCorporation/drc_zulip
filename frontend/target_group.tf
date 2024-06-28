@@ -7,7 +7,7 @@ resource "aws_lb_target_group" "zulip" {
 
   health_check {
     protocol = "HTTP"
-    path     = "/login"
-    matcher  = "301"
+    path     = "/login/"
+    matcher  = "200"
   }
 }
