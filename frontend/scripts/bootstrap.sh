@@ -15,6 +15,10 @@ CORTEX_DIST_ID_ARN="${cortex_dist_id_arn}"
 JITSI_SERVER_URL="${jitsi_server_url}"
 LOGIN_URL="${login_url}"
 
+S3_AVATAR_BUCKET="${s3_avatar_bucket}"
+S3_UPLOADS_BUCKET="${s3_uploads_bucket}"
+
+
 ARTIFACTORY_URL="https://artifactory.datarecognitioncorp.com/artifactory"
 CORTEX_DIST_SERVER="https://distributions.traps.paloaltonetworks.com/"
 DRC_UBUTU_REPO="ubuntu-22"
@@ -73,8 +77,8 @@ sed -i "s|#.*EMAIL_HOST_USER = .*|EMAIL_HOST_USER = '$EMAIL_HOST_USER'|" $ZULIP_
 sed -i "s|#.*EMAIL_USE_TLS = .*|EMAIL_USE_TLS = True|" $ZULIP_SETTINGS
 sed -i "s|#.*EMAIL_PORT = .*|EMAIL_PORT = 587|" $ZULIP_SETTINGS
 
-sed -i "s|#.*S3_AUTH_UPLOADS_BUCKET = .*|S3_AUTH_UPLOADS_BUCKET = 'us-east-2-zulip-private-dev-333509430799'|" $ZULIP_SETTINGS
-sed -i "s|#.*S3_AVATAR_BUCKET = .*|S3_AVATAR_BUCKET = 'us-east-2-zulip-public-dev-333509430799'|" $ZULIP_SETTINGS
+sed -i "s|#.*S3_AUTH_UPLOADS_BUCKET = .*|S3_AUTH_UPLOADS_BUCKET = '$S3_UPLOADS_BUCKET'|" $ZULIP_SETTINGS
+sed -i "s|#.*S3_AVATAR_BUCKET = .*|S3_AVATAR_BUCKET = '$S3_AVATAR_BUCKET'|" $ZULIP_SETTINGS
 sed -i "s|#.*S3_REGION = .*|S3_RGION = 'us-east-2'|" $ZULIP_SETTINGS
 
 sed -i "s|#.*REMOTE_POSTGRES_HOST = .*|REMOTE_POSTGRES_HOST = '$ZULIP_DB_URL'|" $ZULIP_SETTINGS
@@ -82,7 +86,9 @@ sed -i "s|#.*REMOTE_POSTGRES_PORT = .*|REMOTE_POSTGRES_PORT = '5432'|" $ZULIP_SE
 sed -i "s|#.*REMOTE_POSTGRES_SSLMODE = .*|REMOTE_POSTGRES_SSLMODE = 'require'|" $ZULIP_SETTINGS
 sed -i "s|#.*USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS = .*|USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS = 0|" $ZULIP_SETTINGS
 
-sed -i "s|#.*JITSI_SERVER_URL = .*|JITSI_SERVER_URL = '$JITSI_URL'|" $ZULIP_SETTINGS
+sed -i "s|#.*JITSI_SERVER_URL = .*|JITSI_SERVER_URL = '$JITSI_SERVER_URL'|" $ZULIP_SETTINGS
+
+echo "LOGIN_URL = '$LOGIN_URL'" >> $ZULIP_SETTINGS
 
 echo "" >> $ZULIP_CONF
 echo "[application_server]" >> $ZULIP_CONF

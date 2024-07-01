@@ -132,6 +132,16 @@ locals {
     dev  = "zulip-jitsi-dev.awcl.drcedirect-le.com"
   }
 
+  s3_avatar_bucket = {
+    dev  = "us-east-2-zulip-public-dev-333509430799"
+    prod = "us-east-2-zulip-public-prod-911870898277"
+  }
+
+  s3_uploads_bucket = {
+    dev  = "us-east-2-zulip-private-dev-333509430799"
+    prod = "us-east-2-zulip-private-prod-911870898277"
+  }
+
   login_url = {
     prod = "https://www.drcedirect.com/all/eca-portal-v2-ui/#/login/DRCPORTAL"
     dev  = "https://www.drcedirect.com/all/eca-portal-v2-ui/#/login/DRCPORTAL"

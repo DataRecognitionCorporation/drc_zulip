@@ -61,5 +61,7 @@ locals {
     cortex_dist_id_arn = local.cortex_dist_id_arn[var.environment]
     jitsi_server_url   = local.jitsi_server_url[var.environment]
     login_url          = local.login_url[var.environment]
+    s3_avatar_bucket   = local.s3_avatar_bucket[var.environment]
+    s3_uploads_bucket  = local.s3_uploads_bucket[var.environment]
   })
 }
