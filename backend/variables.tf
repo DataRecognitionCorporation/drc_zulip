@@ -27,8 +27,8 @@ locals {
 
   engine_version = local.engine_version_map[var.environment]
   engine_version_map = {
-    prod = "14.3"
-    dev  = "14.5"
+    prod = "14.9"
+    dev  = "14.9"
   }
 
   backup_retention_period = local.backup_retention_period_map[var.environment]
