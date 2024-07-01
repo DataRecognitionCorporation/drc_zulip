@@ -62,17 +62,17 @@ locals {
 
   db_password_secret_arn = {
     "dev"  = "arn:aws:secretsmanager:us-east-2:333509430799:secret:rds!cluster-abad67f7-99de-4cc4-8a44-d6a9101c878c-CwbtEY"
-    "prod" = ""
+    "prod" = "arn:aws:secretsmanager:us-east-2:911870898277:secret:rds!cluster-766a3db3-1732-47e7-8bf2-07f9ea2ffb02-wZf7JE"
   }
 
   cortex_dist_id_arn = {
     "dev"  = "arn:aws:secretsmanager:us-east-2:333509430799:secret:cortex_distribution_id-4CVBCQ"
-    "prod" = "arn:aws:secretsmanager:us-east-2:911870898277:secret:rds!cluster-766a3db3-1732-47e7-8bf2-07f9ea2ffb02-wZf7JE"
+    "prod" = "arn:aws:secretsmanager:us-east-2:911870898277:secret:cortex_distribution_id-uiPCDv"
   }
 
   loadbalancer_ip_range = {
     "dev"  = "10.240.0.0/16"
-    "prod" = ""
+    "prod" = "10.240.0.0/16"
   }
 
   cloud_shared_hosted_zone = {
@@ -125,6 +125,16 @@ locals {
   alb_internal_map = {
     prod = false
     dev  = true
+  }
+
+  jitsi_server_url = {
+    prod = "zulip-jitsi.awcl.drcedirect.com"
+    dev  = "zulip-jitsi-dev.awcl.drcedirect-le.com"
+  }
+
+  login_url = {
+    prod = "https://www.drcedirect.com/all/eca-portal-v2-ui/#/login/DRCPORTAL"
+    dev  = "https://www.drcedirect.com/all/eca-portal-v2-ui/#/login/DRCPORTAL"
   }
 
   alb_subnet = lookup(local.alb_subnet_map, var.environment)

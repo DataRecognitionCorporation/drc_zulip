@@ -59,5 +59,7 @@ locals {
     hosted_zone_id     = local.cloud_shared_hosted_zone[var.environment]
     domain             = local.ec2_domain[var.environment]
     cortex_dist_id_arn = local.cortex_dist_id_arn[var.environment]
+    jitsi_server_url   = local.jitsi_server_url[var.environment]
+    login_url          = local.login_url[var.environment]
   })
 }

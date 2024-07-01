@@ -12,6 +12,8 @@ LB_IP_RANGE="${lb_ip_range}"
 HOSTED_ZONE_ID="${hosted_zone_id}"
 EC2_DOMAIN="${domain}"
 CORTEX_DIST_ID_ARN="${cortex_dist_id_arn}"
+JITSI_SERVER_URL="${jitsi_server_url}"
+LOGIN_URL="${login_url}"
 
 ARTIFACTORY_URL="https://artifactory.datarecognitioncorp.com/artifactory"
 CORTEX_DIST_SERVER="https://distributions.traps.paloaltonetworks.com/"
@@ -62,7 +64,7 @@ wget $${ZULIP_DOWNLOAD_URL}/$${PACKAGE}
 tar -xf "zulip-server-$${ZULIP_VERSION}.tar.gz"
 
 ./zulip-server-*/scripts/setup/install --self-signed-cert \
-    --email="atormanen@datarecognitioncorp.com" --hostname="chat-dev.datarecognitioncorp.com" --no-init-db --postgresql-missing-dictionaries
+    --email="atormanen@datarecognitioncorp.com" --hostname="chat-$ENVIRONMENT.datarecognitioncorp.com" --no-init-db --postgresql-missing-dictionaries
 
 
 sed -i "s|#.*ALLOWED_HOSTS = .*|ALLOWED_HOSTS = ['$LOCALIP']|" $ZULIP_SETTINGS
@@ -78,6 +80,7 @@ sed -i "s|#.*S3_REGION = .*|S3_RGION = 'us-east-2'|" $ZULIP_SETTINGS
 sed -i "s|#.*REMOTE_POSTGRES_HOST = .*|REMOTE_POSTGRES_HOST = '$ZULIP_DB_URL'|" $ZULIP_SETTINGS
 sed -i "s|#.*REMOTE_POSTGRES_PORT = .*|REMOTE_POSTGRES_PORT = '5432'|" $ZULIP_SETTINGS
 sed -i "s|#.*REMOTE_POSTGRES_SSLMODE = .*|REMOTE_POSTGRES_SSLMODE = 'require'|" $ZULIP_SETTINGS
+sed -i "s|#.*USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS = .*|USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS = 0|" $ZULIP_SETTINGS
 
 sed -i "s|#.*JITSI_SERVER_URL = .*|JITSI_SERVER_URL = '$JITSI_URL'|" $ZULIP_SETTINGS
 
