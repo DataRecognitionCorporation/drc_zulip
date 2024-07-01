@@ -14,7 +14,7 @@ resource "aws_rds_cluster" "db" {
   skip_final_snapshot          = true
 
   serverlessv2_scaling_configuration {
-    max_capacity = 4.0
+    max_capacity = 8.0
     min_capacity = 0.5
   }
 }
