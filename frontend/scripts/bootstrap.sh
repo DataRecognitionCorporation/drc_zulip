@@ -94,6 +94,7 @@ echo "LOGIN_URL = '$LOGIN_URL'" >> $ZULIP_SETTINGS
 echo "" >> $ZULIP_CONF
 echo "[application_server]" >> $ZULIP_CONF
 echo "http_only = true" >> $ZULIP_CONF
+echo "no_serve_uploads = true" >> $ZULIP_CONF
 echo "" >> $ZULIP_CONF
 echo "[loadbalancer]" >> $ZULIP_CONF
 echo "ips = $${LB_IP_RANGE}" >> $ZULIP_CONF

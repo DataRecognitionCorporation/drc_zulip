@@ -97,6 +97,10 @@ resource "aws_s3_bucket_versioning" "zulip_public_versioning" {
 resource "aws_s3_bucket_policy" "zulip_public_policy" {
   bucket = aws_s3_bucket.zulip_public.id
   policy = data.aws_iam_policy_document.zulip_public_policy.json
+  depends_on = [
+    aws_s3_bucket_ownership_controls.zulip_public,
+    aws_s3_bucket_public_access_block.bucket-access-block
+  ]
 }
 
 data "aws_iam_policy_document" "zulip_public_policy" {
@@ -107,11 +111,11 @@ data "aws_iam_policy_document" "zulip_public_policy" {
     }
 
     actions = [
-      "s3:GetObject",
+      "s3:GetObject"
     ]
 
     resources = [
-      aws_s3_bucket.zulip_public.arn,
+      "${aws_s3_bucket.zulip_public.arn}/*"
     ]
   }
 }
@@ -128,3 +132,28 @@ resource "aws_s3_bucket_acl" "zulip_public" {
   bucket = aws_s3_bucket.zulip_public.id
   acl    = "public-read"
 }
+
+resource "aws_s3_bucket_public_access_block" "bucket-access-block" {
+  bucket = aws_s3_bucket.zulip_public.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
+/*
+{
+    "Version": "2012-10-17",
+    "Id": "Policy1584655588748",
+    "Statement": [
+        {
+            "Sid": "Stmt1584655580516",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::us-east-2-zulip-public-prod-911870898277/*"
+        }
+    ]
+}
+*/
