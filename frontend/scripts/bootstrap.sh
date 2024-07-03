@@ -17,6 +17,7 @@ LOGIN_URL="${login_url}"
 
 S3_AVATAR_BUCKET="${s3_avatar_bucket}"
 S3_UPLOADS_BUCKET="${s3_uploads_bucket}"
+ZULIP_SECRETS_ARN="${zulip_secrets_arn}"
 
 
 ARTIFACTORY_URL="https://artifactory.datarecognitioncorp.com/artifactory"
@@ -27,6 +28,7 @@ PACKAGE="zulip-server-$${ZULIP_VERSION}.tar.gz"
 ZULIP_CONF="/etc/zulip/zulip.conf"
 ZULIP_SECRETS="/etc/zulip/zulip-secrets.conf"
 ZULIP_SETTINGS="/etc/zulip/settings.py"
+ZULIP_SECRETS="/etc/zulip/zulip-secrets.conf"
 
 TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600" 2> /dev/null)
 LOCALIP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4 2> /dev/null)
@@ -42,6 +44,7 @@ sudo ./aws/install --update
 
 db_password=$(aws secretsmanager get-secret-value --secret-id $DP_PASSWORD_ARN | jq -r '.SecretString | fromjson | .password')
 cortex_dist_id=$(aws secretsmanager get-secret-value --secret-id $CORTEX_DIST_ID_ARN | jq -r '.SecretString | fromjson | .cortex_dist_id')
+
 
 public_key_url="$${ARTIFACTORY_URL}/api/v2/repositories/$${DRC_UBUTU_REPO}/keyPairs/primary/public"
 wget -q -P /tmp $public_key_url
@@ -103,10 +106,12 @@ echo "postgres_password = $${db_password}" >> $ZULIP_SECRETS
 service postgresql stop
 update-rc.d postgresql disable
 
+zulip_secrets=$(aws secretsmanager get-secret-value --secret-id $ZULIP_SECRETS_ARN | jq -r '.SecretString | fromjson')
+avatar_salt=$(echo $zulip_secrets | jq -r '.avatar_salt')
+sed -i "s|avatar_salt = .*|avatar_salt = $avatar_salt|" $ZULIP_SECRETS
+
 /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
 su - zulip -c '/home/zulip/deployments/current/scripts/restart-server'
-
-
 
 # Route53 update
 cat > /tmp/route53-record.txt <<- EOF

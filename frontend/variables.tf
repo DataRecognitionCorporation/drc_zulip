@@ -147,6 +147,11 @@ locals {
     dev  = "https://www.drcedirect.com/all/eca-portal-v2-ui/#/login/DRCPORTAL"
   }
 
+  zulip_secrets_arn = {
+    prod = "arn:aws:secretsmanager:us-east-2:911870898277:secret:prod/zulip-9u4Pgf"
+    dev  = "arn:aws:secretsmanager:us-east-2:333509430799:secret:dev/zulip-OoH4Ii"
+  }
+
   alb_subnet = lookup(local.alb_subnet_map, var.environment)
   alb_subnet_map = {
     prod = local.public_subnet_ids

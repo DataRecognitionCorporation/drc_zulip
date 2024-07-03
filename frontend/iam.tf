@@ -9,6 +9,7 @@ data "template_file" "iam_zulip" {
     hosted_zone_id         = local.cloud_shared_hosted_zone[var.environment]
     db_password_secret_arn = local.db_password_secret_arn[var.environment]
     cortex_dist_id_arn     = local.cortex_dist_id_arn[var.environment]
+    zulip_secrets_arn      = local.zulip_secrets_arn[var.environment]
   }
 }
 
