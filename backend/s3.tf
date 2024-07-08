@@ -131,8 +131,11 @@ resource "aws_s3_bucket_ownership_controls" "zulip_avatar" {
 }
 
 resource "aws_s3_bucket_acl" "zulip_avatar" {
-  count      = local.public_s3[var.environment]
-  depends_on = [aws_s3_bucket_ownership_controls.zulip_avatar]
+  count = local.public_s3[var.environment]
+  depends_on = [
+    aws_s3_bucket_ownership_controls.zulip_avatar,
+    aws_s3_bucket_policy.zulip_avatar_policy
+  ]
 
   bucket = aws_s3_bucket.zulip_avatar.id
   acl    = "public-read"
