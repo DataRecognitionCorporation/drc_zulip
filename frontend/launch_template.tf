@@ -64,5 +64,7 @@ locals {
     s3_avatar_bucket   = local.s3_avatar_bucket[var.environment]
     s3_uploads_bucket  = local.s3_uploads_bucket[var.environment]
     zulip_secrets_arn  = local.zulip_secrets_arn[var.environment]
+    tornado_processes  = local.tornado_processes[var.environment]
+    uwsgi_processes    = local.uwsgi_processes[var.environment]
   })
 }

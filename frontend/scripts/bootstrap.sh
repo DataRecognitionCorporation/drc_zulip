@@ -19,6 +19,9 @@ S3_AVATAR_BUCKET="${s3_avatar_bucket}"
 S3_UPLOADS_BUCKET="${s3_uploads_bucket}"
 ZULIP_SECRETS_ARN="${zulip_secrets_arn}"
 
+TORNADO_PROCESSES="${tornado_processes}"
+UWSGI_PROCESSES="${uwsgi_processes}"
+
 
 ARTIFACTORY_URL="https://artifactory.datarecognitioncorp.com/artifactory"
 CORTEX_DIST_SERVER="https://distributions.traps.paloaltonetworks.com/"
@@ -98,9 +101,21 @@ echo "" >> $ZULIP_CONF
 echo "[application_server]" >> $ZULIP_CONF
 echo "http_only = true" >> $ZULIP_CONF
 echo "no_serve_uploads = true" >> $ZULIP_CONF
+echo "uwsgi_processes = $${UWSGI_PROCESSES}" >> $ZULIP_CONF
 echo "" >> $ZULIP_CONF
 echo "[loadbalancer]" >> $ZULIP_CONF
 echo "ips = $${LB_IP_RANGE}" >> $ZULIP_CONF
+
+# CONFIGURE TORNADO SHARDING
+long_string=""
+for ((i=0; i<=10; i++)); do
+    long_string+="98$(printf "%02d" $i)_"
+done
+shard_list=$${long_string::-1}
+
+echo "[tornado_sharding]" >> $ZULIP_CONF
+echo "$shard_list = giant-realm" >> $ZULIP_CONF
+
 
 echo "postgres_password = $${db_password}" >> $ZULIP_SECRETS
 service postgresql stop
@@ -110,8 +125,11 @@ zulip_secrets=$(aws secretsmanager get-secret-value --secret-id $ZULIP_SECRETS_A
 avatar_salt=$(echo $zulip_secrets | jq -r '.avatar_salt')
 sed -i "s|avatar_salt = .*|avatar_salt = $avatar_salt|" $ZULIP_SECRETS
 
+
 /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
-su - zulip -c '/home/zulip/deployments/current/scripts/restart-server'
+/home/zulip/deployments/current/scripts/refresh-sharding-and-restart
+su - zulip -c '/home/zulip/deployments/current/scripts/stop-server'
+su - zulip -c '/home/zulip/deployments/current/scripts/start-server'
 
 # Route53 update
 cat > /tmp/route53-record.txt <<- EOF

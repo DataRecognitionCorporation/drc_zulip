@@ -13,7 +13,20 @@
       ],
       "Resource": [
         "arn:aws:s3:::${region}-zulip-uploads-${environment}-${account_num}",
-        "arn:aws:s3:::${region}-zulip-uploads-${environment}-${account_num}/*",
+        "arn:aws:s3:::${region}-zulip-uploads-${environment}-${account_num}/*"
+      ]
+    },
+    {
+      "Sid": "s3public",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:ListObjects",
+        "s3:DeleteObject",
+        "s3:PutObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
         "arn:aws:s3:::${region}-zulip-avatars-${environment}-${account_num}",
         "arn:aws:s3:::${region}-zulip-avatars-${environment}-${account_num}/*"
       ]

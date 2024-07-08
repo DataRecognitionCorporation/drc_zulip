@@ -127,6 +127,16 @@ locals {
     dev  = true
   }
 
+  tornado_processes = {
+    dev  = 2
+    prod = 12
+  }
+
+  uwsgi_processes = {
+    dev  = 6
+    prod = 12
+  }
+
   jitsi_server_url = {
     prod = "zulip-jitsi.awcl.drcedirect.com"
     dev  = "zulip-jitsi-dev.awcl.drcedirect-le.com"
