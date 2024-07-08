@@ -133,13 +133,13 @@ locals {
   }
 
   s3_avatar_bucket = {
-    dev  = "us-east-2-zulip-public-dev-333509430799"
-    prod = "us-east-2-zulip-public-prod-911870898277"
+    dev  = "us-east-2-zulip-avatars-dev-333509430799"
+    prod = "us-east-2-zulip-avatars-prod-911870898277"
   }
 
   s3_uploads_bucket = {
-    dev  = "us-east-2-zulip-private-dev-333509430799"
-    prod = "us-east-2-zulip-private-prod-911870898277"
+    dev  = "us-east-2-zulip-uploads-dev-333509430799"
+    prod = "us-east-2-zulip-uploads-prod-911870898277"
   }
 
   login_url = {

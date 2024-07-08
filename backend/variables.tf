@@ -31,6 +31,11 @@ locals {
     dev  = "14.9"
   }
 
+  public_s3 = {
+    "dev"  = 0
+    "prod" = 1
+  }
+
   backup_retention_period = local.backup_retention_period_map[var.environment]
   backup_retention_period_map = {
     prod = "14"
