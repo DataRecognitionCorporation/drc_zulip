@@ -395,12 +395,14 @@ def get_file_info(user_file: UploadedFile) -> Tuple[str, str]:
 
 
 def get_signed_upload_url(path: str, download: bool = False) -> str:
+    s3_conf = Config(region_name = settings.S3_REGION, signature_version="s3v4")
     client = boto3.client(
         "s3",
         aws_access_key_id=settings.S3_KEY,
         aws_secret_access_key=settings.S3_SECRET_KEY,
         region_name=settings.S3_REGION,
         endpoint_url=settings.S3_ENDPOINT_URL,
+        config=s3_conf
     )
     params = {
         "Bucket": settings.S3_AUTH_UPLOADS_BUCKET,
