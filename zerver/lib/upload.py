@@ -395,7 +395,7 @@ def get_file_info(user_file: UploadedFile) -> Tuple[str, str]:
 
 
 def get_signed_upload_url(path: str, download: bool = False) -> str:
-    s3_conf = Config(region_name = settings.S3_REGION, signature_version="s3v4")
+    s3_conf = Config(region_name="us-east-2", signature_version="s3v4")
     client = boto3.client(
         "s3",
         aws_access_key_id=settings.S3_KEY,
