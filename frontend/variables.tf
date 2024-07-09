@@ -15,9 +15,10 @@ variable "account_num" {
 
 locals {
   global_tags = {
-    environment = var.environment
-    team        = "team-ss"
-    appid       = "bd08d"
+    environment   = var.environment
+    team          = "team-ss"
+    appid         = "bd08d"
+    zulip_version = local.zulip_version[var.environment]
   }
 
   account_num = lookup(local.account_num_map, var.environment)
@@ -56,8 +57,8 @@ locals {
   artifactory_download_url = "https://artifactory.datarecognitioncorp.com/artifactory/downloads/zulip"
 
   zulip_version = {
-    "dev"  = "6.1.22"
-    "prod" = "6.1.22"
+    "dev"  = "6.1.23"
+    "prod" = "6.1.23"
   }
 
   db_password_secret_arn = {
