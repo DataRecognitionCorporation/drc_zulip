@@ -59,7 +59,8 @@
       "Resource": [
         "${db_password_secret_arn}",
         "${cortex_dist_id_arn}",
-        "${zulip_secrets_arn}"
+        "${zulip_secrets_arn}",
+        "${dynatrace_paas_arn}"
       ]
     },
     {

@@ -18,10 +18,10 @@ LOGIN_URL="${login_url}"
 S3_AVATAR_BUCKET="${s3_avatar_bucket}"
 S3_UPLOADS_BUCKET="${s3_uploads_bucket}"
 ZULIP_SECRETS_ARN="${zulip_secrets_arn}"
+DYNATRACE_PAAS_ARN=${dynatrace_paas_arn}
 
 TORNADO_PROCESSES="${tornado_processes}"
 UWSGI_PROCESSES="${uwsgi_processes}"
-
 
 ARTIFACTORY_URL="https://artifactory.datarecognitioncorp.com/artifactory"
 CORTEX_DIST_SERVER="https://distributions.traps.paloaltonetworks.com/"
@@ -41,14 +41,13 @@ apt-get update
 apt-get upgrade -y
 apt install -y unzip jq net-tools
 
+# INSTALL AWS CLI
 curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install --update
 
+# CONFIGURE DRC UBUNTU REPO
 db_password=$(aws secretsmanager get-secret-value --secret-id $DP_PASSWORD_ARN | jq -r '.SecretString | fromjson | .password')
-cortex_dist_id=$(aws secretsmanager get-secret-value --secret-id $CORTEX_DIST_ID_ARN | jq -r '.SecretString | fromjson | .cortex_dist_id')
-
-
 public_key_url="$${ARTIFACTORY_URL}/api/v2/repositories/$${DRC_UBUTU_REPO}/keyPairs/primary/public"
 wget -q -P /tmp $public_key_url
 gpg --no-default-keyring --keyring=/usr/share/keyrings/drc-$${DRC_UBUTU_REPO}.gpg --import /tmp/public 
@@ -61,20 +60,14 @@ EOF
 
 apt-get update
 
-sudo mkdir -p /etc/panw
-cat <<EOF > /etc/panw/cortex.conf
---distribution-id $${cortex_dist_id}
---distribution-server $${CORTEX_DIST_SERVER}
-EOF
 
-#apt-get install cortex-agent
-
+# INSTALL ZULIP
 wget $${ZULIP_DOWNLOAD_URL}/$${PACKAGE}
 
 tar -xf "zulip-server-$${ZULIP_VERSION}.tar.gz"
 
 ./zulip-server-*/scripts/setup/install --self-signed-cert \
-    --email="atormanen@datarecognitioncorp.com" --hostname="chat-$ENVIRONMENT.datarecognitioncorp.com" --no-init-db --postgresql-missing-dictionaries
+    --email="zulip@datarecognitioncorp.com" --hostname="chat-$ENVIRONMENT.datarecognitioncorp.com" --no-init-db --postgresql-missing-dictionaries
 
 
 sed -i "s|#.*ALLOWED_HOSTS = .*|ALLOWED_HOSTS = ['$LOCALIP']|" $ZULIP_SETTINGS
@@ -126,10 +119,10 @@ avatar_salt=$(echo $zulip_secrets | jq -r '.avatar_salt')
 sed -i "s|avatar_salt = .*|avatar_salt = $avatar_salt|" $ZULIP_SECRETS
 
 
-/home/zulip/deployments/current/scripts/zulip-puppet-apply -f
-/home/zulip/deployments/current/scripts/refresh-sharding-and-restart
-su - zulip -c '/home/zulip/deployments/current/scripts/stop-server'
-su - zulip -c '/home/zulip/deployments/current/scripts/start-server'
+/home/zulip/deployments/current/scripts/zulip-puppet-apply -f || echo
+/home/zulip/deployments/current/scripts/refresh-sharding-and-restart || echo
+su - zulip -c '/home/zulip/deployments/current/scripts/stop-server' || echo
+su - zulip -c '/home/zulip/deployments/current/scripts/start-server' || echo
 
 # Route53 update
 cat > /tmp/route53-record.txt <<- EOF
@@ -155,5 +148,25 @@ EOF
 
 aws route53 change-resource-record-sets --hosted-zone-id $HOSTED_ZONE_ID \
   --change-batch file:///tmp/route53-record.txt
+
+
+# INSTALL CORTEX
+cortex_dist_id=$(aws secretsmanager get-secret-value --secret-id $CORTEX_DIST_ID_ARN | jq -r '.SecretString | fromjson | .cortex_dist_id')
+sudo mkdir -p /etc/panw
+cat <<EOF > /etc/panw/cortex.conf
+--distribution-id $${cortex_dist_id}
+--distribution-server $${CORTEX_DIST_SERVER}
+EOF
+
+apt-get install cortex-agent
+
+# DYNATRACE INSTALL
+paas_token=$(aws secretsmanager get-secret-value --secret-id $DYNATRACE_PAAS_ARN | jq -r '.SecretString | fromjson | .paas_token')
+
+wget  -O Dynatrace-OneAgent-Linux.sh "https://ffk98875.live.dynatrace.com/api/v1/deployment/installer/agent/unix/default/latest?arch=arm&flavor=default" --header="Authorization: Api-Token $paas_token"
+wget https://ca.dynatrace.com/dt-root.cert.pem ; ( echo 'Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg="sha-256"; boundary="--SIGNED-INSTALLER"'; echo ; echo ; echo '----SIGNED-INSTALLER' ; cat Dynatrace-OneAgent-Linux.sh ) | openssl cms -verify -CAfile dt-root.cert.pem > /dev/null
+/bin/sh Dynatrace-OneAgent-Linux.sh --set-infra-only=false --set-app-log-content-access=true
+ln -s /opt/dynatrace/oneagent/agent/tools/oneagentctl /usr/bin/oneagentctl
+oneagentctl --set-network-zone=aws.us-east-2 --set-host-group=zulip_$${ENVIRONMENT}_pas --restart-service
 
 

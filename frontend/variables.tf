@@ -15,10 +15,9 @@ variable "account_num" {
 
 locals {
   global_tags = {
-    environment   = var.environment
-    team          = "team-ss"
-    appid         = "bd08d"
-    zulip_version = local.zulip_version[var.environment]
+    environment = var.environment
+    team        = "team-ss"
+    appid       = "bd08d"
   }
 
   account_num = lookup(local.account_num_map, var.environment)
@@ -30,8 +29,8 @@ locals {
   key_name = "ct-cloud"
 
   instance_type = {
-    dev  = "t4g.xlarge"
-    prod = "c7g.xlarge"
+    dev  = "t4g.large"
+    prod = "c7g.2xlarge"
   }
 
   ami_owner                 = "099720109477"
@@ -161,6 +160,11 @@ locals {
   zulip_secrets_arn = {
     prod = "arn:aws:secretsmanager:us-east-2:911870898277:secret:prod/zulip-9u4Pgf"
     dev  = "arn:aws:secretsmanager:us-east-2:333509430799:secret:dev/zulip-OoH4Ii"
+  }
+
+  dynatrace_paas_arn = {
+    dev  = ""
+    prod = "arn:aws:secretsmanager:us-east-2:911870898277:secret:devops/dynatrace_paas_token-Z5Xfgp"
   }
 
   alb_subnet = lookup(local.alb_subnet_map, var.environment)

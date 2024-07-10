@@ -10,6 +10,7 @@ data "template_file" "iam_zulip" {
     db_password_secret_arn = local.db_password_secret_arn[var.environment]
     cortex_dist_id_arn     = local.cortex_dist_id_arn[var.environment]
     zulip_secrets_arn      = local.zulip_secrets_arn[var.environment]
+    dynatrace_paas_arn     = local.dynatrace_paas_arn[var.environment]
   }
 }
 

@@ -27,7 +27,7 @@ resource "aws_launch_template" "zulip" {
     device_name = data.aws_ami.ami.root_device_name
     ebs {
       delete_on_termination = true
-      volume_size           = 30
+      volume_size           = 50
       volume_type           = "gp3"
     }
   }
@@ -40,7 +40,8 @@ resource "aws_launch_template" "zulip" {
   tag_specifications {
     resource_type = "instance"
     tags = merge(local.global_tags, {
-      Name = "zulip-${var.environment}"
+      Name          = "zulip-${var.environment}-${local.zulip_version[var.environment]}"
+      zulip_version = local.zulip_version[var.environment]
       }
     )
   }
@@ -66,5 +67,6 @@ locals {
     zulip_secrets_arn  = local.zulip_secrets_arn[var.environment]
     tornado_processes  = local.tornado_processes[var.environment]
     uwsgi_processes    = local.uwsgi_processes[var.environment]
+    dynatrace_paas_arn = local.dynatrace_paas_arn[var.environment]
   })
 }
