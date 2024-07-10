@@ -163,7 +163,7 @@ locals {
   }
 
   dynatrace_paas_arn = {
-    dev  = ""
+    dev  = "arn:aws:secretsmanager:us-east-2:333509430799:secret:devops/dyantrace_paas_token-ay8UbJ"
     prod = "arn:aws:secretsmanager:us-east-2:911870898277:secret:devops/dynatrace_paas_token-Z5Xfgp"
   }
 
