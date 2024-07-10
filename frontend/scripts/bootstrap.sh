@@ -66,11 +66,17 @@ wget $${ZULIP_DOWNLOAD_URL}/$${PACKAGE}
 
 tar -xf "zulip-server-$${ZULIP_VERSION}.tar.gz"
 
-./zulip-server-*/scripts/setup/install --self-signed-cert \
-    --email="zulip@datarecognitioncorp.com" --hostname="chat-$ENVIRONMENT.datarecognitioncorp.com" --no-init-db --postgresql-missing-dictionaries
 
+if [[ $${ENVIRONMENT} == 'prod' ]]; then
+  ./zulip-server-*/scripts/setup/install --self-signed-cert \
+      --email="zulip@datarecognitioncorp.com" --hostname="chat-prod.datarecognitioncorp.com" --no-init-db --postgresql-missing-dictionaries
+  sed -i "s|#.*ALLOWED_HOSTS = .*|ALLOWED_HOSTS = ['$LOCALIP', 'chat-prod.datarecognitioncorp.com']|" $ZULIP_SETTINGS
+else
+  ./zulip-server-*/scripts/setup/install --self-signed-cert \
+      --email="zulip@datarecognitioncorp.com" --hostname="chat-$ENVIRONMENT.datarecognitioncorp.com" --no-init-db --postgresql-missing-dictionaries
+  sed -i "s|#.*ALLOWED_HOSTS = .*|ALLOWED_HOSTS = ['$LOCALIP']|" $ZULIP_SETTINGS
+fi
 
-sed -i "s|#.*ALLOWED_HOSTS = .*|ALLOWED_HOSTS = ['$LOCALIP']|" $ZULIP_SETTINGS
 sed -i "s|#.*EMAIL_HOST = .*|EMAIL_HOST = '$EMAIL_HOST'|" $ZULIP_SETTINGS
 sed -i "s|#.*EMAIL_HOST_USER = .*|EMAIL_HOST_USER = '$EMAIL_HOST_USER'|" $ZULIP_SETTINGS
 sed -i "s|#.*EMAIL_USE_TLS = .*|EMAIL_USE_TLS = True|" $ZULIP_SETTINGS
@@ -98,6 +104,41 @@ echo "uwsgi_processes = $${UWSGI_PROCESSES}" >> $ZULIP_CONF
 echo "" >> $ZULIP_CONF
 echo "[loadbalancer]" >> $ZULIP_CONF
 echo "ips = $${LB_IP_RANGE}" >> $ZULIP_CONF
+
+
+# OKTA CONFIGURATION
+sed -i 's|        "name": "zulip",.*|        "name": "chat",|' $ZULIP_SETTINGS
+sed -i 's|        "displayname": "Example, Inc. Zulip",.*|        "displayname": "DRC Chat",|' $ZULIP_SETTINGS
+
+sed -i 's|    # "zproject.backends.SAMLAuthBackend",.*|    "zproject.backends.SAMLAuthBackend",|' $ZULIP_SETTINGS
+sed -i 's|    "idp_name": {.*|    "okta": {|' $ZULIP_SETTINGS
+sed -i 's|        "entity_id":.*|        "entity_id": "http://www.okta.com/exk7uunhvfu5du28v4x7",|' $ZULIP_SETTINGS
+sed -i 's|        "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",.*|        "url": "https://auth.drcedirect.com/app/datarecognitioncorp_zulip_1/exk7uunhvfu5du28v4x7/sso/saml",|' $ZULIP_SETTINGS
+sed -i 's|        "display_name": "SAML",.*|        "display_name": "Insight Portal",|' $ZULIP_SETTINGS
+
+mkdir -p /etc/zulip/saml/idps/
+cat <<OKTA_CRT > /etc/zulip/saml/idps/okta.crt
+-----BEGIN CERTIFICATE-----
+MIIDtjCCAp6gAwIBAgIGAYGs/pNCMA0GCSqGSIb3DQEBCwUAMIGbMQswCQYDVQQGEwJVUzETMBEG
+A1UECAwKQ2FsaWZvcm5pYTEWMBQGA1UEBwwNU2FuIEZyYW5jaXNjbzENMAsGA1UECgwET2t0YTEU
+MBIGA1UECwwLU1NPUHJvdmlkZXIxHDAaBgNVBAMME2RhdGFyZWNvZ25pdGlvbmNvcnAxHDAaBgkq
+hkiG9w0BCQEWDWluZm9Ab2t0YS5jb20wHhcNMjIwNjI5MDEwNTEzWhcNMzIwNjI5MDEwNjEzWjCB
+mzELMAkGA1UEBhMCVVMxEzARBgNVBAgMCkNhbGlmb3JuaWExFjAUBgNVBAcMDVNhbiBGcmFuY2lz
+Y28xDTALBgNVBAoMBE9rdGExFDASBgNVBAsMC1NTT1Byb3ZpZGVyMRwwGgYDVQQDDBNkYXRhcmVj
+b2duaXRpb25jb3JwMRwwGgYJKoZIhvcNAQkBFg1pbmZvQG9rdGEuY29tMIIBIjANBgkqhkiG9w0B
+AQEFAAOCAQ8AMIIBCgKCAQEAzFtDXK6UZj0hjpJdtUrpdSVhTNOsRZ684mZsSL1hHMjpYpoW8zcv
+TePVCnD9kIH7Qvm/klm3wnF1t2O4NogYp++CQdAyYyWSuQ8V4PqCzJvi0NUSjy76J4lroR14olFn
+abxVTYDJMOs6BgAa7FpfnLQieNGnEbefDD9WEAopD0DP8Axre0hyfMRrScb03QFcGfLmka/FnqT0
+lfAoP7CB8RGPT+9z5tUfIsmDX4v89ZvZ6OHSrgBizTECudiyF1/eDxrmMf8N5wXYZpa0ttioBPuX
+PaOmqcRt74CychqIu2JMhayVK50PoQWaBzz4nTwkVIqs+MHE3MtsG4e2fJEYzwIDAQABMA0GCSqG
+SIb3DQEBCwUAA4IBAQBO2YjHw2pHef4FLdWAsagdAI4ZfdTxm15CCqnCgOZqPs3Ph+R4mSHnh0ip
+EXo1CMTHixymyVphCvc0OCzj79hPCVQXbL7YMAY3XzYXweqJbKDWoCB3y2tdTcrLcjXqSOmxnBFl
+zZxFnny26bHgBVuDNDcOXKp2DisatzYMbDDpqBm7UP6d+q0Aj1ztxLsxnq9zcI3VGfvUUOLS68zl
+SKUX+KZPqT7Nfe1dgX8cAMYX4fuPGkO4zDLukqF+e5043URcUw4c3VBcw1ezzHPtwJ0hplDuvZFG
+Ganh/aQs3voPjGbcWJyiSdgSCtr2IDfbmRYY+054dvKEt/RsAORlf4oG
+-----END CERTIFICATE-----
+OKTA_CRT
+chown -Rf zulip:zulip /etc/zulip/saml
 
 # CONFIGURE TORNADO SHARDING
 long_string=""
