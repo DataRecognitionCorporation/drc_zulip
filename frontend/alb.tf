@@ -4,6 +4,12 @@ resource "aws_lb" "zulip_alb" {
   internal           = local.alb_internal
   security_groups    = [aws_security_group.zulip_alb.id]
   subnets            = local.alb_subnet
+
+  access_logs {
+    bucket  = "us-east-2-drc-centralized-logs"
+    enabled = true
+    prefix  = "alb"
+  }
 }
 
 resource "aws_lb_listener" "https" {
