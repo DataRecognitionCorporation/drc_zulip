@@ -31,6 +31,11 @@ locals {
     dev  = "14.9"
   }
 
+  db_instance = {
+    prod = "db.t4g.large"
+    dev  = "db.t4g.medium"
+  }
+
   public_s3 = {
     "dev"  = 0
     "prod" = 1

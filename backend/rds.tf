@@ -12,18 +12,13 @@ resource "aws_rds_cluster" "db" {
   preferred_maintenance_window = "sun:08:30-sun:09:30" # time in UTC
   vpc_security_group_ids       = [aws_security_group.zulip_db.id]
   skip_final_snapshot          = true
-
-  serverlessv2_scaling_configuration {
-    max_capacity = 8.0
-    min_capacity = 0.5
-  }
 }
 
-resource "aws_rds_cluster_instance" "serverless" {
+resource "aws_rds_cluster_instance" "zulip_prod" {
   count              = 1
-  identifier         = "zulip-${var.environment}-instnace-${count.index}"
+  identifier         = "zulip-${var.environment}-${count.index}"
   cluster_identifier = aws_rds_cluster.db.id
-  instance_class     = "db.serverless"
+  instance_class     = local.db_instance[var.environment]
   engine             = aws_rds_cluster.db.engine
   engine_version     = aws_rds_cluster.db.engine_version
 }
