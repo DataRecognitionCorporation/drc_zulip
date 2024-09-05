@@ -69,7 +69,7 @@ tar -xf "zulip-server-$${ZULIP_VERSION}.tar.gz"
 
 if [[ $${ENVIRONMENT} == 'prod' ]]; then
   ./zulip-server-*/scripts/setup/install --self-signed-cert \
-      --email="zulip@datarecognitioncorp.com" --hostname="chat-prod.datarecognitioncorp.com" --no-init-db --postgresql-missing-dictionaries
+      --email="zulip@datarecognitioncorp.com" --hostname="chat.datarecognitioncorp.com" --no-init-db --postgresql-missing-dictionaries
   sed -i "s|#.*ALLOWED_HOSTS = .*|ALLOWED_HOSTS = ['$LOCALIP', 'chat-prod.datarecognitioncorp.com']|" $ZULIP_SETTINGS
 else
   ./zulip-server-*/scripts/setup/install --self-signed-cert \
