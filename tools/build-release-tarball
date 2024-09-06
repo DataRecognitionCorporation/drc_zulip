@@ -44,7 +44,6 @@ git archive -o "$TARBALL" "--prefix=$prefix/" HEAD
 
 cd "$OUTPUT_DIR"
 tar -xf "$TARBALL"
-ls -lah "$OUTPUT_DIR/$prefix/static/js"
 while read -r i; do
     rm -r --interactive=never "${OUTPUT_DIR:?}/$prefix/$i"
 done <"$OUTPUT_DIR/$prefix/tools/release-tarball-exclude.txt"
@@ -60,7 +59,6 @@ cd "$BASEDIR"
 
 # Check out a temporary full copy of the index to generate static files
 git checkout-index -f -a --prefix "$OUTPUT_DIR/$prefix/"
-ls -lah "$OUTPUT_DIR/$prefix/static/js"
 
 # Add the Git version information file
 if [[ "$version" =~ ^[0-9]+\.[0-9]+(-[0-9a-z]+)?$ ]]; then
@@ -111,7 +109,7 @@ echo "$version" >version
 
 cd "$OUTPUT_DIR"
 
-tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version" "$prefix/zulip-git-version" "$prefix/locale" "$prefix/staticfiles.json" "$prefix/webpack-stats-production.json"
+tar --append -f "$TARBALL" "$prefix/prod-static" "$prefix/build_id" "$prefix/version" "$prefix/zulip-git-version" "$prefix/locale" "$prefix/staticfiles.json" "$prefix/templates/zerver/emails/compiled" "$prefix/webpack-stats-production.json"
 
 rm -rf "$prefix"
 
