@@ -1,3 +1,4 @@
+#!/usr/bin/env groovy
 @Library('DRC_Global_Pipeline_Libraries@master')
 
 def has_failures = false
@@ -64,9 +65,9 @@ pipeline {
                             sh """#!/bin/bash
                                 set -euo xtrace
                                 git config zulip.zulipRemote origin
-                                
+
                                 ./tools/provision --build-release-tarball-only
-                            """   
+                            """
                                 // source ./tools/ci/activate-venv
                         }
                     }
@@ -81,14 +82,14 @@ pipeline {
                             sh """#!/bin/bash
                                 set -eu
                                 git config zulip.zulipRemote origin
-                                
+
                                 source ./tools/ci/activate-venv
 
                                 ./tools/build-release-tarball ${params.BUILD_NUMBER} \
                                     && mv /tmp/tmp.*/*-${params.BUILD_NUMBER}.tar.gz ./
                             """
                             //./tools/ci/production-build
-                                
+
                         }
                     }
                 }
