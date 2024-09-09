@@ -1,3 +1,4 @@
+#!/usr/bin/env groovy
 @Library('DRC_Global_Pipeline_Libraries@master')
 
 def has_failures = false
@@ -39,7 +40,7 @@ pipeline {
                                 sudo mkdir -p /srv/zulip-venv-cache
                                 sudo mkdir -p /srv/zulip-emoji-cache
                                 sudo chown -Rf 1000.1000 /srv
-                                
+
                                 ./tools/ci/setup-backend --skip-dev-db-build
                             '''
 
@@ -83,7 +84,7 @@ pipeline {
 
                                             source ./tools/ci/activate-venv
                                             ./tools/test-migrations
-                                            
+
                                         '''
                                     } catch(e) {
                                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
@@ -104,7 +105,7 @@ pipeline {
                                 script {
                                     try {
                                         sh '''#!/bin/bash
-                                    
+
                                             source ./tools/ci/activate-venv
                                             chmod 000 static/generated
                                             ./scripts/lib/check-database-compatibility.py
@@ -220,7 +221,7 @@ pipeline {
                 }
                 stage('test-backend') {
                     steps {
-                      
+
                         container('zulip-ci-jammy') {
                             dir("${WORKSPACE}"){
                                 script {
@@ -240,7 +241,7 @@ pipeline {
                                 }
                             }
                         }
-                        
+
                     }
                 }
                 stage('test-js-with-node') {
@@ -269,7 +270,7 @@ pipeline {
                 }
                 stage('test-js-with-puppeteer') {
                     steps {
-                        
+
                         container('zulip-ci-jammy') {
                             dir("${WORKSPACE}"){
                                 script {
@@ -289,7 +290,7 @@ pipeline {
                                 }
                             }
                         }
-                        
+
                     }
                 }
                 stage('misc') {
@@ -351,5 +352,5 @@ pipeline {
             }
         }
     }
-    
+
 }
