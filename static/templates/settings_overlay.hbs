@@ -26,15 +26,15 @@
                         <i class="icon fa fa-clock-o" aria-hidden="true"></i>
                         <div class="text">{{t "Display settings" }}</div>
                     </li>
-                    <li tabindex="0" data-section="notifications">
-                        <i class="icon fa fa-exclamation-triangle" aria-hidden="true"></i>
-                        <div class="text">{{t "Notifications" }}</div>
-                    </li>
                     {{#unless is_guest}}
-                    <li tabindex="0" data-section="your-bots">
-                        <i class="icon fa fa-github" aria-hidden="true"></i>
-                        <div class="text">{{t "Bots" }}</div>
-                    </li>
+                        <li tabindex="0" data-section="notifications">
+                            <i class="icon fa fa-exclamation-triangle" aria-hidden="true"></i>
+                            <div class="text">{{t "Notifications" }}</div>
+                        </li>
+                        <li tabindex="0" data-section="your-bots">
+                            <i class="icon fa fa-github" aria-hidden="true"></i>
+                            <div class="text">{{t "Bots" }}</div>
+                        </li>
                     {{/unless}}
                     <li tabindex="0" data-section="alert-words">
                         <i class="icon fa fa-book" aria-hidden="true"></i>
