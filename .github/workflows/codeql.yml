@@ -13,9 +13,9 @@ name: "CodeQL Advanced"
 
 on:
   push:
-    branches: [ "drc_main" ]
+    branches: [ "drc_main", "drc_6.x" ]
   pull_request:
-    branches: [ "drc_main" ]
+    branches: [ "drc_main", "drc_6.x" ]
 
 jobs:
   analyze:
