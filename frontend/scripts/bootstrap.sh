@@ -160,7 +160,7 @@ zulip_secrets=$(aws secretsmanager get-secret-value --secret-id $ZULIP_SECRETS_A
 avatar_salt=$(echo $zulip_secrets | jq -r '.avatar_salt')
 email_password=$(echo $zulip_secrets | jq -r '.email_password')
 sed -i "s|avatar_salt = .*|avatar_salt = $avatar_salt|" $ZULIP_SECRETS
-echo "email_password = ${email_password}" >> $ZULIP_SECRETS
+echo "email_password = $${email_password}" >> $ZULIP_SECRETS
 
 
 /home/zulip/deployments/current/scripts/zulip-puppet-apply -f || echo
