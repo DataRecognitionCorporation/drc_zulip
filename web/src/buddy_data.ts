@@ -119,12 +119,17 @@ export function sort_users(user_ids: number[]): number[] {
 
     // Order the roles in descending order: Current user, then guest, then member, then anything else
     const current_user = user_ids[0];
+
     // Uncomment the if statement below to only order the roles for guests and members
-    if (people.maybe_get_user_by_id(current_user).role >= 400) {
+    if(current_user === undefined) {
+        return user_ids;
+    }
+
+    const user = people.maybe_get_user_by_id(current_user, true)
+    if (user !== undefined && user.role >= 400) {
         user_ids = user_ids.slice(1).sort((a, b) => parseFloat(people.maybe_get_user_by_id(b).role) - parseFloat(people.maybe_get_user_by_id(a).role));
         user_ids.splice(0, 0, current_user);
     }
-
 
     return user_ids;
 }
