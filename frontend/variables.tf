@@ -154,7 +154,12 @@ locals {
 
   login_url = {
     prod = "https://www.drcedirect.com/all/eca-portal-v2-ui/#/login/DRCPORTAL"
-    dev  = "https://www.drcedirect.com/all/eca-portal-v2-ui/#/login/DRCPORTAL"
+    dev  = "https://cdn-app-sqa.drcedirect.com/all/eca-portal-v2-ui/#/login"
+  }
+
+  okta_url = {
+    prod = "https://www.drcedirect.com/all/eca-portal-v2-ui/#/login/DRCPORTAL"
+    dev  = "https://auth-sqa.drcedirect.com/home/datarecognitioncorp-sqa_zulip_2/0oa3mnxusgS1hm6Pu1d7/aln3mo15uyH62rREv1d7"
   }
 
   zulip_secrets_arn = {

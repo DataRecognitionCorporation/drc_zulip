@@ -14,6 +14,7 @@ EC2_DOMAIN="${domain}"
 CORTEX_DIST_ID_ARN="${cortex_dist_id_arn}"
 JITSI_SERVER_URL="${jitsi_server_url}"
 LOGIN_URL="${login_url}"
+OKTA_URL="${okta_url}"
 
 S3_AVATAR_BUCKET="${s3_avatar_bucket}"
 S3_UPLOADS_BUCKET="${s3_uploads_bucket}"
@@ -113,7 +114,7 @@ sed -i 's|        "displayname": "Example, Inc. Zulip",.*|        "displayname":
 sed -i 's|    # "zproject.backends.SAMLAuthBackend",.*|    "zproject.backends.SAMLAuthBackend",|' $ZULIP_SETTINGS
 sed -i 's|    "idp_name": {.*|    "okta": {|' $ZULIP_SETTINGS
 sed -i 's|        "entity_id":.*|        "entity_id": "http://www.okta.com/exk7uunhvfu5du28v4x7",|' $ZULIP_SETTINGS
-sed -i 's|        "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",.*|        "url": "https://auth.drcedirect.com/app/datarecognitioncorp_zulip_1/exk7uunhvfu5du28v4x7/sso/saml",|' $ZULIP_SETTINGS
+sed -i 's|        "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",.*|        "url": '$${OKTA_URL}',|' $ZULIP_SETTINGS
 sed -i 's|        "display_name": "SAML",.*|        "display_name": "Insight Portal",|' $ZULIP_SETTINGS
 
 mkdir -p /etc/zulip/saml/idps/
