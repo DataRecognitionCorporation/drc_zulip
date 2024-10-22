@@ -156,6 +156,9 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: dict[str, dict[str, An
         stream = Stream.objects.get(name=stream_name, realm=realm)
         recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
         for profile in profiles:
+            if(random.random() > 0.1):
+                continue
+
             # Subscribe to some streams.
             s = Subscription(
                 recipient=recipient,
@@ -432,9 +435,9 @@ class Command(ZulipBaseCommand):
             num_names = options["extra_users"]
             num_boring_names = 300
 
-            for i in range(min(num_names, num_boring_names)):
-                full_name = f"Extra{i:03} User"
-                names.append((full_name, f"extrauser{i}@zulip.com"))
+            #for i in range(min(num_names, num_boring_names)):
+            #    full_name = f"Extra{i:03} User"
+            #    names.append((full_name, f"extrauser{i}@zulip.com"))
 
             if num_names > num_boring_names:
                 fnames = [
@@ -515,15 +518,16 @@ class Command(ZulipBaseCommand):
             for i in range(num_boring_names, num_names):
                 fname = random.choice(fnames) + str(i)
                 full_name = fname
-                if random.random() < 0.7:
-                    if random.random() < 0.3:
-                        full_name += " " + random.choice(non_ascii_names)
-                    else:
-                        full_name += " " + random.choice(mnames)
-                    if random.random() < 0.1:
-                        full_name += f" {random.choice(raw_emojis)} "
-                    else:
-                        full_name += " " + random.choice(lnames)
+                #if random.random() < 0.7:
+                #    if random.random() < 0.3:
+                #        full_name += " " + random.choice(non_ascii_names)
+                #    else:
+                #        full_name += " " + random.choice(mnames)
+                #    if random.random() < 0.1:
+                #        full_name += f" {random.choice(raw_emojis)} "
+                #    else:
+                #        full_name += " " + random.choice(lnames)
+                full_name += " " + random.choice(lnames)
                 email = fname.lower().encode("ascii", "ignore").decode("ascii") + "@zulip.com"
                 validate_email(email)
                 names.append((full_name, email))
@@ -1033,44 +1037,105 @@ class Command(ZulipBaseCommand):
                     },
                 }
 
-                extra_stream_names = [
-                    "802.11a",
-                    "Ad Hoc Network",
-                    "Augmented Reality",
-                    "Cycling",
-                    "DPI",
-                    "FAQ",
-                    "FiFo",
-                    "commits",
-                    "Control panel",
-                    "desktop",
-                    "компьютеры",
-                    "Data security",
-                    "desktop",
-                    "काम",
-                    "discussions",
-                    "Cloud storage",
-                    "GCI",
-                    "Vaporware",
-                    "Recent Trends",
-                    "issues",
-                    "live",
-                    "Health",
-                    "mobile",
-                    "空間",
-                    "provision",
-                    "hidrógeno",
-                    "HR",
-                    "アニメ",
+
+                fnames = [
+                    "Amber",
+                    "Arpita",
+                    "Bob",
+                    "Cindy",
+                    "Daniela",
+                    "Dan",
+                    "Dinesh",
+                    "Faye",
+                    "François",
+                    "George",
+                    "Hank",
+                    "Irene",
+                    "James",
+                    "Janice",
+                    "Jenny",
+                    "Jill",
+                    "John",
+                    "Kate",
+                    "Katelyn",
+                    "Kobe",
+                    "Lexi",
+                    "Manish",
+                    "Mark",
+                    "Matt",
+                    "Mayna",
+                    "Michael",
+                    "Pete",
+                    "Peter",
+                    "Phil",
+                    "Phillipa",
+                    "Preston",
+                    "Sally",
+                    "Scott",
+                    "Sandra",
+                    "Steve",
+                    "Stephanie",
+                    "Vera",
                 ]
+                lnames = [
+                    "Adams",
+                    "Agarwal",
+                    "Beal",
+                    "Benson",
+                    "Bonita",
+                    "Davis",
+                    "George",
+                    "Harden",
+                    "James",
+                    "Jones",
+                    "Johnson",
+                    "Jordan",
+                    "Lee",
+                    "Leonard",
+                    "Singh",
+                    "Smith",
+                    "Patel",
+                    "Towns",
+                    "Wall",
+                ]
+
+
+                extra_stream_names = [
+                    "EGA433 - NAR - Karkela, Julie - All Users",
+                ]
+
+                projects = [
+                    'EFL424',
+                    'EFL327',
+                    'EGA433',
+                    'EHI',
+                    'ELA323',
+                    'EPA364',
+                    'EUT483',
+                    'EWD261',
+                    'Shelf'
+                ]
+
+                subprojects = [
+                    'HS W',
+                    'CR',
+                    'NAR',
+                    'WP',
+                    'Bio',
+                    'Alg',
+                    'ELA',
+                    'Geo',
+                    'USH',
+                    'Lit',
+                    'Gr4/5',
+                    'Gr9/19'
+                ]
+
 
                 # Add stream names and stream descriptions
                 for i in range(options["extra_streams"]):
-                    extra_stream_name = random.choice(extra_stream_names) + " " + str(i)
+                    extra_stream_name = random.choice(projects) + " - " + random.choice(subprojects) + " - " + random.choice(fnames) + ' ' + random.choice(lnames) + ' - ' + random.choice(fnames) + ' ' + random.choice(lnames)
 
-                    # to imitate emoji insertions in stream names
-                    if random.random() <= 0.15:
-                        extra_stream_name += random.choice(raw_emojis)
 
                     zulip_stream_dict[extra_stream_name] = {
                         "description": "Auto-generated extra stream.",
