@@ -162,6 +162,11 @@ locals {
     dev  = "https://auth-sqa.drcedirect.com/home/datarecognitioncorp-sqa_zulip_2/0oa3mnxusgS1hm6Pu1d7/aln3mo15uyH62rREv1d7"
   }
 
+  entity_id = {
+    prod = "http://www.okta.com/exk7uunhvfu5du28v4x7"
+    dev  = "http://www.okta.com/exk3mnxusdt8NTIOV1d7"
+  }
+
   zulip_secrets_arn = {
     prod = "arn:aws:secretsmanager:us-east-2:911870898277:secret:prod/zulip-9u4Pgf"
     dev  = "arn:aws:secretsmanager:us-east-2:333509430799:secret:dev/zulip-OoH4Ii"
