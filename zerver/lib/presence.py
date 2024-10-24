@@ -35,14 +35,10 @@ def get_presence_dicts_for_rows(
         last_connected_time = user_presence_datetime_with_date_joined_default(
             presence_row["last_connected_time"], presence_row["user_profile__date_joined"]
         )
-        last_heartbeat_time = user_presence_datetime_with_date_joined_default(
-            presence_row["heartbeat_timestamp"], presence_row["user_profile__date_joined"]
-        )
 
         info = get_user_presence_info(
             last_active_time,
             last_connected_time,
-            last_heartbeat_time,
         )
         user_statuses[user_key] = info
 
@@ -70,18 +66,17 @@ def user_presence_datetime_with_date_joined_default(
 
 
 def get_modern_user_presence_info(
-        last_active_time: datetime, last_connected_time: datetime, last_heartbeat_time: datetime
+        last_active_time: datetime, last_connected_time: datetime
 ) -> dict[str, Any]:
     # TODO: Do further bandwidth optimizations to this structure.
     result = {}
     result["active_timestamp"] = datetime_to_timestamp(last_active_time)
     result["idle_timestamp"] = datetime_to_timestamp(last_connected_time)
-    result["heartbeat_timestamp"] = datetime_to_timestamp(last_heartbeat_time)
     return result
 
 
 def get_legacy_user_presence_info(
-        last_active_time: datetime, last_connected_time: datetime, last_heartbeat_time: datetime
+        last_active_time: datetime, last_connected_time: datetime
 ) -> dict[str, Any]:
     """
     Reformats the modern UserPresence data structure so that legacy
@@ -105,7 +100,6 @@ def get_legacy_user_presence_info(
         status=most_recent_info["status"],
         timestamp=most_recent_info["timestamp"],
     )
-    print('using legacy')
 
     result["website"] = most_recent_info
 
@@ -143,7 +137,6 @@ def get_presence_for_user(
     query = UserPresence.objects.filter(user_profile_id=user_profile_id).values(
         "last_active_time",
         "last_connected_time",
-        "heartbeat_timestamp",
         "user_profile__email",
         "user_profile_id",
         "user_profile__enable_offline_push_notifications",
@@ -187,7 +180,6 @@ def get_presence_dict_by_realm(
         query.values(
             "last_active_time",
             "last_connected_time",
-            "heartbeat_timestamp",
             "user_profile__email",
             "user_profile_id",
             "user_profile__enable_offline_push_notifications",

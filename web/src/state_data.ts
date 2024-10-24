@@ -172,7 +172,6 @@ export const unread_direct_message_group_info_schema = z.object({
 export const presence_schema = z.object({
     active_timestamp: z.number().optional(),
     idle_timestamp: z.number().optional(),
-    heartbeat_timestamp: z.number().optional(),
 });
 
 const one_time_notice_schema = z.object({
