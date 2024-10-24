@@ -66,7 +66,7 @@ def user_presence_datetime_with_date_joined_default(
 
 
 def get_modern_user_presence_info(
-        last_active_time: datetime, last_connected_time: datetime
+    last_active_time: datetime, last_connected_time: datetime
 ) -> dict[str, Any]:
     # TODO: Do further bandwidth optimizations to this structure.
     result = {}
@@ -76,7 +76,7 @@ def get_modern_user_presence_info(
 
 
 def get_legacy_user_presence_info(
-        last_active_time: datetime, last_connected_time: datetime
+    last_active_time: datetime, last_connected_time: datetime
 ) -> dict[str, Any]:
     """
     Reformats the modern UserPresence data structure so that legacy
