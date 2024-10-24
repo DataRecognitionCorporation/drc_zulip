@@ -46,6 +46,7 @@ class UserPresence(models.Model):
     # was actually present (E.g. via focusing a browser window or
     # interacting with a computer running the desktop app)
     last_active_time = models.DateTimeField(default=timezone_now, db_index=True, null=True)
+    heartbeat_timestamp = models.DateTimeField(default=timezone_now)
 
     # The following constants are used in the presence API for
     # communicating whether a user is active (last_active_time recent)
