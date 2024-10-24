@@ -443,8 +443,10 @@ export class BuddyList extends BuddyListConf {
                 subscribed_users.push(item);
                 this.users_matching_view_ids.push(item.user_id);
             } else {
-                other_users.push(item);
-                this.other_user_ids.push(item.user_id);
+                if(!current_user.is_guest) {
+                    other_users.push(item);
+                    this.other_user_ids.push(item.user_id);
+                }
             }
         }
 
