@@ -117,6 +117,7 @@ export function status_from_raw(raw: RawPresence): PresenceStatus {
     }
 
     if (age(idle_timestamp) < offline_threshold_secs) {
+        last_active = active_timestamp
         return {
             status: "idle",
             last_active,
