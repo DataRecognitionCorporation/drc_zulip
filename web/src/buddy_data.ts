@@ -116,6 +116,21 @@ export function sort_users(user_ids: number[]): number[] {
     const current_sub = narrow_state.stream_sub();
     const pm_ids_set = narrow_state.pm_ids_set();
     user_ids.sort((a, b) => compare_function(a, b, current_sub, pm_ids_set));
+
+    // Order the roles in descending order: Current user, then guest, then member, then anything else
+    const current_user = user_ids[0];
+
+    // Uncomment the if statement below to only order the roles for guests and members
+    if(current_user === undefined) {
+        return user_ids;
+    }
+
+    const user = people.maybe_get_user_by_id(current_user, true)
+    if (user !== undefined && user.role >= 400) {
+        user_ids = user_ids.slice(1).sort((a, b) => parseFloat(people.maybe_get_user_by_id(b).role) - parseFloat(people.maybe_get_user_by_id(a).role));
+        user_ids.splice(0, 0, current_user);
+    }
+
     return user_ids;
 }
 
@@ -129,12 +144,14 @@ export function user_last_seen_time_status(user_id: number): string {
         return $t({defaultMessage: "Active now"});
     }
 
+    /*
     if (status === "idle") {
         // When we complete our presence API rewrite to have the data
         // plumbed, we may want to change this to also mention when
         // they were last active.
         return $t({defaultMessage: "Idle"});
     }
+    */
 
     const last_active_date = presence.last_active_date(user_id);
     if (realm.realm_is_zephyr_mirror_realm) {
@@ -169,6 +186,7 @@ export type BuddyUserInfo = {
     };
     should_add_guest_user_indicator: boolean;
     faded?: boolean;
+    is_admin?: boolean;
 };
 
 export function info_for(user_id: number): BuddyUserInfo {
@@ -195,6 +213,7 @@ export function info_for(user_id: number): BuddyUserInfo {
         status_text,
         user_list_style,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
+        is_admin: person.is_admin,
     };
 }
 

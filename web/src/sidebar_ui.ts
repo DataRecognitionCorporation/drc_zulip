@@ -226,7 +226,10 @@ export function initialize_left_sidebar(): void {
 }
 
 export function initialize_right_sidebar(): void {
-    const rendered_sidebar = render_right_sidebar();
+    const rendered_sidebar = render_right_sidebar({
+        is_guest: current_user.is_guest,
+        is_admin: current_user.is_admin,
+    });
 
     $("#right-sidebar-container").html(rendered_sidebar);
 
