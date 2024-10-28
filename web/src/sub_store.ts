@@ -25,6 +25,7 @@ export type ExtraStreamAttrs = {
     newly_subscribed: boolean;
     subscribed: boolean;
     previously_subscribed: boolean;
+    display_name: string | undefined;
 };
 
 // This is the actual type of subscription objects we use in the app.

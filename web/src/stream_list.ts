@@ -23,7 +23,13 @@ import * as scroll_util from "./scroll_util";
 import {web_channel_default_view_values} from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as sidebar_ui from "./sidebar_ui";
+import {current_user} from "./state_data";
 import * as stream_data from "./stream_data";
+import {
+    StreamSidebarRowDrc,
+    StreamSidebarDrc,
+    build_stream_folder
+} from "./stream_list_drc"
 import * as stream_list_sort from "./stream_list_sort";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
@@ -46,6 +52,42 @@ let has_scrolled = false;
 export function is_zoomed_in(): boolean {
     return zoomed_in;
 }
+
+class StreamSidebar {
+    rows = new Map<number, StreamSidebarRow>(); // stream id -> row widget
+
+    set_row(stream_id: number, widget: StreamSidebarRow): void {
+        this.rows.set(stream_id, widget);
+    }
+
+    get_row(stream_id: number): StreamSidebarRow | undefined {
+        return this.rows.get(stream_id);
+    }
+
+    has_row_for(stream_id: number): boolean {
+        return this.rows.has(stream_id);
+    }
+
+    remove_row(stream_id: number): void {
+        // This only removes the row from our data structure.
+        // Our caller should use build_stream_list() to re-draw
+        // the sidebar, so that we don't have to deal with edge
+        // cases like removing the last pinned stream (and removing
+        // the divider).
+
+        this.rows.delete(stream_id);
+    }
+}
+
+let use_folders = true;
+//if(!current_user.is_guest) {
+//    use_folders = true;
+//}
+
+
+export const stream_sidebar = new StreamSidebarDrc(use_folders);
+//export const stream_sidebar: StreamSidebar | StreamSidebarDrc = current_user.is_guest ? new StreamSidebar() : new StreamSidebarDrc();
+
 
 function zoom_in(): void {
     const stream_id = topic_list.active_stream_id();
@@ -178,32 +220,6 @@ export function update_count_in_dom(
     }
 }
 
-class StreamSidebar {
-    rows = new Map<number, StreamSidebarRow>(); // stream id -> row widget
-
-    set_row(stream_id: number, widget: StreamSidebarRow): void {
-        this.rows.set(stream_id, widget);
-    }
-
-    get_row(stream_id: number): StreamSidebarRow | undefined {
-        return this.rows.get(stream_id);
-    }
-
-    has_row_for(stream_id: number): boolean {
-        return this.rows.has(stream_id);
-    }
-
-    remove_row(stream_id: number): void {
-        // This only removes the row from our data structure.
-        // Our caller should use build_stream_list() to re-draw
-        // the sidebar, so that we don't have to deal with edge
-        // cases like removing the last pinned stream (and removing
-        // the divider).
-
-        this.rows.delete(stream_id);
-    }
-}
-export const stream_sidebar = new StreamSidebar();
 
 function get_search_term(): string {
     const $search_box = $<HTMLInputElement>("input.stream-list-filter").expectOne();
@@ -447,11 +463,12 @@ export function set_in_home_view(stream_id: number, in_home: boolean): void {
     }
 }
 
-function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
+export function build_stream_sidebar_li(sub: StreamSubscription, display_name: string | undefined): JQuery {
     const name = sub.name;
     const is_muted = stream_data.is_muted(sub.stream_id);
     const args = {
         name,
+        display_name,
         id: sub.stream_id,
         url: hash_util.by_stream_url(sub.stream_id),
         is_muted,
@@ -465,14 +482,21 @@ function build_stream_sidebar_li(sub: StreamSubscription): JQuery {
     return $list_item;
 }
 
-class StreamSidebarRow {
+export class StreamSidebarRow {
     sub: StreamSubscription;
     $list_item: JQuery;
+    display_name: string | undefined;
 
-    constructor(sub: StreamSubscription) {
+    constructor(sub: StreamSubscription, display_name=undefined) {
         this.sub = sub;
-        this.$list_item = build_stream_sidebar_li(sub);
+        this.$list_item = build_stream_sidebar_li(sub, display_name);
         this.update_unread_count();
+        this.display_name = display_name;
+    }
+
+    set_display_name(display_name: string): void {
+        this.display_name = display_name;
+        this.$list_item = build_stream_sidebar_li(this.sub, display_name);
     }
 
     update_whether_active(): void {
