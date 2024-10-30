@@ -1,58 +1,19 @@
 
-import { list } from "postcss";
-import render_stream_sidebar_dropdown from "../templates/stream_sidebar_dropdown.hbs";
-import render_stream_sidebar_dropdown_sub_subfolder from "../templates/stream_sidebar_dropdown_sub_subfolder.hbs";
-import render_stream_sidebar_dropdown_subfolder from "../templates/stream_sidebar_dropdown_subfolder.hbs";
-import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
-import render_stream_subheader from "../templates/streams_subheader.hbs";
+import $ from "jquery";
+import { parseInt } from "lodash";
+import assert from "minimalistic-assert";
 
-import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
+import render_stream_folders from "../templates/stream_sidebar_folders.hbs";
+import render_stream_sub_subfolders from "../templates/stream_sidebar_sub_subfolder.hbs";
+import render_stream_subfolders from "../templates/stream_sidebar_subfolder.hbs";
+
 import {
-    is_muted,
     subscribed_stream_ids
 } from "./stream_data";
-import {
+import { // eslint-disable-line import/no-cycle
     StreamSidebarRow,
+    build_stream_list,
 } from "./stream_list";
-import {
-    build_stream_sidebar_li
-} from "./stream_list";
-import * as stream_list_sort from "./stream_list_sort";
-import type {
-    StreamSubscription,
-} from "./sub_store";
-import * as topic_list from "./topic_list";
-import * as ui_util from "./ui_util";
-import type {FullUnreadCountsData} from "./unread";
-import * as unread from"./unread"
-import { stream_id } from "./narrow_state";
-import { widget } from "./compose_pm_pill";
-
-
-type folder_stream_grouping = {
-    dormant_streams: number[],
-    muted_active_streams: number[],
-    muted_pinned_streams: number[],
-    normal_streams: number[],
-    pinned_streams: number[]
-}
-
-type message_counts = {
-    direct_message_count: number,
-    direct_message_with_mention_count: number,
-    home_unread_messages: number,
-    mentioned_message_count: number,
-    pm_count: Map<string, number>,
-    right_sidebar_direct_message_count: number,
-    stream_count:  Map<number, {
-        muted_count: number,
-        stream_is_muted: boolean,
-        unmuted_count: number
-    }>,
-    streams_with_mentions: number[],
-    streams_with_unmuted_mentions: number[]
-}
 
 
 const REGEX_NUM_LETTERS = new RegExp('^[a-zA-Z0-9\'_,.-]*$')
@@ -60,26 +21,24 @@ const REGEX_NUM_LETTERS = new RegExp('^[a-zA-Z0-9\'_,.-]*$')
 
 function simpleHash(str: string): number {
   let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash |= 0; // Convert to 32bit integer
+  for (let i = 0; i < str.length; i++) { // eslint-disable-line no-plusplus
+    const char = str.charCodeAt(i); // eslint-disable-line unicorn/prefer-code-point
+    hash = (hash << 5) - hash + char; // eslint-disable-line no-bitwise
+
+    // Convert to 32bit integer
+    hash |= 0; // eslint-disable-line no-bitwise, unicorn/prefer-math-trunc
   }
-  return hash;
+  return hash >>> 0; // eslint-disable-line no-bitwise
+
 }
 
 
-class StreamSidebarRowDrc {
-    sub: StreamSubscription;
-    $list_item: JQuery;
-    leader_name: string;
-
-    constructor(sub: StreamSubscription, leader_name: string) {
-        this.leader_name = leader_name;
-        this.sub = sub;
-        this.$list_item = build_stream_sidebar_li(sub);
-    }
-
+function assert_proper_name_array(name_array: string[]): void {
+    assert(name_array.length === 4);
+    assert(name_array[0] !== undefined);
+    assert(name_array[1] !== undefined);
+    assert(name_array[2] !== undefined);
+    assert(name_array[3] !== undefined);
 }
 
 
@@ -97,22 +56,26 @@ class StreamSubFolder {
     }
 
     set_row(stream_id: number, widget: StreamSidebarRow, name_array: string[]): void {
+        assert_proper_name_array(name_array);
+        assert(name_array[2] !== undefined);
+
         // check if subfolder name is index 1 or 2
         if(this.subfolder_name === name_array[1]){
-            const subfolder_id = simpleHash(widget.sub.name)
+            const subfolder_id = simpleHash(widget.sub.name);
 
             // create sub-subfolder does not exist
             if(!this.sub_folders.has(subfolder_id)) {
-                this.sub_folders.set(subfolder_id, new StreamSubFolder(subfolder_id, name_array[2]), name_array)
+                assert(name_array[2] !== undefined);
+                this.sub_folders.set(subfolder_id, new StreamSubFolder(subfolder_id, name_array[2]));
             }
 
             // add to sub-subfolder if index 1
-            widget.set_display_name(name_array[2]);
+            widget.set_subfolder(true, name_array[2]);
             this.sub_folders.get(subfolder_id)?.set_row(stream_id, widget, name_array)
 
         } else if(this.subfolder_name === name_array[2]) {
             // if index 2, add to rows
-            widget.set_display_name(name_array[2]);
+            widget.set_subfolder(true, name_array[2]);
             this.sidebar_rows.set(stream_id, widget);
 
         }
@@ -121,7 +84,7 @@ class StreamSubFolder {
     get_row(stream_id: number): StreamSidebarRow | undefined {
         if(this.sub_folders.size > 0) {
             // search in subfoldrs
-            for(const [_, sub] of this.sub_folders) {
+            for(const [_, sub] of this.sub_folders) { // eslint-disable-line @typescript-eslint/no-unused-vars
                 if(sub.get_row(stream_id) !== undefined) {
                     return sub.get_row(stream_id);
                 }
@@ -139,8 +102,71 @@ class StreamSubFolder {
         return this.subfolder_name;
     }
 
-    get_id(): number {
-        return this.subfolder_id;
+    get_ids(): number[] {
+        let all_ids: number[] = [];
+        if(this.sub_folders.size > 0) {
+            // search in subfoldrs
+            for(const [_, sub] of this.sub_folders) { // eslint-disable-line @typescript-eslint/no-unused-vars
+                all_ids = [...all_ids, ...sub.get_ids()];
+            }
+
+        } else {
+            return [...this.sidebar_rows.keys()];
+        }
+        return all_ids;
+    }
+
+    get_render_data(): Record<number,string> {
+        const temp = {
+            subfolder_id: this.subfolder_id,
+            subfolder_name: this.subfolder_name,
+        }
+        return temp;
+    }
+
+    paint_sub_subfolders(): void {
+        const streams = subscribed_stream_ids();
+        const $parent = $(`#stream_sub_subfolder_${this.subfolder_id}`);
+        const elems: JQuery[] = [];
+
+        if (streams.length === 0) {
+            $parent.empty();
+            return;
+        }
+
+        for(const [_, subfolder] of this.sub_folders) { // eslint-disable-line @typescript-eslint/no-unused-vars
+            const $list_item = $(render_stream_sub_subfolders(subfolder.get_render_data()));
+            elems.push($list_item);
+        }
+
+        $parent.empty();
+        $parent.append(elems); // eslint-disable-line no-jquery/no-append-html
+
+        const stream_subfolder_name = `#stream_sub_subfolder_${this.subfolder_id}`;
+        $(stream_subfolder_name).on("click", ".stream_sub_subfolder_item ", (e) => {
+            const $elt = $(e.target).parents("li");
+            const subfolder_id_str = $elt.attr("subfolder_id");
+
+            assert(subfolder_id_str !== undefined);
+
+            const subfolder_id = parseInt(subfolder_id_str);
+            const subfolder = this.sub_folders.get(subfolder_id);
+
+            assert(subfolder !== undefined);
+
+            const subfolder_stream_ids = [...subfolder.sidebar_rows.keys()]
+            const $parent = $(`#subfolder_rows_${subfolder.subfolder_id}`);
+
+            const length_of_ul = $(`#subfolder_rows_${subfolder_id}`).children("li").length;
+
+            if(length_of_ul > 0) {
+                $(`#subfolder_rows_${subfolder_id}`).off("click");
+                $(`#subfolder_rows_${subfolder_id}`).empty();
+                return;
+            }
+
+            build_stream_list(true, true, $parent, subfolder_stream_ids);
+        });
     }
 }
 
@@ -155,11 +181,12 @@ class StreamFolder {
     }
 
     set_row(stream_id: number, widget: StreamSidebarRow, name_array: string[]): void {
+        assert(name_array[1] !== undefined);
         const subfolder_id = simpleHash(widget.sub.name)
 
         // create a subfodler of none exist
         if(!this.sub_folders.has(subfolder_id)) {
-            this.sub_folders.set(subfolder_id, new StreamSubFolder(subfolder_id, name_array[1]), name_array)
+            this.sub_folders.set(subfolder_id, new StreamSubFolder(subfolder_id, name_array[1]));
         }
 
         // add row to folder
@@ -167,7 +194,7 @@ class StreamFolder {
     }
 
     get_row(stream_id: number): StreamSidebarRow | undefined {
-        for(const [id, sub] of this.sub_folders) {
+        for(const [_, sub] of this.sub_folders) { // eslint-disable-line @typescript-eslint/no-unused-vars
             if(sub.get_row(stream_id) !== undefined) {
                 return sub.get_row(stream_id);
             }
@@ -175,12 +202,71 @@ class StreamFolder {
 
         return undefined
     }
+
+    get_render_data(): Record<string, string> {
+        const temp = {
+            folder_name: this.folder_name
+        }
+        return temp
+    }
+
+    get_ids(): number[] {
+        let all_ids: number[] = [];
+        if(this.sub_folders.size > 0) {
+            // search in subfoldrs
+            for(const [_, sub] of this.sub_folders) { // eslint-disable-line @typescript-eslint/no-unused-vars
+                all_ids = [...all_ids, ...sub.get_ids()];
+            }
+        }
+        return all_ids;
+    }
+
+    paint_subfolders(): void {
+        const streams = subscribed_stream_ids();
+        const $parent = $(`#stream_subfolder_${this.folder_name}`);
+        const elems: JQuery[] = [];
+
+        if (streams.length === 0) {
+            $parent.empty();
+            return;
+        }
+
+        for(const [_, subfolder] of this.sub_folders) { // eslint-disable-line @typescript-eslint/no-unused-vars
+            const $list_item = $(render_stream_subfolders(subfolder.get_render_data()));
+            elems.push($list_item);
+        }
+
+        $parent.empty();
+        $parent.append(elems); // eslint-disable-line no-jquery/no-append-html
+
+
+        const stream_subfolder_name = `#stream_subfolder_${this.folder_name}`;
+        $(stream_subfolder_name).on("click", ".stream_subfolder_item", (e) => {
+            const $elt = $(e.target).parents("li");
+            const subfolder_id_str = $elt.attr("subfolder_id")
+
+            assert(subfolder_id_str !== undefined);
+
+            const subfolder_id = parseInt(subfolder_id_str);
+            const length_of_ul = $(`#stream_sub_subfolder_${subfolder_id}`).children("li").length;
+
+            if(length_of_ul > 0) {
+                $(`#stream_sub_subfolder_${subfolder_id}`).off("click");
+                $(`#stream_sub_subfolder_${subfolder_id}`).empty();
+                return;
+            }
+
+            this.sub_folders.get(subfolder_id)?.paint_sub_subfolders();
+        });
+
+    }
 }
 
 
 export class StreamSidebarDrc {
     rows = new Map<number, StreamSidebarRow>(); // stream id -> row widget
     folders = new Map<string, StreamFolder>(); // folder id -> folder
+    search_rows = new Map<number, StreamSidebarRow>();
     use_folders = false;
     subfolder_id_latest = 0;
     current_open_folder: StreamFolder | null;
@@ -192,17 +278,20 @@ export class StreamSidebarDrc {
 
 
     set_row(stream_id: number, widget: StreamSidebarRow): void {
+        // stash an unchanged vanilla version of stream sidebar row
+        // this is used for search to show the entire row name instead of the last index
+        this.search_rows.set(stream_id, new StreamSidebarRow(widget.sub));
+
         if(this.use_folders) {
             const name_array = widget.sub.name.split(" - ");
             if(name_array.length !== 4){
-                widget.set_display_name(widget.sub.name);
+                widget.set_subfolder(false, widget.sub.name);
                 this.rows.set(stream_id, widget);
                 return;
             }
 
-
             // this is the only way i can silance cascading errors... deal with it... ts sucks
-            if(name_array[0] === undefined) {
+            if(name_array[0] === undefined) { // eslint-disable-line unicorn/prefer-switch
                 this.rows.set(stream_id, widget);
                 return;
             } else if(name_array[1] === undefined) {
@@ -215,7 +304,6 @@ export class StreamSidebarDrc {
                 this.rows.set(stream_id, widget);
                 return;
             }
-
 
             // check if row can be converted to folder, else add it to rows for display below
             // folders
@@ -233,11 +321,10 @@ export class StreamSidebarDrc {
 
             } else {
                 // add to rows below folders
-                widget.set_display_name(widget.sub.name);
+                widget.set_subfolder(false, widget.sub.name);
                 this.rows.set(stream_id, widget);
             }
         } else {
-            widget.set_display_name(widget.sub.name);
             this.rows.set(stream_id, widget);
         }
     }
@@ -247,7 +334,7 @@ export class StreamSidebarDrc {
             if(this.rows.has(stream_id)) {
                 return this.rows.get(stream_id);
             }
-            for(const [id, sub] of this.folders) {
+            for(const [_, sub] of this.folders) { // eslint-disable-line @typescript-eslint/no-unused-vars
                 if(sub.get_row(stream_id) !== undefined) {
                     return sub.get_row(stream_id);
                 }
@@ -256,6 +343,10 @@ export class StreamSidebarDrc {
 
         }
         return this.rows.get(stream_id);
+    }
+
+    get_row_from_search(stream_id: number): StreamSidebarRow | undefined {
+        return this.search_rows.get(stream_id);
     }
 
     has_row_for(stream_id: number): boolean {
@@ -270,5 +361,46 @@ export class StreamSidebarDrc {
         // the divider).
 
         this.rows.delete(stream_id);
+    }
+
+
+    get_all_folder_ids(): number[] {
+        let all_ids: number[] = []
+        for(const [_, folder] of this.folders) { // eslint-disable-line @typescript-eslint/no-unused-vars
+            all_ids = [...all_ids, ...folder.get_ids()]
+        }
+        return all_ids;
+    }
+
+    get_all_row_ids(): number[] {
+        return [...this.rows.keys()]
+    }
+
+    paint_folders(): void {
+        const streams = subscribed_stream_ids();
+        const $parent = $("#stream_folders");
+        const elems: JQuery[] = [];
+
+        if (streams.length === 0) {
+            $parent.empty();
+            return;
+        }
+
+        for(const [_, folder] of this.folders) { // eslint-disable-line @typescript-eslint/no-unused-vars
+            const $list_item = $(render_stream_folders(folder.get_render_data()));
+            elems.push($list_item);
+        }
+
+        $parent.empty();
+        $parent.append(elems); // eslint-disable-line no-jquery/no-append-html
+    }
+
+    paint_subfolders(folder_name: string): void {
+        this.folders.get(folder_name)?.paint_subfolders()
+    }
+
+    hide_folders(): void {
+        const $parent = $("#stream_folders");
+        $parent.empty();
     }
 }

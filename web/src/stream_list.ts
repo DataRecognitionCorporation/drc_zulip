@@ -79,7 +79,7 @@ class StreamSidebar {
     }
 }
 
-let use_folders = true;
+const use_folders = true;
 //if(!current_user.is_guest) {
 //    use_folders = true;
 //}
@@ -250,15 +250,38 @@ export function create_initial_sidebar_rows(): void {
     }
 }
 
-export function build_stream_list(force_rerender: boolean): void {
+export function build_stream_list(force_rerender: boolean, is_subfolder: boolean = false, $parent: JQuery = $('#stream_filters'), subfolder_stream_ids: number[] = []): void {
+    let search_term: string = "";
+    let streams: number[] =  [];
+    search_term = get_search_term();
+    //let $parent = $("#stream_filters");
+
+    if (is_subfolder) {
+        //let $parent = $("#stream_filters");
+        //streams = [...stream_sidebar.get_all_row_ids()]
+        streams = subfolder_stream_ids;
+
+    } else {
+
+        // draw all folders
+        if(use_folders && search_term === "") {
+            stream_sidebar.paint_folders();
+            streams = [...stream_sidebar.get_all_row_ids()]
+
+        // hide folders and display search rows
+        } else {
+            stream_sidebar.hide_folders();
+            streams = stream_data.subscribed_stream_ids();
+    }
+
     // The stream list in the left sidebar contains 3 sections:
     // pinned, normal, and dormant streams, with headings above them
     // as appropriate.
     //
     // Within the first two sections, muted streams are sorted to the
     // bottom; we skip that for dormant streams to simplify discovery.
-    const streams = stream_data.subscribed_stream_ids();
-    const $parent = $("#stream_filters");
+
+    }
     if (streams.length === 0) {
         $parent.empty();
         return;
@@ -266,7 +289,7 @@ export function build_stream_list(force_rerender: boolean): void {
 
     // The main logic to build the list is in stream_list_sort.ts, and
     // we get five lists of streams (pinned/normal/muted_pinned/muted_normal/dormant).
-    const stream_groups = stream_list_sort.sort_groups(streams, get_search_term());
+    const stream_groups = stream_list_sort.sort_groups(streams, search_term);
 
     if (stream_groups.same_as_before && !force_rerender) {
         return;
@@ -275,7 +298,12 @@ export function build_stream_list(force_rerender: boolean): void {
     const elems = [];
 
     function add_sidebar_li(stream_id: number): void {
-        const sidebar_row = stream_sidebar.get_row(stream_id);
+        let sidebar_row: StreamSidebarRow | undefined = undefined;
+        if(search_term === "") {
+            sidebar_row = stream_sidebar.get_row(stream_id);
+        } else {
+            sidebar_row = stream_sidebar.get_row_from_search(stream_id);
+        }
         assert(sidebar_row !== undefined);
         sidebar_row.update_whether_active();
         elems.push(sidebar_row.get_li());
@@ -463,12 +491,13 @@ export function set_in_home_view(stream_id: number, in_home: boolean): void {
     }
 }
 
-export function build_stream_sidebar_li(sub: StreamSubscription, display_name: string | undefined): JQuery {
+export function build_stream_sidebar_li(sub: StreamSubscription, display_name: string | undefined, is_subfolder_row: boolean | undefined): JQuery {
     const name = sub.name;
     const is_muted = stream_data.is_muted(sub.stream_id);
     const args = {
         name,
         display_name,
+        is_subfolder_row,
         id: sub.stream_id,
         url: hash_util.by_stream_url(sub.stream_id),
         is_muted,
@@ -486,17 +515,21 @@ export class StreamSidebarRow {
     sub: StreamSubscription;
     $list_item: JQuery;
     display_name: string | undefined;
+    is_subfolder_row: boolean;
 
     constructor(sub: StreamSubscription, display_name=undefined) {
         this.sub = sub;
         this.$list_item = build_stream_sidebar_li(sub, display_name);
         this.update_unread_count();
         this.display_name = display_name;
+        this.is_subfolder_row = false;
     }
 
-    set_display_name(display_name: string): void {
+    set_subfolder(is_subfolder_row: boolean, display_name: string) {
         this.display_name = display_name;
-        this.$list_item = build_stream_sidebar_li(this.sub, display_name);
+        this.is_subfolder_row = is_subfolder_row;
+        this.$list_item = build_stream_sidebar_li(this.sub, display_name, is_subfolder_row);
+
     }
 
     update_whether_active(): void {
@@ -836,6 +869,7 @@ export function initialize({
     on_stream_click: (stream_id: number, trigger: string) => void;
 }): void {
     create_initial_sidebar_rows();
+    console.log("this is sooo dumb")
 
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.
@@ -866,7 +900,25 @@ export function set_event_handlers({
 }: {
     on_stream_click: (stream_id: number, trigger: string) => void;
 }): void {
-    $("#stream_filters").on("click", "li .subscription_block .stream-name", (e) => {
+    $("#stream_folders").on("click", ".stream_folder_item", (e) => {
+        const folder_name =  $(e.target).attr("folder_name");
+        const subfolder_name = `#stream_subfolder_${folder_name}`;
+        const length_of_ul = $(subfolder_name).children("li").length;
+
+        if(length_of_ul > 0) {
+            $(subfolder_name).off("click");
+            $(subfolder_name).empty();
+            return;
+        }
+        $(subfolder_name).off("click");
+        $(subfolder_name).empty();
+
+        stream_sidebar.paint_subfolders(folder_name);
+    });
+
+    //$("#stream_filters").on("click", "li .subscription_block .stream-name", (e) => {
+    $("#stream_folders").on("click", "li .subscription_block .stream-name", (e) => {
+        console.log('bruh')
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
@@ -895,6 +947,7 @@ export function set_event_handlers({
                     stream_id,
                     topic_item.topic_name,
                 );
+                console.log(destination_url)
                 browser_history.go_to_location(destination_url);
             } else {
                 on_stream_click(stream_id, "sidebar");

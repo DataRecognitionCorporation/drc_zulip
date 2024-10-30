@@ -8,7 +8,11 @@
                 {{> stream_privacy }}
             </span>
 
+            {{#if is_subfolder_row}}
             <span title="{{name}}" class="stream-name">{{display_name}}</span>
+            {{else}}
+            <span title="{{name}}" class="stream-name">{{name}}</span>
+            {{/if}}
 
             <div class="stream-markers-and-controls">
                 <span class="unread_mention_info"></span>
