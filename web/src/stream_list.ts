@@ -640,7 +640,7 @@ export function update_streams_sidebar(force_rerender = false): void {
     }
     set_pending_stream_list_rerender(false);
 
-    build_stream_list(force_rerender);
+    //build_stream_list(force_rerender);
 
     stream_cursor.redraw();
 
@@ -869,7 +869,6 @@ export function initialize({
     on_stream_click: (stream_id: number, trigger: string) => void;
 }): void {
     create_initial_sidebar_rows();
-    console.log("this is sooo dumb")
 
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.
@@ -916,9 +915,7 @@ export function set_event_handlers({
         stream_sidebar.paint_subfolders(folder_name);
     });
 
-    //$("#stream_filters").on("click", "li .subscription_block .stream-name", (e) => {
-    $("#stream_folders").on("click", "li .subscription_block .stream-name", (e) => {
-        console.log('bruh')
+    $("#stream_filters").on("click", "li .subscription_block .stream-name", (e) => {
         if (e.metaKey || e.ctrlKey || e.shiftKey) {
             return;
         }
@@ -947,7 +944,57 @@ export function set_event_handlers({
                     stream_id,
                     topic_item.topic_name,
                 );
-                console.log(destination_url)
+                browser_history.go_to_location(destination_url);
+            } else {
+                on_stream_click(stream_id, "sidebar");
+                return;
+            }
+        };
+
+        if (topics.length === 0) {
+            stream_topic_history_util.get_server_history(stream_id, () => {
+                topics = stream_topic_history.get_recent_topic_names(stream_id);
+                if (topics.length === 0) {
+                    on_stream_click(stream_id, "sidebar");
+                    return;
+                }
+                navigate_to_stream();
+                return;
+            });
+        } else {
+            navigate_to_stream();
+            return;
+        }
+    });
+    $("#stream_folders").on("click", "li .subscription_block .stream-name", (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey) {
+            return;
+        }
+
+        clear_and_hide_search();
+        e.preventDefault();
+        e.stopPropagation();
+
+        const stream_id = stream_id_for_elt($(e.target).parents("li"));
+
+        if (
+            user_settings.web_channel_default_view ===
+            web_channel_default_view_values.channel_feed.code
+        ) {
+            on_stream_click(stream_id, "sidebar");
+            return;
+        }
+
+        let topics = stream_topic_history.get_recent_topic_names(stream_id);
+
+        const navigate_to_stream = (): void => {
+            const topic_list_info = topic_list_data.get_list_info(stream_id, false, "");
+            const topic_item = topic_list_info.items[0];
+            if (topic_item !== undefined) {
+                const destination_url = hash_util.by_stream_topic_url(
+                    stream_id,
+                    topic_item.topic_name,
+                );
                 browser_history.go_to_location(destination_url);
             } else {
                 on_stream_click(stream_id, "sidebar");
