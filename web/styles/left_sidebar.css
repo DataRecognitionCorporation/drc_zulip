@@ -62,105 +62,6 @@ li.show-more-topics {
     max-width: 18em;
 }
 
-
-#stream_folders {
-    overflow: visible;
-    margin-bottom: 5px;
-    padding: 0;
-    font-weight: normal;
-
-    .topic_search_section {
-        margin: 3px 0;
-
-        .clear_search_button {
-            grid-area: row-content;
-            justify-self: self-end;
-            /* Override app-component positioning. */
-            position: static;
-            padding-right: 4px;
-        }
-    }
-
-    & li {
-        & a:hover {
-            text-decoration: none;
-        }
-
-        & ul {
-            margin-left: 0;
-
-            &.topic-list li {
-                padding: 0;
-            }
-        }
-    }
-
-    .stream-with-count.hide_unread_counts {
-        .masked_unread_count {
-            display: block;
-            /* Shift masked dot to align with
-               the least-significant digit on
-               unreads in other rows.
-               We have to do this with margin,
-               because width or padding will
-               distort the CSS-created dot. */
-            margin-right: 3px;
-        }
-
-        .unread_count {
-            display: none;
-        }
-    }
-
-    .narrow-filter
-        > .bottom_left_row:hover
-        > .stream-with-count.hide_unread_counts {
-        .masked_unread_count {
-            display: none;
-        }
-
-        .unread_count {
-            display: inline;
-        }
-    }
-
-    .stream-expanded {
-        .stream-with-count.hide_unread_counts {
-            .masked_unread_count {
-                display: none;
-            }
-
-            .unread_count {
-                display: inline;
-            }
-        }
-    }
-
-    .has-unmuted-unreads.hide_unread_counts {
-        .masked_unread_count {
-            display: none;
-        }
-
-        .unread_count {
-            display: inline;
-        }
-    }
-
-    .inactive_stream:not(.active-filter) {
-        opacity: 0.5;
-    }
-
-    .toggle_stream_mute {
-        margin-right: 3px;
-        opacity: 0.5;
-
-        &:hover {
-            opacity: 1;
-        }
-    }
-}
-
-
 #stream_filters {
     overflow: visible;
     margin-bottom: 5px;
@@ -1540,4 +1441,55 @@ li.topic-list-item {
         top: 0;
         z-index: 1;
     }
+}
+
+
+.subfolder_underline:hover {
+    text-decoration: underline;
+}
+
+ul.folders a {
+    color: inherit;
+}
+
+ul.folders {
+    margin: 0 0 3px 10px
+}
+
+
+ul.subfolders {
+    margin: 0 0 0px 10px
+}
+
+ul.sub_subfolders {
+    margin: 0 0 5px 10px
+}
+
+ul.sub_subfolder_rows {
+    margin: 0 0 5px 5px
+}
+
+.folders ul.topic-list {
+    margin: 0 0 5px 25px
+}
+.folders ul.topic-list a {
+    text-align: left;
+}
+
+
+ul.folders a:link {
+    text-decoration: none;
+    color: unset !important;
+}
+ul.folders a:hover {
+    text-decoration: none;
+    color: unset !important;
+}
+ul.folders a:active {
+    text-decoration: none;
+    color: unset !important;
+}
+ul.folders a:visited {
+    text-decoration: none;
+    color: unset !important;
 }

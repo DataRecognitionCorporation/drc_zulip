@@ -1,4 +1,3 @@
-
 import $ from "jquery";
 import { parseInt } from "lodash";
 import assert from "minimalistic-assert";
@@ -14,6 +13,8 @@ import { // eslint-disable-line import/no-cycle
     StreamSidebarRow,
     build_stream_list,
 } from "./stream_list";
+import * as unread from "./unread";
+import { update_unread_counts } from "./unread_ui";
 
 
 const REGEX_NUM_LETTERS = new RegExp('^[a-zA-Z0-9\'_,.-]*$')
@@ -55,6 +56,7 @@ class StreamSubFolder {
         this.subfolder_name = subfolder_name;
     }
 
+
     set_row(stream_id: number, widget: StreamSidebarRow, name_array: string[]): void {
         assert_proper_name_array(name_array);
         assert(name_array[2] !== undefined);
@@ -81,6 +83,7 @@ class StreamSubFolder {
         }
     }
 
+
     get_row(stream_id: number): StreamSidebarRow | undefined {
         if(this.sub_folders.size > 0) {
             // search in subfoldrs
@@ -98,9 +101,11 @@ class StreamSubFolder {
         return undefined;
     }
 
+
     get_name(): string {
         return this.subfolder_name;
     }
+
 
     get_ids(): number[] {
         let all_ids: number[] = [];
@@ -116,6 +121,7 @@ class StreamSubFolder {
         return all_ids;
     }
 
+
     get_render_data(): Record<number,string> {
         const temp = {
             subfolder_id: this.subfolder_id,
@@ -123,6 +129,7 @@ class StreamSubFolder {
         }
         return temp;
     }
+
 
     paint_sub_subfolders(): void {
         const streams = subscribed_stream_ids();
@@ -141,6 +148,7 @@ class StreamSubFolder {
 
         $parent.empty();
         $parent.append(elems); // eslint-disable-line no-jquery/no-append-html
+        update_unread_counts();
 
         const stream_subfolder_name = `#stream_sub_subfolder_${this.subfolder_id}`;
         $(stream_subfolder_name).on("click", ".stream_sub_subfolder_item ", (e) => {
@@ -159,6 +167,7 @@ class StreamSubFolder {
 
             const length_of_ul = $(`#subfolder_rows_${subfolder_id}`).children("li").length;
 
+            this.update_unread_counts();
             if(length_of_ul > 0) {
                 $(`#subfolder_rows_${subfolder_id}`).off("click");
                 $(`#subfolder_rows_${subfolder_id}`).empty();
@@ -168,6 +177,47 @@ class StreamSubFolder {
             build_stream_list(true, true, $parent, subfolder_stream_ids);
         });
     }
+
+
+    update_unread_counts(): number {
+        let total_count = 0;
+
+        if(this.sub_folders.size > 0) {
+            const $subfolder_unread = $(`.sub_sub_folder_li_${this.subfolder_id} .sub_subfolder_unread_count`);
+            // search in subfoldrs
+            for(const [_, sub] of this.sub_folders) { // eslint-disable-line @typescript-eslint/no-unused-vars
+                const count = sub.update_unread_counts();
+                total_count += count;
+            }
+            this.unread_count = total_count;
+
+            if(total_count !== 0) {
+                $subfolder_unread.show();
+                $subfolder_unread.text(total_count);
+            } else {
+                $subfolder_unread.text("");
+                $subfolder_unread.hide();
+            }
+
+        } else {
+            const $subfolder_unread = $(`.subfolder_${this.subfolder_id} .subfolder_unread_count`);
+            for(const [stream_id, _] of this.sidebar_rows) { // eslint-disable-line @typescript-eslint/no-unused-vars
+                const count = unread.unread_count_info_for_stream(stream_id);
+                total_count += count.unmuted_count;
+            }
+            this.unread_count = total_count;
+
+            if(total_count !== 0) {
+                $subfolder_unread.show();
+                $subfolder_unread.text(total_count);
+            } else {
+                $subfolder_unread.text("");
+                $subfolder_unread.hide();
+            }
+
+        }
+        return total_count;
+    }
 }
 
 
@@ -175,10 +225,13 @@ class StreamSubFolder {
 class StreamFolder {
     folder_name: string;
     sub_folders = new Map<number, StreamSubFolder>(); // stream id -> row widget
+    unread_count = 0;
+
 
     constructor(folder_name: string) {
         this.folder_name = folder_name;
     }
+
 
     set_row(stream_id: number, widget: StreamSidebarRow, name_array: string[]): void {
         assert(name_array[1] !== undefined);
@@ -193,6 +246,7 @@ class StreamFolder {
         this.sub_folders.get(subfolder_id)?.set_row(stream_id, widget, name_array)
     }
 
+
     get_row(stream_id: number): StreamSidebarRow | undefined {
         for(const [_, sub] of this.sub_folders) { // eslint-disable-line @typescript-eslint/no-unused-vars
             if(sub.get_row(stream_id) !== undefined) {
@@ -203,12 +257,14 @@ class StreamFolder {
         return undefined
     }
 
+
     get_render_data(): Record<string, string> {
         const temp = {
             folder_name: this.folder_name
         }
         return temp
     }
+
 
     get_ids(): number[] {
         let all_ids: number[] = [];
@@ -220,6 +276,7 @@ class StreamFolder {
         }
         return all_ids;
     }
+
 
     paint_subfolders(): void {
         const streams = subscribed_stream_ids();
@@ -257,8 +314,31 @@ class StreamFolder {
             }
 
             this.sub_folders.get(subfolder_id)?.paint_sub_subfolders();
+            this.update_unread_counts();
         });
+    }
 
+
+    update_unread_counts(): void {
+        // search in subfoldrs
+        let total_count = 0;
+        for(const [_, sub] of this.sub_folders) { // eslint-disable-line @typescript-eslint/no-unused-vars
+            const count =sub.update_unread_counts();
+            total_count += count;
+        }
+
+        this.unread_count = total_count;
+        let this_str = `.folder_name_${this.folder_name} .folder_unread_count`
+        const $subfolder_unread = $(this_str);
+
+        if(total_count !== 0) {
+            $subfolder_unread.show();
+            $subfolder_unread.text(total_count);
+        } else {
+            $subfolder_unread.text("");
+            $subfolder_unread.hide();
+
+        }
     }
 }
 
@@ -270,6 +350,7 @@ export class StreamSidebarDrc {
     use_folders = false;
     subfolder_id_latest = 0;
     current_open_folder: StreamFolder | null;
+
 
     constructor(use_folders: boolean) {
         this.use_folders = use_folders;
@@ -329,6 +410,7 @@ export class StreamSidebarDrc {
         }
     }
 
+
     get_row(stream_id: number): StreamSidebarRow | undefined {
         if(this.use_folders) {
             if(this.rows.has(stream_id)) {
@@ -345,13 +427,16 @@ export class StreamSidebarDrc {
         return this.rows.get(stream_id);
     }
 
+
     get_row_from_search(stream_id: number): StreamSidebarRow | undefined {
         return this.search_rows.get(stream_id);
     }
 
+
     has_row_for(stream_id: number): boolean {
         return this.rows.has(stream_id);
     }
+
 
     remove_row(stream_id: number): void {
         // This only removes the row from our data structure.
@@ -372,9 +457,11 @@ export class StreamSidebarDrc {
         return all_ids;
     }
 
+
     get_all_row_ids(): number[] {
         return [...this.rows.keys()]
     }
+
 
     paint_folders(): void {
         const streams = subscribed_stream_ids();
@@ -393,14 +480,33 @@ export class StreamSidebarDrc {
 
         $parent.empty();
         $parent.append(elems); // eslint-disable-line no-jquery/no-append-html
+
+        for(const [_, folder] of this.folders) { // eslint-disable-line @typescript-eslint/no-unused-vars
+            const this_folder = `.folder_name_${folder.folder_name} .folder_unread_count`
+            const $folder_unread = $(this_folder);
+            $folder_unread.text("");
+            $folder_unread.hide();
+        }
     }
+
 
     paint_subfolders(folder_name: string): void {
         this.folders.get(folder_name)?.paint_subfolders()
+        this.update_unread_counts();
     }
+
 
     hide_folders(): void {
         const $parent = $("#stream_folders");
         $parent.empty();
     }
+
+
+    update_unread_counts(): void {
+
+        for(const [_, folder] of this.folders) { // eslint-disable-line @typescript-eslint/no-unused-vars
+            folder.update_unread_counts();
+        }
+    }
 }
+

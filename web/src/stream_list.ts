@@ -25,11 +25,7 @@ import * as settings_data from "./settings_data";
 import * as sidebar_ui from "./sidebar_ui";
 import {current_user} from "./state_data";
 import * as stream_data from "./stream_data";
-import {
-    StreamSidebarRowDrc,
-    StreamSidebarDrc,
-    build_stream_folder
-} from "./stream_list_drc"
+import {StreamSidebarDrc} from "./stream_list_drc";
 import * as stream_list_sort from "./stream_list_sort";
 import * as stream_topic_history from "./stream_topic_history";
 import * as stream_topic_history_util from "./stream_topic_history_util";
@@ -79,14 +75,7 @@ class StreamSidebar {
     }
 }
 
-const use_folders = true;
-//if(!current_user.is_guest) {
-//    use_folders = true;
-//}
-
-
-export const stream_sidebar = new StreamSidebarDrc(use_folders);
-//export const stream_sidebar: StreamSidebar | StreamSidebarDrc = current_user.is_guest ? new StreamSidebar() : new StreamSidebarDrc();
+export const stream_sidebar = new StreamSidebarDrc(true);
 
 
 function zoom_in(): void {
@@ -251,20 +240,17 @@ export function create_initial_sidebar_rows(): void {
 }
 
 export function build_stream_list(force_rerender: boolean, is_subfolder: boolean = false, $parent: JQuery = $('#stream_filters'), subfolder_stream_ids: number[] = []): void {
-    let search_term: string = "";
+    let search_term  = "";
     let streams: number[] =  [];
     search_term = get_search_term();
-    //let $parent = $("#stream_filters");
 
     if (is_subfolder) {
-        //let $parent = $("#stream_filters");
-        //streams = [...stream_sidebar.get_all_row_ids()]
         streams = subfolder_stream_ids;
 
     } else {
 
         // draw all folders
-        if(use_folders && search_term === "") {
+        if(stream_sidebar.use_folders && search_term === "") {
             stream_sidebar.paint_folders();
             streams = [...stream_sidebar.get_all_row_ids()]
 
@@ -516,6 +502,7 @@ export class StreamSidebarRow {
     $list_item: JQuery;
     display_name: string | undefined;
     is_subfolder_row: boolean;
+    count = {};
 
     constructor(sub: StreamSubscription, display_name=undefined) {
         this.sub = sub;
@@ -525,7 +512,7 @@ export class StreamSidebarRow {
         this.is_subfolder_row = false;
     }
 
-    set_subfolder(is_subfolder_row: boolean, display_name: string) {
+    set_subfolder(is_subfolder_row: boolean, display_name: string): void {
         this.display_name = display_name;
         this.is_subfolder_row = is_subfolder_row;
         this.$list_item = build_stream_sidebar_li(this.sub, display_name, is_subfolder_row);
@@ -617,6 +604,7 @@ function set_stream_unread_count(
         blueslip.warn("stream id no longer in sidebar: " + stream_id);
         return;
     }
+
     update_count_in_dom(
         $stream_li,
         count,
@@ -624,6 +612,10 @@ function set_stream_unread_count(
         stream_has_any_unmuted_unread_mention,
         stream_has_only_muted_unread_mentions,
     );
+
+    if(stream_sidebar.use_folders) {
+        stream_sidebar.update_unread_counts();
+    }
 }
 
 export function update_streams_sidebar(force_rerender = false): void {
@@ -639,8 +631,9 @@ export function update_streams_sidebar(force_rerender = false): void {
         return;
     }
     set_pending_stream_list_rerender(false);
-
-    //build_stream_list(force_rerender);
+    if(get_search_term() !== "") {
+        build_stream_list(force_rerender);
+    }
 
     stream_cursor.redraw();
 
@@ -868,6 +861,11 @@ export function initialize({
 }: {
     on_stream_click: (stream_id: number, trigger: string) => void;
 }): void {
+    if(!current_user.is_guest) {
+        stream_sidebar.use_folders = true;
+    } else {
+        stream_sidebar.use_folders = false;
+    }
     create_initial_sidebar_rows();
 
     // We build the stream_list now.  It may get re-built again very shortly
@@ -1104,6 +1102,7 @@ export function clear_search(e: JQuery.ClickEvent): void {
     const $filter = $(".stream-list-filter").expectOne();
     if ($filter.val() === "") {
         clear_and_hide_search();
+        build_stream_list(true);
         return;
     }
     $filter.val("");
@@ -1121,6 +1120,7 @@ export function hide_search_section(): void {
     $("#streams_header").removeClass("showing-stream-search-section");
     $(".stream_search_section").expectOne().addClass("notdisplayed");
     resize.resize_stream_filters_container();
+    //build_stream_list(true);
 }
 
 export function initiate_search(): void {
