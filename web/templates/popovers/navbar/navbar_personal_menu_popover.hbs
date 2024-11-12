@@ -16,6 +16,7 @@
         </header>
         <section class="dropdown-menu-list-section personal-menu-actions" data-user-id="{{user_id}}">
             <ul role="menu" class="popover-menu-list">
+                {{#unless user_is_guest}}
                 {{#if status_content_available}}
                 <li role="none" class="text-item popover-menu-list-item">
                     <span class="personal-menu-status-wrapper">
@@ -70,6 +71,7 @@
                     </a>
                 </li>
                 {{/if}}
+                {{/unless}}
                 {{!-- Group 2 --}}
                 <li role="separator" class="popover-menu-separator"></li>
                 <li role="none" class="link-item popover-menu-list-item">
