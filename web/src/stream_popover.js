@@ -111,6 +111,7 @@ function build_stream_popover(opts) {
             url: browser_history.get_full_url(stream_hash),
         },
         show_go_to_channel_feed,
+        is_guest: current_user.is_guest,
     });
 
     popover_menus.toggle_popover_menu(elt, {
