@@ -9,6 +9,7 @@
             <span class="popover-stream-name">{{stream.name}}</span>
         </li>
         <li role="separator" class="popover-menu-separator"></li>
+        {{#unless is_guest}}
         <li role="none" class="link-item popover-menu-inner-list-item hidden-for-spectators">
             <a role="menuitem" class="popover_new_topic_button popover-menu-link" tabindex="0">
                 <i class="popover-menu-icon zulip-icon zulip-icon-square-plus" aria-hidden="true"></i>
@@ -21,6 +22,7 @@
                 <span class="popover-menu-label">{{t "Mark all messages as read"}}</span>
             </a>
         </li>
+        {{/unless}}
         {{#if show_go_to_channel_feed}}
         <li role="none" class="link-item popover-menu-inner-list-item">
             <a role="menuitem" class="stream-popover-go-to-channel-feed popover-menu-link" tabindex="0">
@@ -53,6 +55,7 @@
                 {{/if}}
             </a>
         </li>
+        {{#unless is_guest}}
         <li role="none" class="link-item popover-menu-inner-list-item hidden-for-spectators">
             <a role="menuitem" class="toggle_stream_muted popover-menu-link" tabindex="0">
                 {{#if stream.is_muted}}
@@ -70,6 +73,7 @@
                 <span class="popover-menu-label">{{t "Unsubscribe"}}</span>
             </a>
         </li>
+        {{/unless}}
         <li role="separator" class="popover-menu-separator hidden-for-spectators"></li>
         <li role="none" class="link-item popover-menu-inner-list-item hidden-for-spectators no-auto-hide-left-sidebar-overlay">
             <span class="colorpicker-container">
