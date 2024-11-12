@@ -5,6 +5,7 @@
         </li>
         {{!-- Group 1 --}}
         {{#unless is_spectator}}
+        {{#unless is_guest}}
         <li role="separator" class="popover-menu-separator"></li>
         <li role="none" class="popover-menu-list-item">
             <div role="group" class="tab-picker popover-menu-tab-group" aria-label="{{t 'Topic visibility' }}">
@@ -30,6 +31,7 @@
             </div>
         </li>
         {{/unless}}
+        {{/unless}}
         {{!-- Group 2 --}}
         <li role="separator" class="popover-menu-separator"></li>
         {{#if has_starred_messages}}
@@ -48,12 +50,14 @@
             </a>
         </li>
         {{else}}
+        {{#unless is_guest}}
         <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
             <a role="menuitem" class="sidebar-popover-mark-topic-unread popover-menu-link" tabindex="0">
                 <i class="popover-menu-icon zulip-icon zulip-icon-mark-as-unread" aria-hidden="true"></i>
                 <span class="popover-menu-label">{{t "Mark all messages as unread" }}</span>
             </a>
         </li>
+        {{/unless}}
         {{/if}}
         <li role="none" class="link-item popover-menu-list-item">
             <a role="menuitem" class="sidebar-popover-copy-link-to-topic popover-menu-link" data-clipboard-text="{{ url }}" tabindex="0">
@@ -73,14 +77,17 @@
             </a>
         </li>
         {{else if can_rename_topic}}
+        {{#unless is_guest}}
         <li role="none" class="link-item popover-menu-list-item">
             <a role="menuitem" class="sidebar-popover-rename-topic-messages popover-menu-link" tabindex="0">
                 <i class="popover-menu-icon zulip-icon zulip-icon-rename" aria-hidden="true"></i>
                 <span class="popover-menu-label">{{t "Rename topic" }}</span>
             </a>
         </li>
+        {{/unless}}
         {{/if}}
         {{#if can_rename_topic}}
+        {{#unless is_guest}}
         <li role="none" class="link-item popover-menu-list-item">
             <a role="menuitem" class="sidebar-popover-toggle-resolved popover-menu-link" tabindex="0">
                 {{# if topic_is_resolved }}
@@ -92,6 +99,7 @@
                 {{/if}}
             </a>
         </li>
+        {{/unless}}
         {{/if}}
         {{#if is_realm_admin}}
         <li role="none" class="link-item popover-menu-list-item">
