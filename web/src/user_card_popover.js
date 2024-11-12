@@ -264,6 +264,7 @@ function get_user_card_popover_data(
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user.user_id),
         user_avatar: people.small_avatar_url_for_person(user),
         user_is_guest: user.is_guest,
+        is_guest: current_user.is_guest,
         show_manage_section,
         can_mute,
         can_unmute,

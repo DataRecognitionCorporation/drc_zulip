@@ -166,7 +166,6 @@ const keypress_mappings = {
     73: {name: "open_inbox", message_view_only: true}, // 'I'
     74: {name: "vim_page_down", message_view_only: true}, // 'J'
     75: {name: "vim_page_up", message_view_only: true}, // 'K'
-    77: {name: "toggle_topic_visibility_policy", message_view_only: true}, // 'M'
     80: {name: "narrow_private", message_view_only: true}, // 'P'
     82: {name: "respond_to_author", message_view_only: true}, // 'R'
     83: {name: "toggle_stream_subscription", message_view_only: true}, // 'S'
