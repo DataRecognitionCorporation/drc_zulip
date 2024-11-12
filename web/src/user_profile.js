@@ -48,6 +48,7 @@ import * as user_deactivation_ui from "./user_deactivation_ui";
 import * as user_groups from "./user_groups";
 import * as user_pill from "./user_pill";
 import * as util from "./util";
+import { values } from "lodash";
 
 let user_streams_list_widget;
 let user_profile_subscribe_widget;
@@ -501,15 +502,23 @@ export function show_user_profile(user, default_tab_key = "profile-tab") {
     } else if (default_tab_key === "manage-profile-tab") {
         default_tab = 3;
     }
+    let values = []
+    if(current_user.is_guest) {
+        values = [
+            {label: $t({defaultMessage: "Profile"}), key: "profile-tab"},
+        ]
+    } else {
+        values = [
+            {label: $t({defaultMessage: "Profile"}), key: "profile-tab"},
+            {label: $t({defaultMessage: "Channels"}), key: "user-profile-streams-tab"},
+            {label: $t({defaultMessage: "User groups"}), key: "user-profile-groups-tab"},
+        ]
+    }
 
     const opts = {
         selected: default_tab,
         child_wants_focus: true,
-        values: [
-            {label: $t({defaultMessage: "Profile"}), key: "profile-tab"},
-            {label: $t({defaultMessage: "Channels"}), key: "user-profile-streams-tab"},
-            {label: $t({defaultMessage: "User groups"}), key: "user-profile-groups-tab"},
-        ],
+        values: values,
         callback(_name, key) {
             $(".tabcontent").hide();
             $(`#${CSS.escape(key)}`).show();

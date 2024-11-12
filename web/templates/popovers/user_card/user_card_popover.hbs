@@ -61,6 +61,7 @@
             </li>
         {{/if}}
         {{#if is_me}}
+        {{#unless is_guest}}
             {{#if status_content_available}}
                 <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
                     <a role="menuitem" tabindex="0" class="update_status_text popover-menu-link">
@@ -91,6 +92,7 @@
                     </a>
                 </li>
             {{/if}}
+        {{/unless}}
         {{/if}}
         {{#if (or is_me status_content_available)}}
             <li role="separator" class="popover-menu-separator hidden-for-spectators"></li>
@@ -205,6 +207,7 @@
                 <span class="popover-menu-label">{{t "View messages sent" }}</span>
             </a>
         </li>
+        {{#unless is_guest}}
         {{#if show_manage_section}}
             <li role="separator" class="popover-menu-separator hidden-for-spectators"></li>
             {{#if can_mute}}
@@ -258,5 +261,6 @@
                 {{/if}}
             {{/if}}
         {{/if}}
+        {{/unless}}
     </ul>
 </div>
