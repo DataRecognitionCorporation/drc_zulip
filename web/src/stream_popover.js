@@ -636,6 +636,18 @@ export async function build_move_topic_to_stream_popover(
 }
 
 export function initialize() {
+    $("#stream_folders").on("click", ".stream-sidebar-menu-icon", (e) => {
+        const elt = e.currentTarget;
+        const $stream_li = $(elt).parents("li");
+        const stream_id = elem_to_stream_id($stream_li);
+
+        build_stream_popover({
+            elt,
+            stream_id,
+        });
+
+        e.stopPropagation();
+    });
     $("#stream_filters").on("click", ".stream-sidebar-menu-icon", (e) => {
         const elt = e.currentTarget;
         const $stream_li = $(elt).parents("li");

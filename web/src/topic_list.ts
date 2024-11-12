@@ -336,6 +336,31 @@ export function initialize({
 }: {
     on_topic_click: (stream_id: number, topic?: string) => void;
 }): void {
+    $("#stream_folders").on(
+        "click",
+        ".sidebar-topic-check, .sidebar-topic-name, .topic-markers-and-controls",
+        (e) => {
+            if (e.metaKey || e.ctrlKey || e.shiftKey) {
+                return;
+            }
+            if ($(e.target).closest(".show-more-topics").length > 0) {
+                return;
+            }
+
+            if ($(e.target).hasClass("visibility-policy-icon")) {
+                return;
+            }
+
+            const $stream_row = $(e.target).parents(".narrow-filter");
+            const stream_id_string = $stream_row.attr("data-stream-id");
+            assert(stream_id_string !== undefined);
+            const stream_id = Number.parseInt(stream_id_string, 10);
+            const topic = $(e.target).parents("li").attr("data-topic-name");
+            on_topic_click(stream_id, topic);
+
+            e.preventDefault();
+        },
+    );
     $("#stream_filters").on(
         "click",
         ".sidebar-topic-check, .sidebar-topic-name, .topic-markers-and-controls",

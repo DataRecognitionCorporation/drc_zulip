@@ -1442,3 +1442,54 @@ li.topic-list-item {
         z-index: 1;
     }
 }
+
+
+.subfolder_underline:hover {
+    text-decoration: underline;
+}
+
+ul.folders a {
+    color: inherit;
+}
+
+ul.folders {
+    margin: 0 0 3px 10px
+}
+
+
+ul.subfolders {
+    margin: 0 0 0px 10px
+}
+
+ul.sub_subfolders {
+    margin: 0 0 5px 10px
+}
+
+ul.sub_subfolder_rows {
+    margin: 0 0 5px 5px
+}
+
+.folders ul.topic-list {
+    margin: 0 0 5px 25px
+}
+.folders ul.topic-list a {
+    text-align: left;
+}
+
+
+ul.folders a:link {
+    text-decoration: none;
+    color: unset !important;
+}
+ul.folders a:hover {
+    text-decoration: none;
+    color: unset !important;
+}
+ul.folders a:active {
+    text-decoration: none;
+    color: unset !important;
+}
+ul.folders a:visited {
+    text-decoration: none;
+    color: unset !important;
+}
