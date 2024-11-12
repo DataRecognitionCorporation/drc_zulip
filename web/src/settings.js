@@ -88,6 +88,7 @@ export function build_page() {
     setup_settings_label();
 
     const rendered_settings_tab = render_settings_tab({
+        is_guest: current_user.is_guest,
         full_name: people.my_full_name(),
         date_joined_text: get_parsed_date_of_joining(),
         current_user,
