@@ -1,5 +1,6 @@
 <form class="notification-settings-form">
     <div class="general_notifications {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
+        {{#unless is_guest}}
         <div class="subsection-header inline-block">
             <h3>{{t "Notification triggers" }}</h3>
             {{> settings_save_discard_widget section_name="general-notify-settings" show_only_indicator=(not for_realm_settings) }}
@@ -46,8 +47,10 @@
             </tbody>
             {{/unless}}
         </table>
+        {{/unless}}
     </div>
 
+    {{#unless is_guest}}
     <div class="topic_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header inline-block">
@@ -92,8 +95,10 @@
           label=(lookup settings_label "automatically_follow_topics_where_mentioned")
           prefix=prefix}}
     </div>
+    {{/unless}}
 
     <div class="desktop_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
+        {{#unless is_guest}}
 
         <div class="subsection-header inline-block">
             <h3>{{t "Desktop message notifications" }}
@@ -113,6 +118,7 @@
               label=(lookup ../settings_label this)
               prefix=../prefix}}
         {{/each}}
+        {{/unless}}
 
         <label for="{{prefix}}notification_sound">
             {{t "Notification sound" }}
@@ -132,6 +138,7 @@
                 <i class="fa fa-play-circle" aria-label="{{t 'Play sound' }}"></i>
             </span>
         </div>
+        {{#unless is_guest}}
 
         <div class="input-group">
             <label for="desktop_icon_count_display" class="settings-field-label">{{ settings_label.desktop_icon_count_display }}</label>
@@ -139,8 +146,10 @@
                 {{> dropdown_options_widget option_values=desktop_icon_count_display_values}}
             </select>
         </div>
+        {{/unless}}
     </div>
 
+    {{#unless is_guest}}
     <div class="mobile_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header inline-block">
@@ -230,4 +239,5 @@
               prefix=../prefix}}
         {{/each}}
     </div>
+    {{/unless}}
 </form>

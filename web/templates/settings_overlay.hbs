@@ -16,10 +16,12 @@
                         <i class="icon fa fa-user" aria-hidden="true"></i>
                         <div class="text">{{t "Profile" }}</div>
                     </li>
+                    {{#unless is_guest}}
                     <li tabindex="0" data-section="account-and-privacy">
                         <i class="icon fa fa-lock" aria-hidden="true"></i>
                         <div class="text">{{t "Account & privacy" }}</div>
                     </li>
+                    {{/unless}}
                     <li tabindex="0" data-section="preferences">
                         <i class="icon fa fa-sliders" aria-hidden="true"></i>
                         <div class="text">{{t "Preferences" }}</div>
@@ -44,10 +46,12 @@
                         <div class="text">{{t "Uploaded files" }}</div>
                     </li>
                     {{/if}}
+                    {{#unless is_guest}}
                     <li tabindex="0" data-section="topics">
                         <i class="icon zulip-icon zulip-icon-topic" aria-hidden="true"></i>
                         <div class="text">{{t "Topics" }}</div>
                     </li>
+                    {{/unless}}
                     <li tabindex="0" data-section="muted-users">
                         <i class="icon fa fa-eye-slash" aria-hidden="true"></i>
                         <div class="text">{{t "Muted users" }}</div>
