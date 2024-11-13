@@ -77,8 +77,7 @@ pipeline {
 
                                 source ./tools/ci/activate-venv
                                 ./tools/ci/production-build
-                                ls -lah /tmp/production-build
-
+                                mv /tmp/production-build/zulip-server-test.tar.gz /tmp/production-build/zulip-server-test-\$(date +\"%Y%m%d%H%M\").tar.gz
                             """
                             //./tools/ci/production-build
 
@@ -91,17 +90,15 @@ pipeline {
             steps {
                 container('zulip-ci-jammy') {
                     dir("${WORKSPACE}"){
-                            /*
                         script {
                             uploadToArtifactory([
                                 repo: 'downloads',
-                                pattern: "./*-${params.BUILD_NUMBER}.tar.gz",
+                                pattern: "/tmp/production-build/zulip-server-test*.tar.gz",
                                 git_proj: 'zulip',
                                 arti_url: 'https://artifactory.datarecognitioncorp.com/artifactory',
                                 isYumRepo: false
                             ])
                         }
-                            */
                     }
                 }
             }
