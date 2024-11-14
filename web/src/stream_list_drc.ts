@@ -63,7 +63,7 @@ class StreamSubFolder {
 
         // check if subfolder name is index 1 or 2
         if(this.subfolder_name === name_array[1]){
-            const subfolder_id = simpleHash(widget.sub.name);
+            const subfolder_id = simpleHash(`${name_array[0]}${name_array[1]}${name_array[2]}`);
 
             // create sub-subfolder does not exist
             if(!this.sub_folders.has(subfolder_id)) {
@@ -77,7 +77,7 @@ class StreamSubFolder {
 
         } else if(this.subfolder_name === name_array[2]) {
             // if index 2, add to rows
-            widget.set_subfolder(true, name_array[2]);
+            widget.set_subfolder(true, name_array[3]);
             this.sidebar_rows.set(stream_id, widget);
 
         }
@@ -183,7 +183,7 @@ class StreamSubFolder {
         let total_count = 0;
 
         if(this.sub_folders.size > 0) {
-            const $subfolder_unread = $(`.sub_sub_folder_li_${this.subfolder_id} .sub_subfolder_unread_count`);
+            const $subfolder_unread = $(`.subfolder_${this.subfolder_id} .subfolder_unread_count`);
             // search in subfoldrs
             for(const [_, sub] of this.sub_folders) { // eslint-disable-line @typescript-eslint/no-unused-vars
                 const count = sub.update_unread_counts();
@@ -200,7 +200,7 @@ class StreamSubFolder {
             }
 
         } else {
-            const $subfolder_unread = $(`.subfolder_${this.subfolder_id} .subfolder_unread_count`);
+            const $subfolder_unread = $(`.sub_sub_folder_li_${this.subfolder_id} .sub_subfolder_unread_count`);
             for(const [stream_id, _] of this.sidebar_rows) { // eslint-disable-line @typescript-eslint/no-unused-vars
                 const count = unread.unread_count_info_for_stream(stream_id);
                 total_count += count.unmuted_count;
@@ -235,7 +235,7 @@ class StreamFolder {
 
     set_row(stream_id: number, widget: StreamSidebarRow, name_array: string[]): void {
         assert(name_array[1] !== undefined);
-        const subfolder_id = simpleHash(widget.sub.name)
+        const subfolder_id = simpleHash(`${name_array[0]}${name_array[1]}`)
 
         // create a subfodler of none exist
         if(!this.sub_folders.has(subfolder_id)) {
