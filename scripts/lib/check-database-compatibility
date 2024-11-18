@@ -112,6 +112,7 @@ missing.difference_update(
         ("zerver", "0026_delete_mituser"),
         ("zerver", "0027_realm_default_language"),
         ("zerver", "0028_userprofile_tos_version"),
+        ("zerver", "0423_userpresence_heartbeat_timestamp"),
     ]
 )
 
