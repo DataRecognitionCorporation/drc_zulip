@@ -169,6 +169,7 @@ function initialize_navbar() {
         embedded: page_params.narrow_stream !== undefined,
         user_avatar: current_user.avatar_url_medium,
         realm_icon_url: realm.realm_icon_url,
+        is_guest: current_user.is_guest,
     });
 
     $("#header-container").html(rendered_navbar);

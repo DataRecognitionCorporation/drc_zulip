@@ -8,7 +8,9 @@
         <div class="clear-float"></div>
     </div>
     <div class="sidebar-wrapper">
+        {{#unless is_guest}}
         <div class="center tab-container"></div>
+        {{/unless}}
         <div class="sidebar left" data-simplebar data-simplebar-tab-index="-1">
             <div class="sidebar-list dark-grey small-text">
                 <ul class="normal-settings-list">
