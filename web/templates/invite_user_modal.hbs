@@ -57,8 +57,8 @@
             {{> help_link_widget link="/help/roles-and-permissions" }}
         </label>
         <select id="invite_as" class="invite-user-select modal_select bootstrap-focus-style">
-            <option name="invite_as" value="{{ invite_as_options.guest.code }}">{{t "Guests" }}</option>
-            <option name="invite_as" selected="selected" value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
+            <option name="invite_as" selected="selected" value="{{ invite_as_options.guest.code }}">{{t "Guests" }}</option>
+            <option name="invite_as" value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
             {{#if is_admin}}
             <option name="invite_as" value="{{ invite_as_options.moderator.code }}">{{t "Moderators" }}</option>
             <option name="invite_as" value="{{ invite_as_options.admin.code }}">{{t "Administrators" }}</option>
