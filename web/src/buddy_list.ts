@@ -340,13 +340,25 @@ export class BuddyList extends BuddyListConf {
         // Usually we show the user counts in the headers, but if we're hiding
         // those headers then we show the total user count in the main title.
         const default_userlist_title = $t({defaultMessage: "USERS"});
-        if (hide_headers) {
+
+        if (hide_headers && !current_user.is_guest) {
             const formatted_count = get_formatted_sub_count(total_human_users);
             const userlist_title = `${default_userlist_title} (${formatted_count})`;
             $("#userlist-title").text(userlist_title);
             return;
         }
         $("#userlist-title").text(default_userlist_title);
+
+        if(current_user.is_guest && current_sub !== undefined && !current_sub?.invite_only) {
+            $("#buddy_list_wrapper").hide()
+            $("#user_filter_icon").hide()
+            $("#buddy-list-users-matching-view-container .view-all-subscribers-link").hide();
+
+        } else {
+            $("#buddy_list_wrapper").show()
+            $("#user_filter_icon").show()
+            $("#buddy-list-users-matching-view-container .view-all-subscribers-link").show();
+        }
 
         let header_text;
         if (current_sub) {
@@ -363,6 +375,7 @@ export class BuddyList extends BuddyListConf {
                     user_count: get_formatted_sub_count(total_human_subscribers_count),
                     toggle_class: "toggle-users-matching-view",
                     is_collapsed: this.users_matching_view_is_collapsed,
+                    is_guest: current_user.is_guest,
                 }),
             ),
         );
@@ -370,11 +383,13 @@ export class BuddyList extends BuddyListConf {
         $("#buddy-list-other-users-container .buddy-list-subsection-header").append(
             $(
                 render_section_header({
+
                     id: "buddy-list-other-users-section-heading",
                     header_text: $t({defaultMessage: "Others"}),
                     user_count: get_formatted_sub_count(other_users_count),
                     toggle_class: "toggle-other-users",
                     is_collapsed: this.other_users_is_collapsed,
+                    is_guest: current_user.is_guest,
                 }),
             ),
         );
