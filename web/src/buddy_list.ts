@@ -340,7 +340,8 @@ export class BuddyList extends BuddyListConf {
         // Usually we show the user counts in the headers, but if we're hiding
         // those headers then we show the total user count in the main title.
         const default_userlist_title = $t({defaultMessage: "USERS"});
-        if (hide_headers && current_user.is_guest) {
+
+        if (hide_headers && !current_user.is_guest) {
             const formatted_count = get_formatted_sub_count(total_human_users);
             const userlist_title = `${default_userlist_title} (${formatted_count})`;
             $("#userlist-title").text(userlist_title);
@@ -348,16 +349,17 @@ export class BuddyList extends BuddyListConf {
         }
         $("#userlist-title").text(default_userlist_title);
 
-        /*
-        if(current_user.is_guest && !this.render_data.current_sub?.invite_only) {
+        if(current_user.is_guest && current_sub !== undefined && !current_sub?.invite_only) {
             $("#buddy_list_wrapper").hide()
             $("#user_filter_icon").hide()
+            $("#buddy-list-users-matching-view-container .view-all-subscribers-link").hide();
 
         } else {
             $("#buddy_list_wrapper").show()
             $("#user_filter_icon").show()
+            $("#buddy-list-users-matching-view-container .view-all-subscribers-link").show();
         }
-        */
+
         let header_text;
         if (current_sub) {
             header_text = $t({defaultMessage: "In this channel"});
@@ -474,13 +476,16 @@ export class BuddyList extends BuddyListConf {
             items: subscribed_users,
         });
         this.$users_matching_view_container = $(this.matching_view_list_selector);
+        this.$users_matching_view_container.append($(subscribed_users_html));
 
+        /*
         if(current_user.is_guest && !this.render_data.current_sub?.invite_only) {
             this.$users_matching_view_container.hide()
         } else {
             this.$users_matching_view_container.show()
             this.$users_matching_view_container.append($(subscribed_users_html));
         }
+        */
 
 
         // Remove the empty list message before adding users
