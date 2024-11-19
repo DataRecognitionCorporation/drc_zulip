@@ -26,6 +26,7 @@
             {{/if}}
         </span>
     {{/if}}
+    {{#unless is_guest}}
     {{#if can_toggle_subscription}}
     <div class="sub_button_row new-style">
         <button class="button white rounded stream_sub_unsub_button {{#unless subscribed}}sea-green{{/unless}}" type="button" name="subscription">
@@ -37,4 +38,5 @@
         </button>
     </div>
     {{/if}}
+    {{/unless}}
 </div>

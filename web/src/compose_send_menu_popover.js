@@ -17,6 +17,7 @@ import * as popover_menus from "./popover_menus";
 import * as scheduled_messages from "./scheduled_messages";
 import {parse_html} from "./ui_util";
 import {user_settings} from "./user_settings";
+import { current_user } from "./state_data";
 
 export const SCHEDULING_MODAL_UPDATE_INTERVAL_IN_MILLISECONDS = 60 * 1000;
 const ENTER_SENDS_SELECTION_DELAY = 600;
@@ -161,6 +162,7 @@ export function initialize() {
                         enter_sends_true: user_settings.enter_sends,
                         formatted_send_later_time,
                         show_compose_new_message,
+                        is_guest: current_user.is_guest,
                     }),
                 ),
             );

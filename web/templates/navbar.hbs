@@ -1,7 +1,7 @@
 <div class="header">
     <nav class="header-main" id="top_navbar">
         <div class="column-left">
-            <a class="left-sidebar-toggle-button {{#if embedded}}hide-streamlist-toggle-visibility{{/if}}" tabindex="0" role="button">
+            <a class="left-sidebar-toggle-button {{#if is_guest}}hide-streamlist-toggle-visibility{{/if}}" tabindex="0" role="button">
                 <i class="fa fa-reorder" aria-hidden="true"></i>
                 <span class="left-sidebar-toggle-unreadcount">0</span>
             </a>
@@ -44,11 +44,13 @@
                     {{t 'Log in' }}
                 </a>
             </div>
+            {{#unless is_guest}}
             <div id="userlist-toggle" class="hidden-for-spectators">
                 <a id="userlist-toggle-button" role="button" class="header-button" tabindex="0">
                     <i class="zulip-icon zulip-icon-user-list"></i>
                 </a>
             </div>
+            {{/unless}}
             <div id="help-menu">
                 <a class="header-button tippy-zulip-delayed-tooltip" tabindex="0" role="button" data-tooltip-template-id="help-menu-tooltip-template">
                     <i class="zulip-icon zulip-icon-help-bigger" aria-hidden="true"></i>
