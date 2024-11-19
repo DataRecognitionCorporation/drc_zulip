@@ -237,14 +237,11 @@ def do_invite_users(
     gonna conflict with existing users
     """
     error_dict = get_existing_user_errors(realm, good_emails)
-    print(error_dict)
 
     skipped: list[tuple[str, str, bool]] = []
     for email in error_dict:
         msg, deactivated = error_dict[email]
 
-        # TODO: Reactivate account if inacive
-        # get user profile from email
         if(deactivated):
             target_user: UserProfile = get_user_profile_by_email(email)
             do_reactivate_user(target_user, acting_user=None)
