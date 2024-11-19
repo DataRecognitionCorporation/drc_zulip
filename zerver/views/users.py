@@ -167,7 +167,6 @@ def _deactivate_user_profile_backend(
 
     streams = []
     subscribed_stream_ids = get_subscribed_stream_ids_for_user(target)
-    print(subscribed_stream_ids)
     for i in subscribed_stream_ids:
         stream = get_stream_by_id_in_realm(i, user_profile.realm)
         streams.append(stream)
