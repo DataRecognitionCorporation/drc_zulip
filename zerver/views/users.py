@@ -27,6 +27,7 @@ from zerver.actions.user_settings import (
     do_change_avatar_fields,
     do_regenerate_api_key,
 )
+from zerver.actions.streams import bulk_remove_subscriptions
 from zerver.actions.users import (
     do_change_user_role,
     do_deactivate_user,
@@ -50,6 +51,7 @@ from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.rate_limiter import rate_limit_spectator_attachment_access_by_file
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
+from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, subscribed_to_stream
 from zerver.lib.typed_endpoint import (
     ApiParamConfig,
@@ -87,6 +89,9 @@ from zerver.models.realms import (
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
     InvalidFakeEmailDomainError,
+)
+from zerver.models.streams import (
+    get_stream_by_id_in_realm
 )
 from zerver.models.users import (
     get_user_by_delivery_email,
@@ -159,6 +164,15 @@ def _deactivate_user_profile_backend(
     *,
     deactivation_notification_comment: str | None,
 ) -> HttpResponse:
+
+    streams = []
+    subscribed_stream_ids = get_subscribed_stream_ids_for_user(target)
+    print(subscribed_stream_ids)
+    for i in subscribed_stream_ids:
+        stream = get_stream_by_id_in_realm(i, user_profile.realm)
+        streams.append(stream)
+    bulk_remove_subscriptions(user_profile.realm, [target], streams, acting_user=user_profile)
+
     do_deactivate_user(target, acting_user=user_profile)
 
     # It's important that we check for None explicitly here, since ""
