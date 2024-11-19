@@ -72,7 +72,6 @@ export function add_hydrated_sub(stream_id: number, sub: StreamSubscription): vo
     // The only code that should call this directly is
     // in stream_data.js. Grep there to find callers.
     subs_by_stream_id.set(stream_id, sub);
-
 }
 
 export function maybe_get_stream_name(stream_id: number): string | undefined {

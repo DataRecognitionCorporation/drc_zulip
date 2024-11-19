@@ -478,16 +478,6 @@ export class BuddyList extends BuddyListConf {
         this.$users_matching_view_container = $(this.matching_view_list_selector);
         this.$users_matching_view_container.append($(subscribed_users_html));
 
-        /*
-        if(current_user.is_guest && !this.render_data.current_sub?.invite_only) {
-            this.$users_matching_view_container.hide()
-        } else {
-            this.$users_matching_view_container.show()
-            this.$users_matching_view_container.append($(subscribed_users_html));
-        }
-        */
-
-
         // Remove the empty list message before adding users
         if (
             $(`${this.other_user_list_selector} .empty-list-message`).length > 0 &&
