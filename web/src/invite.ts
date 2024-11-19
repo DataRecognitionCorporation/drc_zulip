@@ -71,10 +71,7 @@ function get_common_invitation_data(): {
 
     let stream_ids: number[] = [];
     let include_realm_default_subscriptions = false;
-    if (
-        $("#invite_select_default_streams").prop("checked") ||
-        !settings_data.user_can_subscribe_other_users()
-    ) {
+    if (!settings_data.user_can_subscribe_other_users()) {
         include_realm_default_subscriptions = true;
     } else {
         stream_ids = stream_pill.get_stream_ids(stream_pill_widget);
@@ -299,15 +296,8 @@ function set_custom_time_inputs_visibility(): void {
 }
 
 function set_streams_to_join_list_visibility(): void {
-    const realm_has_default_streams = stream_data.get_default_stream_ids().length !== 0;
-    const hide_streams_list =
-        realm_has_default_streams &&
-        $<HTMLInputElement>("input#invite_select_default_streams")[0]!.checked;
-    if (hide_streams_list) {
-        $(".add_streams_container").hide();
-    } else {
-        $(".add_streams_container").show();
-    }
+    $(".add_streams_container").show();
+    $(".select_default_streams").hide();
 }
 
 function generate_invite_tips_data(): Record<string, boolean> {
@@ -430,9 +420,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             $("#invite-stream-checkboxes input[type=checkbox]").prop("checked", false);
         });
 
-        $("#invite_select_default_streams").on("change", () => {
-            set_streams_to_join_list_visibility();
-        });
+        set_streams_to_join_list_visibility();
 
         if (!user_has_email_set) {
             $("#invite-user-form :input").prop("disabled", !user_has_email_set);

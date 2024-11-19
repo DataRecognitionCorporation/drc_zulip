@@ -20,6 +20,7 @@ from confirmation.models import (
     create_confirmation_link,
     create_confirmation_object,
 )
+from zerver.actions.create_user import do_reactivate_user
 from zerver.context_processors import common_context
 from zerver.lib.email_validation import (
     get_existing_user_errors,
@@ -34,6 +35,8 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Message, MultiuseInvite, PreregistrationUser, Realm, Stream, UserProfile
 from zerver.models.prereg_users import filter_to_valid_prereg_users
+from zerver.models.users import get_user_profile_by_email
+from zerver.actions.streams import bulk_add_subscriptions
 
 
 def estimate_recent_invites(realms: Collection[Realm] | QuerySet[Realm], *, days: int) -> int:
@@ -238,8 +241,33 @@ def do_invite_users(
     skipped: list[tuple[str, str, bool]] = []
     for email in error_dict:
         msg, deactivated = error_dict[email]
+
+        if(deactivated):
+            target_user: UserProfile = get_user_profile_by_email(email)
+            do_reactivate_user(target_user, acting_user=None)
+            bulk_add_subscriptions(user_profile.realm, streams, [target_user], acting_user=user_profile)
+
+            # don't send email to user if email is reactivated.
+            good_emails.remove(email)
+            continue
+        elif(error_dict[email][0] == 'Already has an account.' and not deactivated):
+            target_user = get_user_profile_by_email(email)
+            bulk_add_subscriptions(
+                user_profile.realm,
+                streams,
+                [target_user],
+                acting_user=user_profile
+            )
+
+            # don't send email to user if email is reactivated.
+            good_emails.remove(email)
+            continue
+
         skipped.append((email, msg, deactivated))
         good_emails.remove(email)
+
+
+        # else account is already active so we need to add user to any streams
 
     validated_emails = list(good_emails)
 
