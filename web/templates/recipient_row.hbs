@@ -42,12 +42,12 @@
                 </a>
             {{/each}}
 
+            {{#unless is_guest}}
             {{! edit topic pencil icon }}
             {{#if always_visible_topic_edit}}
                 <i class="fa fa-pencil always_visible_topic_edit recipient_bar_icon hidden-for-spectators" data-tippy-content="{{t 'Edit topic'}}" role="button" tabindex="0" aria-label="{{t 'Edit topic' }}"></i>
             {{else if on_hover_topic_edit}}
                 <i class="fa fa-pencil on_hover_topic_edit recipient_bar_icon hidden-for-spectators" data-tippy-content="{{t 'Edit topic'}}" role="button" tabindex="0" aria-label="{{t 'Edit topic' }}"></i>
-            {{/if}}
 
             {{#if user_can_resolve_topic}}
                 {{#if topic_is_resolved}}
@@ -75,6 +75,8 @@
                     {{/if}}
                 </span>
             {{/if}}
+            {{/if}}
+            {{/unless}}
         </span>
         <span class="recipient_row_date {{#if date_unchanged}}recipient_row_date_unchanged{{/if}}">{{{date}}}</span>
     </div>

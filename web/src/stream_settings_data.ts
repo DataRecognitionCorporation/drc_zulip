@@ -44,7 +44,7 @@ export function get_sub_for_settings(sub: StreamSubscription): SettingsSubscript
         // private, subscribed or unsubscribed.
         can_change_name_description: current_user.is_admin,
 
-        should_display_subscription_button: stream_data.can_toggle_subscription(sub),
+        should_display_subscription_button: true,
         should_display_preview_button: stream_data.can_preview(sub),
         can_change_stream_permissions: stream_data.can_change_permissions(sub),
         can_access_subscribers: stream_data.can_view_subscribers(sub),
