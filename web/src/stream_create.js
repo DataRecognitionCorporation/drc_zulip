@@ -410,7 +410,7 @@ export function show_new_stream_modal() {
 
         // The user is not allowed to set the setting to amy value other than
         // "realm_default" for realms on limited plans, so we disable the setting.
-         $("#stream_creation_form select[name=stream_message_retention_setting]").prop(
+        $("#stream_creation_form select[name=stream_message_retention_setting]").prop(
             "disabled",
             !realm.zulip_plan_is_not_limited,
         );
