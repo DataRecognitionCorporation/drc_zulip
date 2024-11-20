@@ -369,7 +369,6 @@ function create_stream() {
 }
 
 export function new_stream_clicked(stream_name) {
-    console.log(stream_name)
     // this changes the tab switcher (settings/preview) which isn't necessary
     // to a add new stream title.
     stream_settings_components.show_subs_pane.create_stream();
@@ -411,7 +410,7 @@ export function show_new_stream_modal() {
 
         // The user is not allowed to set the setting to amy value other than
         // "realm_default" for realms on limited plans, so we disable the setting.
-        $("#stream_creation_form select[name=stream_message_retention_setting]").prop(
+         $("#stream_creation_form select[name=stream_message_retention_setting]").prop(
             "disabled",
             !realm.zulip_plan_is_not_limited,
         );
