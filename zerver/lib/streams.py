@@ -667,6 +667,8 @@ def filter_stream_authorization(
         # Members and administrators are authorized for public streams
         if not stream.invite_only and not user_profile.is_guest:
             continue
+        if stream.invite_only and user_profile.is_realm_admin:
+            continue
 
         unauthorized_streams.append(stream)
 

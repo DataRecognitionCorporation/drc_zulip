@@ -223,6 +223,7 @@ export function add_sub_to_table(sub) {
         scroll_util.get_content_element($(".streams-list")).append($new_row);
     }
 
+    sub.is_admin = current_user.is_admin;
     const settings_html = render_stream_settings({
         sub: stream_settings_data.get_sub_for_settings(sub),
     });

@@ -240,20 +240,17 @@ export function unsubscribe_from_private_stream(sub) {
         ajaxUnsubscribe(sub, $stream_row);
     }
 
-    confirm_dialog.launch({
-        html_heading: $t_html(
-            {defaultMessage: "Unsubscribe from <z-link></z-link>?"},
-            {"z-link": () => stream_name_with_privacy_symbol_html},
-        ),
-        html_body,
-        on_click: unsubscribe_from_stream,
-    });
+    unsubscribe_from_stream()
 }
 
 export function sub_or_unsub(sub, $stream_row) {
     if (sub.subscribed) {
         // TODO: This next line should allow guests to access web-public streams.
         if (sub.invite_only || current_user.is_guest) {
+            unsubscribe_from_private_stream(sub);
+            return;
+        }
+        if (sub.invite_only && current_user.is_admin) {
             unsubscribe_from_private_stream(sub);
             return;
         }
