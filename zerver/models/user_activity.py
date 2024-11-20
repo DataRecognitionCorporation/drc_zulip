@@ -30,6 +30,7 @@ class UserActivity(models.Model):
         unique_together = ("user_profile", "client", "query")
 
 
+
 class UserActivityInterval(models.Model):
     MIN_INTERVAL_LENGTH = timedelta(minutes=15)
 
