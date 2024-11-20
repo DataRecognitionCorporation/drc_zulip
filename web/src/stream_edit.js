@@ -263,7 +263,6 @@ export function show_settings_for(node) {
         other_settings.push(setting);
         return false;
     });
-    console.log(current_user)
     sub.is_admin = current_user.is_admin
 
     const html = render_stream_settings({
@@ -278,6 +277,7 @@ export function show_settings_for(node) {
         upgrade_text_for_wide_organization_logo: realm.upgrade_text_for_wide_organization_logo,
         is_business_type_org:
             realm.realm_org_type === settings_config.all_org_type_values.business.code,
+        is_admin: current_user.is_admin,
         org_level_message_retention_setting: get_display_text_for_realm_message_retention_setting(),
         can_access_stream_email: stream_data.can_access_stream_email(sub),
     });
