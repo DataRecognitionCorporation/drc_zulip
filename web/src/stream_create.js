@@ -369,6 +369,7 @@ function create_stream() {
 }
 
 export function new_stream_clicked(stream_name) {
+    console.log(stream_name)
     // this changes the tab switcher (settings/preview) which isn't necessary
     // to a add new stream title.
     stream_settings_components.show_subs_pane.create_stream();
@@ -397,7 +398,7 @@ export function show_new_stream_modal() {
     stream_create_subscribers.build_widgets();
 
     // Select the first visible and enabled choice for stream privacy.
-    $("#make-invite-only input:visible:not([disabled])").first().prop("checked", true);
+    $("#make-invite-only input:visible:not([disabled])[value='invite-only-public-history']").first().prop("checked", true);
     // Make the options default to the same each time
 
     // The message retention setting is visible to owners only. The below block
