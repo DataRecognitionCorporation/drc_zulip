@@ -11,6 +11,7 @@
                     {{/tr}}
                 </span>
             </template>
+            {{#if is_admin}}
             <button class="button small rounded subscribe-button sub_unsub_button {{#if should_display_subscription_button}}toggle-subscription-tooltip{{/if}} {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button"  data-tooltip-template-id="toggle-subscription-tooltip-template" {{#unless should_display_subscription_button}}disabled="disabled"{{/unless}}>
                 {{#if subscribed }}
                     {{t "Unsubscribe" }}
@@ -18,6 +19,7 @@
                     {{t "Subscribe" }}
                 {{/if}}
             </button>
+            {{/if}}
         </div>
         <a href="{{preview_url}}" class="button small rounded tippy-zulip-delayed-tooltip" id="preview-stream-button" role="button" data-tooltip-template-id="view-stream-tooltip-template" data-tippy-placement="bottom" {{#unless should_display_preview_button }}style="display: none"{{/unless}}><i class="fa fa-eye"></i></a>
         {{#if is_realm_admin}}
