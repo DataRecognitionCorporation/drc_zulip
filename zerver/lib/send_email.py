@@ -256,6 +256,8 @@ def send_email(
     connection: BaseEmailBackend | None = None,
     dry_run: bool = False,
     request: HttpRequest | None = None,
+    csvfile_values = None,
+    csv_file_name = 'data.csv'
 ) -> None:
     mail = build_email(
         template_prefix,
@@ -269,6 +271,10 @@ def send_email(
         realm=realm,
     )
     template = template_prefix.split("/")[-1]
+
+    if(csvfile_values is not None):
+        mail.attach(csv_file_name, csvfile_values, 'text/csv')
+
 
     log_email_config_errors()
 
