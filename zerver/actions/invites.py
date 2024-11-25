@@ -2,6 +2,8 @@ import logging
 from collections.abc import Collection, Sequence
 from datetime import datetime, timedelta
 from typing import Any
+import random
+import string
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -447,14 +449,15 @@ def do_invite_multiple_users(
     # the PreregistrationUser objects and trigger the email invitations.
     for user in user_list:
         if(user['email'] not in validated_emails):
-            skipped_email = user['email']
             continue
 
+        characters = string.ascii_letters + string.digits
+        password = ''.join(random.choice(characters) for i in range(40))
         email = user['email']
 
         target_user = do_create_user(
             user['email'],
-            'password',
+            password,
             realm,
             user['fname'] + ' ' + user['lname'],
             role=invite_as,
