@@ -21,6 +21,7 @@ from confirmation.models import (
     create_confirmation_object,
 )
 from zerver.actions.create_user import do_reactivate_user
+from zerver.actions.users import do_change_user_role
 from zerver.context_processors import common_context
 from zerver.lib.email_validation import (
     get_existing_user_errors,
@@ -37,6 +38,23 @@ from zerver.models import Message, MultiuseInvite, PreregistrationUser, Realm, S
 from zerver.models.prereg_users import filter_to_valid_prereg_users
 from zerver.models.users import get_user_profile_by_email
 from zerver.actions.streams import bulk_add_subscriptions
+from zerver.actions.create_user import do_create_user, do_reactivate_user
+
+
+
+
+from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
+from zerver.models import CustomProfileField, Realm, UserProfile
+from zerver.lib.users import validate_user_custom_profile_data
+from zerver.actions.custom_profile_fields import (
+    check_remove_custom_profile_field_value,
+    do_remove_realm_custom_profile_field,
+    do_update_user_custom_profile_data_if_changed,
+    try_add_realm_custom_profile_field,
+    try_add_realm_default_custom_profile_field,
+    try_reorder_realm_custom_profile_fields,
+    try_update_realm_custom_profile_field,
+)
 
 
 def estimate_recent_invites(realms: Collection[Realm] | QuerySet[Realm], *, days: int) -> int:
@@ -183,6 +201,7 @@ def do_invite_users(
     invite_expires_in_minutes: int | None,
     include_realm_default_subscriptions: bool,
     invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
+    send_invite_email: bool = False,
 ) -> list[tuple[str, str, bool]]:
     num_invites = len(invitee_emails)
 
@@ -303,13 +322,170 @@ def do_invite_users(
         confirmation = create_confirmation_object(
             prereg_user, Confirmation.INVITATION, validity_in_minutes=invite_expires_in_minutes
         )
-        do_send_user_invite_email(
-            prereg_user,
-            confirmation=confirmation,
-            invite_expires_in_minutes=invite_expires_in_minutes,
+        if(send_invite_email):
+            do_send_user_invite_email(
+                prereg_user,
+                confirmation=confirmation,
+                invite_expires_in_minutes=invite_expires_in_minutes,
+            )
+
+    if(notify_referrer_on_join):
+        notify_invites_changed(realm, changed_invite_referrer=user_profile)
+
+    return skipped
+
+
+@transaction.atomic
+def do_invite_multiple_users(
+    user_profile: UserProfile,
+    user_list: list,
+    streams: Collection[Stream],
+    *,
+    invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
+) -> list[tuple[str, str, bool]]:
+    num_invites = len(user_list)
+
+    # Lock the realm, since we need to not race with other invitations
+    realm = Realm.objects.select_for_update().get(id=user_profile.realm_id)
+    check_invite_limit(realm, num_invites)
+
+    if settings.BILLING_ENABLED:
+        from corporate.lib.registration import check_spare_licenses_available_for_inviting_new_users
+
+        if invite_as == PreregistrationUser.INVITE_AS["GUEST_USER"]:
+            check_spare_licenses_available_for_inviting_new_users(
+                realm, extra_guests_count=num_invites
+            )
+        else:
+            check_spare_licenses_available_for_inviting_new_users(
+                realm, extra_non_guests_count=num_invites
+            )
+
+    if not realm.invite_required:
+        # Inhibit joining an open realm to send spam invitations.
+        min_age = timedelta(days=settings.INVITES_MIN_USER_AGE_DAYS)
+        if user_profile.date_joined > timezone_now() - min_age and not user_profile.is_realm_admin:
+            raise InvitationError(
+                _(
+                    "Your account is too new to send invites for this organization. "
+                    "Ask an organization admin, or a more experienced user."
+                ),
+                [],
+                sent_invitations=False,
+            )
+
+    good_emails: set[str] = set()
+    errors: list[tuple[str, str, bool]] = []
+    validate_email_allowed_in_realm = get_realm_email_validator(realm)
+    for user in user_list:
+        if user['email'] == "":
+            continue
+        email_error = validate_email_is_valid(
+            user['email'],
+            validate_email_allowed_in_realm,
         )
 
-    notify_invites_changed(realm, changed_invite_referrer=user_profile)
+        if email_error:
+            errors.append((user['email'], email_error, False))
+        else:
+            good_emails.add(user['email'])
+
+    """
+    good_emails are emails that look ok so far,
+    but we still need to make sure they're not
+    gonna conflict with existing users
+    """
+    error_dict = get_existing_user_errors(realm, good_emails)
+
+    skipped: list[tuple[str, str, bool]] = []
+    for email in error_dict:
+        msg, deactivated = error_dict[email]
+
+        if(deactivated):
+            target_user: UserProfile = get_user_profile_by_email(email)
+            do_reactivate_user(target_user, acting_user=None)
+            bulk_add_subscriptions(user_profile.realm, streams, [target_user], acting_user=user_profile)
+
+            # don't send email to user if email is reactivated.
+            good_emails.remove(email)
+            continue
+        elif(error_dict[email][0] == 'Already has an account.' and not deactivated):
+            target_user = get_user_profile_by_email(email)
+            bulk_add_subscriptions(
+                user_profile.realm,
+                streams,
+                [target_user],
+                acting_user=user_profile
+            )
+            do_change_user_role(target_user, invite_as, acting_user=user_profile)
+
+            # don't send email to user if email is reactivated.
+            good_emails.remove(email)
+            continue
+
+        skipped.append((email, msg, deactivated))
+        good_emails.remove(email)
+
+
+        # else account is already active so we need to add user to any streams
+
+    validated_emails = list(good_emails)
+
+    if errors:
+        raise InvitationError(
+            _("Some emails did not validate, so we didn't send any invitations."),
+            errors + skipped,
+            sent_invitations=False,
+        )
+
+    if skipped and len(skipped) == len(user_list):
+        # All e-mails were skipped, so we didn't actually invite anyone.
+        raise InvitationError(
+            _("We weren't able to invite anyone."), skipped, sent_invitations=False
+        )
+
+    # Now that we are past all the possible errors, we actually create
+    # the PreregistrationUser objects and trigger the email invitations.
+    for user in user_list:
+        if(user['email'] not in validated_emails):
+            skipped_email = user['email']
+            continue
+
+        email = user['email']
+
+        target_user = do_create_user(
+            user['email'],
+            'password',
+            realm,
+            user['fname'] + ' ' + user['lname'],
+            role=invite_as,
+            # Explicitly set tos_version=-1. This means that users
+            # created via this mechanism would be prompted to set
+            # the email_address_visibility setting on first login.
+            # For servers that have configured Terms of Service,
+            # users will also be prompted to accept the Terms of
+            # Service on first login.
+            tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
+            acting_user=user_profile,
+        )
+
+
+        fields = custom_profile_fields_for_realm(realm.id)
+        custom_fields = [f.as_dict() for f in fields]
+        f_name_id = None
+        l_name_id = None
+        for field in custom_fields:
+            if(field['name'] == 'first_name'):
+                f_name_id = field['id']
+            elif(field['name'] == 'last_name'):
+                l_name_id = field['id']
+
+        assert(l_name_id != None)
+        assert(f_name_id != None)
+        data = [{'id': l_name_id, 'value': user['lname']}, {'id': f_name_id, 'value': user['fname']}]
+
+        do_update_user_custom_profile_data_if_changed(target_user, data)
+
 
     return skipped
 
