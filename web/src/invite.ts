@@ -113,8 +113,6 @@ function submit_invitation_form(): void {
     const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
     const $invite_status = $("#dialog_error");
     const data = get_common_invitation_data();
-    //data.invitee_emails = $("#invitee_emails").val();
-    console.log(data)
 
     void channel.post({
         url: "/json/invites",

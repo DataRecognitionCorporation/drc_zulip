@@ -322,12 +322,11 @@ def do_invite_users(
         confirmation = create_confirmation_object(
             prereg_user, Confirmation.INVITATION, validity_in_minutes=invite_expires_in_minutes
         )
-        if(send_invite_email):
-            do_send_user_invite_email(
-                prereg_user,
-                confirmation=confirmation,
-                invite_expires_in_minutes=invite_expires_in_minutes,
-            )
+        do_send_user_invite_email(
+            prereg_user,
+            confirmation=confirmation,
+            invite_expires_in_minutes=invite_expires_in_minutes,
+        )
 
     if(notify_referrer_on_join):
         notify_invites_changed(realm, changed_invite_referrer=user_profile)
