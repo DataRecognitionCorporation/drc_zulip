@@ -673,12 +673,3 @@ def do_send_user_invite_email(
         referrer_email=referrer.delivery_email,
         referrer_realm_name=realm.name,
     )
-    send_future_email(
-        "zerver/emails/invitation_reminder",
-        realm,
-        to_emails=[prereg_user.email],
-        from_address=FromAddress.tokenized_no_reply_placeholder,
-        language=realm.default_language,
-        context=context,
-        delay=timedelta(minutes=invite_expires_in_minutes - (2 * 24 * 60)),
-    )

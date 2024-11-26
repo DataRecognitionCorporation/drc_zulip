@@ -393,6 +393,9 @@ def check_basic_stream_access(
     if user_profile.is_realm_admin and allow_realm_admin:
         return True
 
+    if user_profile.role <= 300:
+        return True
+
     return False
 
 
