@@ -16,6 +16,7 @@ JITSI_SERVER_URL="${jitsi_server_url}"
 LOGIN_URL="${login_url}"
 OKTA_URL="${okta_url}"
 ENTINTY_ID="${entity_id}"
+SMTP_URL=${smtp_url}
 
 S3_AVATAR_BUCKET="${s3_avatar_bucket}"
 S3_UPLOADS_BUCKET="${s3_uploads_bucket}"
@@ -94,9 +95,14 @@ sed -i "s|#.*REMOTE_POSTGRES_PORT = .*|REMOTE_POSTGRES_PORT = '5432'|" $ZULIP_SE
 sed -i "s|#.*REMOTE_POSTGRES_SSLMODE = .*|REMOTE_POSTGRES_SSLMODE = 'require'|" $ZULIP_SETTINGS
 sed -i "s|#.*USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS = .*|USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS = 0|" $ZULIP_SETTINGS
 
+sed -i "s|.*EMAIL_GATEWAY_PATTERN.*|EMAIL_GATEWAY_PATTERN = '%s@$SMTP_URL'|" $ZULIP_SETTINGS
+
 sed -i "s|#.*JITSI_SERVER_URL = .*|JITSI_SERVER_URL = '$JITSI_SERVER_URL'|" $ZULIP_SETTINGS
 
 echo "LOGIN_URL = '$LOGIN_URL'" >> $ZULIP_SETTINGS
+
+
+sed -i "s|.*puppet_classes.*|puppet_classes = zulip::profile::standalone, zulip::postfix_localmail|g" $ZULIP_CONF
 
 echo "" >> $ZULIP_CONF
 echo "[application_server]" >> $ZULIP_CONF
@@ -106,6 +112,8 @@ echo "uwsgi_processes = $${UWSGI_PROCESSES}" >> $ZULIP_CONF
 echo "" >> $ZULIP_CONF
 echo "[loadbalancer]" >> $ZULIP_CONF
 echo "ips = $${LB_IP_RANGE}" >> $ZULIP_CONF
+echo "[postfix]" >> $ZULIP_CONF
+echo "mailname = $SMTP_URL" >> $ZULIP_CONF
 
 
 # OKTA CONFIGURATION
@@ -114,8 +122,8 @@ sed -i 's|        "displayname": "Example, Inc. Zulip",.*|        "displayname":
 
 sed -i 's|    # "zproject.backends.SAMLAuthBackend",.*|    "zproject.backends.SAMLAuthBackend",|' $ZULIP_SETTINGS
 sed -i 's|    "idp_name": {.*|    "okta": {|' $ZULIP_SETTINGS
-sed -i 's|        "entity_id":.*|        "entity_id": '$${ENTINTY_ID}',|' $ZULIP_SETTINGS
-sed -i 's|        "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",.*|        "url": '$${OKTA_URL}',|' $ZULIP_SETTINGS
+sed -i 's|        "entity_id":.*|        "entity_id": '$ENTINTY_ID',|' $ZULIP_SETTINGS
+sed -i 's|        "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",.*|        "url": '$OKTA_URL',|' $ZULIP_SETTINGS
 sed -i 's|        "display_name": "SAML",.*|        "display_name": "Insight Portal",|' $ZULIP_SETTINGS
 
 
@@ -125,7 +133,7 @@ chown -Rf zulip:zulip /etc/zulip/saml
 
 # CONFIGURE TORNADO SHARDING
 long_string=""
-for ((i=0; i<=10; i++)); do
+for ((i=0; i<$TORNADO_PROCESSES; i++)); do
     long_string+="98$(printf "%02d" $i)_"
 done
 shard_list=$${long_string::-1}

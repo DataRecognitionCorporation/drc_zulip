@@ -70,5 +70,6 @@ locals {
     tornado_processes  = local.tornado_processes[var.environment]
     uwsgi_processes    = local.uwsgi_processes[var.environment]
     dynatrace_paas_arn = local.dynatrace_paas_arn[var.environment]
+    smtp_url           = aws_route53_record.zulip_nlb.fqdn
   })
 }

@@ -56,7 +56,7 @@ locals {
   artifactory_download_url = "https://artifactory.datarecognitioncorp.com/artifactory/downloads/zulip"
 
   zulip_version = {
-    "dev"  = "6.1.25"
+    "dev"  = "test-202412122206"
     "prod" = "6.1.24"
   }
 
@@ -193,6 +193,12 @@ locals {
     # shared prod
     "911870898277" = {
       "us-east-2" = "arn:aws:acm:us-east-2:911870898277:certificate/86fac099-761f-45c3-a491-27a42ac71b60"
+    }
+  }
+
+  certificate_map_smtp = {
+    "333509430799" = {
+      "us-east-2" = "arn:aws:acm:us-east-2:333509430799:certificate/84d3e06e-deec-413c-a8c1-0285cf64b76f"
     }
   }
 }

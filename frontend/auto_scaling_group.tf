@@ -3,9 +3,9 @@ resource "aws_autoscaling_group" "asg_config" {
   max_size                  = "1"
   min_size                  = "0"
   desired_capacity          = "1"
-  target_group_arns         = [aws_lb_target_group.zulip.arn]
+  target_group_arns         = [aws_lb_target_group.zulip.arn, aws_lb_target_group.zulip_smtp.arn]
   vpc_zone_identifier       = local.private_subnet_ids
-  health_check_type         = "ELB"
+  health_check_type         = "EC2"
   health_check_grace_period = local.health_check_grace_period
 
   termination_policies = ["Default"]
