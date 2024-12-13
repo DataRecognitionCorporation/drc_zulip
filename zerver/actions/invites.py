@@ -325,6 +325,24 @@ def do_invite_users(
     return skipped
 
 
+def add_names(user: dict, target_user, realm):
+    fields = custom_profile_fields_for_realm(realm.id)
+    custom_fields = [f.as_dict() for f in fields]
+    f_name_id = None
+    l_name_id = None
+    for field in custom_fields:
+        if(field['name'] == 'first_name'):
+            f_name_id = field['id']
+        elif(field['name'] == 'last_name'):
+            l_name_id = field['id']
+
+    assert(l_name_id != None)
+    assert(f_name_id != None)
+    data = [{'id': l_name_id, 'value': user['lname']}, {'id': f_name_id, 'value': user['fname']}]
+
+    do_update_user_custom_profile_data_if_changed(target_user, data)
+
+
 @transaction.atomic
 def do_invite_multiple_users(
     user_profile: UserProfile,
@@ -379,6 +397,7 @@ def do_invite_multiple_users(
             errors.append((user['email'], email_error, False))
         else:
             good_emails.add(user['email'])
+    print(user_list)
 
     """
     good_emails are emails that look ok so far,
@@ -392,9 +411,11 @@ def do_invite_multiple_users(
         msg, deactivated = error_dict[email]
 
         if(deactivated):
+            print(email)
             target_user: UserProfile = get_user_profile_by_email(email)
             do_reactivate_user(target_user, acting_user=None)
             bulk_add_subscriptions(user_profile.realm, streams, [target_user], acting_user=user_profile)
+            do_change_user_role(target_user, invite_as, acting_user=user_profile)
 
             # don't send email to user if email is reactivated.
             good_emails.remove(email)
@@ -438,6 +459,8 @@ def do_invite_multiple_users(
     # the PreregistrationUser objects and trigger the email invitations.
     for user in user_list:
         if(user['email'] not in validated_emails):
+            target_user: UserProfile = get_user_profile_by_email(user['email'])
+            add_names(user, target_user, realm)
             continue
 
         characters = string.ascii_letters + string.digits
@@ -460,22 +483,8 @@ def do_invite_multiple_users(
             acting_user=user_profile,
         )
 
+        add_names(user, target_user, realm)
 
-        fields = custom_profile_fields_for_realm(realm.id)
-        custom_fields = [f.as_dict() for f in fields]
-        f_name_id = None
-        l_name_id = None
-        for field in custom_fields:
-            if(field['name'] == 'first_name'):
-                f_name_id = field['id']
-            elif(field['name'] == 'last_name'):
-                l_name_id = field['id']
-
-        assert(l_name_id != None)
-        assert(f_name_id != None)
-        data = [{'id': l_name_id, 'value': user['lname']}, {'id': f_name_id, 'value': user['fname']}]
-
-        do_update_user_custom_profile_data_if_changed(target_user, data)
 
 
     return skipped
