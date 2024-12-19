@@ -256,12 +256,14 @@ def do_invite_users(
             target_user: UserProfile = get_user_profile_by_email(email)
             do_reactivate_user(target_user, acting_user=None)
             bulk_add_subscriptions(user_profile.realm, streams, [target_user], acting_user=user_profile)
+            do_change_user_role(target_user, invite_as, acting_user=user_profile)
 
             # don't send email to user if email is reactivated.
             good_emails.remove(email)
             continue
         elif(error_dict[email][0] == 'Already has an account.' and not deactivated):
             target_user = get_user_profile_by_email(email)
+            do_change_user_role(target_user, invite_as, acting_user=user_profile)
             bulk_add_subscriptions(
                 user_profile.realm,
                 streams,
