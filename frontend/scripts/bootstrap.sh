@@ -116,6 +116,9 @@ echo "[postfix]" >> $ZULIP_CONF
 echo "mailname = $SMTP_URL" >> $ZULIP_CONF
 
 
+ENTINTY_ID="\"$ENTINTY_ID\""
+OKTA_URL="\"$OKTA_URL\""
+
 # OKTA CONFIGURATION
 sed -i 's|        "name": "zulip",.*|        "name": "chat",|' $ZULIP_SETTINGS
 sed -i 's|        "displayname": "Example, Inc. Zulip",.*|        "displayname": "DRC Chat",|' $ZULIP_SETTINGS
@@ -154,9 +157,13 @@ echo "email_password = $${email_password}" >> $ZULIP_SECRETS
 
 
 /home/zulip/deployments/current/scripts/zulip-puppet-apply -f || echo
+sleep 5
 /home/zulip/deployments/current/scripts/refresh-sharding-and-restart || echo
+sleep 5
 su - zulip -c '/home/zulip/deployments/current/scripts/stop-server' || echo
+sleep 5
 su - zulip -c '/home/zulip/deployments/current/scripts/start-server' || echo
+sleep 5
 
 # Route53 update
 cat > /tmp/route53-record.txt <<- EOF

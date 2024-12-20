@@ -56,7 +56,7 @@ locals {
   artifactory_download_url = "https://artifactory.datarecognitioncorp.com/artifactory/downloads/zulip"
 
   zulip_version = {
-    "dev"  = "test-202412122206"
+    "dev"  = "test-202412201724"
     "prod" = "6.1.24"
   }
 
