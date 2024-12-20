@@ -483,6 +483,14 @@ def do_invite_multiple_users(
             acting_user=user_profile,
         )
 
+        target_user: UserProfile = get_user_profile_by_email(user['email'])
+        bulk_add_subscriptions(
+            user_profile.realm,
+            streams,
+            [target_user],
+            acting_user=user_profile
+        )
+
         add_names(user, target_user, realm)
 
 
