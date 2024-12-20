@@ -399,7 +399,6 @@ def do_invite_multiple_users(
             errors.append((user['email'], email_error, False))
         else:
             good_emails.add(user['email'])
-    print(user_list)
 
     """
     good_emails are emails that look ok so far,
@@ -413,7 +412,6 @@ def do_invite_multiple_users(
         msg, deactivated = error_dict[email]
 
         if(deactivated):
-            print(email)
             target_user: UserProfile = get_user_profile_by_email(email)
             do_reactivate_user(target_user, acting_user=None)
             bulk_add_subscriptions(user_profile.realm, streams, [target_user], acting_user=user_profile)

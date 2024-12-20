@@ -359,6 +359,16 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             $(e.target).parent().remove();
         });
 
+        $("#invite_multiple").on("click", (e) => {
+            if($("#invite_multiple").is(":checked")) {
+                $('.invitee_emails').attr('placeholder', 'Last name, First name, Email');
+
+            } else {
+                $('.invitee_emails').attr('placeholder', 'Email only. One email is accepted.');
+
+            }
+        });
+
         function toggle_invite_submit_button(selected_tab?: string): void {
             if (selected_tab === undefined) {
                 selected_tab = $(".invite_users_option_tabs")
@@ -440,7 +450,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             selected: 0,
             child_wants_focus: true,
             values: [
-                {label: $t({defaultMessage: "Email invitation"}), key: "invite-email-tab"},
+                {label: $t({defaultMessage: "Invite"}), key: "invite-email-tab"},
                 {label: $t({defaultMessage: "Invitation link"}), key: "invite-link-tab"},
             ],
             callback(_name, key) {

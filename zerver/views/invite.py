@@ -1,3 +1,4 @@
+from os import dup
 import re
 from typing import Annotated
 
@@ -43,6 +44,17 @@ def check_role_based_permissions(
 
     if require_admin and not user_profile.is_realm_admin:
         raise JsonableError(_("Must be an organization administrator"))
+
+
+def check_duplicates(list_of_dicts):
+    seen = set()
+    duplicates = []
+    for i in list_of_dicts:
+        if i['email'] in seen:
+            duplicates.append(i['email'])
+        else:
+            seen.add(i['email'])
+    return duplicates
 
 
 @require_member_or_admin
@@ -115,6 +127,12 @@ def invite_users_backend(
                 'fname': fname,
                 'email': email
             })
+
+        duplicates = check_duplicates(user_list)
+        if(duplicates != []):
+            dups = ','.join(duplicates)
+            raise JsonableError(_(f'Duplicate emails found.... {dups}'))
+
 
         skipped = do_invite_multiple_users(
             user_profile,
