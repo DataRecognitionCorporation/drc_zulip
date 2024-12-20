@@ -681,6 +681,8 @@ def add_subscriptions_backend(
     result["already_subscribed"] = dict(result["already_subscribed"])
     if not authorization_errors_fatal:
         result["unauthorized"] = [s.name for s in unauthorized_streams]
+    print(request)
+    print(result)
     return json_success(request, data=result)
 
 

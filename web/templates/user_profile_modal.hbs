@@ -97,7 +97,9 @@
                                     </div>
                                     {{/if}}
                                 {{else}}
+                                    {{#unless user_is_guest}}
                                     {{> user_custom_profile_fields profile_fields=profile_data}}
+                                    {{/unless}}
                                 {{/if}}
                             </div>
                         </div>
