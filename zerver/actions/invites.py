@@ -417,6 +417,13 @@ def do_invite_multiple_users(
             bulk_add_subscriptions(user_profile.realm, streams, [target_user], acting_user=user_profile)
             do_change_user_role(target_user, invite_as, acting_user=user_profile)
 
+            bulk_add_subscriptions(
+                user_profile.realm,
+                streams,
+                [target_user],
+                acting_user=user_profile
+            )
+
             # don't send email to user if email is reactivated.
             good_emails.remove(email)
             continue
