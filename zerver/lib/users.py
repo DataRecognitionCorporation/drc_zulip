@@ -490,6 +490,21 @@ def format_user_row(
     is_guest = row["role"] == UserProfile.ROLE_GUEST
     is_bot = row["is_bot"]
 
+    # DRC MODIFICATION
+    #lastname,firstname mod jwdunn - start
+    if(row["role"] > 200 and custom_profile_field_data):
+        for val in custom_profile_field_data.values():
+            if(val['field_name'] == 'first_name'):
+                fname = val['value']
+            elif(val['field_name'] == 'last_name'):
+                lname = val['value']
+
+        full_name = lname + ', ' + fname
+    else:
+        full_name = row["full_name"]
+    #lastname,firstname mod jwdunn - end
+
+
     delivery_email = None
     if acting_user is not None and can_access_delivery_email(
         acting_user, row["id"], row["email_address_visibility"]
@@ -506,7 +521,7 @@ def format_user_row(
         is_billing_admin=row["is_billing_admin"],
         role=row["role"],
         is_bot=is_bot,
-        full_name=row["full_name"],
+        full_name=full_name,
         timezone=canonicalize_timezone(row["timezone"]),
         is_active=row["is_active"],
         # Only send day level precision date_joined data to spectators.
@@ -969,6 +984,7 @@ def get_custom_profile_field_values(
             profiles_by_user_id[user_id][str(profile_field.field_id)] = {
                 "value": profile_field.value,
                 "rendered_value": profile_field.rendered_value,
+                "field_name": profile_field.field.name,
             }
         else:
             profiles_by_user_id[user_id][str(profile_field.field_id)] = {

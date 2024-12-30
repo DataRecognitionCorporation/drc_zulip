@@ -161,6 +161,7 @@ export function get_change_visibility_policy_popover_content_context(stream_id, 
         stream_muted: sub.is_muted,
         topic_unmuted,
         all_visibility_policies,
+        is_guest: current_user.is_guest,
     };
 }
 

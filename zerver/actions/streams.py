@@ -836,22 +836,6 @@ def bulk_add_subscriptions(
             subscriber_dict=subscriber_peer_info.subscribed_ids,
         )
 
-    if realm.can_access_all_users_group.named_user_group.name != SystemGroups.EVERYONE:
-        send_user_creation_events_on_adding_subscriptions(
-            realm,
-            altered_user_dict,
-            altered_streams_dict,
-            subscribers_of_altered_user_subscriptions,
-        )
-
-    send_peer_subscriber_events(
-        op="peer_add",
-        realm=realm,
-        altered_user_dict=altered_user_dict,
-        stream_dict=stream_dict,
-        subscriber_peer_info=subscriber_peer_info,
-    )
-
     return (
         subs_to_add + subs_to_activate,
         already_subscribed,

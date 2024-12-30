@@ -1,3 +1,4 @@
+from os import dup
 import re
 from typing import Annotated
 
@@ -11,6 +12,7 @@ from confirmation import settings as confirmation_settings
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_get_invites_controlled_by_user,
+    do_invite_multiple_users,
     do_invite_users,
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
@@ -44,6 +46,17 @@ def check_role_based_permissions(
         raise JsonableError(_("Must be an organization administrator"))
 
 
+def check_duplicates(list_of_dicts):
+    seen = set()
+    duplicates = []
+    for i in list_of_dicts:
+        if i['email'] in seen:
+            duplicates.append(i['email'])
+        else:
+            seen.add(i['email'])
+    return duplicates
+
+
 @require_member_or_admin
 @typed_endpoint
 def invite_users_backend(
@@ -56,7 +69,7 @@ def invite_users_backend(
         Json[int],
         check_int_in_validator(list(PreregistrationUser.INVITE_AS.values())),
     ] = PreregistrationUser.INVITE_AS["MEMBER"],
-    notify_referrer_on_join: Json[bool] = True,
+    invite_multiple: Json[bool] = True,
     stream_ids: Json[list[int]],
     include_realm_default_subscriptions: Json[bool] = False,
 ) -> HttpResponse:
@@ -94,15 +107,51 @@ def invite_users_backend(
     if len(streams) and not user_profile.can_subscribe_other_users():
         raise JsonableError(_("You do not have permission to subscribe other users to channels."))
 
-    skipped = do_invite_users(
-        user_profile,
-        invitee_emails,
-        streams,
-        notify_referrer_on_join,
-        invite_expires_in_minutes=invite_expires_in_minutes,
-        include_realm_default_subscriptions=include_realm_default_subscriptions,
-        invite_as=invite_as,
-    )
+
+    if(invite_multiple == True):
+        user_list = []
+        invitee_emails_list = invitee_emails_raw.splitlines()
+
+        for user in invitee_emails_list:
+            split_user = user.split(',')
+
+            try:
+                lname = split_user[0].strip()
+                fname = split_user[1].strip()
+                email = split_user[2].strip()
+            except:
+                raise JsonableError(_("Invalid multi user import format. Must be comma seperated multi line list of users in order of first name, last name, email."))
+
+            user_list.append({
+                'lname': lname,
+                'fname': fname,
+                'email': email
+            })
+
+        duplicates = check_duplicates(user_list)
+        if(duplicates != []):
+            dups = ','.join(duplicates)
+            raise JsonableError(_(f'Duplicate emails found.... {dups}'))
+
+
+        skipped = do_invite_multiple_users(
+            user_profile,
+            user_list,
+            streams,
+            invite_as=invite_as,
+        )
+
+    else:
+        notify_referrer_on_join = False
+        skipped = do_invite_users(
+            user_profile,
+            invitee_emails,
+            streams,
+            notify_referrer_on_join,
+            invite_expires_in_minutes=invite_expires_in_minutes,
+            include_realm_default_subscriptions=include_realm_default_subscriptions,
+            invite_as=invite_as,
+        )
 
     if skipped:
         raise InvitationError(

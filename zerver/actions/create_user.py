@@ -336,7 +336,7 @@ def process_new_human_user(
 
     # Schedule an initial email with the user's
     # new account details and log-in information.
-    send_account_registered_email(user_profile, realm_creation)
+    #send_account_registered_email(user_profile, realm_creation)
 
     # We have an import loop here; it's intentional, because we want
     # to keep all the onboarding code in zerver/lib/onboarding.py.
