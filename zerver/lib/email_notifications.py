@@ -379,6 +379,7 @@ def include_realm_name_in_missedmessage_emails_subject(user_profile: UserProfile
 def do_send_missedmessage_events_reply_in_zulip(
     user_profile: UserProfile, missed_messages: list[dict[str, Any]], message_count: int
 ) -> None:
+    return
     """
     Send a reminder email to a user if she's missed some direct messages
     by being offline.
@@ -828,6 +829,7 @@ def send_account_registered_email(user: UserProfile, realm_creation: bool = Fals
 
 
 def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> None:
+    return
     # Imported here to avoid import cycles.
     from zerver.context_processors import common_context
 

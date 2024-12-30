@@ -48,6 +48,7 @@ function get_common_invitation_data(): {
     csrfmiddlewaretoken: string;
     invite_as: number;
     notify_referrer_on_join: boolean;
+    invite_multiple: boolean;
     stream_ids: string;
     invite_expires_in_minutes: string;
     invitee_emails: string;
@@ -57,17 +58,8 @@ function get_common_invitation_data(): {
         $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
         10,
     );
-    const notify_referrer_on_join = $("#receive-invite-acceptance-notification").is(":checked");
-    const raw_expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in").val()!;
-    // See settings_config.expires_in_values for why we do this conversion.
-    let expires_in: number | null;
-    if (raw_expires_in === "null") {
-        expires_in = null;
-    } else if (raw_expires_in === "custom") {
-        expires_in = get_expiration_time_in_minutes();
-    } else {
-        expires_in = Number.parseFloat(raw_expires_in);
-    }
+    const invite_multiple = $("#invite_multiple").is(":checked");
+
 
     let stream_ids: number[] = [];
     let include_realm_default_subscriptions = false;
@@ -76,20 +68,22 @@ function get_common_invitation_data(): {
     } else {
         stream_ids = stream_pill.get_stream_ids(stream_pill_widget);
     }
+    const invitee_emails =  $("#invitee_emails").val();
+
+
+
 
     assert(csrf_token !== undefined);
     const data = {
         csrfmiddlewaretoken: csrf_token,
         invite_as,
-        notify_referrer_on_join,
+        invite_multiple,
         stream_ids: JSON.stringify(stream_ids),
-        invite_expires_in_minutes: JSON.stringify(expires_in),
-        invitee_emails: pills
-            .items()
-            .map((pill) => email_pill.get_email_from_item(pill))
-            .join(","),
+        invite_expires_in_minutes: JSON.stringify(14400),
+        invitee_emails: invitee_emails,
         include_realm_default_subscriptions: JSON.stringify(include_realm_default_subscriptions),
     };
+    /*
     const current_email = email_pill.get_current_email(pills);
     if (current_email) {
         if (pills.items().length === 0) {
@@ -98,6 +92,7 @@ function get_common_invitation_data(): {
             data.invitee_emails += "," + current_email;
         }
     }
+    */
     return data;
 }
 
@@ -111,7 +106,7 @@ function beforeSend(): void {
     const loading_text = $("#invite-user-modal .dialog_submit_button").attr("data-loading-text");
     assert(loading_text !== undefined);
     $("#invite-user-modal .dialog_submit_button").text(loading_text);
-    $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
+    //$("#invite-user-modal .dialog_submit_button").prop("disabled", true);
 }
 
 function submit_invitation_form(): void {
@@ -124,7 +119,7 @@ function submit_invitation_form(): void {
         data,
         beforeSend,
         success() {
-            const number_of_invites_sent = pills.items().length;
+            const number_of_invites_sent = 5;
             ui_report.success(
                 $t_html(
                     {
@@ -135,7 +130,8 @@ function submit_invitation_form(): void {
                 ),
                 $invite_status,
             );
-            pills.clear();
+            //pills.clear();
+            $("#invitee_emails").val('');
 
             if (page_params.development_environment) {
                 const rendered_email_msg = render_settings_dev_env_email_access();
@@ -331,14 +327,17 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
     function invite_user_modal_post_render(): void {
         const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
+        /*
+
         const $pill_container = $("#invitee_emails_container .pill-container");
         pills = input_pill.create({
             $container: $pill_container,
             create_item_from_text: email_pill.create_item_from_email,
             get_text_from_item: email_pill.get_email_from_item,
         });
+        */
 
-        $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
+        //$("#invite-user-modal .dialog_submit_button").prop("disabled", true);
 
         const user_has_email_set = !settings_data.user_email_not_configured();
 
@@ -360,6 +359,16 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             $(e.target).parent().remove();
         });
 
+        $("#invite_multiple").on("click", (e) => {
+            if($("#invite_multiple").is(":checked")) {
+                $('.invitee_emails').attr('placeholder', 'Last name, First name, Email.');
+
+            } else {
+                $('.invitee_emails').attr('placeholder', 'Email only.');
+
+            }
+        });
+
         function toggle_invite_submit_button(selected_tab?: string): void {
             if (selected_tab === undefined) {
                 selected_tab = $(".invite_users_option_tabs")
@@ -367,12 +376,12 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                     .attr("data-tab-key");
             }
             const $button = $("#invite-user-modal .dialog_submit_button");
+            /*
             $button.prop(
                 "disabled",
-                selected_tab === "invite-email-tab" &&
-                    pills.items().length === 0 &&
-                    email_pill.get_current_email(pills) === null,
+                selected_tab === "invite-email-tab"
             );
+            */
             if (selected_tab === "invite-email-tab") {
                 $button.text($t({defaultMessage: "Invite"}));
                 $button.attr("data-loading-text", $t({defaultMessage: "Inviting…"}));
@@ -382,11 +391,11 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             }
         }
 
-        pills.onPillCreate(toggle_invite_submit_button);
-        pills.onPillRemove(() => {
-            toggle_invite_submit_button();
-        });
-        pills.onTextInputHook(toggle_invite_submit_button);
+        //pills.onPillCreate(toggle_invite_submit_button);
+        //pills.onPillRemove(() => {
+        //    toggle_invite_submit_button();
+        //});
+        //pills.onTextInputHook(toggle_invite_submit_button);
 
         $expires_in.on("change", () => {
             set_custom_time_inputs_visibility();
@@ -441,18 +450,18 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             selected: 0,
             child_wants_focus: true,
             values: [
-                {label: $t({defaultMessage: "Email invitation"}), key: "invite-email-tab"},
+                {label: $t({defaultMessage: "Add/Invite"}), key: "invite-email-tab"},
                 {label: $t({defaultMessage: "Invitation link"}), key: "invite-link-tab"},
             ],
             callback(_name, key) {
                 switch (key) {
                     case "invite-email-tab":
                         $("#invitee_emails_container").show();
-                        $("#receive-invite-acceptance-notification-container").show();
+                        $("#invite_multiple_container").show();
                         break;
                     case "invite-link-tab":
                         $("#invitee_emails_container").hide();
-                        $("#receive-invite-acceptance-notification-container").hide();
+                        $("#invite_multiple_container").hide();
                         break;
                 }
                 toggle_invite_submit_button(key);

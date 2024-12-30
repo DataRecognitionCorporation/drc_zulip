@@ -104,6 +104,7 @@
                 </div>
                 {{/with}}
                 {{#if can_access_stream_email}}
+                {{#if is_admin}}
                 <div class="input-group stream-email-box">
                     <label for="copy_stream_email_button" class="title inline-block">Email address</label>
                     <p class="field-hint">
@@ -114,6 +115,7 @@
                         <span class="copy_button">{{t "Generate email address" }}</span>
                     </button>
                 </div>
+                {{/if}}
                 {{/if}}
             </div>
         </div>
