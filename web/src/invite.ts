@@ -361,10 +361,10 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
         $("#invite_multiple").on("click", (e) => {
             if($("#invite_multiple").is(":checked")) {
-                $('.invitee_emails').attr('placeholder', 'Last name, First name, Email');
+                $('.invitee_emails').attr('placeholder', 'Last name, First name, Email.');
 
             } else {
-                $('.invitee_emails').attr('placeholder', 'Email only. One email is accepted.');
+                $('.invitee_emails').attr('placeholder', 'Email only.');
 
             }
         });
@@ -450,7 +450,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             selected: 0,
             child_wants_focus: true,
             values: [
-                {label: $t({defaultMessage: "Invite"}), key: "invite-email-tab"},
+                {label: $t({defaultMessage: "Add/Invite"}), key: "invite-email-tab"},
                 {label: $t({defaultMessage: "Invitation link"}), key: "invite-link-tab"},
             ],
             callback(_name, key) {

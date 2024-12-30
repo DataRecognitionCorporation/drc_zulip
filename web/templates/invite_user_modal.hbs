@@ -20,7 +20,8 @@
     <div class="input-group">
         <div id="invite_users_option_tabs_container" class="new-style"></div>
         <div id="invitee_emails_container">
-            <label for="invitee_emails" class="modal-field-label">{{t "Emails (one on each line or comma-separated)" }}</label>
+            <label for="invitee_emails" class="modal-field-label">{{t "One user per line." }}</label>
+            <label for="invitee_emails" class="modal-field-label">{{t "NOTE: You may need to refresh your browser to view changes." }}</label>
             <textarea rows="8" id="invitee_emails" class='invitee_emails' name="invitee_emails" placeholder="{{t 'Last name, First name, Email' }}"></textarea>
         </div>
     </div>
@@ -28,7 +29,7 @@
         <label class="checkbox display-block">
             <input type="checkbox" id="invite_multiple" checked/>
             <span></span>
-            {{t "Invite multiple users." }}
+            {{t "Add/Invite with lastname, firstname and email." }}
         </label>
     </div>
     <div class="input-group">
