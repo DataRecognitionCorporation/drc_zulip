@@ -56,7 +56,7 @@ locals {
   artifactory_download_url = "https://artifactory.datarecognitioncorp.com/artifactory/downloads/zulip"
 
   zulip_version = {
-    "dev"  = "test-202412201724"
+    "dev"  = "9.2.0"
     "prod" = "6.1.24"
   }
 
@@ -129,12 +129,12 @@ locals {
 
   tornado_processes = {
     dev  = 2
-    prod = 12
+    prod = 10
   }
 
   uwsgi_processes = {
     dev  = 6
-    prod = 12
+    prod = 10
   }
 
   jitsi_server_url = {
