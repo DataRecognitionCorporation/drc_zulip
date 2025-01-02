@@ -9,7 +9,7 @@ resource "aws_route53_record" "zulip_ec2" {
 
 resource "aws_route53_record" "zulip_nlb" {
   #zone_id = local.cloud_shared_hosted_zone[var.environment]
-  zone_id = "Z05401561SD9AVSJC0ST8"
+  zone_id = local.public_smtp_hosted_zone[var.environment]
   name    = "chat-${var.environment}-nlb"
   type    = "MX"
   ttl     = 300
@@ -17,8 +17,7 @@ resource "aws_route53_record" "zulip_nlb" {
 }
 
 resource "aws_route53_record" "zulip_nlb_private" {
-  #zone_id = local.cloud_shared_hosted_zone[var.environment]
-  zone_id = "Z06089421NYRAM30RG82O"
+  zone_id = local.private_smtp_hosted_zone[var.environment]
   name    = "chat-${var.environment}-nlb"
   type    = "MX"
   ttl     = 300

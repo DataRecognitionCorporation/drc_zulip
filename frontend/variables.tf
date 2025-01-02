@@ -57,7 +57,7 @@ locals {
 
   zulip_version = {
     "dev"  = "9.2.1"
-    "prod" = "6.1.24"
+    "prod" = "9.2.1"
   }
 
   db_password_secret_arn = {
@@ -200,5 +200,19 @@ locals {
     "333509430799" = {
       "us-east-2" = "arn:aws:acm:us-east-2:333509430799:certificate/84d3e06e-deec-413c-a8c1-0285cf64b76f"
     }
+    "911870898277" = {
+      "us-east-2" = "arn:aws:acm:us-east-2:911870898277:certificate/29bb9474-1a6f-4309-9ab1-7c27a9554e97"
+    }
   }
+
+  public_smtp_hosted_zone = {
+    dev  = "Z05401561SD9AVSJC0ST8"
+    prod = "Z07326302DQJ0D9JFO0GI"
+  }
+
+  private_smtp_hosted_zone = {
+    dev  = "Z06089421NYRAM30RG82O"
+    prod = "Z0789037PPB5S0IXWFAS"
+  }
+
 }
