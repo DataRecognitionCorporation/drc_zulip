@@ -158,7 +158,7 @@ locals {
   }
 
   okta_url = {
-    prod = "https://www.drcedirect.com/all/eca-portal-v2-ui/#/login/DRCPORTAL"
+    prod = "https://auth.drcedirect.com/app/datarecognitioncorp_zulip_1/exk7uunhvfu5du28v4x7/sso/saml"
     dev  = "https://auth-sqa.drcedirect.com/home/datarecognitioncorp-sqa_zulip_2/0oa3mnxusgS1hm6Pu1d7/aln3mo15uyH62rREv1d7"
   }
 
