@@ -861,7 +861,7 @@ export function initialize({
 }: {
     on_stream_click: (stream_id: number, trigger: string) => void;
 }): void {
-    if(!current_user.is_guest) {
+    if(current_user.is_admin || current_user.is_owner || current_user.is_moderator) {
         stream_sidebar.use_folders = true;
     } else {
         stream_sidebar.use_folders = false;

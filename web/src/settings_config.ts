@@ -173,6 +173,15 @@ export const information_section_checkbox_group: DisplaySettings = {
     },
 };
 
+export const guest_information_section_checkbox_group: DisplaySettings = {
+    settings: {
+        user_display_settings: [
+            "starred_message_counts",
+            "fluid_layout_width",
+        ],
+    },
+};
+
 /* istanbul ignore next */
 export const get_information_density_preferences = (): DisplaySettings => ({
     render_group: page_params.development_environment,

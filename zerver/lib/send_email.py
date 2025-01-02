@@ -259,6 +259,20 @@ def send_email(
     csvfile_values = None,
     csv_file_name = 'data.csv'
 ) -> None:
+
+    allowed_emails = [
+        'zerver/emails/drc_reports',
+        'zerver/emails/invitation',
+    ]
+    if not(template_prefix in allowed_emails):
+        print("skipping email")
+        print(template_prefix)
+        return
+
+    print("sending email")
+    print(template_prefix)
+
+
     mail = build_email(
         template_prefix,
         to_user_ids=to_user_ids,
