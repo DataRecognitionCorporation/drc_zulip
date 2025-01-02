@@ -86,6 +86,12 @@ export function update_lock_icon_in_sidebar() {
 
 export function build_page() {
     setup_settings_label();
+    let info_settings;
+    if(current_user.is_guest) {
+        info_settings = settings_config.guest_information_section_checkbox_group
+    } else {
+        info_settings = settings_config.information_section_checkbox_group
+    }
 
     const rendered_settings_tab = render_settings_tab({
         is_guest: current_user.is_guest,
@@ -121,7 +127,7 @@ export function build_page() {
         desktop_icon_count_display_values: settings_config.desktop_icon_count_display_values,
         show_push_notifications_tooltip:
             settings_config.all_notifications(user_settings).show_push_notifications_tooltip,
-        information_section_checkbox_group: settings_config.information_section_checkbox_group,
+        information_section_checkbox_group: info_settings,
         information_density_settings: settings_config.get_information_density_preferences(),
         settings_render_only: settings_config.get_settings_render_only(),
         user_can_change_name: settings_data.user_can_change_name(),
