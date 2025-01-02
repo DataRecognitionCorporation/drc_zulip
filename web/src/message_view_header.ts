@@ -116,6 +116,17 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
         // the current user can access.
         const current_stream = filter._sub;
         const sub_count = peer_data.get_subscriber_count(current_stream.stream_id);
+
+        if(current_user.is_guest) {
+            return {
+                ...context,
+                is_admin: current_user.is_admin,
+                rendered_narrow_description: current_stream.rendered_description,
+                sub_count,
+                stream: current_stream,
+            };
+
+        }
         return {
             ...context,
             is_admin: current_user.is_admin,
