@@ -54,7 +54,7 @@ def get_bucket(bucket_name: str, authed: bool = True) -> Bucket:
         region_name=settings.S3_REGION,
         endpoint_url=settings.S3_ENDPOINT_URL,
         config=Config(
-            region_name = settings.S3_REGION,
+            region_name = "us-east-2",
             signature_version="s3v4",
             s3={"addressing_style": settings.S3_ADDRESSING_STYLE},
         ),
