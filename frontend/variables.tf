@@ -56,8 +56,8 @@ locals {
   artifactory_download_url = "https://artifactory.datarecognitioncorp.com/artifactory/downloads/zulip"
 
   zulip_version = {
-    "dev"  = "9.2.1"
-    "prod" = "9.2.1"
+    "dev"  = "9.2.2"
+    "prod" = "9.2.2"
   }
 
   db_password_secret_arn = {
