@@ -84,7 +84,7 @@ function get_render_data(): BuddyListRenderData {
     const pm_ids_set = narrow_state.pm_ids_set();
 
     const total_human_subscribers_count = get_total_human_subscriber_count(current_sub, pm_ids_set);
-    const total_human_users = people.get_active_human_count();
+    const total_human_users = total_human_subscribers_count;
     const other_users_count = total_human_users - total_human_subscribers_count;
     const hide_headers = should_hide_headers(current_sub, pm_ids_set);
 
