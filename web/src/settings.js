@@ -93,8 +93,11 @@ export function build_page() {
         info_settings = settings_config.information_section_checkbox_group
     }
 
+    const is_member = !(current_user.is_admin || current_user.is_guest || current_user.is_moderator || current_user.is_owner);
+
     const rendered_settings_tab = render_settings_tab({
         is_guest: current_user.is_guest,
+        is_member,
         full_name: people.my_full_name(),
         date_joined_text: get_parsed_date_of_joining(),
         current_user,
