@@ -67,6 +67,7 @@
             </div>
         </div>
 
+        {{#unless is_member}}
         <div id="privacy_settings_box">
             <h3 class="inline-block">{{t "Privacy" }}</h3>
             <div class="alert-notification privacy-setting-status"></div>
@@ -131,6 +132,7 @@
                 </div>
             </div>
         </div>
+        {{/unless}}
         <!-- Render /settings/api_key_modal.hbs after #api_key_button is clicked
         to avoid password being inserted by password manager too aggressively. -->
     </div>
