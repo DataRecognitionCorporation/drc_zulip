@@ -15,7 +15,7 @@
 }
 
 .typeahead.dropdown-menu .typeahead-menu .simplebar-content {
-    min-width: max-content;
+    min-width: 800px;
 
     & > li {
         word-break: break-word;
@@ -34,7 +34,7 @@
             @media (width >= $ml_min) {
                 /* Scale up with font size on larger widths. */
                 /* 292px / 14px */
-                max-width: 20.86em;
+                max-width: inherit;
             }
 
             /* hidden text just to maintain line height for a blank option */
