@@ -112,6 +112,7 @@ function build_stream_popover(opts) {
         },
         show_go_to_channel_feed,
         is_guest: current_user.is_guest,
+        is_member: current_user.is_member,
     });
 
     popover_menus.toggle_popover_menu(elt, {

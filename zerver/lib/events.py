@@ -583,10 +583,13 @@ def fetch_initial_state_data(
         )
         state["can_subscribe_other_users"] = settings_user.can_subscribe_other_users()
         state["can_invite_others_to_realm"] = settings_user.can_invite_users_by_email()
+
         state["is_admin"] = settings_user.is_realm_admin
         state["is_owner"] = settings_user.is_realm_owner
         state["is_moderator"] = settings_user.is_moderator
         state["is_guest"] = settings_user.is_guest
+        state['is_member'] = not(settings_user.is_realm_admin or settings_user.is_realm_owner or settings_user.is_moderator or settings_user.is_guest)
+
         state["is_billing_admin"] = settings_user.is_billing_admin
         state["user_id"] = settings_user.id
         state["email"] = settings_user.email
