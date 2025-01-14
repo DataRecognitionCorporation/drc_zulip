@@ -75,6 +75,7 @@ export function user_matches_narrow(
         return peer_data.is_user_subscribed(stream_id, user_id);
     }
     if (pm_ids.size > 0) {
+        console.log(pm_ids)
         return pm_ids.has(user_id) || people.is_my_user_id(user_id);
     }
     return false;
