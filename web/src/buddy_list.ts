@@ -454,6 +454,7 @@ export class BuddyList extends BuddyListConf {
         const pm_ids_set = narrow_state.pm_ids_set();
 
         for (const item of items) {
+            console.log(item)
             if (buddy_data.user_matches_narrow(item.user_id, pm_ids_set, current_sub?.stream_id)) {
                 subscribed_users.push(item);
                 this.users_matching_view_ids.push(item.user_id);
