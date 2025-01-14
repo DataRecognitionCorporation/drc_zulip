@@ -212,6 +212,7 @@ const current_user_schema = z.object({
     is_admin: z.boolean(),
     is_billing_admin: z.boolean(),
     is_guest: z.boolean(),
+    is_member: z.boolean(),
     is_moderator: z.boolean(),
     is_owner: z.boolean(),
     user_id: z.number(),
