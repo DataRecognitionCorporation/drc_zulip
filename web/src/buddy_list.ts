@@ -452,7 +452,6 @@ export class BuddyList extends BuddyListConf {
         const other_users = [];
         const current_sub = this.render_data.current_sub;
         const pm_ids_set = narrow_state.pm_ids_set();
-        console.log(pm_ids_set)
 
         for (const item of items) {
             if (buddy_data.user_matches_narrow(item.user_id, pm_ids_set, current_sub?.stream_id)) {
@@ -465,6 +464,7 @@ export class BuddyList extends BuddyListConf {
                 }
             }
         }
+        console.log(subscribed_users)
 
         // Remove the empty list message before adding users
         if (
