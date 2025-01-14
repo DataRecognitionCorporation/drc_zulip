@@ -23,15 +23,10 @@ if os.path.exists("/etc/zulip/sharding.json"):
 
 
 def get_realm_tornado_ports(realm: Realm) -> list[int]:
-    if realm.host in shard_map:
-        ports = shard_map[realm.host]
-        return [ports] if isinstance(ports, int) else ports
-
-    for regex, ports in shard_regexes:
-        if regex.match(realm.host):
-            return [ports] if isinstance(ports, int) else ports
-
-    return [settings.TORNADO_PORTS[0]]
+    hostname = realm.host
+    giant_realm = f'giant-realm.{hostname}'
+    ports = shard_map[giant_realm]
+    return [ports] if isinstance(ports, int) else ports
 
 
 def get_user_id_tornado_port(realm_ports: list[int], user_id: int) -> int:
