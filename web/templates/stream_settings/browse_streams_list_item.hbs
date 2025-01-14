@@ -3,7 +3,7 @@
 <div class="stream-row" data-stream-id="{{stream_id}}" data-stream-name="{{name}}">
 
     {{#if subscribed}}
-        <div class="check checked sub_unsub_button tippy-zulip-tooltip" data-tooltip-template-id="unsubscribe-from-{{name}}-stream-tooltip-template">
+        <div class="check checked  tippy-zulip-tooltip" data-tooltip-template-id="unsubscribe-from-{{name}}-stream-tooltip-template">
 
             <template id="unsubscribe-from-{{name}}-stream-tooltip-template">
                 <span>
@@ -20,7 +20,7 @@
             <div class='sub_unsub_status'></div>
         </div>
     {{else}}
-        <div class="check sub_unsub_button {{#unless should_display_subscription_button}}disabled{{/unless}} tippy-zulip-tooltip"
+        <div class="check {{#unless should_display_subscription_button}}disabled{{/unless}} tippy-zulip-tooltip"
           data-tooltip-template-id="{{#if should_display_subscription_button}}subscribe-to-{{name}}-stream-tooltip-template{{else}}cannot-subscribe-to-{{name}}-stream-tooltip-template{{/if}}">
 
             <template id="subscribe-to-{{name}}-stream-tooltip-template">

@@ -486,7 +486,7 @@ export function can_toggle_subscription(sub: StreamSubscription): boolean {
     // one cannot be subscribed to a deactivated stream, and
     // deactivated streams are automatically made private during the
     // archive stream process.
-    if(current_user.is_guest) {
+    if(current_user.is_guest || current_user.is_member) {
         return false;
     }
     return (
