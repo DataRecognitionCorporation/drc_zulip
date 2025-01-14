@@ -117,6 +117,7 @@ def get_events_internal(
     assert is_current_port(get_user_tornado_port(user_profile))
 
     process_client(request, user_profile, client_name="internal")
+    print(user_profile)
     return get_events_backend(request, user_profile)
 
 

@@ -232,6 +232,9 @@ def build_page_params_for_home_page_load(
 
     page_params["state_data"] = state_data
 
+    for key, val in page_params['state_data'].items():
+        print(key)
+
     if narrow_stream is not None and state_data is not None:
         # In narrow_stream context, initial pointer is just latest message
         recipient = narrow_stream.recipient
