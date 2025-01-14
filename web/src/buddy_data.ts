@@ -2,6 +2,7 @@ import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
 import * as muted_users from "./muted_users";
 import * as narrow_state from "./narrow_state";
+import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as presence from "./presence";
 import {realm} from "./state_data";
@@ -71,7 +72,7 @@ export function user_matches_narrow(
     stream_id?: number | null,
 ): boolean {
     if (stream_id) {
-        return stream_data.is_user_subscribed(stream_id, user_id);
+        return peer_data.is_user_subscribed(stream_id, user_id);
     }
     if (pm_ids.size > 0) {
         return pm_ids.has(user_id) || people.is_my_user_id(user_id);
