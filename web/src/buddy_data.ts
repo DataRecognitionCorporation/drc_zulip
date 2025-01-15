@@ -295,6 +295,7 @@ export function get_item(user_id: number): BuddyUserInfo {
 
 export function get_items_for_users(user_ids: number[]): BuddyUserInfo[] {
     const user_info = user_ids.map((user_id) => info_for(user_id));
+    console.log(user_info)
     return user_info;
 }
 

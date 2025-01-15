@@ -437,11 +437,16 @@ export class BuddyList extends BuddyListConf {
 
     render_more(opts: {chunk_size: number}): void {
         const chunk_size = opts.chunk_size;
+        console.log(chunk_size)
+        console.log(this.render_count)
 
         const begin = this.render_count;
         const end = begin + chunk_size;
+        console.log(begin)
+        console.log(end)
 
         const more_user_ids = this.all_user_ids.slice(begin, end);
+        console.log(more_user_ids)
 
         if (more_user_ids.length === 0) {
             return;
