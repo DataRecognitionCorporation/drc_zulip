@@ -248,10 +248,12 @@ export class BuddyList extends BuddyListConf {
 
         // Reset data to be relevant for this current view.
         this.render_data = get_render_data();
+        console.log(this.render_data)
 
         // We rely on our caller to give us items
         // in already-sorted order.
         this.all_user_ids = opts.all_user_ids;
+        console.log(opts)
 
         this.fill_screen_with_content();
 
@@ -447,6 +449,8 @@ export class BuddyList extends BuddyListConf {
 
         const more_user_ids = this.all_user_ids.slice(begin, end);
         console.log(more_user_ids)
+        console.log(this.all_user_ids)
+
 
         if (more_user_ids.length === 0) {
             return;
