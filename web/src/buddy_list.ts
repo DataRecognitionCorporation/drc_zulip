@@ -664,7 +664,6 @@ export class BuddyList extends BuddyListConf {
         // Try to render a bit optimistically here.
         const cushion_size = 3;
         const chunk_size = pos + cushion_size - this.render_count;
-
         if (chunk_size <= 0) {
             blueslip.error("cannot show user id at this position", {
                 pos,
@@ -792,6 +791,8 @@ export class BuddyList extends BuddyListConf {
 
         // Add a fudge factor.
         height += 10;
+        console.log(`render_count ${this.render_count}`)
+        console.log(`all_user_ids ${this.all_user_ids}`)
 
         while (this.render_count < this.all_user_ids.length) {
             const padding_height = $(this.padding_selector).height();
@@ -804,6 +805,7 @@ export class BuddyList extends BuddyListConf {
 
             const chunk_size = 20;
 
+            console.log(`chunk_size ${chunk_size}`)
             this.render_more({
                 chunk_size,
             });
