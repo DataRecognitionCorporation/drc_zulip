@@ -319,11 +319,9 @@ function maybe_shrink_list(user_ids: number[], user_filter_text: string): number
     }
 
     // We want to always show PM recipients even if they're inactive.
-    /*const pm_ids_set = narrow_state.pm_ids_set();
     user_ids = user_ids.filter(
         (user_id) => user_is_recently_active(user_id) || user_matches_narrow(user_id, pm_ids_set),
     );
-    */
 
     return user_ids;
 }
@@ -376,7 +374,8 @@ function get_filtered_user_id_list(user_filter_text: string): number[] {
         // From large realms, the user_ids in presence may exclude
         // users who have been idle more than three weeks.  When the
         // filter text is blank, we show only those recently active users.
-        base_user_id_list = presence.get_user_ids();
+        //base_user_id_list = presence.get_user_ids();
+        base_user_id_list = people.get_active_user_ids();
         console.log(base_user_id_list)
 
         // Always include ourselves, even if we're "unavailable".
