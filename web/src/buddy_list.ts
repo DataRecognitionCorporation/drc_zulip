@@ -248,12 +248,10 @@ export class BuddyList extends BuddyListConf {
 
         // Reset data to be relevant for this current view.
         this.render_data = get_render_data();
-        console.log(this.render_data)
 
         // We rely on our caller to give us items
         // in already-sorted order.
         this.all_user_ids = opts.all_user_ids;
-        console.log(opts)
 
         this.fill_screen_with_content();
 
@@ -439,17 +437,11 @@ export class BuddyList extends BuddyListConf {
 
     render_more(opts: {chunk_size: number}): void {
         const chunk_size = opts.chunk_size;
-        console.log(chunk_size)
-        console.log(this.render_count)
 
         const begin = this.render_count;
         const end = begin + chunk_size;
-        console.log(begin)
-        console.log(end)
 
         const more_user_ids = this.all_user_ids.slice(begin, end);
-        console.log(more_user_ids)
-        console.log(this.all_user_ids)
 
 
         if (more_user_ids.length === 0) {
@@ -464,8 +456,6 @@ export class BuddyList extends BuddyListConf {
 
         for (const item of items) {
             if (buddy_data.user_matches_narrow(item.user_id, pm_ids_set, current_sub?.stream_id)) {
-                console.log(item)
-                console.log('adding to users matching view')
                 subscribed_users.push(item);
                 this.users_matching_view_ids.push(item.user_id);
             } else {
@@ -517,7 +507,6 @@ export class BuddyList extends BuddyListConf {
         const has_inactive_users_matching_view =
             total_human_subscribers_count > this.users_matching_view_ids.length;
         const has_inactive_other_users = other_users_count > this.other_user_ids.length;
-        console.log(has_inactive_users_matching_view)
 
         // For stream views, we show a link at the bottom of the list of subscribed users that
         // lets a user find the full list of subscribed users and information about them.
@@ -530,7 +519,6 @@ export class BuddyList extends BuddyListConf {
                 current_sub,
                 "subscribers",
             );
-            console.log(stream_edit_hash)
             $("#buddy-list-users-matching-view-container").append(
                 $(
                     render_view_all_subscribers({
@@ -800,8 +788,6 @@ export class BuddyList extends BuddyListConf {
 
         // Add a fudge factor.
         height += 10;
-        console.log(`render_count ${this.render_count}`)
-        console.log(`all_user_ids ${this.all_user_ids}`)
 
         while (this.render_count < this.all_user_ids.length) {
             const padding_height = $(this.padding_selector).height();
@@ -814,7 +800,6 @@ export class BuddyList extends BuddyListConf {
 
             const chunk_size = 20;
 
-            console.log(`chunk_size ${chunk_size}`)
             this.render_more({
                 chunk_size,
             });

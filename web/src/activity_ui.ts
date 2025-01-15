@@ -122,10 +122,8 @@ export function build_user_sidebar(): number[] | undefined {
 
     assert(user_filter !== undefined);
     const filter_text = user_filter.text();
-    console.log(filter_text)
 
     const all_user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
-    console.log(all_user_ids)
 
     buddy_list.populate({all_user_ids});
 

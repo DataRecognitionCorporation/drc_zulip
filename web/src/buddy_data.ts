@@ -294,7 +294,6 @@ export function get_item(user_id: number): BuddyUserInfo {
 
 export function get_items_for_users(user_ids: number[]): BuddyUserInfo[] {
     const user_info = user_ids.map((user_id) => info_for(user_id));
-    console.log(user_info)
     return user_info;
 }
 
@@ -320,6 +319,7 @@ function maybe_shrink_list(user_ids: number[], user_filter_text: string): number
 
     // We want to always show PM recipients even if they're inactive.
     /*
+    const pm_ids_set = narrow_state.pm_ids_set();
     user_ids = user_ids.filter(
         (user_id) => user_is_recently_active(user_id) || user_matches_narrow(user_id, pm_ids_set),
     );
@@ -371,14 +371,12 @@ function get_filtered_user_id_list(user_filter_text: string): number[] {
         // If there's a filter, select from all users, not just those
         // recently active.
         base_user_id_list = people.get_active_user_ids();
-        console.log(base_user_id_list)
     } else {
         // From large realms, the user_ids in presence may exclude
         // users who have been idle more than three weeks.  When the
         // filter text is blank, we show only those recently active users.
         //base_user_id_list = presence.get_user_ids();
         base_user_id_list = people.get_active_user_ids();
-        console.log(base_user_id_list)
 
         // Always include ourselves, even if we're "unavailable".
         const my_user_id = people.my_current_user_id();
@@ -388,7 +386,6 @@ function get_filtered_user_id_list(user_filter_text: string): number[] {
 
         // We want to always show PM recipients even if they're inactive.
         const pm_ids_set = narrow_state.pm_ids_set();
-        console.log(pm_ids_set)
         if (pm_ids_set.size) {
             const base_user_id_set = new Set([...base_user_id_list, ...pm_ids_set]);
             base_user_id_list = [...base_user_id_set];
@@ -402,9 +399,7 @@ function get_filtered_user_id_list(user_filter_text: string): number[] {
 export function get_filtered_and_sorted_user_ids(user_filter_text: string): number[] {
     let user_ids;
     user_ids = get_filtered_user_id_list(user_filter_text);
-    console.log(user_ids)
     user_ids = maybe_shrink_list(user_ids, user_filter_text);
-    console.log(user_ids)
     return sort_users(user_ids);
 }
 
