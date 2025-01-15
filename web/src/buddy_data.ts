@@ -399,7 +399,9 @@ function get_filtered_user_id_list(user_filter_text: string): number[] {
 export function get_filtered_and_sorted_user_ids(user_filter_text: string): number[] {
     let user_ids;
     user_ids = get_filtered_user_id_list(user_filter_text);
+    console.log(user_ids)
     user_ids = maybe_shrink_list(user_ids, user_filter_text);
+    console.log(user_ids)
     return sort_users(user_ids);
 }
 
