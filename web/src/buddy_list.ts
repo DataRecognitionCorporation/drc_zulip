@@ -454,8 +454,9 @@ export class BuddyList extends BuddyListConf {
         const pm_ids_set = narrow_state.pm_ids_set();
 
         for (const item of items) {
-            console.log(item)
             if (buddy_data.user_matches_narrow(item.user_id, pm_ids_set, current_sub?.stream_id)) {
+                console.log(item)
+                console.log('adding to users matching view')
                 subscribed_users.push(item);
                 this.users_matching_view_ids.push(item.user_id);
             } else {
@@ -465,7 +466,6 @@ export class BuddyList extends BuddyListConf {
                 }
             }
         }
-        console.log(subscribed_users)
 
         // Remove the empty list message before adding users
         if (
@@ -508,6 +508,7 @@ export class BuddyList extends BuddyListConf {
         const has_inactive_users_matching_view =
             total_human_subscribers_count > this.users_matching_view_ids.length;
         const has_inactive_other_users = other_users_count > this.other_user_ids.length;
+        console.log(has_inactive_users_matching_view)
 
         // For stream views, we show a link at the bottom of the list of subscribed users that
         // lets a user find the full list of subscribed users and information about them.
@@ -520,6 +521,7 @@ export class BuddyList extends BuddyListConf {
                 current_sub,
                 "subscribers",
             );
+            console.log(stream_edit_hash)
             $("#buddy-list-users-matching-view-container").append(
                 $(
                     render_view_all_subscribers({
