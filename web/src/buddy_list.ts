@@ -443,6 +443,7 @@ export class BuddyList extends BuddyListConf {
 
         const more_user_ids = this.all_user_ids.slice(begin, end);
 
+
         if (more_user_ids.length === 0) {
             return;
         }
@@ -660,7 +661,6 @@ export class BuddyList extends BuddyListConf {
         // Try to render a bit optimistically here.
         const cushion_size = 3;
         const chunk_size = pos + cushion_size - this.render_count;
-
         if (chunk_size <= 0) {
             blueslip.error("cannot show user id at this position", {
                 pos,
