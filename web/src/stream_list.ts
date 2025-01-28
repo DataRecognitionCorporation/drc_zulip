@@ -613,9 +613,6 @@ function set_stream_unread_count(
         stream_has_only_muted_unread_mentions,
     );
 
-    if(stream_sidebar.use_folders) {
-        stream_sidebar.update_unread_counts();
-    }
 }
 
 export function update_streams_sidebar(force_rerender = false): void {
@@ -665,6 +662,10 @@ export function update_dom_with_unread_counts(counts: FullUnreadCountsData): voi
             stream_has_any_unmuted_unread_mention,
             stream_has_only_muted_unread_mentions,
         );
+    }
+
+    if(stream_sidebar.use_folders) {
+        stream_sidebar.update_unread_counts();
     }
 }
 

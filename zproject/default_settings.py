@@ -255,13 +255,13 @@ DEFAULT_RATE_LIMITING_RULES = {
     # clients causing unreasonable server load.
     "api_by_user": [
         # 200 requests per minute
-        (60, 200),
+        (60, 200000000000000000),
     ],
     # Limits total number of unauthenticated API requests (primarily
     # used by the public access option). Since these are
     # unauthenticated requests, each IP address is a separate bucket.
     "api_by_ip": [
-        (60, 100),
+        (60, 10000000000000),
     ],
     # Limits total requests to the Mobile Push Notifications Service
     # by each individual Zulip server that is using the service. This
@@ -269,7 +269,7 @@ DEFAULT_RATE_LIMITING_RULES = {
     # servers that are not hosting their own copy of the push
     # notifications service.
     "api_by_remote_server": [
-        (60, 1000),
+        (60, 10000000000),
     ],
     # Limits how many authentication attempts with login+password can
     # be made to a single username. This applies to the authentication
