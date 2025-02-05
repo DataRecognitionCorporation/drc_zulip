@@ -1,0 +1,162 @@
+#!/usr/bin/env groovy
+@Library('DRC_Global_Pipeline_Libraries@master') _
+
+WORKING_DIR = 'tools/ci'
+
+pipeline{
+
+    environment {
+        VERSION = '0.0.0'
+        CONTAINER_NAME = 'team-ss/zulip-ci'
+        AWS_DEFAULT_REGION = 'us-east-2'
+        AWS_ACCOUNT_NUMBER = 911870898277
+    }
+
+    options {
+        buildDiscarder(logRotator(daysToKeepStr: '3', numToKeepStr: '5', artifactDaysToKeepStr: '3'))
+        ansiColor('xterm')
+    }
+
+    triggers {
+        // anytime between midnight and 2:59am central time every month on the 21st
+        cron('H H(14-15) 11 * *')
+    }
+
+    agent none
+
+    stages {
+        stage('Build On') {
+            parallel {
+                stage('Build On amd64') {
+                    agent { node { label 'docker_amd64' } }
+                    steps {
+                        dir("${WORKSPACE}/${WORKING_DIR}") {
+                            container('aws-cli') {
+                                drc_AwsAssumeRole([jenkinsRole: 'cloud-build-jenkins-role', acctNum: "${AWS_ACCOUNT_NUMBER}", appName: "test", bldNum : "${BUILD_NUMBER}", timeout: 1800])
+                                getAWSConfig()
+                            }
+                            container('dind'){
+                                dockerBuild()
+                                pushContainer('amd64')
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        stage('Deploy manifest'){
+            agent { node { label 'docker_amd64' } }
+            steps{
+                dir("${WORKSPACE}/${WORKING_DIR}") {
+                    container('aws-cli') {
+                        drc_AwsAssumeRole([jenkinsRole: 'cloud-build-jenkins-role', acctNum: "${AWS_ACCOUNT_NUMBER}", appName: "test", bldNum : "${BUILD_NUMBER}", timeout: 1800])
+                        getAWSConfig()
+                    }
+                    container('dind'){
+                        dockerTag()
+                        deployManifest()
+                    }
+                }
+            }
+        }
+    }
+}
+
+void getAWSConfig() {
+    sh 'aws sts get-caller-identity'
+    sh 'aws sts get-caller-identity --query Account | tail -c +2 | head -c -2 > aws_account'
+    sh "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} > docker.password"
+}
+
+
+void dockerBuild(){
+    script {
+        sh '''
+            docker info
+            docker build \
+                --progress plain \
+                --file Dockerfile \
+                --tag local-build \
+                .
+
+            docker images
+        '''
+
+        sh "docker inspect local-build --format=\'{{json .Config.Labels}}\' > inspect_out.json"
+
+        // parse major.minor from output from docker inspect and add build number
+        def pkgJson = readJSON file: "inspect_out.json"
+        def pkgNum = pkgJson.'com.datarecognitioncorp.version'
+        def (major, minor, bld) = pkgNum.tokenize('.')
+        def buildVersion = "${major}.${minor}.${BUILD_NUMBER}"
+        VERSION = buildVersion
+        println "Build version = ${VERSION}"
+    }
+}
+
+void pushContainer(label) {
+    script{
+        def tag = VERSION + '-'  + label
+        def ecr_repository = sh(returnStdout: true, script: "echo \$(cat aws_account).dkr.ecr.${env.AWS_DEFAULT_REGION}.amazonaws.com").trim()
+
+        sh "cat docker.password | docker login --username AWS --password-stdin ${ecr_repository}"
+
+        sh "docker tag local-build ${ecr_repository}/${CONTAINER_NAME}:${tag}"
+        sh "docker images"
+        sh "docker push ${ecr_repository}/${CONTAINER_NAME}:${tag}"
+    }
+}
+
+void dockerTag(){
+    script {
+        release_name = CONTAINER_NAME + '/container/v' + VERSION
+            ansiColor('xterm') {
+                sh 'apk add --upgrade curl'
+                withEnv(["PATH=./node_modules/.bin/:${env.PATH}"]) {
+                    withCredentials([usernamePassword(credentialsId: '45ee37ec-f327-4ffd-84bb-c155c86087d1', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GITHUB_ACCESS_TOKEN')]) {
+                    // tag as release in github
+                    def releasePost = sh(script: """curl -s -X POST -H "Authorization: token ${GITHUB_ACCESS_TOKEN}" -H "Accept: application/vnd.github.v3+json" -d '{"tag_name":"${release_name}", "target_commitish": "${env.BRANCH_NAME}"}' 'https://api.github.com/repos/DataRecognitionCorporation/jenkins-kubernetes/releases'""", returnStatus: true)
+                    if (releasePost == 0) {
+                        // generate release notes
+                        def notesPost = sh(script: """curl -s -X POST -H "Authorization: token ${GITHUB_ACCESS_TOKEN}" -H "Accept: application/vnd.github.v3+json" -d '{"tag_name":"${release_name}"}' 'https://api.github.com/repos/DataRecognitionCorporation/jenkins-kubernetes/releases/generate-notes'""", returnStatus: true)
+                    } else {
+                        error("Failed to tag release: ${release_name}, branch: ${env.BRANCH_NAME}")
+                    }
+                }
+            }
+        }
+    }
+}
+
+void deployManifest(){
+    script{
+        def (major, minor, bld) = VERSION.tokenize('.')
+        def ecr_repository = sh(returnStdout: true, script: "echo \$(cat aws_account).dkr.ecr.${env.AWS_DEFAULT_REGION}.amazonaws.com").trim()
+
+        sh """
+            cat docker.password | docker login --username AWS --password-stdin ${ecr_repository}
+
+            docker manifest create ${ecr_repository}/${CONTAINER_NAME}:${VERSION} \
+                ${ecr_repository}/${CONTAINER_NAME}:${VERSION}-amd64
+            docker manifest inspect ${ecr_repository}/${CONTAINER_NAME}:${VERSION}
+                docker manifest push ${ecr_repository}/${CONTAINER_NAME}:${VERSION}
+
+            docker manifest create ${ecr_repository}/${CONTAINER_NAME}:latest \
+                ${ecr_repository}/${CONTAINER_NAME}:${VERSION}-amd64
+            docker manifest inspect ${ecr_repository}/${CONTAINER_NAME}:latest
+            docker manifest push ${ecr_repository}/${CONTAINER_NAME}:latest
+
+            docker manifest create ${ecr_repository}/${CONTAINER_NAME}:${major}  \
+                ${ecr_repository}/${CONTAINER_NAME}:${VERSION}-amd64
+
+            docker manifest inspect ${ecr_repository}/${CONTAINER_NAME}:${major}
+            docker manifest push ${ecr_repository}/${CONTAINER_NAME}:${major}
+
+            docker manifest create ${ecr_repository}/${CONTAINER_NAME}:${major}.${minor}  \
+                ${ecr_repository}/${CONTAINER_NAME}:${VERSION}-amd64
+
+            docker manifest inspect ${ecr_repository}/${CONTAINER_NAME}:${major}.${minor}
+            docker manifest push ${ecr_repository}/${CONTAINER_NAME}:${major}.${minor}
+        """
+    }
+}
