@@ -11,6 +11,7 @@
 # tools/ci/build-docker-images will rebuild all images, but not push them.
 
 ARG BASE_IMAGE
+ARG VERSION
 FROM $BASE_IMAGE
 
 LABEL com.datarecognitioncorp.name="zulip-ci" \
@@ -54,6 +55,15 @@ RUN apt-get update \
     unzip \
     xvfb \
     zlib1g-dev
+
+
+# Download the release tarball, start rabbitmq server and install the server
+RUN cd $(mktemp -d) \
+  && curl -fLO --retry 3 "https://download.zulip.com/server/zulip-server-$VERSION.tar.gz" \
+  && tar -xf "zulip-server-$VERSION.tar.gz" \
+  && sudo -s "./zulip-server-$VERSION/scripts/setup/install" --self-signed-cert --hostname 127.0.0.1 --email ci@example.com \
+  && sudo service rabbitmq-server stop
+
 
 ARG USERNAME=github
 USER $USERNAME
