@@ -59,9 +59,9 @@ RUN apt-get update \
 
 # Download the release tarball, start rabbitmq server and install the server
 RUN cd $(mktemp -d) \
-  && curl -fLO --retry 3 "https://download.zulip.com/server/zulip-server-$VERSION.tar.gz" \
-  && tar -xf "zulip-server-$VERSION.tar.gz" \
-  && sudo -s "./zulip-server-$VERSION/scripts/setup/install" --self-signed-cert --hostname 127.0.0.1 --email ci@example.com \
+  && curl -fLO --retry 3 "https://download.zulip.com/server/zulip-server-9.4.tar.gz" \
+  && tar -xf "zulip-server-9.4.tar.gz" \
+  && sudo -s "./zulip-server-9.4/scripts/setup/install" --self-signed-cert --hostname 127.0.0.1 --email ci@example.com \
   && sudo service rabbitmq-server stop
 
 
