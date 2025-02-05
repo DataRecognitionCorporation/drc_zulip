@@ -13,6 +13,9 @@
 ARG BASE_IMAGE
 FROM $BASE_IMAGE
 
+LABEL com.datarecognitioncorp.name="zulip-ci" \
+    com.datarecognitioncorp.version="1.0.0"
+
 RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime
 
 # Set the locale.
