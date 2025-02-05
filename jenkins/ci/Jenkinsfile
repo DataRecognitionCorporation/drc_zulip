@@ -82,6 +82,16 @@ void dockerBuild(){
 
             docker images
         '''
+
+        sh "docker inspect local-build --format=\'{{json .Config.Labels}}\' > inspect_out.json"
+
+        // parse major.minor from output from docker inspect and add build number
+        def pkgJson = readJSON file: "inspect_out.json"
+        def pkgNum = pkgJson.'com.datarecognitioncorp.version'
+        def (major, minor, bld) = pkgNum.tokenize('.')
+        def buildVersion = "${major}.${minor}.${BUILD_NUMBER}"
+        VERSION = buildVersion
+        println "Build version = ${VERSION}"
     }
 }
 
