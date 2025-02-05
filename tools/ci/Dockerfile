@@ -53,11 +53,6 @@ RUN apt-get update \
     zlib1g-dev
 
 ARG USERNAME=github
-RUN groupadd --gid 1001 $USERNAME \
-  && useradd --uid 1001 --gid $USERNAME --shell /bin/bash --create-home $USERNAME \
-  && echo "$USERNAME ALL = (ALL) NOPASSWD: ALL" >> /etc/sudoers.d/50-$USERNAME \
-  && echo 'Defaults    env_keep += "DEBIAN_FRONTEND"' >> /etc/sudoers.d/env_keep
-
 USER $USERNAME
 
 CMD ["/bin/sh"]

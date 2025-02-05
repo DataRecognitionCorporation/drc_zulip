@@ -77,6 +77,7 @@ void dockerBuild(){
                 --progress plain \
                 --file Dockerfile \
                 --tag local-build \
+                --build-arg=BASE_IMAGE=ubuntu:22.04 \
                 .
 
             docker images
