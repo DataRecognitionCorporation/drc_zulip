@@ -11,7 +11,6 @@
 # tools/ci/build-docker-images will rebuild all images, but not push them.
 
 ARG BASE_IMAGE
-ARG VERSION
 FROM $BASE_IMAGE
 
 LABEL com.datarecognitioncorp.name="zulip-ci" \
@@ -59,16 +58,14 @@ RUN apt-get update \
 
 
 ARG USERNAME=github
+RUN groupadd --gid 1001 $USERNAME \
+  && useradd --uid 1001 --gid $USERNAME --shell /bin/bash --create-home $USERNAME \
+  && echo "$USERNAME ALL = (ALL) NOPASSWD: ALL" >> /etc/sudoers.d/50-$USERNAME \
+  && echo 'Defaults    env_keep += "DEBIAN_FRONTEND"' >> /etc/sudoers.d/env_keep
+
 RUN deluser --remove-home github \
     && useradd -s /bin/bash -u 1000 -d /home/github/ -m -G sudo github
 
-
-# Download the release tarball, start rabbitmq server and install the server
-RUN cd $(mktemp -d) \
-  && curl -fLO --retry 3 "https://download.zulip.com/server/zulip-server-9.4.tar.gz" \
-  && tar -xf "zulip-server-9.4.tar.gz" \
-  && sudo -s "./zulip-server-9.4/scripts/setup/install" --self-signed-cert --hostname 127.0.0.1 --email ci@example.com \
-  && sudo service rabbitmq-server stop
 
 
 USER $USERNAME
