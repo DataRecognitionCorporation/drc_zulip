@@ -37,6 +37,7 @@ pipeline {
                     dir("${WORKSPACE}"){
 
                         script {
+                            sh 'printenv'
                             sh 'git fetch'
                             sh 'git pull'
                             sh 'git branch -a'
