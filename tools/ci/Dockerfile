@@ -57,6 +57,12 @@ RUN apt-get update \
     zlib1g-dev
 
 
+
+ARG USERNAME=github
+RUN deluser --remove-home github \
+    && useradd -s /bin/bash -u 1000 -d /home/github/ -m -G sudo github
+
+
 # Download the release tarball, start rabbitmq server and install the server
 RUN cd $(mktemp -d) \
   && curl -fLO --retry 3 "https://download.zulip.com/server/zulip-server-9.4.tar.gz" \
@@ -65,7 +71,6 @@ RUN cd $(mktemp -d) \
   && sudo service rabbitmq-server stop
 
 
-ARG USERNAME=github
 USER $USERNAME
 
 CMD ["/bin/sh"]
