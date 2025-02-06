@@ -1,0 +1,103 @@
+{% extends "zerver/portico-no-header.html" %}
+{% set entrypoint = "signup" %}
+
+{% block title %}
+<title>{{ _("Log in") }} | Zulip</title>
+{% endblock %}
+
+{# Login page. #}
+
+{% block portico_content %}
+
+<!-- The following empty tag has unique data-page-id so that this
+page can be easily identified in it's respective JavaScript file. -->
+<div data-page-id="login-page"></div>
+<div class="app login-page split-view new-style flex full-page">
+    <div class="inline-block">
+        <div class="lead">
+            <h1 class="get-started">{{ _("Log in to Zulip") }}</h1>
+        </div>
+
+        <div class="app-main login-page-container white-box inline-block">
+            {% if realm_name %}
+            <div class="left-side">
+                <div class="org-header">
+                    <img class="avatar" src="{{ realm_icon }}" alt="" />
+                    <div class="info-box">
+                        <div class="organization-name">{{ realm_name }}</div>
+                        <div class="organization-path">{{ realm_url }}</div>
+                    </div>
+                </div>
+                <div class="description">
+                    {{ realm_description|safe }}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="right-side">
+                {% if realm_web_public_access_enabled %}
+                    <div class="login-social">
+                        <form class="anonymous_access_form form-inline" action="/" method="post">
+                            {{ csrf_input }}
+                            <input type="hidden" name="next" value="{{ next }}" />
+                            <button class="full-width">
+                                {{ _('View without an account') }}
+                            </button>
+                        </form>
+                    </div>
+                    {% if no_auth_enabled %}
+                    {% else %}
+                    <div class="or"><span>{{ _('OR') }}</span></div>
+                    {% endif %}
+                {% endif %}
+                {% if no_auth_enabled %}
+                    <div class="alert">
+                        <p>
+                            No authentication backends are enabled on this
+                            server yet, so it is impossible to log in!
+                        </p>
+
+                        <p>
+                            See the <a href="https://zulip.readthedocs.io/en/latest/production/install.html#step-3-configure-zulip">
+                            Zulip authentication documentation</a> to learn how to configure authentication backends.
+                        </p>
+                    </div>
+                {% else %}
+
+                    {% if already_registered %}
+                    <div class="alert">
+                        {{ _("You've already registered with this email address. Please log in below.") }}
+                    </div>
+                    {% endif %}
+
+                    {% if deactivated_account_error %}
+                    <div class="alert">
+                        {{ deactivated_account_error }}
+                    </div>
+                    {% endif %}
+
+
+                    {% for backend in external_authentication_methods %}
+                    <div class="login-social">
+                        <form class="social_login_form form-inline" action="{{ backend.login_url }}" method="get">
+                            <input type="hidden" name="next" value="{{ next }}" />
+                            <button id="login_auth_button_{{ backend.name }}" class="login-social-button"
+                              {% if backend.display_icon %} style="background-image:url({{ backend.display_icon }})"  {% endif %}> {{ _('Log in with %(identity_provider)s', identity_provider=backend.display_name) }}
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+
+                {% endif %}
+            </div>
+        </div>
+
+        {% if realm_invite_required %}
+        <div class="contact-admin">
+            <p class="invite-hint">{{ _("Don't have an account yet? You need to be invited to join this organization.") }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

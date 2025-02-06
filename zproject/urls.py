@@ -618,7 +618,10 @@ i18n_urls = [
     path("reactivate/<confirmation_key>", realm_reactivation, name="realm_reactivation"),
     # Login/registration
     path("register/", accounts_home, name="register"),
-    path("login/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),
+
+    path("login/", login_page, {"template_name": "zerver/login_drc.html"}, name="login_page"),
+    path("login_hidden/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),
+
     path("join/<confirmation_key>/", accounts_home_from_multiuse_invite, name="join"),
     # Used to generate a Zoom video call URL
     path("calls/zoom/register", register_zoom_user),
