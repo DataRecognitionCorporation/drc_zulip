@@ -13,6 +13,9 @@
 ARG BASE_IMAGE
 FROM $BASE_IMAGE
 
+LABEL com.datarecognitioncorp.name="zulip-ci" \
+    com.datarecognitioncorp.version="1.0.0"
+
 RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime
 
 # Set the locale.
@@ -52,11 +55,14 @@ RUN apt-get update \
     xvfb \
     zlib1g-dev
 
+
+
 ARG USERNAME=github
-RUN groupadd --gid 1001 $USERNAME \
-  && useradd --uid 1001 --gid $USERNAME --shell /bin/bash --create-home $USERNAME \
+RUN groupadd --gid 1000 $USERNAME \
+  && useradd --uid 1000 --gid $USERNAME --shell /bin/bash --create-home $USERNAME \
   && echo "$USERNAME ALL = (ALL) NOPASSWD: ALL" >> /etc/sudoers.d/50-$USERNAME \
   && echo 'Defaults    env_keep += "DEBIAN_FRONTEND"' >> /etc/sudoers.d/env_keep
+
 
 USER $USERNAME
 
