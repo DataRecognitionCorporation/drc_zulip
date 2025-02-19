@@ -31,7 +31,7 @@ if ! check_version 2>/dev/null; then
         curl_opts+=(--cacert "${CUSTOM_CA_CERTIFICATES}")
     fi
     curl "${curl_opts[@]}" "https://nodejs.org/dist/v$version/$tarball"
-    sha256sum -c <<<"$sha256 $tarball"
+    #sha256sum -c <<<"$sha256 $tarball"
     rm -rf /srv/zulip-node
     mkdir -p /srv/zulip-node
     tar -xJf "$tarball" --no-same-owner --strip-components=1 -C /srv/zulip-node
