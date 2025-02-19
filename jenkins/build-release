@@ -63,7 +63,7 @@ pipeline {
                     dir("${WORKSPACE}"){
                         script {
                             uploadToArtifactory([
-                                repo: 'downloads',
+                                repo: 'devops-generic-prod',
                                 pattern: "./*-${env.TAG_NAME}.tar.gz",
                                 git_proj: 'zulip',
                                 arti_url: 'https://artifactory.datarecognitioncorp.com/artifactory',
