@@ -38,7 +38,7 @@ if ! check_version 2>/dev/null; then
     ln -sf /srv/zulip-node/bin/{corepack,node,npm,npx} /usr/local/bin
 
     /usr/local/bin/npm i -g corepack@latest
-    COREPACK_INTEGRITY_KEYS=0 corepack prepare
+    #COREPACK_INTEGRITY_KEYS=0 corepack prepare
     COREPACK_DEFAULT_TO_LATEST=0  COREPACK_INTEGRITY_KEYS=0 /usr/local/bin/corepack enable
 
     # Clean up after previous versions of this script
