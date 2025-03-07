@@ -3,12 +3,15 @@
     <div class="edit_content message_control_button"></div>
     {{/if}}
 
+
     {{#unless msg/sent_by_me}}
+    {{#unless (eq msg/display_recipient "PAS Announcements")}}
     <div class="reaction_button message_control_button" data-tooltip-template-id="add-emoji-tooltip-template">
         <div class="emoji-message-control-button-container">
             <i class="message-controls-icon zulip-icon zulip-icon-smile" aria-label="{{t 'Add emoji reaction' }} (:)" role="button" aria-haspopup="true" tabindex="0"></i>
         </div>
     </div>
+    {{/unless}}
     {{/unless}}
 
     {{#unless msg/locally_echoed}}
