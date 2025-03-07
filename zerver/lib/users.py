@@ -493,13 +493,17 @@ def format_user_row(
     # DRC MODIFICATION
     #lastname,firstname mod jwdunn - start
     if(row["role"] > 200 and custom_profile_field_data):
-        for val in custom_profile_field_data.values():
-            if(val['field_name'] == 'first_name'):
-                fname = val['value']
-            elif(val['field_name'] == 'last_name'):
-                lname = val['value']
+        try:
+            for val in custom_profile_field_data.values():
+                if(val['field_name'] == 'first_name'):
+                    fname = val['value']
+                elif(val['field_name'] == 'last_name'):
+                    lname = val['value']
 
-        full_name = lname + ', ' + fname
+            full_name = lname + ', ' + fname
+        except:
+            full_name = row["full_name"]
+
     else:
         full_name = row["full_name"]
     #lastname,firstname mod jwdunn - end
