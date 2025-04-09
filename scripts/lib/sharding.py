@@ -44,8 +44,14 @@ def write_updated_configs() -> None:
             sharding_json_f.write("{}\n")
             return
 
+
         nginx_sharding_conf_f.write("map $host $tornado_server {\n")
-        nginx_sharding_conf_f.write("    default http://tornado9800;\n")
+        for key, shards in config_file["tornado_sharding"].items():
+            ports = [int(port) for port in key.split("_")]
+            nginx_sharding_conf_f.write(f"    default http://tornado{'_'.join(map(str, ports))};\n")
+            break
+
+
         shard_map: dict[str, int | list[int]] = {}
         shard_regexes: list[tuple[str, int | list[int]]] = []
         external_host = subprocess.check_output(
@@ -53,6 +59,8 @@ def write_updated_configs() -> None:
             text=True,
         ).strip()
         for key, shards in config_file["tornado_sharding"].items():
+
+
             if key.endswith("_regex"):
                 ports = [int(port) for port in key[: -len("_regex")].split("_")]
                 shard_regexes.append((shards, ports[0] if len(ports) == 1 else ports))
