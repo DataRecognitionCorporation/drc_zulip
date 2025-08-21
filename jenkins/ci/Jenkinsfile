@@ -1,5 +1,5 @@
 #!/usr/bin/env groovy
-@Library('DRC_Global_Pipeline_Libraries@master') _
+@Library('DRC_Global_Pipeline_Libraries') _
 
 WORKING_DIR = 'tools/ci'
 
@@ -28,7 +28,15 @@ pipeline{
         stage('Build On') {
             parallel {
                 stage('Build On amd64') {
-                    agent { node { label 'docker_amd64' } }
+                    agent {
+                        kubernetes(
+                        drc_k8_agent(templates: [
+                            [name: 'dind', isDefault: true],
+                            [name: 'aws-cli', isDefault: false],
+                        ])
+                        )
+                    }
+
                     steps {
                         dir("${WORKSPACE}/${WORKING_DIR}") {
                             container('aws-cli') {
@@ -45,7 +53,15 @@ pipeline{
             }
         }
         stage('Deploy manifest'){
-            agent { node { label 'docker_amd64' } }
+            agent {
+                kubernetes(
+                drc_k8_agent(templates: [
+                    [name: 'dind', isDefault: true],
+                    [name: 'aws-cli', isDefault: false],
+                ])
+                )
+            }
+
             steps{
                 dir("${WORKSPACE}/${WORKING_DIR}") {
                     container('aws-cli') {
