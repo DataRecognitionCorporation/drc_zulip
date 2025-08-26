@@ -39,12 +39,15 @@ pipeline{
                     steps {
                         dir("${WORKSPACE}/${WORKING_DIR}") {
                             container('aws-cli') {
+                                script {
                                 configFileProvider([configFile(fileId: 'settings', variable: 'settings')]) {
                                     sh "cat $settings"
                                     def jsonData = readJSON file: "${WORKSPACE}/$settings"
                                     def aws_account = jsonData.aws_account_number
                                     def aws_role = jsonData.aws_role
                                     drc_AwsAssumeRole([jenkinsRole: aws_role, acctNum: aws_account, appName: "test", bldNum : "${BUILD_NUMBER}", timeout: 1800])
+
+                                }
 
                                 }
                                 getAWSConfig()
