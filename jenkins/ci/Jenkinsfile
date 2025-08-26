@@ -44,7 +44,7 @@ pipeline{
                                     def jsonData = readJSON file: settings
                                     def aws_account = jsonData.aws_account_number
                                     def aws_role = jsonData.aws_role
-                                    d rc_AwsAssumeRole([jenkinsRole: aws_role, acctNum: aws_account, appName: "test", bldNum : "${BUILD_NUMBER}", timeout: 1800])
+                                    drc_AwsAssumeRole([jenkinsRole: aws_role, acctNum: aws_account, appName: "test", bldNum : "${BUILD_NUMBER}", timeout: 1800])
 
                                 }
                                 getAWSConfig()
