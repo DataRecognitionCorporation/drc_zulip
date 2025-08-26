@@ -40,6 +40,9 @@ pipeline{
                     steps {
                         dir("${WORKSPACE}/${WORKING_DIR}") {
                             container('aws-cli') {
+                                configFileProvider([configFile(fileId: 'settings', variable: 'settings')]) {
+                                    sh 'echo settings'
+                                }
                                 drc_AwsAssumeRole([jenkinsRole: 'cloud-build-jenkins-role', acctNum: "${AWS_ACCOUNT_NUMBER}", appName: "test", bldNum : "${BUILD_NUMBER}", timeout: 1800])
                                 getAWSConfig()
                             }
