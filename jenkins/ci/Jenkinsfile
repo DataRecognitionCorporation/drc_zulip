@@ -78,7 +78,6 @@ pipeline{
             steps{
                 dir("${WORKSPACE}/${WORKING_DIR}") {
                     container('aws-cli') {
-                        drc_AwsAssumeRole([jenkinsRole: 'cloud-build-jenkins-role', acctNum: "${AWS_ACCOUNT_NUMBER}", appName: "test", bldNum : "${BUILD_NUMBER}", timeout: 1800])
                         getAWSConfig()
                     }
                     container('dind'){
