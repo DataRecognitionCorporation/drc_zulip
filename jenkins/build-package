@@ -5,74 +5,76 @@
 def has_failures = false
 
 pipeline {
-    agent {
-        kubernetes {
-            yamlFile 'jenkins/k8s/zulip_ci_jammy.yaml'
-        }
+  agent {
+    kubernetes {
+      drc_k8_agent(templates: [
+        [name: 'zulip-ci-jammy', isDefault: true]
+      ])
     }
+  }
 
-    options {
-        buildDiscarder(logRotator(numToKeepStr: '100', artifactNumToKeepStr: '100'))
-        ansiColor('xterm')
-    }
+  options {
+    buildDiscarder(logRotator(numToKeepStr: '100', artifactNumToKeepStr: '100'))
+    ansiColor('xterm')
+  }
 
-    environment {
-        GITHUB_ACTIONS = true
-        VIRTUAL_ENV = "/srv/zulip-py3-venv"
-    }
+  environment {
+    GITHUB_ACTIONS = true
+    VIRTUAL_ENV = "/srv/zulip-py3-venv"
+  }
 
-    stages {
-         stage('Configure') {
-            steps {
-                container('zulip-ci-jammy') {
-                    dir("${WORKSPACE}"){
+  stages {
+    stage('Configure') {
+      steps {
+        container('zulip-ci-jammy') {
+          dir("${WORKSPACE}"){
+            script {
+              sh """#!/bin/bash
+                set -euo xtrace
+                git config zulip.zulipRemote origin
 
-                        script {
-                            sh """#!/bin/bash
-                                set -euo xtrace
-                                git config zulip.zulipRemote origin
-
-                                ./tools/provision --build-release-tarball-only
-                            """
-                        }
-                    }
-                }
+                ./tools/provision --build-release-tarball-only
+              """
             }
+          }
         }
-        stage('Build') {
-            steps {
-                container('zulip-ci-jammy') {
-                    dir("${WORKSPACE}"){
-                        script {
-                            sh """#!/bin/bash
-                                set -eu
-                                git config zulip.zulipRemote origin
-
-                                source ./tools/ci/activate-venv
-                                ./tools/ci/production-build
-                                mv /tmp/production-build/zulip-server-test.tar.gz ./zulip-server-test-\$(date +\"%Y%m%d%H%M\").tar.gz
-                            """
-                        }
-                    }
-                }
-            }
-        }
-        stage('Deploy') {
-            steps {
-                container('zulip-ci-jammy') {
-                    dir("${WORKSPACE}"){
-                        script {
-                            uploadToArtifactory([
-                                repo: 'devops-generic-dev',
-                                pattern: "./zulip-server-test-*.tar.gz",
-                                git_proj: 'zulip',
-                                arti_url: 'https://artifactory.datarecognitioncorp.com/artifactory',
-                                isYumRepo: false
-                            ])
-                        }
-                    }
-                }
-            }
-        }
+      }
     }
+    stage('Build') {
+      steps {
+        container('zulip-ci-jammy') {
+          dir("${WORKSPACE}"){
+            script {
+              sh """#!/bin/bash
+                set -eu
+                git config zulip.zulipRemote origin
+
+                source ./tools/ci/activate-venv
+
+                ./tools/ci/production-build
+                mv /tmp/production-build/zulip-server-test.tar.gz ./zulip-server-test-\$(date +\"%Y%m%d%H%M\").tar.gz
+              """
+            }
+          }
+        }
+      }
+    }
+    stage('Deploy') {
+      steps {
+        container('zulip-ci-jammy') {
+          dir("${WORKSPACE}"){
+            script {
+              uploadToArtifactory([
+                repo: 'devops-generic-dev',
+                pattern: "./zulip-server-test-*.tar.gz",
+                git_proj: 'zulip',
+                arti_url: 'https://artifactory.datarecognitioncorp.com/artifactory',
+                isYumRepo: false
+              ])
+            }
+          }
+        }
+      }
+    }
+  }
 }
