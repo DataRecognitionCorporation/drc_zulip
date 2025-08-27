@@ -57,6 +57,7 @@ from zerver.views.custom_profile_fields import (
 from zerver.views.digest import digest_page
 from zerver.views.documentation import IntegrationView, MarkdownDirectoryView, integration_doc
 from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_drafts
+from zerver.views.drc_redirect import edirect
 from zerver.views.email_mirror import email_mirror_message
 from zerver.views.events_register import events_register_backend
 from zerver.views.health import health
@@ -619,9 +620,9 @@ i18n_urls = [
     # Login/registration
     path("register/", accounts_home, name="register"),
 
-    path("login/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),
-    # path("login/", login_page, {"template_name": "zerver/login_drc.html"}, name="login_page"),
-    # path("login_hidden/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),
+    #path("login/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),
+    path("login/", edirect, name="edirect"),
+    path("login_local/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),
 
     path("join/<confirmation_key>/", accounts_home_from_multiuse_invite, name="join"),
     # Used to generate a Zoom video call URL
