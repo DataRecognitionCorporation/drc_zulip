@@ -1,16 +1,16 @@
 #!/usr/bin/env groovy
-
 @Library('DRC_Global_Pipeline_Libraries') _
 
 def has_failures = false
 
 pipeline {
+
   agent {
-    kubernetes {
+    kubernetes (
       drc_k8_agent(templates: [
         [name: 'zulip-ci-jammy', isDefault: true]
       ])
-    }
+    )
   }
 
   options {
