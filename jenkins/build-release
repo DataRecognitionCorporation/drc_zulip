@@ -1,6 +1,5 @@
 #!/usr/bin/env groovy
-
-@Library('DRC_Global_Pipeline_Libraries@master')
+@Library('DRC_Global_Pipeline_Libraries') _
 
 def has_failures = false
 
