@@ -8,7 +8,7 @@ pipeline {
   agent {
     kubernetes (
       drc_k8_agent(templates: [
-        [name: 'zulip-ci-jammy', isDefault: true]
+        [name: 'zulip-ci', isDefault: true]
       ])
     )
   }
