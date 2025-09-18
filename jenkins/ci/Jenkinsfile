@@ -1,5 +1,5 @@
 #!/usr/bin/env groovy
-@Library('DRC_Global_Pipeline_Libraries') _
+@Library('DRC_Global_Pipeline_Libraries@master') _
 
 WORKING_DIR = 'tools/ci'
 
