@@ -387,11 +387,15 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
     # or not they're using the mobile OTP flow or want a browser session.
     is_realm_creation = result.data_dict.get("is_realm_creation")
     if mobile_flow_otp is not None:
-        return finish_mobile_flow(request, user_profile, mobile_flow_otp)
-    elif desktop_flow_otp is not None:
-        return finish_desktop_flow(
-            request, user_profile, desktop_flow_otp, params_to_store_in_authenticated_session
+        return HttpResponseServerError(
+            "Mobile App is disalbed. You must use the web browser."
         )
+        #return finish_mobile_flow(request, user_profile, mobile_flow_otp)
+    elif desktop_flow_otp is not None:
+        return HttpResponseServerError(
+            "Desktop App is disalbed. You must use the web browser."
+        )
+        #return finish_desktop_flow(request, user_profile, desktop_flow_otp, params_to_store_in_authenticated_session)
 
     do_login(request, user_profile)
 
@@ -871,9 +875,23 @@ def login_page(
             redirect_url = append_url_query_string(redirect_url, request.GET.urlencode())
         return HttpResponseRedirect(redirect_url)
 
+
+    if(hasattr(settings, "BLOCKED_USER_AGENTS")):
+        user_agent: str | None = request.headers.get("User-Agent", None)
+        upperUserAgents = [x.upper() for x in settings.BLOCKED_USER_AGENTS]
+        for upperUserAgent in upperUserAgents:
+            if(upperUserAgent in user_agent.upper() and "ISLAND" not in user_agent.upper()):
+                return render(
+                    request,
+                    '/zerver/drc_login_error.html',
+                    {}
+                )
+
+
     realm = get_realm_from_request(request)
     if realm and realm.deactivated:
         return redirect_to_deactivation_notice()
+
 
     extra_context = kwargs.pop("extra_context", {})
     extra_context["next"] = next
