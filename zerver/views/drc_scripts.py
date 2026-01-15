@@ -94,44 +94,48 @@ def results_as_csv(results, delimiter=DELIMITER):
 allowed_scripts = {
     'get_conversation': {
         'pretty_name': 'Get Conversation',
-        'script_name': 'conversation_between_two_users_date_range_get.sh'
+        'script_name': 'conversation_between_two_users_date_range_get'
     },
     'messages_user_get': {
         'pretty_name': 'Get User Messages',
-        'script_name': 'messages_user_get.sh'
+        'script_name': 'messages_user_get'
     },
     'users_role_get': {
         'pretty_name': 'Get User Roles',
-        'script_name': 'users_role_get.sh'
+        'script_name': 'users_role_get'
     },
     'subscriptions_for_user_get': {
         'pretty_name': 'Get User Subscriptions',
-        'script_name': 'subscriptions_for_user_get.sh'
+        'script_name': 'subscriptions_for_user_get'
     },
     'muted_topics_get': {
         'pretty_name': 'Get Muted Topics',
-        'script_name': 'mutedtopics_get.sh'
+        'script_name': 'mutedtopics_get'
     },
     'conversation_for_a_stream_get': {
         'pretty_name': 'Get Stream Conversation',
-        'script_name': 'conversation_for_a_stream_get.sh'
+        'script_name': 'conversation_for_a_stream_get'
     },
     'get_mobile_devices': {
         'pretty_name': 'Get Mobile Services',
-        'script_name': 'mobiledevices_get.sh'
+        'script_name': 'mobiledevices_get'
     },
     'enable_login_emails': {
         'pretty_name': 'Enable Login Emails',
-        'script_name': 'users_enable_login_emails_get.sh'
+        'script_name': 'users_enable_login_emails_get'
     },
     'update_enable_login_emails': {
         'pretty_name': 'Disable Login Emails',
-        'script_name': 'users_enable_login_emails_update.sh'
+        'script_name': 'users_enable_login_emails_update'
     },
     'get_user_activity': {
         'pretty_name': 'Get User Activity',
-        'script_name': 'get_user_activity.sh'
-    }
+        'script_name': 'get_user_activity'
+    },
+    'get_blocked_user_agents': {
+        'pretty_name': 'Get Blocked User Agents',
+        'script_name': 'get_blocked_user_agents'
+    },
 }
 
 
@@ -153,28 +157,30 @@ def run_script(request: HttpRequest, script_info: str):
     }
     script_name = script_info['script_name']
 
-    if(script_name == 'users_role_get.sh'):
+    if(script_name == 'users_role_get'):
         output = get_user_role(request)
-    elif(script_name == 'messages_user_get.sh'):
+    elif(script_name == 'messages_user_get'):
         output = get_user_messages(request)
-    elif(script_name == 'conversation_between_two_users_date_range_get.sh'):
+    elif(script_name == 'conversation_between_two_users_date_range_get'):
         output = get_conversation(request)
-    elif(script_name == 'messages_user_get.sh'):
+    elif(script_name == 'messages_user_get'):
         output = get_user_messages(request)
-    elif(script_name == 'conversation_for_a_stream_get.sh'):
+    elif(script_name == 'conversation_for_a_stream_get'):
         output = get_stream_messages(request)
-    elif(script_name == 'subscriptions_for_user_get.sh'):
+    elif(script_name == 'subscriptions_for_user_get'):
         output = get_user_subscriptions(request)
-    elif(script_name == 'mutedtopics_get.sh'):
+    elif(script_name == 'mutedtopics_get'):
         output = get_muted_topics(request)
-    elif(script_name == 'mobiledevices_get.sh'):
+    elif(script_name == 'mobiledevices_get'):
         output = get_mobile_devices(request)
-    elif(script_name == 'users_enable_login_emails_get.sh'):
+    elif(script_name == 'users_enable_login_emails_get'):
         output = enable_login_emails(request)
-    elif(script_name == 'users_enable_login_emails_update.sh'):
+    elif(script_name == 'users_enable_login_emails_update'):
         output = update_login_emails(request)
-    elif(script_name == 'get_user_activity.sh'):
+    elif(script_name == 'get_user_activity'):
         output = get_user_activity(request)
+    elif(script_name == 'get_blocked_user_agents'):
+        output = get_blocked_user_agents()
     else:
         output = ''
 
@@ -702,6 +708,129 @@ def get_user_activity(request: HttpRequest):
 
 
 
+#
+# NGINX LOG PARSING SECTION
+#
+
+SLICE_SIZE = 100000  # roufhly 800 kb
+
+def parse_nginx_log_line(line):
+    # Split by spaces first
+    parts = line.split(' ')
+
+    # IP is the first part
+    ip = parts[0]
+
+    # Find the date section (starts with '[' and ends with ']')
+    date_start = line.find('[')
+    date_end = line.find(']')
+    if date_start == -1 or date_end == -1:
+        return None
+
+    date_str = line[date_start + 1:date_end]
+
+    # Parse the date
+    date_obj = datetime.strptime(date_str, '%d/%b/%Y:%H:%M:%S %z')
+
+    # Find user agent (between the last two quotes)
+    quote_positions = []
+    for i, char in enumerate(line):
+        if char == '"':
+            quote_positions.append(i)
+
+    if len(quote_positions) >= 4:
+        # User agent is between the last pair of quotes (positions -2 and -1)
+        user_agent = line[quote_positions[-2] + 1:quote_positions[-1]]
+    else:
+        user_agent = ''
+
+    return {
+        'ip': ip,
+        'date': date_obj,
+        'user_agent': user_agent
+    }
+
+
+def parse_file(filepath: str):
+    blocked_user_agents = {}
+    with open(filepath, 'r') as f:
+        while True:
+            lines = list(islice(f, SLICE_SIZE))
+            if not lines:
+                break
+
+            print(f"Processing {len(lines)} lines from {filepath}")
+            print(f'Size of lines: {sys.getsizeof(lines)/1024} kb')
+
+            for line in lines:
+                if('ISLAND' in line.upper()):
+                    continue
+
+                parsed_line = parse_nginx_log_line(line)
+                if(parsed_line is None):
+                    continue
+
+                if not any(blocked_ua in parsed_line['user_agent'] for blocked_ua in settings.BLOCKED_USER_AGENTS):
+                    continue
+
+                if(delta := datetime.now(parsed_line['date'].tzinfo) - parsed_line['date']) > timedelta(days=7):
+                    continue
+
+                if(blocked_user_agents.get(parsed_line['user_agent']) is None):
+                    blocked_user_agents[parsed_line['user_agent']] = {
+                        'user_agent': parsed_line['user_agent'],
+                        'count': 1
+                    }
+                else:
+                    blocked_user_agents[parsed_line['user_agent']]['count'] += 1
+
+    return blocked_user_agents
+
+
+def merge_user_agent_counts(main_dict, new_dict):
+    for user_agent, data in new_dict.items():
+        if user_agent in main_dict:
+            main_dict[user_agent]['count'] += data['count']
+        else:
+            main_dict[user_agent] = data
+    return main_dict
+
+
+def get_blocked_user_agents():
+    nginx_log_dir = os.path.join('/', 'var', 'log', 'nginx')
+    if(not os.path.exists(nginx_log_dir)):
+        output = f"Nginx log directory {nginx_log_dir} does not exist."
+        return output
+
+    working_dir = os.path.join('/', 'tmp', 'nginx-logs')
+    os.makedirs(working_dir, exist_ok=True)
+
+    non_island_user_agents = {}
+
+    for filename in os.listdir(nginx_log_dir):
+        if('error' in filename):
+            continue
+
+        if filename.endswith('.log'):
+            file_results = parse_file(os.path.join(nginx_log_dir, filename))
+            merge_user_agent_counts(non_island_user_agents, file_results)
+        elif(filename.endswith('.gz')):
+            # decompress the file to working dir
+            compressed_filepath = os.path.join(nginx_log_dir, filename)
+            decompressed_filepath = os.path.join(working_dir, filename[:-3])
+            os.system(f'gzip -d -c {compressed_filepath} > {decompressed_filepath}')
+            file_results = parse_file(decompressed_filepath)
+            non_island_user_agents = merge_user_agent_counts(non_island_user_agents, file_results)
+            os.remove(decompressed_filepath)
+
+
+    csv_string = ""
+    for key, val in non_island_user_agents.items():
+        user_agent = val['user_agent']
+        count = val['count']
+        csv_string += f"{user_agent},{count}\n"
+
+    output = csv_to_html_table(csv_string, delimiter=',')
 
 
 

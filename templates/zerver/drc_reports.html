@@ -207,6 +207,20 @@
                                 </form>
                             </div>
                         </div>
+
+                        <!-- Get blocked user agents-->
+                        <div class="card">
+                            <h5 class="card-header">Get Blocked User Agents</h5>
+                            <div class="card-body">
+                                <p class="card-text">Get a list of user agants that should be blockded</p>
+
+                                <form method="post">
+                                    {{ csrf_input }}
+                                    <br>
+                                    <button type="submit" name="get_blocked_user_agents" class="btn btn-primary">Run Script</button>
+                                </form>
+                            </div>
+                        </div>
                         <br><br>
                     </div>
                 </div>
