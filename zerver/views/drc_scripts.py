@@ -1,6 +1,10 @@
 from django.db.models.deletion import sql
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
+from django.conf import settings
+from itertools import islice
+import sys
+
 
 from zerver.models import UserProfile
 import os
@@ -714,40 +718,87 @@ def get_user_activity(request: HttpRequest):
 
 SLICE_SIZE = 100000  # roufhly 800 kb
 
-def parse_nginx_log_line(line):
-    # Split by spaces first
-    parts = line.split(' ')
+def _lex_nginx_line(line: str):
+    """
+    Splits a line into tokens while treating:
+      - quoted strings "..." as one token (without quotes)
+      - bracketed timestamps [...] as one token (without brackets)
+    No regex.
+    """
+    tokens = []
+    i, n = 0, len(line)
 
-    # IP is the first part
-    ip = parts[0]
+    while i < n:
+        # skip whitespace
+        while i < n and line[i].isspace():
+            i += 1
+        if i >= n:
+            break
 
-    # Find the date section (starts with '[' and ends with ']')
-    date_start = line.find('[')
-    date_end = line.find(']')
-    if date_start == -1 or date_end == -1:
+        c = line[i]
+
+        # quoted token
+        if c == '"':
+            i += 1
+            start = i
+            while i < n and line[i] != '"':
+                i += 1
+            tokens.append(line[start:i])
+            i += 1  # skip closing quote (or n)
+            continue
+
+        # bracketed token
+        if c == '[':
+            i += 1
+            start = i
+            while i < n and line[i] != ']':
+                i += 1
+            tokens.append(line[start:i])
+            i += 1  # skip closing bracket (or n)
+            continue
+
+        # normal token
+        start = i
+        while i < n and not line[i].isspace():
+            i += 1
+        tokens.append(line[start:i])
+
+    return tokens
+
+
+def parse_nginx_log_line(line: str):
+    """
+    For log_format:
+      $remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent
+      "$http_referer" "$http_user_agent" $host $request_time
+    """
+    tokens = _lex_nginx_line(line.strip())
+    if len(tokens) < 11:
         return None
 
-    date_str = line[date_start + 1:date_end]
+    # tokens should look like:
+    # 0 ip
+    # 1 '-' (literal)
+    # 2 remote_user
+    # 3 time_local (without brackets)
+    # 4 request (without quotes)
+    # 5 status
+    # 6 body_bytes_sent
+    # 7 http_referer (without quotes)
+    # 8 http_user_agent (without quotes)
+    # 9 host
+    # 10 request_time
+    ip = tokens[0]
+    date_obj = datetime.strptime(tokens[3], "%d/%b/%Y:%H:%M:%S %z")
 
-    # Parse the date
-    date_obj = datetime.strptime(date_str, '%d/%b/%Y:%H:%M:%S %z')
-
-    # Find user agent (between the last two quotes)
-    quote_positions = []
-    for i, char in enumerate(line):
-        if char == '"':
-            quote_positions.append(i)
-
-    if len(quote_positions) >= 4:
-        # User agent is between the last pair of quotes (positions -2 and -1)
-        user_agent = line[quote_positions[-2] + 1:quote_positions[-1]]
-    else:
-        user_agent = ''
+    status_str = tokens[5]
+    status = int(status_str) if status_str.isdigit() else None
 
     return {
-        'ip': ip,
-        'date': date_obj,
-        'user_agent': user_agent
+        "ip": ip,
+        "date": date_obj,
+        "user_agent": tokens[8],
+        "status": status,
     }
 
 
@@ -768,6 +819,9 @@ def parse_file(filepath: str):
 
                 parsed_line = parse_nginx_log_line(line)
                 if(parsed_line is None):
+                    continue
+
+                if(parsed_line['status'] is not None and parsed_line['status'] > 400):
                     continue
 
                 if not any(blocked_ua in parsed_line['user_agent'] for blocked_ua in settings.BLOCKED_USER_AGENTS):
@@ -830,10 +884,6 @@ def get_blocked_user_agents():
         count = val['count']
         csv_string += f"{user_agent},{count}\n"
 
-    output = csv_to_html_table(csv_string, delimiter=',')
-
-
-
-
+    output = csv_to_html_table(csv_string, delimeter=',')
 
 
