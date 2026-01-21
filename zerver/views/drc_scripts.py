@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.conf import settings
 from itertools import islice
 import sys
+import logging
 
 
 from zerver.models import UserProfile
@@ -54,7 +55,7 @@ def dictfetchall(cursor):
     return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
-def csv_to_html_table(csv_string: str, delimeter = DELIMITER) -> str:
+def csv_to_html_table(csv_string: str, delimeter = DELIMITER, header_width: list = []) -> str:
     # Split the CSV string into rows
     rows = csv_string.splitlines()
 
@@ -66,8 +67,14 @@ def csv_to_html_table(csv_string: str, delimeter = DELIMITER) -> str:
 
     # Add header row
     html += '<tr>'
+    n = 0
     for header in headers:
-        html += f'<th>{header}</th>'
+        if(len(header_width) > 0 and len(headers) == len(header_width)):
+            width = header_width[n]
+            html += f'<th width="{width}%">{header}</th>'
+            n += 1
+        else:
+            html += f'<th>{header}</th>'
     html += '</tr>'
 
     # Add data rows
@@ -810,8 +817,8 @@ def parse_file(filepath: str):
             if not lines:
                 break
 
-            print(f"Processing {len(lines)} lines from {filepath}")
-            print(f'Size of lines: {sys.getsizeof(lines)/1024} kb')
+            logging.log(f"Processing {len(lines)} lines from {filepath}")
+            logging.log(f'Size of lines: {sys.getsizeof(lines)/1024} kb')
 
             for line in lines:
                 if('ISLAND' in line.upper()):
@@ -878,12 +885,13 @@ def get_blocked_user_agents():
             os.remove(decompressed_filepath)
 
 
-    csv_string = ""
+    csv_string = "User Agent||Count\n"
     for key, val in non_island_user_agents.items():
         user_agent = val['user_agent']
         count = val['count']
-        csv_string += f"{user_agent},{count}\n"
+        csv_string += f"{user_agent}||{count}\n"
 
-    output = csv_to_html_table(csv_string, delimeter=',')
+    output = csv_to_html_table(csv_string, delimeter='||')
+    return output
 
 
