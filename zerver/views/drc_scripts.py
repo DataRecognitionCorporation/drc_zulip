@@ -6,7 +6,6 @@ from itertools import islice
 import sys
 import logging
 
-
 from zerver.models import UserProfile
 import os
 from zerver.models.users import get_user_profile_by_email
@@ -191,7 +190,7 @@ def run_script(request: HttpRequest, script_info: str):
     elif(script_name == 'get_user_activity'):
         output = get_user_activity(request)
     elif(script_name == 'get_blocked_user_agents'):
-        output = get_blocked_user_agents()
+        output = get_blocked_user_agents(request)
     else:
         output = ''
 
@@ -809,7 +808,7 @@ def parse_nginx_log_line(line: str):
     }
 
 
-def parse_file(filepath: str):
+def parse_file(filepath: str, delta_days: int):
     blocked_user_agents = {}
     with open(filepath, 'r') as f:
         while True:
@@ -834,7 +833,7 @@ def parse_file(filepath: str):
                 if not any(blocked_ua in parsed_line['user_agent'] for blocked_ua in settings.BLOCKED_USER_AGENTS):
                     continue
 
-                if(delta := datetime.now(parsed_line['date'].tzinfo) - parsed_line['date']) > timedelta(days=7):
+                if(delta := datetime.now(parsed_line['date'].tzinfo) - parsed_line['date']) > timedelta(days=delta_days):
                     continue
 
                 if(blocked_user_agents.get(parsed_line['user_agent']) is None):
@@ -857,7 +856,11 @@ def merge_user_agent_counts(main_dict, new_dict):
     return main_dict
 
 
-def get_blocked_user_agents():
+def get_blocked_user_agents(request: HttpRequest):
+    start_date = request.POST.get('start-date')
+    now = datetime.now().strftime("%Y-%m-%d")
+    delta = now - start_date
+
     nginx_log_dir = os.path.join('/', 'var', 'log', 'nginx')
     if(not os.path.exists(nginx_log_dir)):
         output = f"Nginx log directory {nginx_log_dir} does not exist."
@@ -873,25 +876,26 @@ def get_blocked_user_agents():
             continue
 
         if filename.endswith('.log'):
-            file_results = parse_file(os.path.join(nginx_log_dir, filename))
+            file_results = parse_file(os.path.join(nginx_log_dir, filename), delta.days)
             merge_user_agent_counts(non_island_user_agents, file_results)
         elif(filename.endswith('.gz')):
             # decompress the file to working dir
             compressed_filepath = os.path.join(nginx_log_dir, filename)
             decompressed_filepath = os.path.join(working_dir, filename[:-3])
             os.system(f'gzip -d -c {compressed_filepath} > {decompressed_filepath}')
-            file_results = parse_file(decompressed_filepath)
+            file_results = parse_file(decompressed_filepath, delta.days)
             non_island_user_agents = merge_user_agent_counts(non_island_user_agents, file_results)
             os.remove(decompressed_filepath)
 
 
     csv_string = "User Agent||Count\n"
+    header_width = [80, 20]
     for key, val in non_island_user_agents.items():
         user_agent = val['user_agent']
         count = val['count']
         csv_string += f"{user_agent}||{count}\n"
 
-    output = csv_to_html_table(csv_string, delimeter='||')
+    output = csv_to_html_table(csv_string, delimeter='||', header_width=header_width)
     return output
 
 
