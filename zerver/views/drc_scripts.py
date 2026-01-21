@@ -858,8 +858,9 @@ def merge_user_agent_counts(main_dict, new_dict):
 
 def get_blocked_user_agents(request: HttpRequest):
     start_date = request.POST.get('start-date')
-    now = datetime.now().strftime("%Y-%m-%d")
-    delta = now - start_date
+    now = datetime.now()
+    start = datetime.strptime(start_date, "%Y-%m-%d")
+    delta = now - start
 
     nginx_log_dir = os.path.join('/', 'var', 'log', 'nginx')
     if(not os.path.exists(nginx_log_dir)):
