@@ -816,8 +816,6 @@ def parse_file(filepath: str, delta_days: int):
             if not lines:
                 break
 
-            logging.log(f"Processing {len(lines)} lines from {filepath}")
-            logging.log(f'Size of lines: {sys.getsizeof(lines)/1024} kb')
 
             for line in lines:
                 if('ISLAND' in line.upper()):
