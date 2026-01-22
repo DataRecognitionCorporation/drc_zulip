@@ -5,6 +5,7 @@ from django.conf import settings
 from itertools import islice
 import sys
 import logging
+import hashlib
 
 from zerver.models import UserProfile
 import os
@@ -808,6 +809,11 @@ def parse_nginx_log_line(line: str):
     }
 
 
+def get_key(ip: str, user_agent: str) -> str:
+    hash_input = f"{ip}|{user_agent}".encode('utf-8')
+    return hashlib.sha256(hash_input).hexdigest()
+
+
 def parse_file(filepath: str, delta_days: int):
     blocked_user_agents = {}
     with open(filepath, 'r') as f:
@@ -834,13 +840,18 @@ def parse_file(filepath: str, delta_days: int):
                 if(delta := datetime.now(parsed_line['date'].tzinfo) - parsed_line['date']) > timedelta(days=delta_days):
                     continue
 
-                if(blocked_user_agents.get(parsed_line['user_agent']) is None):
-                    blocked_user_agents[parsed_line['user_agent']] = {
+                key = get_key(parsed_line['ip'], parsed_line['user_agent'])
+
+                if(blocked_user_agents.get(key) is None):
+                    blocked_user_agents[key] = {
                         'user_agent': parsed_line['user_agent'],
+                        'last_access': parsed_line['date'],
+                        'ip': parsed_line['ip'],
                         'count': 1
                     }
                 else:
-                    blocked_user_agents[parsed_line['user_agent']]['count'] += 1
+                    blocked_user_agents[key]['count'] += 1
+                    blocked_user_agents[key]['last_access'] = max(blocked_user_agents[key]['last_access'], parsed_line['date'])
 
     return blocked_user_agents
 
@@ -887,12 +898,15 @@ def get_blocked_user_agents(request: HttpRequest):
             os.remove(decompressed_filepath)
 
 
-    csv_string = "User Agent||Count\n"
-    header_width = [80, 20]
+    csv_string = "User Agent||Count||ip||Last Access\n"
+    header_width = [70, 10, 10, 10]
     for key, val in non_island_user_agents.items():
         user_agent = val['user_agent']
         count = val['count']
-        csv_string += f"{user_agent}||{count}\n"
+        last_access = val['last_access'].strftime("%m/%d/%Y %H:%M")
+        ip = val['ip']
+
+        csv_string += f'"{user_agent}"||{count}||{ip}||{last_access}\n'
 
     output = csv_to_html_table(csv_string, delimeter='||', header_width=header_width)
     return output
