@@ -899,7 +899,7 @@ def get_blocked_user_agents(request: HttpRequest):
 
 
     csv_string = "User Agent||Count||ip||Last Access\n"
-    header_width = [70, 10, 10, 10]
+    header_width = [60, 10, 15, 15]
     for key, val in non_island_user_agents.items():
         user_agent = val['user_agent']
         count = val['count']
