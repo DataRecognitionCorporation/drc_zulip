@@ -723,7 +723,7 @@ def get_user_activity(request: HttpRequest):
 # NGINX LOG PARSING SECTION
 #
 
-SLICE_SIZE = 100000  # roufhly 800 kb
+SLICE_SIZE = 1000000  # roufhly 8 mb
 
 def _lex_nginx_line(line: str):
     """
