@@ -831,7 +831,10 @@ def parse_file(filepath: str, delta_days: int):
                 if(parsed_line is None):
                     continue
 
-                if(parsed_line['status'] is not None and parsed_line['status'] > 400):
+                if(parsed_line['status'] is None):
+                    continue
+
+                if(parsed_line['status'] >= 400):
                     continue
 
                 if not any(blocked_ua in parsed_line['user_agent'] for blocked_ua in settings.BLOCKED_USER_AGENTS):
