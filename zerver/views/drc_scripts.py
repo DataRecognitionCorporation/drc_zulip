@@ -143,9 +143,9 @@ allowed_scripts = {
         'pretty_name': 'Get User Activity',
         'script_name': 'get_user_activity'
     },
-    'get_blocked_user_agents': {
-        'pretty_name': 'Get Blocked User Agents',
-        'script_name': 'get_blocked_user_agents'
+    'get_mobile_access_requests': {
+        'pretty_name': 'Get Mobile Access Requests',
+        'script_name': 'get_mobile_access_requests'
     },
 }
 
@@ -190,8 +190,8 @@ def run_script(request: HttpRequest, script_info: str):
         output = update_login_emails(request)
     elif(script_name == 'get_user_activity'):
         output = get_user_activity(request)
-    elif(script_name == 'get_blocked_user_agents'):
-        output = get_blocked_user_agents(request)
+    elif(script_name == 'get_mobile_access_requests'):
+        output = get_mobile_access_requests(request)
     else:
         output = ''
 
@@ -868,7 +868,7 @@ def merge_user_agent_counts(main_dict, new_dict):
     return main_dict
 
 
-def get_blocked_user_agents(request: HttpRequest):
+def get_mobile_access_requests(request: HttpRequest):
     start_date = request.POST.get('start-date')
     now = datetime.now()
     start = datetime.strptime(start_date, "%Y-%m-%d")
