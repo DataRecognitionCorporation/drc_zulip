@@ -387,11 +387,15 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
     # or not they're using the mobile OTP flow or want a browser session.
     is_realm_creation = result.data_dict.get("is_realm_creation")
     if mobile_flow_otp is not None:
-        return finish_mobile_flow(request, user_profile, mobile_flow_otp)
-    elif desktop_flow_otp is not None:
-        return finish_desktop_flow(
-            request, user_profile, desktop_flow_otp, params_to_store_in_authenticated_session
+        return HttpResponseServerError(
+            "Mobile App is disalbed. You must use the web browser."
         )
+        #return finish_mobile_flow(request, user_profile, mobile_flow_otp)
+    elif desktop_flow_otp is not None:
+        return HttpResponseServerError(
+            "Desktop App is disalbed. You must use the web browser."
+        )
+        #return finish_desktop_flow(request, user_profile, desktop_flow_otp, params_to_store_in_authenticated_session)
 
     do_login(request, user_profile)
 
@@ -844,6 +848,16 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
             return super().done(form_list, **kwargs)
 
 
+def block_user_agent(user_agent: str) -> bool:
+    if not hasattr(settings, "BLOCKED_USER_AGENTS"):
+        return False
+    upperUserAgents = [x.upper() for x in settings.BLOCKED_USER_AGENTS]
+    for upperUserAgent in upperUserAgents:
+        if(upperUserAgent in user_agent.upper() and "ISLAND" not in user_agent.upper()):
+            return True
+    return False
+
+
 @has_request_variables
 def login_page(
     request: HttpRequest,
@@ -851,6 +865,13 @@ def login_page(
     next: str = REQ(default="/"),
     **kwargs: Any,
 ) -> HttpResponse:
+    if(block_user_agent(request.headers.get("User-Agent", ""))):
+        return render(
+            HttpResponse(status=403),
+            '/zerver/drc_login_error.html',
+            {}
+        )
+
     if get_subdomain(request) == settings.SOCIAL_AUTH_SUBDOMAIN:
         return social_auth_subdomain_login_page(request)
 
@@ -871,9 +892,11 @@ def login_page(
             redirect_url = append_url_query_string(redirect_url, request.GET.urlencode())
         return HttpResponseRedirect(redirect_url)
 
+
     realm = get_realm_from_request(request)
     if realm and realm.deactivated:
         return redirect_to_deactivation_notice()
+
 
     extra_context = kwargs.pop("extra_context", {})
     extra_context["next"] = next
@@ -1108,6 +1131,9 @@ def check_server_incompatibility(request: HttpRequest) -> bool:
 @require_safe
 @csrf_exempt
 def api_get_server_settings(request: HttpRequest) -> HttpResponse:
+    if(block_user_agent(request.headers.get("User-Agent", ""))):
+        return HttpResponse(status=403)
+
     # Log which client is making this request.
     process_client(request)
     result = dict(

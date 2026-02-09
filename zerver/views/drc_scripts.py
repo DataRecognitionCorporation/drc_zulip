@@ -1,6 +1,11 @@
 from django.db.models.deletion import sql
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
+from django.conf import settings
+from itertools import islice
+import sys
+import logging
+import hashlib
 
 from zerver.models import UserProfile
 import os
@@ -50,7 +55,7 @@ def dictfetchall(cursor):
     return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
 
-def csv_to_html_table(csv_string: str, delimeter = DELIMITER) -> str:
+def csv_to_html_table(csv_string: str, delimeter = DELIMITER, header_width: list = []) -> str:
     # Split the CSV string into rows
     rows = csv_string.splitlines()
 
@@ -62,8 +67,14 @@ def csv_to_html_table(csv_string: str, delimeter = DELIMITER) -> str:
 
     # Add header row
     html += '<tr>'
+    n = 0
     for header in headers:
-        html += f'<th>{header}</th>'
+        if(len(header_width) > 0 and len(headers) == len(header_width)):
+            width = header_width[n]
+            html += f'<th width="{width}%">{header}</th>'
+            n += 1
+        else:
+            html += f'<th>{header}</th>'
     html += '</tr>'
 
     # Add data rows
@@ -94,44 +105,48 @@ def results_as_csv(results, delimiter=DELIMITER):
 allowed_scripts = {
     'get_conversation': {
         'pretty_name': 'Get Conversation',
-        'script_name': 'conversation_between_two_users_date_range_get.sh'
+        'script_name': 'conversation_between_two_users_date_range_get'
     },
     'messages_user_get': {
         'pretty_name': 'Get User Messages',
-        'script_name': 'messages_user_get.sh'
+        'script_name': 'messages_user_get'
     },
     'users_role_get': {
         'pretty_name': 'Get User Roles',
-        'script_name': 'users_role_get.sh'
+        'script_name': 'users_role_get'
     },
     'subscriptions_for_user_get': {
         'pretty_name': 'Get User Subscriptions',
-        'script_name': 'subscriptions_for_user_get.sh'
+        'script_name': 'subscriptions_for_user_get'
     },
     'muted_topics_get': {
         'pretty_name': 'Get Muted Topics',
-        'script_name': 'mutedtopics_get.sh'
+        'script_name': 'mutedtopics_get'
     },
     'conversation_for_a_stream_get': {
         'pretty_name': 'Get Stream Conversation',
-        'script_name': 'conversation_for_a_stream_get.sh'
+        'script_name': 'conversation_for_a_stream_get'
     },
     'get_mobile_devices': {
         'pretty_name': 'Get Mobile Services',
-        'script_name': 'mobiledevices_get.sh'
+        'script_name': 'mobiledevices_get'
     },
     'enable_login_emails': {
         'pretty_name': 'Enable Login Emails',
-        'script_name': 'users_enable_login_emails_get.sh'
+        'script_name': 'users_enable_login_emails_get'
     },
     'update_enable_login_emails': {
         'pretty_name': 'Disable Login Emails',
-        'script_name': 'users_enable_login_emails_update.sh'
+        'script_name': 'users_enable_login_emails_update'
     },
     'get_user_activity': {
         'pretty_name': 'Get User Activity',
-        'script_name': 'get_user_activity.sh'
-    }
+        'script_name': 'get_user_activity'
+    },
+    'get_mobile_access_requests': {
+        'pretty_name': 'Get Mobile Access Requests',
+        'script_name': 'get_mobile_access_requests'
+    },
 }
 
 
@@ -153,28 +168,30 @@ def run_script(request: HttpRequest, script_info: str):
     }
     script_name = script_info['script_name']
 
-    if(script_name == 'users_role_get.sh'):
+    if(script_name == 'users_role_get'):
         output = get_user_role(request)
-    elif(script_name == 'messages_user_get.sh'):
+    elif(script_name == 'messages_user_get'):
         output = get_user_messages(request)
-    elif(script_name == 'conversation_between_two_users_date_range_get.sh'):
+    elif(script_name == 'conversation_between_two_users_date_range_get'):
         output = get_conversation(request)
-    elif(script_name == 'messages_user_get.sh'):
+    elif(script_name == 'messages_user_get'):
         output = get_user_messages(request)
-    elif(script_name == 'conversation_for_a_stream_get.sh'):
+    elif(script_name == 'conversation_for_a_stream_get'):
         output = get_stream_messages(request)
-    elif(script_name == 'subscriptions_for_user_get.sh'):
+    elif(script_name == 'subscriptions_for_user_get'):
         output = get_user_subscriptions(request)
-    elif(script_name == 'mutedtopics_get.sh'):
+    elif(script_name == 'mutedtopics_get'):
         output = get_muted_topics(request)
-    elif(script_name == 'mobiledevices_get.sh'):
+    elif(script_name == 'mobiledevices_get'):
         output = get_mobile_devices(request)
-    elif(script_name == 'users_enable_login_emails_get.sh'):
+    elif(script_name == 'users_enable_login_emails_get'):
         output = enable_login_emails(request)
-    elif(script_name == 'users_enable_login_emails_update.sh'):
+    elif(script_name == 'users_enable_login_emails_update'):
         output = update_login_emails(request)
-    elif(script_name == 'get_user_activity.sh'):
+    elif(script_name == 'get_user_activity'):
         output = get_user_activity(request)
+    elif(script_name == 'get_mobile_access_requests'):
+        output = get_mobile_access_requests(request)
     else:
         output = ''
 
@@ -702,9 +719,199 @@ def get_user_activity(request: HttpRequest):
 
 
 
+#
+# NGINX LOG PARSING SECTION
+#
+
+SLICE_SIZE = 10000000  # roufhly 80 mb
+
+def _lex_nginx_line(line: str):
+    """
+    Splits a line into tokens while treating:
+      - quoted strings "..." as one token (without quotes)
+      - bracketed timestamps [...] as one token (without brackets)
+    No regex.
+    """
+    tokens = []
+    i, n = 0, len(line)
+
+    while i < n:
+        # skip whitespace
+        while i < n and line[i].isspace():
+            i += 1
+        if i >= n:
+            break
+
+        c = line[i]
+
+        # quoted token
+        if c == '"':
+            i += 1
+            start = i
+            while i < n and line[i] != '"':
+                i += 1
+            tokens.append(line[start:i])
+            i += 1  # skip closing quote (or n)
+            continue
+
+        # bracketed token
+        if c == '[':
+            i += 1
+            start = i
+            while i < n and line[i] != ']':
+                i += 1
+            tokens.append(line[start:i])
+            i += 1  # skip closing bracket (or n)
+            continue
+
+        # normal token
+        start = i
+        while i < n and not line[i].isspace():
+            i += 1
+        tokens.append(line[start:i])
+
+    return tokens
 
 
+def parse_nginx_log_line(line: str):
+    """
+    For log_format:
+      $remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent
+      "$http_referer" "$http_user_agent" $host $request_time
+    """
+    tokens = _lex_nginx_line(line.strip())
+    if len(tokens) < 11:
+        return None
+
+    # tokens should look like:
+    # 0 ip
+    # 1 '-' (literal)
+    # 2 remote_user
+    # 3 time_local (without brackets)
+    # 4 request (without quotes)
+    # 5 status
+    # 6 body_bytes_sent
+    # 7 http_referer (without quotes)
+    # 8 http_user_agent (without quotes)
+    # 9 host
+    # 10 request_time
+    ip = tokens[0]
+    date_obj = datetime.strptime(tokens[3], "%d/%b/%Y:%H:%M:%S %z")
+
+    status_str = tokens[5]
+    status = int(status_str) if status_str.isdigit() else None
+
+    return {
+        "ip": ip,
+        "date": date_obj,
+        "user_agent": tokens[8],
+        "status": status,
+    }
 
 
+def get_key(ip: str, user_agent: str) -> str:
+    hash_input = f"{ip}|{user_agent}".encode('utf-8')
+    return hashlib.sha256(hash_input).hexdigest()
+
+
+def parse_file(filepath: str, delta_days: int):
+    blocked_user_agents = {}
+    with open(filepath, 'r') as f:
+        while True:
+            lines = list(islice(f, SLICE_SIZE))
+            if not lines:
+                break
+
+
+            for line in lines:
+                if('ISLAND' in line.upper()):
+                    continue
+
+                parsed_line = parse_nginx_log_line(line)
+                if(parsed_line is None):
+                    continue
+
+                if(parsed_line['status'] is None):
+                    continue
+
+                if(parsed_line['status'] >= 400):
+                    continue
+
+                if not any(blocked_ua in parsed_line['user_agent'] for blocked_ua in settings.BLOCKED_USER_AGENTS):
+                    continue
+
+                if(delta := datetime.now(parsed_line['date'].tzinfo) - parsed_line['date']) > timedelta(days=delta_days):
+                    continue
+
+                key = get_key(parsed_line['ip'], parsed_line['user_agent'])
+
+                if(blocked_user_agents.get(key) is None):
+                    blocked_user_agents[key] = {
+                        'user_agent': parsed_line['user_agent'],
+                        'last_access': parsed_line['date'],
+                        'ip': parsed_line['ip'],
+                        'count': 1
+                    }
+                else:
+                    blocked_user_agents[key]['count'] += 1
+                    blocked_user_agents[key]['last_access'] = max(blocked_user_agents[key]['last_access'], parsed_line['date'])
+
+    return blocked_user_agents
+
+
+def merge_user_agent_counts(main_dict, new_dict):
+    for user_agent, data in new_dict.items():
+        if user_agent in main_dict:
+            main_dict[user_agent]['count'] += data['count']
+        else:
+            main_dict[user_agent] = data
+    return main_dict
+
+
+def get_mobile_access_requests(request: HttpRequest):
+    start_date = request.POST.get('start-date')
+    now = datetime.now()
+    start = datetime.strptime(start_date, "%Y-%m-%d")
+    delta = now - start
+
+    nginx_log_dir = os.path.join('/', 'var', 'log', 'nginx')
+    if(not os.path.exists(nginx_log_dir)):
+        output = f"Nginx log directory {nginx_log_dir} does not exist."
+        return output
+
+    working_dir = os.path.join('/', 'tmp', 'nginx-logs')
+    os.makedirs(working_dir, exist_ok=True)
+
+    non_island_user_agents = {}
+
+    for filename in os.listdir(nginx_log_dir):
+        if('error' in filename):
+            continue
+
+        if filename.endswith('.log'):
+            file_results = parse_file(os.path.join(nginx_log_dir, filename), delta.days)
+            merge_user_agent_counts(non_island_user_agents, file_results)
+        elif(filename.endswith('.gz')):
+            # decompress the file to working dir
+            compressed_filepath = os.path.join(nginx_log_dir, filename)
+            decompressed_filepath = os.path.join(working_dir, filename[:-3])
+            os.system(f'gzip -d -c {compressed_filepath} > {decompressed_filepath}')
+            file_results = parse_file(decompressed_filepath, delta.days)
+            non_island_user_agents = merge_user_agent_counts(non_island_user_agents, file_results)
+            os.remove(decompressed_filepath)
+
+
+    csv_string = "User Agent||Count||ip||Last Access\n"
+    header_width = [60, 10, 15, 15]
+    for key, val in non_island_user_agents.items():
+        user_agent = val['user_agent']
+        count = val['count']
+        last_access = val['last_access'].strftime("%m/%d/%Y %H:%M")
+        ip = val['ip']
+
+        csv_string += f'"{user_agent}"||{count}||{ip}||{last_access}\n'
+
+    output = csv_to_html_table(csv_string, delimeter='||', header_width=header_width)
+    return output
 
 
