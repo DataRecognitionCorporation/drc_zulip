@@ -208,6 +208,25 @@
                             </div>
                         </div>
                         <br><br>
+
+                        <!-- Get blocked user agents-->
+                        <div class="card">
+                            <h5 class="card-header">Get Mobile Access Requests</h5>
+                            <div class="card-body">
+                                <p class="card-text"> Get a list of successful mobile access requests via the Android/iOS and Destkop apps.</p>
+                                <p> Note: If this returns no results, then all mobile agents are being blocked successfully.</p>
+                                <form method="post">
+                                    {{ csrf_input }}
+                                    Start date
+                                    <br>
+                                    <input type="date" name="start-date" value="{% trans %}{{last_month}}{% endtrans %}">
+                                    <br>
+                                    <br>
+                                    <button type="submit" name="get_mobile_access_requests" class="btn btn-primary">Run Script</button>
+                                </form>
+                            </div>
+                        </div>
+                        <br><br>
                     </div>
                 </div>
 
