@@ -874,44 +874,42 @@ def get_mobile_access_requests(request: HttpRequest):
     start = datetime.strptime(start_date, "%Y-%m-%d")
     delta = now - start
 
-    nginx_log_dir = os.path.join('/', 'var', 'log', 'nginx')
-    if(not os.path.exists(nginx_log_dir)):
-        output = f"Nginx log directory {nginx_log_dir} does not exist."
-        return output
+    sqlstmt = SQL(
+        """
+        SELECT
+            u.full_name,
+            c.name AS client_name,
+            COUNT(*) AS query_count,
+            MAX(a.last_visit) AS latest_visit
+        FROM zerver_useractivity a
+        JOIN zerver_userprofile u
+            ON a.user_profile_id = u.id
+        JOIN zerver_client c
+            ON a.client_id = c.id
+        WHERE
+            c.name IN ('ZulipElectron', 'ZulipMobile', 'ZulipFlutter', 'Dart')
+            AND a.last_visit >= NOW() - INTERVAL '{days} days'
+        GROUP BY
+            u.full_name,
+            c.name
+        ORDER BY
+            latest_visit DESC;
+        """
+    ).format(
+        days = Literal(delta.days),
+    )
 
-    working_dir = os.path.join('/', 'tmp', 'nginx-logs')
-    os.makedirs(working_dir, exist_ok=True)
+    with connection.cursor() as cursor:
+        cursor.execute(sqlstmt)
+        results = dictfetchall(cursor)
 
-    non_island_user_agents = {}
-
-    for filename in os.listdir(nginx_log_dir):
-        if('error' in filename):
-            continue
-
-        if filename.endswith('.log'):
-            file_results = parse_file(os.path.join(nginx_log_dir, filename), delta.days)
-            merge_user_agent_counts(non_island_user_agents, file_results)
-        elif(filename.endswith('.gz')):
-            # decompress the file to working dir
-            compressed_filepath = os.path.join(nginx_log_dir, filename)
-            decompressed_filepath = os.path.join(working_dir, filename[:-3])
-            os.system(f'gzip -d -c {compressed_filepath} > {decompressed_filepath}')
-            file_results = parse_file(decompressed_filepath, delta.days)
-            non_island_user_agents = merge_user_agent_counts(non_island_user_agents, file_results)
-            os.remove(decompressed_filepath)
+    if(results != []):
+        csvfile = results_as_csv(results)
+        output = csv_to_html_table(csvfile.getvalue())
+    else:
+        output = 'No mobile access found.'
 
 
-    csv_string = "User Agent||Count||ip||Last Access\n"
-    header_width = [60, 10, 15, 15]
-    for key, val in non_island_user_agents.items():
-        user_agent = val['user_agent']
-        count = val['count']
-        last_access = val['last_access'].strftime("%m/%d/%Y %H:%M")
-        ip = val['ip']
-
-        csv_string += f'"{user_agent}"||{count}||{ip}||{last_access}\n'
-
-    output = csv_to_html_table(csv_string, delimeter='||', header_width=header_width)
     return output
 
 
