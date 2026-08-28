@@ -37,24 +37,26 @@ pipeline{
         stage('Build On amd64') {
           steps {
             dir("${WORKSPACE}/${WORKING_DIR}") {
-              container('aws-cli') {
-                script {
-                  configFileProvider([configFile(fileId: 'settings', variable: 'settings')]) {
-                    sh "cat $settings"
+              drc_assumeRole(accountNumber: aws_account, region: "us-east-2") {
+                container('aws-cli') {
+                
+                  script {
+                    configFileProvider([configFile(fileId: 'settings', variable: 'settings')]) {
+                      sh "cat $settings"
 
-                    def jsonData = readJSON file: "$settings"
-                    def aws_account = jsonData.aws_account_number
-                    def aws_role = jsonData.aws_role
-                    echo "$aws_role"
-                    echo "$aws_account"
-                    drc_AwsAssumeRole([jenkinsRole: aws_role, acctNum: aws_account, appName: "test", bldNum : "${BUILD_NUMBER}", timeout: 1800])
+                      def jsonData = readJSON file: "$settings"
+                      def aws_account = jsonData.aws_account_number
+                      def aws_role = jsonData.aws_role
+                      echo "$aws_role"
+                      echo "$aws_account"
+                    }
+                    getAWSConfig()
                   }
-                  getAWSConfig()
                 }
-              }
-              container('dind'){
-                dockerBuild()
-                pushContainer('amd64')
+                container('dind'){
+                  dockerBuild()
+                  pushContainer('amd64')
+                }
               }
             }
           }
