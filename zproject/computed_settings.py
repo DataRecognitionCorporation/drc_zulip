@@ -233,6 +233,7 @@ MIDDLEWARE = [
     # be counted in the LogRequests instrumentation of how time was
     # spent while processing a request.
     "zerver.middleware.LogRequests",
+    "zerver.middleware.BlockClientsMiddleware",
     "zerver.middleware.JsonErrorHandler",
     "zerver.middleware.RateLimitMiddleware",
     "zerver.middleware.FlushDisplayRecipientCache",
