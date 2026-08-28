@@ -670,3 +670,8 @@ ALLOW_GROUP_VALUED_SETTINGS = False
 # notification to a stream and also delete the previous counter
 # notification.
 RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 60
+
+# Client names (as parsed from User-Agent) that should be blocked
+# from accessing the server entirely. Requests from these clients
+# receive a 403 response before authentication is attempted.
+BLOCKED_CLIENT_NAMES: set[str] = {"ZulipMobile"}
