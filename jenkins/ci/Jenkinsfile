@@ -39,11 +39,12 @@ pipeline{
             dir("${WORKSPACE}/${WORKING_DIR}") {
               container('aws-cli') {
                 script {
+                  def aws_account = ''
                   configFileProvider([configFile(fileId: 'settings', variable: 'settings')]) {
                     sh "cat $settings"
 
                     def jsonData = readJSON file: "$settings"
-                     def aws_account = jsonData.aws_account_number
+                    aws_account = jsonData.aws_account_number
                     def aws_role = jsonData.aws_role
                     echo "$aws_role"
                     echo "$aws_account"
@@ -54,9 +55,16 @@ pipeline{
                 }
               }
               container('dind'){
-                drc_assumeRole(accountNumber: aws_account, region: "us-east-2") {
-                  dockerBuild()
-                  pushContainer('amd64')
+                script {
+                  def aws_account = ''
+                  configFileProvider([configFile(fileId: 'settings', variable: 'settings')]) {
+                    def jsonData = readJSON file: "$settings"
+                    aws_account = jsonData.aws_account_number
+                  }
+                  drc_assumeRole(accountNumber: aws_account, region: "us-east-2") {
+                    dockerBuild()
+                    pushContainer('amd64')
+                  }
                 }
               }
             }
