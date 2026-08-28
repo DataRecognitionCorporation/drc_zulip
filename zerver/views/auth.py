@@ -848,16 +848,6 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
             return super().done(form_list, **kwargs)
 
 
-def block_user_agent(user_agent: str) -> bool:
-    if not hasattr(settings, "BLOCKED_USER_AGENTS"):
-        return False
-    upperUserAgents = [x.upper() for x in settings.BLOCKED_USER_AGENTS]
-    for upperUserAgent in upperUserAgents:
-        if(upperUserAgent in user_agent.upper() and "ISLAND" not in user_agent.upper()):
-            return True
-    return False
-
-
 @has_request_variables
 def login_page(
     request: HttpRequest,
@@ -865,13 +855,6 @@ def login_page(
     next: str = REQ(default="/"),
     **kwargs: Any,
 ) -> HttpResponse:
-    if(block_user_agent(request.headers.get("User-Agent", ""))):
-        return render(
-            HttpResponse(status=403),
-            '/zerver/drc_login_error.html',
-            {}
-        )
-
     if get_subdomain(request) == settings.SOCIAL_AUTH_SUBDOMAIN:
         return social_auth_subdomain_login_page(request)
 
@@ -1131,9 +1114,6 @@ def check_server_incompatibility(request: HttpRequest) -> bool:
 @require_safe
 @csrf_exempt
 def api_get_server_settings(request: HttpRequest) -> HttpResponse:
-    if(block_user_agent(request.headers.get("User-Agent", ""))):
-        return HttpResponse(status=403)
-
     # Log which client is making this request.
     process_client(request)
     result = dict(
