@@ -363,6 +363,43 @@ class LogRequests(MiddlewareMixin):
         return response
 
 
+class BlockClientsMiddleware(MiddlewareMixin):
+    """Reject requests from client applications listed in BLOCKED_CLIENT_NAMES.
+
+    This middleware must run after LogRequests, which parses the User-Agent
+    header into request_notes.client_name. Blocked clients receive an
+    immediate 403 JSON response before any authentication is attempted.
+    """
+
+    def process_request(self, request: HttpRequest) -> HttpResponse | None:
+        request_notes = RequestNotes.get_notes(request)
+        client_name = request_notes.client_name
+
+        if not settings.BLOCKED_CLIENT_NAMES:
+            return None
+
+        # Check the parsed client name (set by LogRequests from User-Agent or
+        # the explicit "client" request parameter).
+        if client_name is not None and client_name in settings.BLOCKED_CLIENT_NAMES:
+            return json_response(
+                res_type="error",
+                msg="Access denied: this client application is not permitted.",
+                status=403,
+            )
+
+        # Also check the raw User-Agent header directly, in case the client
+        # parameter was overridden to bypass the parsed client_name.
+        user_agent = request.headers.get("User-Agent", "")
+        if any(blocked in user_agent for blocked in settings.BLOCKED_CLIENT_NAMES):
+            return json_response(
+                res_type="error",
+                msg="Access denied: this client application is not permitted.",
+                status=403,
+            )
+
+        return None
+
+
 class JsonErrorHandler(MiddlewareMixin):
     def process_exception(self, request: HttpRequest, exception: Exception) -> HttpResponse | None:
         if isinstance(exception, MissingAuthenticationError):
