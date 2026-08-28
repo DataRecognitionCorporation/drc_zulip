@@ -76,14 +76,28 @@ pipeline{
       steps{
         dir("${WORKSPACE}/${WORKING_DIR}") {
           container('aws-cli') {
-            drc_assumeRole(accountNumber: aws_account, region: "us-east-2") {
-              getAWSConfig()
+            script {
+              def aws_account = ''
+              configFileProvider([configFile(fileId: 'settings', variable: 'settings')]) {
+                def jsonData = readJSON file: "$settings"
+                aws_account = jsonData.aws_account_number
+              }
+              drc_assumeRole(accountNumber: aws_account, region: "us-east-2") {
+                getAWSConfig()
+              }
             }
           }
           container('dind'){
-            drc_assumeRole(accountNumber: aws_account, region: "us-east-2") {
-              dockerTag()
-              deployManifest()
+            script {
+              def aws_account = ''
+              configFileProvider([configFile(fileId: 'settings', variable: 'settings')]) {
+                def jsonData = readJSON file: "$settings"
+                aws_account = jsonData.aws_account_number
+              }
+              drc_assumeRole(accountNumber: aws_account, region: "us-east-2") {
+                dockerTag()
+                deployManifest()
+              }
             }
           }
         }
