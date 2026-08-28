@@ -7,7 +7,7 @@ pipeline{
 
   environment {
     VERSION = '0.0.0'
-    CONTAINER_NAME = 'team-ss/zulip-ci'
+    CONTAINER_NAME = 'drc/jenkins/zulip-ci'
     AWS_DEFAULT_REGION = 'us-east-2'
   }
 
@@ -25,7 +25,7 @@ pipeline{
   agent {
     kubernetes(
       drc_k8_agent(templates: [
-        [name: 'dind', isDefault: true],
+        [name: 'dind', isDefault: true, config: [cpu: 4, memory: '8Gi']],
         [name: 'aws-cli', isDefault: false],
       ])
     )
