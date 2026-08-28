@@ -37,7 +37,6 @@ pipeline{
         stage('Build On amd64') {
           steps {
             dir("${WORKSPACE}/${WORKING_DIR}") {
-              drc_assumeRole(accountNumber: aws_account, region: "us-east-2") {
                 container('aws-cli') {
                 
                   script {
@@ -50,12 +49,16 @@ pipeline{
                       echo "$aws_role"
                       echo "$aws_account"
                     }
-                    getAWSConfig()
+                    drc_assumeRole(accountNumber: aws_account, region: "us-east-2") {
+                      getAWSConfig()
+                    }
                   }
                 }
                 container('dind'){
-                  dockerBuild()
-                  pushContainer('amd64')
+                  drc_assumeRole(accountNumber: aws_account, region: "us-east-2") {
+                    dockerBuild()
+                    pushContainer('amd64')
+                  }
                 }
               }
             }
