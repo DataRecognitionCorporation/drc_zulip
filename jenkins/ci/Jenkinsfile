@@ -76,11 +76,15 @@ pipeline{
       steps{
         dir("${WORKSPACE}/${WORKING_DIR}") {
           container('aws-cli') {
-            getAWSConfig()
+            drc_assumeRole(accountNumber: aws_account, region: "us-east-2") {
+              getAWSConfig()
+            }
           }
           container('dind'){
-            dockerTag()
-            deployManifest()
+            drc_assumeRole(accountNumber: aws_account, region: "us-east-2") {
+              dockerTag()
+              deployManifest()
+            }
           }
         }
       }
