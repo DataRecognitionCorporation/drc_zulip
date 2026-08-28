@@ -1,11 +1,5 @@
-from django.db.models.deletion import sql
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
-from django.conf import settings
-from itertools import islice
-import sys
-import logging
-import hashlib
 
 from zerver.models import UserProfile
 import os
@@ -719,155 +713,6 @@ def get_user_activity(request: HttpRequest):
 
 
 
-#
-# NGINX LOG PARSING SECTION
-#
-
-SLICE_SIZE = 10000000  # roufhly 80 mb
-
-def _lex_nginx_line(line: str):
-    """
-    Splits a line into tokens while treating:
-      - quoted strings "..." as one token (without quotes)
-      - bracketed timestamps [...] as one token (without brackets)
-    No regex.
-    """
-    tokens = []
-    i, n = 0, len(line)
-
-    while i < n:
-        # skip whitespace
-        while i < n and line[i].isspace():
-            i += 1
-        if i >= n:
-            break
-
-        c = line[i]
-
-        # quoted token
-        if c == '"':
-            i += 1
-            start = i
-            while i < n and line[i] != '"':
-                i += 1
-            tokens.append(line[start:i])
-            i += 1  # skip closing quote (or n)
-            continue
-
-        # bracketed token
-        if c == '[':
-            i += 1
-            start = i
-            while i < n and line[i] != ']':
-                i += 1
-            tokens.append(line[start:i])
-            i += 1  # skip closing bracket (or n)
-            continue
-
-        # normal token
-        start = i
-        while i < n and not line[i].isspace():
-            i += 1
-        tokens.append(line[start:i])
-
-    return tokens
-
-
-def parse_nginx_log_line(line: str):
-    """
-    For log_format:
-      $remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent
-      "$http_referer" "$http_user_agent" $host $request_time
-    """
-    tokens = _lex_nginx_line(line.strip())
-    if len(tokens) < 11:
-        return None
-
-    # tokens should look like:
-    # 0 ip
-    # 1 '-' (literal)
-    # 2 remote_user
-    # 3 time_local (without brackets)
-    # 4 request (without quotes)
-    # 5 status
-    # 6 body_bytes_sent
-    # 7 http_referer (without quotes)
-    # 8 http_user_agent (without quotes)
-    # 9 host
-    # 10 request_time
-    ip = tokens[0]
-    date_obj = datetime.strptime(tokens[3], "%d/%b/%Y:%H:%M:%S %z")
-
-    status_str = tokens[5]
-    status = int(status_str) if status_str.isdigit() else None
-
-    return {
-        "ip": ip,
-        "date": date_obj,
-        "user_agent": tokens[8],
-        "status": status,
-    }
-
-
-def get_key(ip: str, user_agent: str) -> str:
-    hash_input = f"{ip}|{user_agent}".encode('utf-8')
-    return hashlib.sha256(hash_input).hexdigest()
-
-
-def parse_file(filepath: str, delta_days: int):
-    blocked_user_agents = {}
-    with open(filepath, 'r') as f:
-        while True:
-            lines = list(islice(f, SLICE_SIZE))
-            if not lines:
-                break
-
-
-            for line in lines:
-                if('ISLAND' in line.upper()):
-                    continue
-
-                parsed_line = parse_nginx_log_line(line)
-                if(parsed_line is None):
-                    continue
-
-                if(parsed_line['status'] is None):
-                    continue
-
-                if(parsed_line['status'] >= 400):
-                    continue
-
-                if not any(blocked_ua in parsed_line['user_agent'] for blocked_ua in settings.BLOCKED_USER_AGENTS):
-                    continue
-
-                if(delta := datetime.now(parsed_line['date'].tzinfo) - parsed_line['date']) > timedelta(days=delta_days):
-                    continue
-
-                key = get_key(parsed_line['ip'], parsed_line['user_agent'])
-
-                if(blocked_user_agents.get(key) is None):
-                    blocked_user_agents[key] = {
-                        'user_agent': parsed_line['user_agent'],
-                        'last_access': parsed_line['date'],
-                        'ip': parsed_line['ip'],
-                        'count': 1
-                    }
-                else:
-                    blocked_user_agents[key]['count'] += 1
-                    blocked_user_agents[key]['last_access'] = max(blocked_user_agents[key]['last_access'], parsed_line['date'])
-
-    return blocked_user_agents
-
-
-def merge_user_agent_counts(main_dict, new_dict):
-    for user_agent, data in new_dict.items():
-        if user_agent in main_dict:
-            main_dict[user_agent]['count'] += data['count']
-        else:
-            main_dict[user_agent] = data
-    return main_dict
-
-
 def get_mobile_access_requests(request: HttpRequest):
     start_date = request.POST.get('start-date')
     now = datetime.now()
@@ -908,7 +753,6 @@ def get_mobile_access_requests(request: HttpRequest):
         output = csv_to_html_table(csvfile.getvalue())
     else:
         output = 'No mobile access found.'
-
 
     return output
 
