@@ -369,14 +369,24 @@ class BlockClientsMiddleware(MiddlewareMixin):
     This middleware must run after LogRequests, which parses the User-Agent
     header into request_notes.client_name. Blocked clients receive an
     immediate 403 JSON response before any authentication is attempted.
+
+    The ISLAND corporate secure browser is explicitly exempted, even if the
+    underlying User-Agent contains a blocked substring (e.g. "iPhone", "Android").
     """
 
     def process_request(self, request: HttpRequest) -> HttpResponse | None:
-        request_notes = RequestNotes.get_notes(request)
-        client_name = request_notes.client_name
-
         if not settings.BLOCKED_CLIENT_NAMES:
             return None
+
+        user_agent = request.headers.get("User-Agent", "")
+
+        # ISLAND corporate secure browser is always allowed through,
+        # even if its User-Agent contains blocked substrings.
+        if "ISLAND" in user_agent.upper():
+            return None
+
+        request_notes = RequestNotes.get_notes(request)
+        client_name = request_notes.client_name
 
         # Check the parsed client name (set by LogRequests from User-Agent or
         # the explicit "client" request parameter).
@@ -389,7 +399,6 @@ class BlockClientsMiddleware(MiddlewareMixin):
 
         # Also check the raw User-Agent header directly, in case the client
         # parameter was overridden to bypass the parsed client_name.
-        user_agent = request.headers.get("User-Agent", "")
         if any(blocked in user_agent for blocked in settings.BLOCKED_CLIENT_NAMES):
             return json_response(
                 res_type="error",

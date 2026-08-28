@@ -674,4 +674,5 @@ RESOLVE_TOPIC_UNDO_GRACE_PERIOD_SECONDS = 60
 # Client names (as parsed from User-Agent) that should be blocked
 # from accessing the server entirely. Requests from these clients
 # receive a 403 response before authentication is attempted.
-BLOCKED_CLIENT_NAMES: set[str] = {"ZulipMobile"}
+# The ISLAND corporate browser is always exempted regardless of this list.
+BLOCKED_CLIENT_NAMES: set[str] = {"ZulipMobile", "ZulipElectron", "Android", "iPhone", "iPad"}
