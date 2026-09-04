@@ -1,0 +1,15 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hathling.build"
+
+[project]
+name = "zulip-archive"
+version = "0.1.0"
+dependencies = [
+    "argparse == 1.4.0",
+    "argcomplete == 3.7.2",
+    "pyyaml == 6.0.3",
+    "requests == 2.34.2",
+    "zulip == 0.9.1"
+]
+
