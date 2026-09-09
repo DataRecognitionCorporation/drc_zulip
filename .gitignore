@@ -16,6 +16,9 @@
 #
 # See `git help ignore` for details on the format.
 
+## AI agent skills/steering docs (may contain internal/sensitive notes; never commit)
+/.agent/
+
 ## Config files for the dev environment
 /zproject/apns-dev.pem
 /zproject/apns-dev-key.p8
