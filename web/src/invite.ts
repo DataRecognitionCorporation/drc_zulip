@@ -58,7 +58,7 @@ function get_common_invitation_data(): {
         $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
         10,
     );
-    const invite_multiple = $("#invite_multiple").is(":checked");
+    const invite_multiple = true;
 
 
     let stream_ids: number[] = [];
@@ -357,16 +357,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         $("#invite-user-modal").on("click", ".main-view-banner-close-button", (e) => {
             e.preventDefault();
             $(e.target).parent().remove();
-        });
-
-        $("#invite_multiple").on("click", (e) => {
-            if($("#invite_multiple").is(":checked")) {
-                $('.invitee_emails').attr('placeholder', 'Last name, First name, Email.');
-
-            } else {
-                $('.invitee_emails').attr('placeholder', 'Email only.');
-
-            }
         });
 
         function toggle_invite_submit_button(selected_tab?: string): void {

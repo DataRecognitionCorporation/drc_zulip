@@ -27,7 +27,7 @@
     </div>
     <div class="input-group new-style" id="invite_multiple_container">
         <label class="checkbox display-block">
-            <input type="checkbox" id="invite_multiple" checked/>
+            <input type="checkbox" id="invite_multiple" checked disabled/>
             <span></span>
             {{t "Add/Invite with lastname, firstname and email." }}
         </label>
@@ -39,10 +39,6 @@
         <select id="invite_as" class="invite-user-select modal_select bootstrap-focus-style">
             <option name="invite_as" selected="selected" value="{{ invite_as_options.guest.code }}">{{t "Guests" }}</option>
             <option name="invite_as" value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
-            {{#if is_admin}}
-            <option name="invite_as" value="{{ invite_as_options.moderator.code }}">{{t "Moderators" }}</option>
-            <option name="invite_as" value="{{ invite_as_options.admin.code }}">{{t "Administrators" }}</option>
-            {{/if}}
             {{#if is_owner}}
             <option name="invite_as" value="{{ invite_as_options.owner.code }}">{{t "Owners" }}</option>
             {{/if}}
