@@ -91,8 +91,10 @@ RUN \
     apt-get -qq clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-COPY entrypoint.sh /sbin/entrypoint.sh
-COPY certbot-deploy-hook /sbin/certbot-deploy-hook
+# These helper files live under docker/ in the repo, and the build context is
+# the repo root, so reference them with the docker/ prefix.
+COPY docker/entrypoint.sh /sbin/entrypoint.sh
+COPY docker/certbot-deploy-hook /sbin/certbot-deploy-hook
 
 VOLUME ["$DATA_DIR"]
 EXPOSE 25 80 443
