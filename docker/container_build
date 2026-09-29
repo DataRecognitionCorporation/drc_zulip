@@ -129,17 +129,26 @@ pipeline {
 
   post {
     always {
-      drc_sendTeamsNotification(
-        title: "Build for ${REPO_NAME} ${ZULIP_VERSION} finished with status ${currentBuild.currentResult}",
-        message: "Build finished with ${currentBuild.currentResult}",
-        facts: [
-          [name: 'Build Status', value: currentBuild.currentResult],
-          [name: 'Git SHA', value: "${env.GIT_SHA}"],
-          [name: 'Short SHA', value: "${env.SHORT_SHA}"],
-          [name: 'Architecture', value: "amd64, arm64"],
-          [name: 'ECR Repository', value: "${DEV_ECR}/${REPO_NAME}"]
-        ]
-      )
+      script {
+        // drc_sendTeamsNotification errors hard if TEAMS_WEBHOOK_URL is unset
+        // (the 'teams-webhook' credential is not available to this folder), so
+        // only notify when the webhook was resolved in the Configure stage.
+        if (env.TEAMS_WEBHOOK_URL?.trim()) {
+          drc_sendTeamsNotification(
+            title: "Build for ${REPO_NAME} ${ZULIP_VERSION} finished with status ${currentBuild.currentResult}",
+            message: "Build finished with ${currentBuild.currentResult}",
+            facts: [
+              [name: 'Build Status', value: currentBuild.currentResult],
+              [name: 'Git SHA', value: "${env.GIT_SHA}"],
+              [name: 'Short SHA', value: "${env.SHORT_SHA}"],
+              [name: 'Architecture', value: "amd64, arm64"],
+              [name: 'ECR Repository', value: "${DEV_ECR}/${REPO_NAME}"]
+            ]
+          )
+        } else {
+          echo "Skipping Teams notification: TEAMS_WEBHOOK_URL not set."
+        }
+      }
     }
   }
 } // pipeline

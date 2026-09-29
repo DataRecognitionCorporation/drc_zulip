@@ -80,15 +80,23 @@ pipeline {
 
   post {
     always {
-      drc_sendTeamsNotification(
-        title: "Promotion of ${REPO_NAME}:${params.IMAGE_TAG} to prod finished with status ${currentBuild.currentResult}",
-        message: "Promotion finished with ${currentBuild.currentResult}",
-        facts: [
-          [name: 'Image Tag', value: "${params.IMAGE_TAG}"],
-          [name: 'Source', value: "${LE_ECR}/${REPO_NAME}"],
-          [name: 'Destination', value: "${PROD_ECR}/${REPO_NAME}"]
-        ]
-      )
+      script {
+        // Only notify if a webhook is configured; drc_sendTeamsNotification
+        // errors hard otherwise (teams-webhook credential not in this folder).
+        if (env.TEAMS_WEBHOOK_URL?.trim()) {
+          drc_sendTeamsNotification(
+            title: "Promotion of ${REPO_NAME}:${params.IMAGE_TAG} to prod finished with status ${currentBuild.currentResult}",
+            message: "Promotion finished with ${currentBuild.currentResult}",
+            facts: [
+              [name: 'Image Tag', value: "${params.IMAGE_TAG}"],
+              [name: 'Source', value: "${LE_ECR}/${REPO_NAME}"],
+              [name: 'Destination', value: "${PROD_ECR}/${REPO_NAME}"]
+            ]
+          )
+        } else {
+          echo "Skipping Teams notification: TEAMS_WEBHOOK_URL not set."
+        }
+      }
     }
   }
 } // pipeline

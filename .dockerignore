@@ -30,5 +30,9 @@ dump.rdb
 # Agent config (already gitignored; never belongs in an image)
 .agent/
 
-# Docker build outputs / this build tooling itself (not needed inside build)
-docker/
+# Docker build tooling: keep it out of the build context EXCEPT the two runtime
+# helper files the Dockerfile copies into the image (context is the repo root,
+# so they are referenced as docker/entrypoint.sh and docker/certbot-deploy-hook).
+docker/*
+!docker/entrypoint.sh
+!docker/certbot-deploy-hook
