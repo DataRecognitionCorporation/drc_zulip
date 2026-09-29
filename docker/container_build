@@ -1,0 +1,122 @@
+#!/usr/bin/env groovy
+
+// Build the DRC Zulip container image and push it to the LE (shared-services)
+// ECR, following the moodle-pls cicd/build/container_build standard:
+//   * a matrix builds each architecture on a NATIVE node (Zulip's provision
+//     compiles native deps, so cross-emulation is not viable), pushing a
+//     per-arch SHA-pinned tag via `make ci/build` (buildx --push --sbom);
+//   * a Push Manifest stage stitches the per-arch tags into multi-arch
+//     manifests under the shared tag set.
+//
+// This produces the image the Zulip Helm chart deploys. Promotion to prod is a
+// separate pipeline (container_promote), mirroring moodle-pls.
+
+@Library('DRC_Global_Pipeline_Libraries') _
+
+SHARED_SERVICES_LE = "333509430799"
+REGION = "us-east-2"
+DEV_ECR = "${SHARED_SERVICES_LE}.dkr.ecr.${REGION}.amazonaws.com"
+REPO_NAME = "drc/pas/zulip"
+
+WORKING_DIR = "docker"
+
+// Version label baked into the image; matches version.py / docker/Makefile.
+ZULIP_VERSION = "9.2-drc"
+
+pipeline {
+  options {
+    buildDiscarder(logRotator(numToKeepStr: '4', artifactNumToKeepStr: '4'))
+    ansiColor('xterm')
+  }
+  agent {
+    kubernetes(
+      drc_k8_agent(templates: [
+        [name: 'dind', isDefault: true, config: [cpu: 1, memory: '2Gi']]
+      ])
+    )
+  }
+  environment {
+    GIT_SHA = "${env.GIT_COMMIT}"
+    SHORT_SHA = env.GIT_SHA.take(7)
+    TEAMS_WEBHOOK_URL = credentials('teams-webhook')
+  }
+
+  stages {
+    stage('Build') {
+      matrix {
+        agent {
+          kubernetes(
+            drc_k8_agent(armProcessor: ARCHITECTURE == 'arm64' ? true : false, templates: [
+              [name: 'dind', isDefault: true, config: [cpu: 4, memory: '8Gi']]
+            ])
+          )
+        }
+        axes {
+          axis {
+            name 'ARCHITECTURE'
+            values 'amd64', 'arm64'
+          }
+        }
+        stages {
+          stage('Install Packages') {
+            steps {
+              script {
+                sh 'apk add --upgrade make bind-tools jq bash curl aws-cli'
+              }
+            }
+          }
+          stage('Build and Push Container') {
+            steps {
+              dir("${WORKSPACE}/${WORKING_DIR}") {
+                drc_assumeRole(accountNumber: SHARED_SERVICES_LE, region: REGION) {
+                  sh "aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${DEV_ECR}"
+                  sh "docker buildx create --name mybuilder --driver docker-container --use"
+                  sh "make ci/build ECR=${DEV_ECR} ZULIP_VERSION=${ZULIP_VERSION} ARCH=${ARCHITECTURE} SHORT_SHA=${SHORT_SHA}"
+                }
+              }
+            }
+          }
+        }
+      } // matrix
+    } // stage
+
+    stage('Push Manifest') {
+      steps {
+        dir("${WORKSPACE}/${WORKING_DIR}") {
+          script {
+            drc_assumeRole(accountNumber: SHARED_SERVICES_LE, region: REGION) {
+              sh 'apk add --upgrade aws-cli'
+              sh "aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${DEV_ECR}"
+
+              def tagList = ["${GIT_SHA}", "${SHORT_SHA}", "${ZULIP_VERSION}-${SHORT_SHA}", "latest"]
+
+              for (String tag in tagList) {
+                sh """
+                  docker buildx imagetools create -t ${DEV_ECR}/${REPO_NAME}:${tag} \
+                    "${DEV_ECR}/${REPO_NAME}:${ZULIP_VERSION}-amd64-${SHORT_SHA}" \
+                    "${DEV_ECR}/${REPO_NAME}:${ZULIP_VERSION}-arm64-${SHORT_SHA}"
+                """
+              }
+            }
+          }
+        }
+      }
+    }
+  } // stages
+
+  post {
+    always {
+      drc_sendTeamsNotification(
+        title: "Build for ${REPO_NAME} ${ZULIP_VERSION} finished with status ${currentBuild.currentResult}",
+        message: "Build finished with ${currentBuild.currentResult}",
+        facts: [
+          [name: 'Build Status', value: currentBuild.currentResult],
+          [name: 'Git SHA', value: "${GIT_SHA}"],
+          [name: 'Short SHA', value: "${SHORT_SHA}"],
+          [name: 'Architecture', value: "amd64, arm64"],
+          [name: 'ECR Repository', value: "${DEV_ECR}/${REPO_NAME}"]
+        ]
+      )
+    }
+  }
+} // pipeline

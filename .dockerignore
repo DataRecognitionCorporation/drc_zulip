@@ -1,0 +1,34 @@
+# .dockerignore for docker/Dockerfile (build context is the repo root).
+#
+# IMPORTANT: `.git` is intentionally NOT ignored. The image installs the source
+# in place, and scripts/lib/install's from-checkout path runs
+# update-git-upstream + cache-zulip-git-version, which need the Git history.
+# Do not add `.git` here. Likewise do NOT exclude web/, tools/, or static/ --
+# they are the source inputs to tools/update-prod-static (the static assets are
+# built from source in the image, not shipped prebuilt).
+#
+# Everything below is either regenerated during the in-container build
+# (provision + update-prod-static) or is local dev state that must not leak
+# into the image build context. Trimming it keeps the context small and the
+# build reproducible from committed source only.
+
+# Python / Node local environments and caches
+.venv/
+**/__pycache__/
+**/*.pyc
+node_modules/
+.pnpm-store/
+
+# Local runtime state, logs, uploads, and DB artifacts
+var/
+dump.rdb
+
+# Local dev VM / tooling state
+.vagrant/
+.vscode/
+
+# Agent config (already gitignored; never belongs in an image)
+.agent/
+
+# Docker build outputs / this build tooling itself (not needed inside build)
+docker/
