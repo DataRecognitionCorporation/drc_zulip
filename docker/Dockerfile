@@ -54,8 +54,17 @@ COPY --chown=zulip:zulip . .
 # Provision the build environment and build the production static assets from
 # the checkout, so the runtime install doesn't have to (and so the heavy build
 # toolchain stays out of the final image).
+#
+# provision creates the venv at /srv/zulip-py3-venv. The DRC repo runs these
+# tools inside that venv (see tools/ci/activate-venv + tools/build-release-tarball),
+# NOT via `uv` -- uv is not on PATH in this environment. update-prod-static also
+# needs DEBUG=False and a dev-secrets stub to run, exactly as build-release-tarball
+# sets up before calling it.
 RUN SKIP_VENV_SHELL_WARNING=1 ./tools/provision --build-release-tarball-only && \
-    uv run --no-sync ./tools/update-prod-static && \
+    printf '\nDEBUG = False\n' >> zproject/prod_settings_template.py && \
+    printf '\n[secrets]\nlocal_database_password = ""\nsecret_key = "not_used_here"\nshared_secret = "not_used_here"\navatar_salt = "not_used_here"\nrabbitmq_password = "not_used_here"\ninitial_password_salt = "not_used_here"\n' >> zproject/dev-secrets.conf && \
+    . /srv/zulip-py3-venv/bin/activate && \
+    ./tools/update-prod-static && \
     ./tools/cache-zulip-git-version && \
     rm -rf node_modules
 
