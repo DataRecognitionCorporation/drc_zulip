@@ -59,10 +59,16 @@ COPY --chown=zulip:zulip . .
 # tools inside that venv (see tools/ci/activate-venv + tools/build-release-tarball),
 # NOT via `uv` -- uv is not on PATH in this environment. update-prod-static also
 # needs DEBUG=False and a dev-secrets stub to run, exactly as build-release-tarball
-# sets up before calling it.
+# sets up before calling it. The [secrets] append is guarded because, unlike
+# build-release-tarball (which runs on a `git archive` export with no
+# dev-secrets.conf), this build COPYs the whole working tree in -- so the
+# committed zproject/dev-secrets.conf already has a [secrets] section, and
+# appending a second one makes configparser raise DuplicateSectionError.
 RUN SKIP_VENV_SHELL_WARNING=1 ./tools/provision --build-release-tarball-only && \
     printf '\nDEBUG = False\n' >> zproject/prod_settings_template.py && \
-    printf '\n[secrets]\nlocal_database_password = ""\nsecret_key = "not_used_here"\nshared_secret = "not_used_here"\navatar_salt = "not_used_here"\nrabbitmq_password = "not_used_here"\ninitial_password_salt = "not_used_here"\n' >> zproject/dev-secrets.conf && \
+    if ! grep -q '^\[secrets\]' zproject/dev-secrets.conf; then \
+        printf '\n[secrets]\nlocal_database_password = ""\nsecret_key = "not_used_here"\nshared_secret = "not_used_here"\navatar_salt = "not_used_here"\nrabbitmq_password = "not_used_here"\ninitial_password_salt = "not_used_here"\n' >> zproject/dev-secrets.conf; \
+    fi && \
     . /srv/zulip-py3-venv/bin/activate && \
     ./tools/update-prod-static && \
     ./tools/cache-zulip-git-version && \

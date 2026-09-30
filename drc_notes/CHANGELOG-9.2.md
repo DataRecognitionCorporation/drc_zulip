@@ -269,17 +269,13 @@ The S3 bucket client is configured with:
 
 ## 14. CI/CD: Jenkins Pipelines
 
-### Modernized Jenkins pipelines
+### Jenkins pipelines moved out of this repository
 
-**Files**: `jenkins/build-package`, `jenkins/build-release`, `jenkins/ci/Jenkinsfile`
-
-- Migrated from `@Library('DRC_Global_Pipeline_Libraries@master')` to `@Library('DRC_Global_Pipeline_Libraries') _`
-- Replaced hardcoded `kubernetes` agent YAML with `drc_k8_agent(templates: [...])` helper
-- Removed `container('zulip-ci-jammy')` wrappers (new agent handles this)
-- Simplified stage structure (Configure → Build → Deploy)
-- Changed Artifactory upload target from `downloads` to `devops-generic-dev`
-- Added new `jenkins/ci/Jenkinsfile` for CI-only runs (lint, test, no deploy)
-- `build-release` updated to deploy artifacts with timestamped filenames
+The Jenkins pipeline definitions that build and ship DRC Zulip were moved to a
+private infrastructure repository so that internal CI details (AWS accounts,
+registry paths, artifact hosts, credential IDs) are not published here. The
+pipelines check out this repository and run the build tooling that remains in
+it (`tools/`, `tools/ci/`, `docker/`).
 
 ---
 

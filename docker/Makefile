@@ -1,16 +1,14 @@
-# Build targets for the DRC Zulip container image, following the moodle-pls
-# cicd/build standard.
+# Build targets for the DRC Zulip container image.
 #
 # `build`    - local single-arch image for iterating/testing.
-# `ci/build` - what the container_build Jenkinsfile runs per architecture:
-#              a buildx build that pushes a per-arch, SHA-pinned tag to ECR
-#              with an SBOM attached. The container_build "Push Manifest" stage
-#              then stitches the per-arch tags into the multi-arch manifests.
+# `ci/build` - per-architecture build run by CI: a buildx build that pushes a
+#              per-arch, SHA-pinned tag to ECR with an SBOM attached. CI then
+#              stitches the per-arch tags into the multi-arch manifests.
 #
-# Unlike moodle-pls, the Zulip image build is fully self-contained (the
-# Dockerfile runs provision + build-release-tarball + install internally from
-# the copied-in working tree), so there is no Artifactory host to pin -- the
-# only build-arg is ZULIP_VERSION.
+# The Zulip image build is fully self-contained (the Dockerfile runs provision
+# + build-release-tarball + install internally from the copied-in working
+# tree), so there is no Artifactory host to pin -- the only build-arg is
+# ZULIP_VERSION.
 #
 # NOTE: the build context is the REPOSITORY ROOT (where .git and tools/ live),
 # not docker/. build-release-tarball archives HEAD and needs .git, and
@@ -18,7 +16,7 @@
 # at `..` with `--file Dockerfile`.
 
 # Variables
-IMAGE_NAME := drc/pas/zulip
+IMAGE_NAME := drc/zulip
 DOCKERFILE := Dockerfile
 DOCKER_BUILD_CONTEXT := ..
 

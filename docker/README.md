@@ -6,12 +6,10 @@ checkout** — no `git clone` of an external URL. The image is what the
 deploys a container image, **not** a release tarball), so this is the path for
 testing and running DRC's `drc_9.2.x` changes on Kubernetes.
 
-The build and promotion follow the **moodle-pls `cicd/build` standard**:
-
-- `Makefile` — `build` (local) and `ci/build` (buildx `--push --sbom`, per-arch).
-- `container_build` — Jenkinsfile: matrix builds `amd64`/`arm64` on native
-  nodes into the **LE** ECR, then stitches a multi-arch manifest.
-- `container_promote` — Jenkinsfile: `crane copy` an LE tag to the **prod** ECR.
+The `Makefile` provides `build` (local single-arch) and `ci/build` (buildx
+`--push --sbom`, per-arch) targets. CI/CD pipelines that drive the per-arch
+build, multi-arch manifest, and promotion are maintained separately, outside
+this repository.
 
 ## How the image is built
 
@@ -38,12 +36,6 @@ invocation, same runtime env-var contract). `entrypoint.sh` and
 them with docker-zulip `main` (12.x) — the 12.x entrypoint renames/removes the
 `DB_*` and HTTPS env vars this image accepts and hard-fails on them.
 
-### ECR repository and accounts
-
-- Repository: `drc/pas/zulip`
-- LE (dev): `333509430799.dkr.ecr.us-east-2.amazonaws.com`
-- Prod: `911870898277.dkr.ecr.us-east-2.amazonaws.com`
-
 ## Prerequisites
 
 - Docker with BuildKit / `buildx`.
@@ -58,47 +50,29 @@ them with docker-zulip `main` (12.x) — the 12.x entrypoint renames/removes the
 From the `docker/` directory (the Makefile points buildx at the repo root):
 
 ```sh
-make build                       # -> drc/pas/zulip:9.2-drc (loaded locally)
+make build                       # -> drc/zulip:9.2-drc (loaded locally)
 make build ZULIP_VERSION=9.2-drc # explicit version label
 make run/interactive             # shell into the built image
 ```
 
-## CI: build (`container_build`)
+## CI/CD
 
-Wire `docker/container_build` as a multibranch/pipeline job. Per architecture,
-on a native node, it runs:
-
-```sh
-make ci/build ECR=<le-ecr> ZULIP_VERSION=9.2-drc ARCH=amd64 SHORT_SHA=<sha>
-```
-
-which pushes `drc/pas/zulip:9.2-drc-amd64-<sha>` (and the arm64 equivalent)
-to the LE ECR with an SBOM. The **Push Manifest** stage then creates the
-multi-arch manifests via `docker buildx imagetools create`, under the tags:
+The per-architecture build, multi-arch manifest assembly, and LE→prod
+promotion are driven by pipelines maintained outside this repository. They
+invoke the same `make ci/build` target documented above against a checkout of
+this branch; the image tag scheme they publish is:
 
 - `<git-sha>`
 - `<short-sha>`
 - `9.2-drc-<short-sha>`
 - `latest`
 
-Each arch runs on a native node (`armProcessor` for arm64) because Zulip's
-`provision` compiles native dependencies — cross-emulation is not viable.
-
-## CI: promote (`container_promote`)
-
-Wire `docker/container_promote` as a pipeline job. It runs on the
-`container-runtime` agent (ships `crane`) and:
-
-1. Presents an `IMAGE_TAG` dropdown sourced from the shared
-   `ecr-all-repositories` config file (kept current by the ecr-notification
-   sync jobs). If a needed tag is missing, run `Jenkinsfile-sync` first.
-2. `crane copy`s that exact multi-arch manifest from the LE ECR to the prod
-   ECR — no rebuild, so prod runs the byte-identical image that was tested in
-   LE.
+Each architecture builds on a native node because Zulip's `provision` compiles
+native dependencies — cross-emulation is not viable.
 
 ## Use with the Helm chart
 
-Point the chart's Zulip image at `drc/pas/zulip` in the target account/region.
+Point the chart's Zulip image at wherever you pushed this image.
 In your `values-local.yaml` (from the chart's `values-local.yaml.example`),
 override the image repository and tag, then:
 
@@ -117,8 +91,6 @@ subcharts; any can be disabled to use external services. See the
 |---|---|
 | `Dockerfile` | Two-stage build from the local checkout. |
 | `Makefile` | `build` (local) and `ci/build` (buildx `--push --sbom`, per-arch). |
-| `container_build` | Jenkinsfile: amd64/arm64 matrix -> LE ECR + multi-arch manifest. |
-| `container_promote` | Jenkinsfile: `crane copy` an LE tag -> prod ECR. |
 | `entrypoint.sh` | Container entrypoint (vendored from docker-zulip `11.x`). |
 | `certbot-deploy-hook` | Certbot renewal hook (vendored from docker-zulip `11.x`). |
 | `../.dockerignore` | Trims the build context but **keeps `.git`**. |
