@@ -16,7 +16,10 @@
 # at `..` with `--file Dockerfile`.
 
 # Variables
-IMAGE_NAME := drc/zulip
+# IMAGE_NAME is the repository path (without registry host). CI overrides it to
+# the real ECR repository path via `make ci/build IMAGE_NAME=...`; the default
+# below is only used for local `make build`.
+IMAGE_NAME ?= drc/zulip
 DOCKERFILE := Dockerfile
 DOCKER_BUILD_CONTEXT := ..
 
