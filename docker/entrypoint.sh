@@ -73,6 +73,10 @@ LINK_SETTINGS_TO_DATA="$(normalize_bool LINK_SETTINGS_TO_DATA)"
 # Auto backup settings
 AUTO_BACKUP_ENABLED="$(normalize_bool AUTO_BACKUP_ENABLED True)"
 AUTO_BACKUP_INTERVAL="${AUTO_BACKUP_INTERVAL:-30 3 * * *}"
+# SAML IdP certificate: base64-encoded PEM, written to
+# /etc/zulip/saml/idps/<SAML_IDP_NAME>.crt, which Zulip reads automatically.
+SAML_IDP_CERT_BASE64="${SAML_IDP_CERT_BASE64:-}"
+SAML_IDP_NAME="${SAML_IDP_NAME:-okta}"
 
 ## Constants
 SETTINGS_PY="/etc/zulip/settings.py"
@@ -283,6 +287,17 @@ databaseConfiguration() {
     echo "Database configuration succeeded."
 }
 
+samlIdpCertConfiguration() {
+    if [ -z "$SAML_IDP_CERT_BASE64" ]; then
+        return 0
+    fi
+    echo "Writing SAML IdP certificate for \"$SAML_IDP_NAME\" ..."
+    mkdir -p /etc/zulip/saml/idps
+    echo "$SAML_IDP_CERT_BASE64" | base64 --decode >"/etc/zulip/saml/idps/$SAML_IDP_NAME.crt"
+    chown -R zulip:zulip /etc/zulip/saml
+    echo "SAML IdP certificate written."
+}
+
 authenticationBackends() {
     echo "Activating authentication backends ..."
     local FIRST=true
@@ -374,6 +389,7 @@ initialConfiguration() {
         cp -a /home/zulip/deployments/current/zproject/prod_settings_template.py "$SETTINGS_PY"
         databaseConfiguration
         secretsConfiguration
+        samlIdpCertConfiguration
         authenticationBackends
         zulipConfiguration
     else
