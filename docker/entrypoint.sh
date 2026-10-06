@@ -519,11 +519,46 @@ bootstrappingEnvironment() {
     runCertbotAsNeeded &
     echo "=== End Bootstrap Phase ==="
 }
+
+# === startLocalServices ===
+# RabbitMQ, Redis and memcached run inside this container. Each is only
+# started when its host setting still points at localhost, so any of them can
+# still be moved to an external service via SETTING_*_HOST/LOCATION.
+startLocalServices() {
+    echo "=== Begin Local Services Phase ==="
+    if [ "$SETTING_MEMCACHED_LOCATION" = "127.0.0.1:11211" ]; then
+        echo "Starting memcached ..."
+        # Zulip defaults to SASL when memcached_password exists; the local
+        # instance only listens on loopback, so run it without SASL.
+        setConfigurationValue "MEMCACHED_USERNAME" "None" "array"
+        memcached -d -u memcache -l 127.0.0.1 -p 11211 -m 128
+    fi
+    if [ "$SETTING_REDIS_HOST" = "127.0.0.1" ]; then
+        echo "Starting redis ..."
+        local redis_password
+        redis_password="$(crudini --get /etc/zulip/zulip-secrets.conf secrets redis_password)"
+        install -o redis -g redis -m 0640 /dev/null /etc/redis/zulip-redis.conf
+        printf 'bind 127.0.0.1\nport %s\nsave ""\nrequirepass %s\ndaemonize yes\ndir /var/lib/redis\nlogfile /var/log/redis/redis-server.log\n' \
+            "$SETTING_REDIS_PORT" "'$redis_password'" >/etc/redis/zulip-redis.conf
+        mkdir -p /run/redis
+        chown redis:redis /run/redis
+        su redis -s /bin/sh -c "redis-server /etc/redis/zulip-redis.conf"
+    fi
+    if [ "$SETTING_RABBITMQ_HOST" = "127.0.0.1" ]; then
+        echo "Starting rabbitmq ..."
+        # Must run before RabbitMQ starts so the cookie is replaced while it is down.
+        /home/zulip/deployments/current/scripts/setup/generate-rabbitmq-cookie
+        su rabbitmq -s /bin/sh -c "rabbitmq-server -detached"
+        /home/zulip/deployments/current/scripts/setup/configure-rabbitmq
+    fi
+    echo "=== End Local Services Phase ==="
+}
 # END appRun functions
 
 # BEGIN app functions
 appRun() {
     initialConfiguration
+    startLocalServices
     bootstrappingEnvironment
     echo "=== Begin Run Phase ==="
     echo "Starting Zulip using supervisor with \"/etc/supervisor/supervisord.conf\" config ..."
@@ -535,6 +570,7 @@ appRun() {
 appInit() {
     echo "=== Running initial setup ==="
     initialConfiguration
+    startLocalServices
     bootstrappingEnvironment
 }
 

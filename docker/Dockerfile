@@ -95,6 +95,20 @@ LABEL org.opencontainers.image.licenses="Apache-2.0"
 COPY --from=build /home/zulip/zulip /root/zulip
 WORKDIR /root
 
+# RabbitMQ, Redis and memcached run INSIDE this container (started by
+# entrypoint.sh), so install them here. policy-rc.d stops the package
+# postinst scripts from trying to start the daemons during the build.
+# hadolint ignore=DL3008
+RUN printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d && chmod +x /usr/sbin/policy-rc.d && \
+    apt-get -q update && \
+    DEBIAN_FRONTEND=noninteractive \
+    apt-get -q install --no-install-recommends -y \
+        erlang-base rabbitmq-server redis-server memcached && \
+    mkdir -p /etc/rabbitmq && \
+    cp /root/zulip/puppet/zulip/files/rabbitmq/rabbitmq.config /root/zulip/puppet/zulip/files/rabbitmq/rabbitmq-env.conf /etc/rabbitmq/ && \
+    chown -R rabbitmq:rabbitmq /etc/rabbitmq && \
+    rm -f /usr/sbin/policy-rc.d
+
 RUN \
     dpkg-divert --add --rename /etc/init.d/nginx && \
     ln -s /bin/true /etc/init.d/nginx && \
