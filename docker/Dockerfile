@@ -1,103 +1,73 @@
 # syntax=docker/dockerfile:1
-#
-# Build a production Zulip container image directly from THIS repository's
-# local checkout. The source is bundled straight into the image and installed
-# in place -- no release tarball, no git clone, no Artifactory round-trip.
-#
-# scripts/lib/install derives ZULIP_PATH from its own location and installs
-# whatever tree it lives in. When installing from a checkout (no prebuilt
-# prod-static / zulip-git-version present) it builds the static assets and Git
-# version itself via tools/update-prod-static + tools/cache-zulip-git-version.
-# That from-checkout path needs a real .git with an upstream, so the build
-# context includes .git (kept by .dockerignore) and the changes must be
-# committed.
-#
-# Targets Zulip 9.2 (`drc_9.2.x`), aligned with the zulip/docker-zulip `11.x`
-# packaging (same `zulip::profile::docker` puppet class, same runtime
-# entrypoint contract). Do NOT swap in docker-zulip `main`'s (12.x) helpers;
-# that entrypoint hard-fails on the env-var names this image expects.
 
-# ---------------------------------------------------------------------------
-# Stage 0: common base
-# ---------------------------------------------------------------------------
-FROM ubuntu:24.04 AS base
+# This upstream 9.2-0 image is amd64-only. Reuse its installed Python
+# environment and services; only rebuild the customized application assets.
+ARG ZULIP_BASE_IMAGE=zulip/docker-zulip:9.2-0@sha256:319c9f1c5f0fd73f1e65ac4e86fca2853bc933105c58d0af98224d9c7a2709dc
+# The build argument above pins both the version and digest.
+# hadolint ignore=DL3006
+FROM ${ZULIP_BASE_IMAGE} AS base
 
-ENV LANG="C.UTF-8"
-ARG UBUNTU_MIRROR
-
-# hadolint ignore=DL3005,DL3008,DL3009
-RUN { [ ! "$UBUNTU_MIRROR" ] || sed -i "s|http://\(\w*\.\)*archive\.ubuntu\.com/ubuntu/\? |$UBUNTU_MIRROR |" /etc/apt/sources.list; } && \
-    apt-get -q update && \
-    apt-get -q dist-upgrade -y && \
-    DEBIAN_FRONTEND=noninteractive \
-    apt-get -q install --no-install-recommends -y \
-        ca-certificates git locales python3 sudo tzdata && \
-    touch /var/mail/ubuntu && chown ubuntu /var/mail/ubuntu && userdel -r ubuntu && \
-    useradd -d /home/zulip -m zulip -u 1000
-
-# ---------------------------------------------------------------------------
-# Stage 1: build the Zulip source (provision + static assets) in place
-# ---------------------------------------------------------------------------
 FROM base AS build
+USER root
+ENV COREPACK_DEFAULT_TO_LATEST=0
 
-RUN echo 'zulip ALL=(ALL:ALL) NOPASSWD:ALL' >> /etc/sudoers
-USER zulip
-WORKDIR /home/zulip/zulip
+# gettext is needed by compilemessages, but not by the runtime image.
+# hadolint ignore=DL3008
+RUN apt-get -q update && \
+    apt-get -q install --no-install-recommends -y gettext && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -f /etc/zulip/zulip.conf && \
+    mkdir -p /opt/zulip /opt/zulip-runtime && \
+    chown zulip:zulip /opt/zulip /opt/zulip-runtime
 
-# Bundle the repository (including .git) straight into the image. The build
-# context is the repo root (see docker/Makefile / docker/README.md), so this
-# is the committed source with no network clone. .dockerignore trims heavy,
-# non-source paths (var/, .venv/, node_modules, ...) but keeps .git and the
-# web/, tools/, static/ trees needed to build the static assets from source.
+USER 1000
+WORKDIR /opt/zulip
+
+# Keep dependency installation cached when application source changes.
+COPY --chown=zulip:zulip package.json pnpm-lock.yaml .npmrc ./
+COPY --chown=zulip:zulip patches/ patches/
+RUN /usr/local/bin/corepack pnpm install --frozen-lockfile --prod
+
 COPY --chown=zulip:zulip . .
 
-# Provision the build environment and build the production static assets from
-# the checkout, so the runtime install doesn't have to (and so the heavy build
-# toolchain stays out of the final image).
-#
-# provision creates the venv at /srv/zulip-py3-venv. The DRC repo runs these
-# tools inside that venv (see tools/ci/activate-venv + tools/build-release-tarball),
-# NOT via `uv` -- uv is not on PATH in this environment. update-prod-static also
-# needs DEBUG=False and a dev-secrets stub to run, exactly as build-release-tarball
-# sets up before calling it. The [secrets] append is guarded because, unlike
-# build-release-tarball (which runs on a `git archive` export with no
-# dev-secrets.conf), this build COPYs the whole working tree in -- so the
-# committed zproject/dev-secrets.conf already has a [secrets] section, and
-# appending a second one makes configparser raise DuplicateSectionError.
-RUN SKIP_VENV_SHELL_WARNING=1 ./tools/provision --build-release-tarball-only && \
+# Refuse to silently reuse an incompatible production Python environment.
+RUN cmp requirements/prod.txt /home/zulip/deployments/current/requirements/prod.txt && \
+    cmp requirements/common.in /home/zulip/deployments/current/requirements/common.in && \
+    cmp requirements/prod.in /home/zulip/deployments/current/requirements/prod.in && \
+    ln -s /home/zulip/deployments/current/zulip-py3-venv zulip-py3-venv && \
     printf '\nDEBUG = False\n' >> zproject/prod_settings_template.py && \
-    if ! grep -q '^\[secrets\]' zproject/dev-secrets.conf; then \
-        printf '\n[secrets]\nlocal_database_password = ""\nsecret_key = "not_used_here"\nshared_secret = "not_used_here"\navatar_salt = "not_used_here"\nrabbitmq_password = "not_used_here"\ninitial_password_salt = "not_used_here"\n' >> zproject/dev-secrets.conf; \
-    fi && \
-    . /srv/zulip-py3-venv/bin/activate && \
+    printf '[secrets]\nlocal_database_password = not_used_here\nsecret_key = not_used_here\nshared_secret = not_used_here\navatar_salt = not_used_here\nrabbitmq_password = not_used_here\ninitial_password_salt = not_used_here\n' > zproject/dev-secrets.conf && \
+    mkdir -p var/log && \
+    . ./zulip-py3-venv/bin/activate && \
+    OVERRIDE_MERGE_BASE=9.2 ./tools/cache-zulip-git-version && \
     ./tools/update-prod-static && \
-    ./tools/cache-zulip-git-version && \
-    rm -rf node_modules
+    git rev-parse HEAD > build_id && \
+    printf '9.2\n' > version
 
-# ---------------------------------------------------------------------------
-# Stage 2: production runtime image
-# ---------------------------------------------------------------------------
-FROM base
+# Export runtime files without shipping Git history or build dependencies.
+RUN sed 's|/$||' tools/release-tarball-exclude.txt > /tmp/runtime-excludes && \
+    tar --exclude-from=/tmp/runtime-excludes \
+        --exclude=.git --exclude=node_modules --exclude=var \
+        --exclude=docker --exclude=drc_notes --exclude=.agent \
+        --exclude=zproject/dev-secrets.conf \
+        --exclude='*/__pycache__' --exclude='*.pyc' \
+        -cf /tmp/zulip-runtime.tar . && \
+    tar -xf /tmp/zulip-runtime.tar -C /opt/zulip-runtime && \
+    rm -f /tmp/zulip-runtime.tar /tmp/runtime-excludes
 
-ENV DATA_DIR="/data"
+FROM base AS runtime
+# The upstream entrypoint needs root to configure and start services.
+# hadolint ignore=DL3002
+USER root
 
 ARG ZULIP_VERSION=9.2-drc
-LABEL org.opencontainers.image.title="DRC Zulip Server"
+LABEL org.opencontainers.image.title="Zulip Server"
 LABEL org.opencontainers.image.version="$ZULIP_VERSION"
 LABEL org.opencontainers.image.source="https://github.com/DataRecognitionCorporation/drc_zulip"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
 
-# Bring the built source tree (with prod-static + zulip-git-version already
-# generated) in from the build stage and install it in place with the Docker
-# puppet profile. Because the static assets and git-version file are present,
-# the installer skips its from-source asset build. Secrets/settings are
-# stripped so the entrypoint (re)generates them per-container at runtime.
-COPY --from=build /home/zulip/zulip /root/zulip
-WORKDIR /root
-
-# RabbitMQ, Redis and memcached run INSIDE this container (started by
-# entrypoint.sh), so install them here. policy-rc.d stops the package
-# postinst scripts from trying to start the daemons during the build.
+# These services are started by the vendored 11.x entrypoint, but are not
+# installed in the upstream image. Keep this layer independent of source.
 # hadolint ignore=DL3008
 RUN printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d && chmod +x /usr/sbin/policy-rc.d && \
     apt-get -q update && \
@@ -105,27 +75,24 @@ RUN printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d && chmod +x /usr/sbin
     apt-get -q install --no-install-recommends -y \
         erlang-base rabbitmq-server redis-server memcached && \
     mkdir -p /etc/rabbitmq && \
-    cp /root/zulip/puppet/zulip/files/rabbitmq/rabbitmq.config /root/zulip/puppet/zulip/files/rabbitmq/rabbitmq-env.conf /etc/rabbitmq/ && \
+    cp /home/zulip/deployments/current/puppet/zulip/files/rabbitmq/rabbitmq.config \
+        /home/zulip/deployments/current/puppet/zulip/files/rabbitmq/rabbitmq-env.conf /etc/rabbitmq/ && \
     chown -R rabbitmq:rabbitmq /etc/rabbitmq && \
-    rm -f /usr/sbin/policy-rc.d
+    rm -f /usr/sbin/policy-rc.d && \
+    apt-get -qq clean && rm -rf /var/lib/apt/lists/*
 
-RUN \
-    dpkg-divert --add --rename /etc/init.d/nginx && \
-    ln -s /bin/true /etc/init.d/nginx && \
-    mkdir -p "$DATA_DIR" && \
-    /root/zulip/scripts/setup/install --hostname="$(hostname)" --email="docker-zulip" \
-        --puppet-classes="zulip::profile::docker" --postgresql-version=14 && \
-    rm -f /etc/zulip/zulip-secrets.conf /etc/zulip/settings.py && \
-    apt-get -qq autoremove --purge -y && \
-    apt-get -qq clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+COPY --from=build --chown=zulip:zulip /opt/zulip-runtime/ /home/zulip/deployments/custom/
 
-# These helper files live under docker/ in the repo, and the build context is
-# the repo root, so reference them with the docker/ prefix.
-COPY docker/entrypoint.sh /sbin/entrypoint.sh
-COPY docker/certbot-deploy-hook /sbin/certbot-deploy-hook
+RUN ln -sfn /home/zulip/deployments/custom /home/zulip/deployments/current && \
+    ln -sfn /home/zulip/deployments/custom /home/zulip/deployments/next && \
+    ln -sfn /etc/zulip/settings.py /home/zulip/deployments/custom/zproject/prod_settings.py && \
+    rm -rf /home/zulip/prod-static && \
+    cp -a /home/zulip/deployments/custom/prod-static/serve /home/zulip/prod-static
 
-VOLUME ["$DATA_DIR"]
+COPY --chmod=755 docker/entrypoint.sh /sbin/entrypoint.sh
+COPY --chmod=755 docker/certbot-deploy-hook /sbin/certbot-deploy-hook
+
+WORKDIR /home/zulip/deployments/current
 EXPOSE 25 80 443
 ENTRYPOINT ["/sbin/entrypoint.sh"]
 CMD ["app:run"]

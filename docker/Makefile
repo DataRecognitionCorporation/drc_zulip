@@ -1,19 +1,10 @@
 # Build targets for the DRC Zulip container image.
 #
 # `build`    - local single-arch image for iterating/testing.
-# `ci/build` - per-architecture build run by CI: a buildx build that pushes a
-#              per-arch, SHA-pinned tag to ECR with an SBOM attached. CI then
-#              stitches the per-arch tags into the multi-arch manifests.
+# `ci/build` - amd64 build run by CI, pushing a SHA-pinned tag and SBOM.
 #
-# The Zulip image build is fully self-contained (the Dockerfile runs provision
-# + build-release-tarball + install internally from the copied-in working
-# tree), so there is no Artifactory host to pin -- the only build-arg is
-# ZULIP_VERSION.
-#
-# NOTE: the build context is the REPOSITORY ROOT (where .git and tools/ live),
-# not docker/. build-release-tarball archives HEAD and needs .git, and
-# .dockerignore (at the repo root) keeps it. All targets therefore point buildx
-# at `..` with `--file Dockerfile`.
+# Reuse the upstream runtime and rebuild assets from the repository-root
+# context. .git is needed to stamp the customized application version.
 
 # Variables
 # IMAGE_NAME is the repository path (without registry host). CI overrides it to
@@ -25,12 +16,21 @@ DOCKER_BUILD_CONTEXT := ..
 
 # Version label baked into the image (ARG ZULIP_VERSION). Matches version.py.
 ZULIP_VERSION ?= 9.2-drc
+ZULIP_BASE_IMAGE ?= zulip/docker-zulip:9.2-0@sha256:319c9f1c5f0fd73f1e65ac4e86fca2853bc933105c58d0af98224d9c7a2709dc
+CACHE_REF ?=
+comma := ,
 
 ECR ?= null
-ARCH ?= null       # amd64 or arm64
+# The upstream 9.2-0 image is amd64-only.
+ARCH ?= amd64
 SHORT_SHA ?= 0
 
-.PHONY: build ci/build run/interactive clean
+.PHONY: build ci/build lint run/interactive clean
+
+# Run Hadolint and fail on warnings or higher.
+lint:
+	docker run --rm -i -v "$(CURDIR):/work" -w /work hadolint/hadolint:v2.12.0 \
+		hadolint --config .hadolint.yaml --failure-threshold warning $(DOCKERFILE)
 
 # Local single-arch build for testing (loads into the local docker images).
 build:
@@ -38,6 +38,8 @@ build:
 		--file $(DOCKERFILE) \
 		--progress=plain \
 		--build-arg ZULIP_VERSION=$(ZULIP_VERSION) \
+		--build-arg ZULIP_BASE_IMAGE=$(ZULIP_BASE_IMAGE) \
+		--platform linux/amd64 \
 		--tag $(IMAGE_NAME):$(ZULIP_VERSION) \
 		--load \
 		$(DOCKER_BUILD_CONTEXT)
@@ -45,10 +47,14 @@ build:
 # CI per-arch build+push. Invoked once per ARCH on a native node, producing a
 # tag of the form <version>-<arch>-<short_sha> that the manifest stage combines.
 ci/build:
+	@test "$(ARCH)" = amd64 || { echo "The upstream 9.2-0 base supports only amd64." >&2; exit 1; }
 	DOCKER_BUILDKIT=1 docker buildx build \
 		--file $(DOCKERFILE) \
 		--progress=plain \
 		--build-arg ZULIP_VERSION=$(ZULIP_VERSION) \
+		--build-arg ZULIP_BASE_IMAGE=$(ZULIP_BASE_IMAGE) \
+		$(if $(CACHE_REF),--cache-from type=registry$(comma)ref=$(CACHE_REF)) \
+		$(if $(CACHE_REF),--cache-to type=registry$(comma)ref=$(CACHE_REF)$(comma)mode=max$(comma)image-manifest=true$(comma)oci-mediatypes=true) \
 		--push \
 		--sbom=true \
 		--platform linux/$(ARCH) \

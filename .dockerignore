@@ -22,6 +22,9 @@ node_modules/
 # Local runtime state, logs, uploads, and DB artifacts
 var/
 dump.rdb
+zproject/dev-secrets.conf
+zproject/custom_dev_settings.py
+drc_notes/
 
 # Local dev VM / tooling state
 .vagrant/
