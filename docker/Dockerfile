@@ -34,7 +34,7 @@ COPY --chown=zulip:zulip . .
 RUN cmp requirements/prod.txt /home/zulip/deployments/current/requirements/prod.txt && \
     cmp requirements/common.in /home/zulip/deployments/current/requirements/common.in && \
     cmp requirements/prod.in /home/zulip/deployments/current/requirements/prod.in && \
-    ln -s /home/zulip/deployments/current/zulip-py3-venv zulip-py3-venv && \
+    ln -s "$(readlink -f /home/zulip/deployments/current/zulip-py3-venv)" zulip-py3-venv && \
     printf '\nDEBUG = False\n' >> zproject/prod_settings_template.py && \
     printf '[secrets]\nlocal_database_password = not_used_here\nsecret_key = not_used_here\nshared_secret = not_used_here\navatar_salt = not_used_here\nrabbitmq_password = not_used_here\ninitial_password_salt = not_used_here\n' > zproject/dev-secrets.conf && \
     mkdir -p var/log && \
