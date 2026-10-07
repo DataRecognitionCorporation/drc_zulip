@@ -57,11 +57,14 @@ RUN cmp /tmp/builder-inputs.sha256 /home/zulip/base-inputs.sha256 && \
     ln -s "$(readlink -f /home/zulip/deployments/current/zulip-py3-venv)" zulip-py3-venv && \
     ln -s zulip-py3-venv zulip-current-venv && \
     ln -sfn /etc/zulip/settings.py zproject/prod_settings.py && \
-    ln -sfn /home/zulip/deployments/custom /home/zulip/deployments/current && \
-    ln -sfn /home/zulip/deployments/custom /home/zulip/deployments/next && \
     rm -rf /home/zulip/prod-static && \
     cp -a prod-static/serve /home/zulip/prod-static && \
-    test -f zulip-py3-venv/bin/activate_this.py
+    test -f zulip-py3-venv/bin/activate_this.py && \
+    deploy_path="$(./scripts/lib/zulip_tools.py make_deploy_path)" && \
+    test ! -e "$deploy_path" && \
+    mv /home/zulip/deployments/custom "$deploy_path" && \
+    ln -sfn "$deploy_path" /home/zulip/deployments/current && \
+    ln -sfn "$deploy_path" /home/zulip/deployments/next
 
 COPY --chmod=755 docker/entrypoint.sh /sbin/entrypoint.sh
 COPY --chmod=755 docker/certbot-deploy-hook /sbin/certbot-deploy-hook
