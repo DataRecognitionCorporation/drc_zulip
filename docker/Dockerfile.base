@@ -1,0 +1,69 @@
+# syntax=docker/dockerfile:1
+FROM ubuntu:24.04 AS common
+ENV LANG="C.UTF-8"
+
+# hadolint ignore=DL3005,DL3008
+RUN apt-get -q update && apt-get -q dist-upgrade -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get -q install --no-install-recommends -y \
+        ca-certificates git locales python3 sudo tzdata && \
+    touch /var/mail/ubuntu && chown ubuntu /var/mail/ubuntu && userdel -r ubuntu && \
+    useradd -d /home/zulip -m zulip -u 1000 && \
+    rm -rf /var/lib/apt/lists/*
+
+FROM common AS builder
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ENV COREPACK_DEFAULT_TO_LATEST=0
+RUN echo 'zulip ALL=(ALL:ALL) NOPASSWD:ALL' >> /etc/sudoers
+USER 1000
+WORKDIR /home/zulip/zulip
+COPY --chown=zulip:zulip . .
+RUN sha256sum requirements/*.in requirements/*.txt package.json pnpm-lock.yaml \
+        .npmrc patches/* scripts/lib/install-node scripts/lib/install \
+        scripts/lib/create-production-venv scripts/lib/setup_venv.py \
+        scripts/setup/install tools/provision > /home/zulip/base-inputs.sha256 && \
+    (find puppet -type f -print0 | sort -z | xargs -0 sha256sum >> /home/zulip/base-inputs.sha256) && \
+    SKIP_VENV_SHELL_WARNING=1 ./tools/provision --build-release-tarball-only && \
+    /usr/local/bin/corepack pnpm install --frozen-lockfile --prod
+
+FROM builder AS assets
+RUN printf '\nDEBUG = False\n' >> zproject/prod_settings_template.py && \
+    printf '[secrets]\nlocal_database_password = not_used_here\nsecret_key = not_used_here\nshared_secret = not_used_here\navatar_salt = not_used_here\nrabbitmq_password = not_used_here\ninitial_password_salt = not_used_here\n' > zproject/dev-secrets.conf && \
+    . /srv/zulip-py3-venv/bin/activate && \
+    ./tools/update-prod-static && \
+    OVERRIDE_MERGE_BASE=9.2 ./tools/cache-zulip-git-version && \
+    rm -rf node_modules
+
+FROM common AS runtime
+ENV DATA_DIR="/data"
+COPY --from=assets /home/zulip/zulip /root/zulip
+COPY --from=builder /home/zulip/base-inputs.sha256 /home/zulip/base-inputs.sha256
+WORKDIR /root
+
+# hadolint ignore=DL3008
+RUN printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d && chmod +x /usr/sbin/policy-rc.d && \
+    apt-get -q update && \
+    DEBIAN_FRONTEND=noninteractive apt-get -q install --no-install-recommends -y \
+        erlang-base rabbitmq-server redis-server memcached && \
+    mkdir -p /etc/rabbitmq && \
+    cp /root/zulip/puppet/zulip/files/rabbitmq/rabbitmq.config \
+        /root/zulip/puppet/zulip/files/rabbitmq/rabbitmq-env.conf /etc/rabbitmq/ && \
+    chown -R rabbitmq:rabbitmq /etc/rabbitmq && \
+    rm -f /usr/sbin/policy-rc.d && rm -rf /var/lib/apt/lists/*
+
+RUN dpkg-divert --add --rename /etc/init.d/nginx && \
+    ln -s /bin/true /etc/init.d/nginx && \
+    mkdir -p "$DATA_DIR" && \
+    /root/zulip/scripts/setup/install --hostname="$(hostname)" --email="docker-zulip" \
+        --puppet-classes="zulip::profile::docker" --postgresql-version=14 && \
+    rm -f /etc/zulip/zulip-secrets.conf /etc/zulip/settings.py && \
+    apt-get -qq autoremove --purge -y && apt-get -qq clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+    rm -rf /home/zulip/deployments/current/.git && \
+    rm -f /home/zulip/deployments/current/zproject/dev-secrets.conf
+
+COPY --chmod=755 docker/entrypoint.sh /sbin/entrypoint.sh
+COPY --chmod=755 docker/certbot-deploy-hook /sbin/certbot-deploy-hook
+VOLUME ["$DATA_DIR"]
+EXPOSE 25 80 443
+ENTRYPOINT ["/sbin/entrypoint.sh"]
+CMD ["app:run"]
