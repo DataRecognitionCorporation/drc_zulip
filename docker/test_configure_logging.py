@@ -1,8 +1,13 @@
 import configparser
 import importlib.util
+import json
+import logging
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+from zerver.lib.container_logging import ContainerJSONFormatter
 
 spec = importlib.util.spec_from_file_location(
     "configure_logging", Path(__file__).with_name("configure-logging.py")
@@ -44,12 +49,33 @@ class ContainerLoggingTest(unittest.TestCase):
             child = root / "site.conf"
             child.write_text("access_log /var/log/nginx/access.log custom;\naccess_log off;\n")
             main = root / "nginx.conf"
-            main.write_text(f"include {child};\nerror_log /var/log/nginx/error.log warn;\n")
+            main.write_text(f"http {{\ninclude {child};\nerror_log /var/log/nginx/error.log warn;\n}}\n")
             for _ in range(2):
                 configure_logging.configure_nginx(main, set())
             self.assertIn("error_log /dev/stderr warn;", main.read_text())
-            self.assertIn("access_log /dev/stdout custom;", child.read_text())
+            self.assertIn("access_log /dev/stdout zulip_json;", child.read_text())
             self.assertIn("access_log off;", child.read_text())
+            self.assertEqual(main.read_text().count("log_format zulip_json "), 1)
+            self.assertNotIn("$request_uri", main.read_text())
+            self.assertNotIn("$args", main.read_text())
+
+    def test_json_exception_is_one_line_and_does_not_include_request(self) -> None:
+        try:
+            raise ValueError("failed\nwith details")
+        except ValueError:
+            record = logging.LogRecord(
+                "zulip.test", logging.ERROR, __file__, 1, "Failure: %s", ("example",), sys.exc_info()
+            )
+        record.request = "private request payload"
+        output = ContainerJSONFormatter().format(record)
+        event = json.loads(output)
+        self.assertNotIn("\n", output)
+        self.assertEqual(event["message"], "Failure: example")
+        self.assertEqual(event["error.type"], "ValueError")
+        self.assertIn("ValueError", event["error.stack_trace"])
+        self.assertNotIn("private request payload", output)
+        self.assertEqual(event["log.level"], "error")
+        self.assertTrue(event["@timestamp"].endswith("Z"))
 
 
 if __name__ == "__main__":

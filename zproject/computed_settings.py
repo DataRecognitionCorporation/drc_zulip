@@ -1033,6 +1033,10 @@ LOGGING: dict[str, Any] = {
 }
 
 if os.environ.get("ZULIP_CONTAINER_LOGGING") == "1":
+    LOGGING["formatters"]["container_json"] = {
+        "()": "zerver.lib.container_logging.ContainerJSONFormatter",
+    }
+    LOGGING["handlers"]["console"]["formatter"] = "container_json"
     LOGGING["handlers"]["console"]["stream"] = "ext://sys.stdout"
     operational_handlers = {
         "file",

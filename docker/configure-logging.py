@@ -4,6 +4,17 @@ import glob
 import re
 from pathlib import Path
 
+NGINX_JSON_FORMAT = (
+    'log_format zulip_json escape=json '
+    '\'{"@timestamp":"$time_iso8601","ecs.version":"8.11.0",'
+    '"service.name":"zulip","event.dataset":"zulip.access",'
+    '"log.level":"info","message":"$request_method $uri $status",'
+    '"http.request.method":"$request_method","url.path":"$uri",'
+    '"http.response.status_code":$status,'
+    '"http.response.body.bytes":$body_bytes_sent,'
+    '"zulip.request.duration_seconds":$request_time}\';'
+)
+
 
 def configure_supervisor(path: Path, visited: set[Path]) -> None:
     path = path.resolve()
@@ -40,10 +51,23 @@ def configure_nginx(path: Path, visited: set[Path]) -> None:
         return
     visited.add(path)
     config = path.read_text()
+    if re.search(r"^\s*http\s*\{", config, re.MULTILINE) and "log_format zulip_json " not in config:
+        config = re.sub(
+            r"(^\s*http\s*\{)",
+            lambda match: f"{match[0]}\n    {NGINX_JSON_FORMAT}",
+            config,
+            count=1,
+            flags=re.MULTILINE,
+        )
     for pattern in re.findall(r"^\s*include\s+([^;]+);", config, re.MULTILINE):
         for included in glob.glob(str(Path("/etc/nginx") / pattern.strip())):
             configure_nginx(Path(included), visited)
     config = re.sub(r"(\baccess_log\s+)/var/log/nginx/[^\s;]+", r"\1/dev/stdout", config)
+    config = re.sub(
+        r"\baccess_log\s+/dev/stdout(?:\s+[^;]+)?;",
+        "access_log /dev/stdout zulip_json;",
+        config,
+    )
     config = re.sub(r"(\berror_log\s+)/var/log/nginx/[^\s;]+", r"\1/dev/stderr", config)
     path.write_text(config)
 
