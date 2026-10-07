@@ -12,6 +12,8 @@ fi
 set -e
 set -u
 shopt -s extglob
+export ZULIP_CONTAINER_LOGGING=1
+export PYTHONUNBUFFERED=1
 
 normalize_bool() {
     # Returns either "True" or "False"
@@ -383,6 +385,7 @@ initialConfiguration() {
     prepareDirectories
     puppetConfiguration
     nginxConfiguration
+    python3 /sbin/configure-logging.py
     configureCerts
     if [ "$MANUAL_CONFIGURATION" = "False" ]; then
         # Start with the settings template file.

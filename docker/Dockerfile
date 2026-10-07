@@ -68,6 +68,7 @@ RUN cmp /tmp/builder-inputs.sha256 /home/zulip/base-inputs.sha256 && \
 
 COPY --chmod=755 docker/entrypoint.sh /sbin/entrypoint.sh
 COPY --chmod=755 docker/certbot-deploy-hook /sbin/certbot-deploy-hook
+COPY docker/configure-logging.py /sbin/configure-logging.py
 WORKDIR /home/zulip/deployments/current
 EXPOSE 25 80 443
 ENTRYPOINT ["/sbin/entrypoint.sh"]

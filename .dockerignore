@@ -39,3 +39,4 @@ drc_notes/
 docker/*
 !docker/entrypoint.sh
 !docker/certbot-deploy-hook
+!docker/configure-logging.py

@@ -63,6 +63,7 @@ RUN dpkg-divert --add --rename /etc/init.d/nginx && \
 
 COPY --chmod=755 docker/entrypoint.sh /sbin/entrypoint.sh
 COPY --chmod=755 docker/certbot-deploy-hook /sbin/certbot-deploy-hook
+COPY docker/configure-logging.py /sbin/configure-logging.py
 VOLUME ["$DATA_DIR"]
 EXPOSE 25 80 443
 ENTRYPOINT ["/sbin/entrypoint.sh"]
