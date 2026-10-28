@@ -1032,32 +1032,6 @@ LOGGING: dict[str, Any] = {
     },
 }
 
-if os.environ.get("ZULIP_CONTAINER_LOGGING") == "1":
-    LOGGING["formatters"]["container_json"] = {
-        "()": "zerver.lib.container_logging.ContainerJSONFormatter",
-    }
-    LOGGING["handlers"]["console"]["formatter"] = "container_json"
-    LOGGING["handlers"]["console"]["stream"] = "ext://sys.stdout"
-    operational_handlers = {
-        "file",
-        "errors_file",
-        "analytics_file",
-        "auth_file",
-        "ldap_file",
-        "scim_file",
-        "slow_queries_file",
-    }
-    for logger_config in LOGGING["loggers"].values():
-        if "handlers" in logger_config:
-            logger_config["handlers"] = list(
-                dict.fromkeys(
-                    "console" if handler in operational_handlers else handler
-                    for handler in logger_config["handlers"]
-                )
-            )
-    for handler in operational_handlers:
-        del LOGGING["handlers"][handler]
-
 if DEVELOPMENT:
     CONTRIBUTOR_DATA_FILE_PATH = os.path.join(DEPLOY_ROOT, "var/github-contributors.json")
 else:
