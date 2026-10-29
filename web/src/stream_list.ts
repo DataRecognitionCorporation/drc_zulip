@@ -345,6 +345,7 @@ export let stream_list_section_container_html = function (
         section_title: section.section_title,
         plus_icon_url: can_create_streams ? get_section_channel_plus_icon_url(section) : undefined,
         show_folder_action_icon: !page_params.is_spectator && section.folder_id !== null,
+        depth: section.depth,
     });
 };
 
@@ -392,7 +393,7 @@ function maybe_change_channel_folders_option_visibility(): void {
 // This must be called before `build_stream_list`, so that it has the correct
 // saved collapsed section state.
 export function update_collapsed_state_on_show_channel_folders_change(): void {
-    if (user_settings.web_left_sidebar_show_channel_folders) {
+    if (channel_folders.should_show_channel_folders()) {
         // No folders -> folders: If the normal streams (Channels / Other) section was
         // collapsed, collapse all folders. Otherwise, expand all folders.
         for (const folder_id of channel_folders.get_active_folder_ids()) {
@@ -461,10 +462,13 @@ export function build_stream_list(force_rerender: boolean): void {
         $("#stream_filters").append(
             $(stream_list_section_container_html(section, can_create_streams)),
         );
-        const is_empty =
-            section.default_visible_streams.length === 0 &&
-            section.muted_streams.length === 0 &&
-            section.inactive_streams.length === 0;
+        const section_has_own_streams =
+            section.default_visible_streams.length > 0 ||
+            section.muted_streams.length > 0 ||
+            section.inactive_streams.length > 0;
+        // A folder section with channels only in its descendant folders has no
+        // streams of its own but must stay visible as a collapsible header.
+        const is_empty = !section_has_own_streams && !section.subtree_has_streams;
         $(`#stream-list-${section.id}-container`).toggleClass("no-display", is_empty);
 
         for (const stream_id of section.default_visible_streams) {
@@ -506,9 +510,15 @@ export function build_stream_list(force_rerender: boolean): void {
         }
         // If a section appears empty, due to only having inactive or muted channels,
         // we collapse it, since there's nothing to easily see. But don't do this during
-        // search, since sections can enter that state temporarily.
+        // search, since sections can enter that state temporarily. A folder acting as
+        // a pure parent header (no own streams, but non-empty descendants) is skipped,
+        // since collapsing it would hide its child folders.
         if (!searching()) {
-            if (!is_empty && section.default_visible_streams.length === 0) {
+            if (
+                !is_empty &&
+                section_has_own_streams &&
+                section.default_visible_streams.length === 0
+            ) {
                 collapsed_sections.add(section.id);
                 sections_with_only_inactive_or_muted.add(section.id);
             } else {
@@ -622,6 +632,7 @@ function toggle_section_collapse($container: JQuery): void {
     } else {
         collapsed_sections.delete(section_id);
     }
+    update_descendant_folder_visibility();
     maybe_hide_topic_bracket(section_id);
     save_collapsed_sections_state();
 
@@ -630,6 +641,25 @@ function toggle_section_collapse($container: JQuery): void {
         !sections_showing_inactive_or_muted.has(section_id)
     ) {
         toggle_inactive_or_muted_channels($container);
+    }
+}
+
+// Collapsing a folder must hide its entire subtree, but each nested folder is
+// rendered as its own sibling container rather than physically inside its
+// parent. So a descendant folder's container is hidden (via
+// `collapsed-by-ancestor`) whenever any of its ancestor folders is collapsed.
+function update_descendant_folder_visibility(): void {
+    if (!channel_folders.should_show_channel_folders()) {
+        return;
+    }
+    for (const folder_id of channel_folders.get_all_folder_ids()) {
+        const has_collapsed_ancestor = channel_folders
+            .get_channel_folder_ancestor_ids(folder_id)
+            .some((ancestor_id) => collapsed_sections.has(ancestor_id.toString()));
+        $(`#stream-list-${folder_id}-container`).toggleClass(
+            "collapsed-by-ancestor",
+            has_collapsed_ancestor,
+        );
     }
 }
 
@@ -681,6 +711,9 @@ export let set_sections_states = function (): void {
                 .toggleClass("rotate-icon-down", false)
                 .toggleClass("rotate-icon-right", true);
         }
+        // Re-apply subtree hiding for folders under a collapsed ancestor, since
+        // build_stream_list() recreates these containers on every rebuild.
+        update_descendant_folder_visibility();
     }
     for (const section_id of sections_showing_inactive_or_muted) {
         $(`#stream-list-${section_id}-container`).toggleClass("showing-inactive-or-muted", true);
@@ -840,13 +873,38 @@ export function set_in_home_view(stream_id: number, in_home: boolean): void {
     }
 }
 
+// A channel whose name matches the DRC "A - B - C - D" convention (exactly four
+// non-empty " - " segments) is auto-organized into the A > B > C folder tree,
+// so its sidebar row shows only the final segment (e.g. "Supervisors") — the
+// folder path is already shown by the headers above it. Any other channel,
+// including one manually placed in a folder, shows its full name. The
+// underlying sub.name is never changed, so search, tooltips, and narrowing
+// still use the full name; the full name is also shown in the modal/zoomed row.
+const CHANNEL_FOLDER_NAME_SEPARATOR = " - ";
+const CHANNEL_FOLDER_NAME_SEGMENT_COUNT = 4;
+
+export function get_sidebar_display_name(sub: StreamSubscription, for_modal: boolean): string {
+    if (for_modal || !channel_folders.should_show_channel_folders() || sub.folder_id === null) {
+        return sub.name;
+    }
+    const segments = sub.name.split(CHANNEL_FOLDER_NAME_SEPARATOR);
+    const matches_folder_convention =
+        segments.length === CHANNEL_FOLDER_NAME_SEGMENT_COUNT &&
+        segments.every((segment) => segment.trim() !== "");
+    if (!matches_folder_convention) {
+        return sub.name;
+    }
+    return segments.at(-1)!;
+}
+
 function build_stream_sidebar_li(sub: StreamSubscription, for_modal = false): JQuery {
     const name = sub.name;
     const is_muted = stream_data.is_muted(sub.stream_id);
     const can_post_messages = stream_data.can_post_messages_in_stream(sub);
     const url = hash_util.channel_url_by_user_setting(sub.stream_id);
     const args = {
-        name,
+        name: get_sidebar_display_name(sub, for_modal),
+        full_name: name,
         id: sub.stream_id,
         url,
         is_muted,
@@ -1016,7 +1074,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
         if (sub.pin_to_top) {
             pinned_unread_counts.unmuted += stream_count_info.unmuted_count;
             pinned_unread_counts.muted += stream_count_info.muted_count;
-        } else if (sub.folder_id !== null && user_settings.web_left_sidebar_show_channel_folders) {
+        } else if (sub.folder_id !== null && channel_folders.should_show_channel_folders()) {
             if (!folder_unread_counts.has(sub.folder_id)) {
                 folder_unread_counts.set(sub.folder_id, {
                     unmuted: 0,
@@ -1050,6 +1108,37 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
             if (!stream_list_sort.has_recent_activity(sub)) {
                 normal_section_unread_counts.inactive_unmuted += stream_count_info.unmuted_count;
                 normal_section_unread_counts.inactive_muted += stream_count_info.muted_count;
+            }
+        }
+    }
+
+    // Roll up each folder's own unread totals into all of its ancestor folders,
+    // so a collapsed parent folder's header shows the sum of unreads across its
+    // entire subtree. Only the header-visible unmuted/muted totals are rolled
+    // up; the inactive/muted-channel sub-totals remain per-folder (they drive
+    // that folder's own "show inactive or muted" toggle).
+    if (channel_folders.should_show_channel_folders()) {
+        const own_folder_counts = new Map(
+            [...folder_unread_counts.entries()].map(([folder_id, unread_counts]) => [
+                folder_id,
+                {unmuted: unread_counts.unmuted, muted: unread_counts.muted},
+            ]),
+        );
+        for (const [folder_id, own_counts] of own_folder_counts) {
+            for (const ancestor_id of channel_folders.get_channel_folder_ancestor_ids(folder_id)) {
+                if (!folder_unread_counts.has(ancestor_id)) {
+                    folder_unread_counts.set(ancestor_id, {
+                        unmuted: 0,
+                        muted: 0,
+                        inactive_unmuted: 0,
+                        inactive_muted: 0,
+                        muted_channel_unmuted: 0,
+                        muted_channel_muted: 0,
+                    });
+                }
+                const ancestor_counts = folder_unread_counts.get(ancestor_id)!;
+                ancestor_counts.unmuted += own_counts.unmuted;
+                ancestor_counts.muted += own_counts.muted;
             }
         }
     }
@@ -1091,7 +1180,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
             normal_section_unread_counts.muted_channel_muted,
     );
 
-    if (user_settings.web_left_sidebar_show_channel_folders) {
+    if (channel_folders.should_show_channel_folders()) {
         for (const folder_id of channel_folders.get_all_folder_ids()) {
             const unread_counts = folder_unread_counts.get(folder_id) ?? {
                 unmuted: 0,

@@ -73,6 +73,7 @@ export function add_channel_folder(on_create?: (folder_id: number) => void): voi
                         date_created: 0,
                         creator_id: people.my_current_user_id(),
                         order: id,
+                        parent_id: null,
                     };
                     channel_folders.add(channel_folder);
                     on_create?.(id);

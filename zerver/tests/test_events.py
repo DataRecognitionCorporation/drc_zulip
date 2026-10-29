@@ -32,6 +32,7 @@ from zerver.actions.channel_folders import (
     do_archive_channel_folder,
     do_change_channel_folder_description,
     do_change_channel_folder_name,
+    do_change_channel_folder_parent,
     do_unarchive_channel_folder,
     try_reorder_realm_channel_folders,
 )
@@ -5781,6 +5782,24 @@ class ChannelFolderActionTest(BaseAction):
         check_channel_folder_update("events[0]", events[0], {"is_archived"})
         self.assertEqual(events[0]["channel_folder_id"], channel_folder.id)
         self.assertFalse(events[0]["data"]["is_archived"])
+
+        parent_folder = check_add_channel_folder(
+            self.user_profile.realm,
+            "Parent",
+            "",
+            acting_user=self.user_profile,
+        )
+        with self.verify_action() as events:
+            do_change_channel_folder_parent(channel_folder, parent_folder, acting_user=iago)
+        check_channel_folder_update("events[0]", events[0], {"parent_id"})
+        self.assertEqual(events[0]["channel_folder_id"], channel_folder.id)
+        self.assertEqual(events[0]["data"]["parent_id"], parent_folder.id)
+
+        with self.verify_action() as events:
+            do_change_channel_folder_parent(channel_folder, None, acting_user=iago)
+        check_channel_folder_update("events[0]", events[0], {"parent_id"})
+        self.assertEqual(events[0]["channel_folder_id"], channel_folder.id)
+        self.assertIsNone(events[0]["data"]["parent_id"])
 
     def test_channel_folders_reordering_event(self) -> None:
         frontend_folder = check_add_channel_folder(

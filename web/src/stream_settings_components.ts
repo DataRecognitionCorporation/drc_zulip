@@ -409,7 +409,18 @@ export function folder_filter_includes_channel(sub: StreamSubscription): boolean
     if (filter_value === filters.UNCATEGORIZED_DROPDOWN_OPTION) {
         return sub.folder_id === null;
     }
-    return filter_value === sub.folder_id;
+
+    if (sub.folder_id === null) {
+        return false;
+    }
+
+    // Filtering by a folder includes channels anywhere in that folder's
+    // subtree, so selecting a parent folder shows channels in its nested
+    // subfolders too, not just channels assigned directly to the parent.
+    if (sub.folder_id === filter_value) {
+        return true;
+    }
+    return channel_folders.get_channel_folder_ancestor_ids(sub.folder_id).includes(filter_value);
 }
 
 export function set_up_folder_dropdown_widget(sub?: StreamSubscription): DropdownWidget {

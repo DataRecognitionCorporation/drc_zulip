@@ -12,9 +12,17 @@ from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
 
-@transaction.atomic(durable=True)
+# Not durable: this runs standalone from the create-folder view, but is also
+# called while auto-building a channel's folder tree inside the channel
+# create/rename transactions, where a nested durable block is disallowed.
+@transaction.atomic
 def check_add_channel_folder(
-    realm: Realm, name: str, description: str, *, acting_user: UserProfile
+    realm: Realm,
+    name: str,
+    description: str,
+    *,
+    acting_user: UserProfile,
+    parent: ChannelFolder | None = None,
 ) -> ChannelFolder:
     rendered_description = render_channel_folder_description(
         description, realm, acting_user=acting_user
@@ -25,6 +33,7 @@ def check_add_channel_folder(
         description=description,
         rendered_description=rendered_description,
         creator_id=acting_user.id,
+        parent=parent,
     )
     channel_folder.order = channel_folder.id
     channel_folder.save(update_fields=["order"])
@@ -68,7 +77,7 @@ def try_reorder_realm_channel_folders(realm: Realm, order: list[int]) -> None:
 
 
 def do_send_channel_folder_update_event(
-    channel_folder: ChannelFolder, data: dict[str, str | bool]
+    channel_folder: ChannelFolder, data: dict[str, str | bool | int | None]
 ) -> None:
     realm = channel_folder.realm
     event = dict(type="channel_folder", op="update", channel_folder_id=channel_folder.id, data=data)
@@ -128,6 +137,29 @@ def do_change_channel_folder_description(
 
 
 @transaction.atomic(durable=True)
+def do_change_channel_folder_parent(
+    channel_folder: ChannelFolder, parent: ChannelFolder | None, *, acting_user: UserProfile
+) -> None:
+    old_value = channel_folder.parent_id
+    channel_folder.parent = parent
+    channel_folder.save(update_fields=["parent"])
+
+    RealmAuditLog.objects.create(
+        realm=acting_user.realm,
+        acting_user=acting_user,
+        event_type=AuditLogEventType.CHANNEL_FOLDER_PARENT_CHANGED,
+        event_time=timezone_now(),
+        modified_channel_folder=channel_folder,
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: parent.id if parent is not None else None,
+        },
+    )
+
+    do_send_channel_folder_update_event(channel_folder, dict(parent_id=channel_folder.parent_id))
+
+
+@transaction.atomic(durable=True)
 def do_archive_channel_folder(channel_folder: ChannelFolder, *, acting_user: UserProfile) -> None:
     channel_folder.is_archived = True
     channel_folder.save(update_fields=["is_archived"])
@@ -157,3 +189,56 @@ def do_unarchive_channel_folder(channel_folder: ChannelFolder, *, acting_user: U
     )
 
     do_send_channel_folder_update_event(channel_folder, dict(is_archived=False))
+
+
+
+# DRC channel-folder naming convention. A channel named exactly
+# "A - B - C - D" (four non-empty segments separated by " - ") is organized
+# into a three-tier folder path A > B > C, with the channel placed in the
+# leaf folder C. Any other name is left as an ordinary channel and is never
+# auto-foldered.
+CHANNEL_FOLDER_NAME_SEPARATOR = " - "
+CHANNEL_FOLDER_NAME_SEGMENT_COUNT = 4
+
+
+def parse_auto_channel_folder_path(name: str) -> list[str] | None:
+    """Return the three folder-path segments for a channel name that matches
+    the DRC convention, or None if the name does not match it exactly."""
+    segments = [segment.strip() for segment in name.split(CHANNEL_FOLDER_NAME_SEPARATOR)]
+    if len(segments) != CHANNEL_FOLDER_NAME_SEGMENT_COUNT:
+        return None
+    if any(segment == "" for segment in segments):
+        return None
+    # Drop the final segment (the channel's own label); the rest is the
+    # folder path.
+    return segments[:-1]
+
+
+def get_or_create_channel_folder_by_name(
+    realm: Realm, name: str, parent: ChannelFolder | None, *, acting_user: UserProfile
+) -> ChannelFolder:
+    existing = ChannelFolder.objects.filter(
+        realm=realm, name__iexact=name, parent=parent, is_archived=False
+    ).first()
+    if existing is not None:
+        return existing
+    return check_add_channel_folder(realm, name, "", acting_user=acting_user, parent=parent)
+
+
+def resolve_auto_channel_folder(
+    realm: Realm, name: str, *, acting_user: UserProfile
+) -> ChannelFolder | None:
+    """For a channel name matching the DRC "A - B - C - D" convention,
+    find-or-create the A > B > C folder chain and return the leaf folder C.
+    Returns None for any name that does not match the convention, so ordinary
+    channels are never auto-foldered."""
+    folder_path = parse_auto_channel_folder_path(name)
+    if folder_path is None:
+        return None
+
+    parent: ChannelFolder | None = None
+    for folder_name in folder_path:
+        parent = get_or_create_channel_folder_by_name(
+            realm, folder_name, parent, acting_user=acting_user
+        )
+    return parent

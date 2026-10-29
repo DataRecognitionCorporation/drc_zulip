@@ -292,6 +292,7 @@ export const channel_folder_schema = z.object({
     date_created: z.number(),
     is_archived: z.boolean(),
     order: z.number(),
+    parent_id: z.nullable(z.number()),
 });
 
 export const navigation_view_schema = z.object({

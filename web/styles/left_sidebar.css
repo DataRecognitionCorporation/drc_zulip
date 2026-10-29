@@ -562,6 +562,20 @@
     }
 }
 
+/* Nested channel folders: indent each tier of folder headers and their channel
+   rows by the folder's depth. --channel-folder-depth is set inline on the
+   container from the section's depth (0 for top-level folders, 1 per ancestor)
+   and inherited by the header and the channel rows. */
+.stream-list-section-container {
+    .stream-list-subsection-header,
+    .stream-list-section .bottom_left_row {
+        padding-inline-start: calc(
+            var(--channel-folder-depth, 0) *
+                var(--left-sidebar-channel-folder-indent, 10px)
+        );
+    }
+}
+
 .stream-list-section-container:not(.showing-inactive-or-muted) {
     .inactive-or-muted-in-channel-folder:not(
             .active-filter,
@@ -645,6 +659,13 @@
 }
 
 .stream-list-section-container.no-display {
+    display: none;
+}
+
+/* A folder nested under a collapsed ancestor folder is hidden entirely, so
+   collapsing a parent folder collapses its whole subtree. Applied from
+   stream_list.ts since nested folders render as sibling containers. */
+.stream-list-section-container.collapsed-by-ancestor {
     display: none;
 }
 

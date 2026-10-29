@@ -180,3 +180,141 @@ run_test("basics", () => {
     stream_data.delete_sub(stream_3.stream_id);
     assert.deepEqual(channel_folders.get_folders_with_accessible_channels(), [frontend_folder]);
 });
+
+run_test("nested folders", () => {
+    // project -> subproject -> identifier, mirroring the DRC tiered layout.
+    const project = {
+        name: "Project",
+        description: "",
+        rendered_description: "",
+        creator_id: null,
+        date_created: 1,
+        id: 10,
+        is_archived: false,
+        order: 0,
+        parent_id: null,
+    };
+    const subproject = {
+        name: "Subproject",
+        description: "",
+        rendered_description: "",
+        creator_id: null,
+        date_created: 2,
+        id: 11,
+        is_archived: false,
+        order: 1,
+        parent_id: project.id,
+    };
+    const identifier = {
+        name: "Identifier",
+        description: "",
+        rendered_description: "",
+        creator_id: null,
+        date_created: 3,
+        id: 12,
+        is_archived: false,
+        order: 2,
+        parent_id: subproject.id,
+    };
+    // A second top-level folder, declared after the nested chain to confirm
+    // tree order is by parent/child, not declaration or id order.
+    const other_root = {
+        name: "Other",
+        description: "",
+        rendered_description: "",
+        creator_id: null,
+        date_created: 4,
+        id: 13,
+        is_archived: false,
+        order: 3,
+        parent_id: null,
+    };
+    channel_folders.initialize({
+        channel_folders: [project, subproject, identifier, other_root],
+    });
+
+    // Depth is the number of ancestors.
+    assert.equal(channel_folders.get_channel_folder_depth(project.id), 0);
+    assert.equal(channel_folders.get_channel_folder_depth(subproject.id), 1);
+    assert.equal(channel_folders.get_channel_folder_depth(identifier.id), 2);
+    assert.equal(channel_folders.get_channel_folder_depth(other_root.id), 0);
+
+    // Ancestors are nearest-parent first.
+    assert.deepEqual(channel_folders.get_channel_folder_ancestor_ids(project.id), []);
+    assert.deepEqual(channel_folders.get_channel_folder_ancestor_ids(identifier.id), [
+        subproject.id,
+        project.id,
+    ]);
+
+    // Tree order: each parent immediately followed by its descendants, then the
+    // next root; siblings ordered by `order`.
+    assert.deepEqual(
+        channel_folders.get_channel_folders_in_tree_order().map((folder) => folder.id),
+        [project.id, subproject.id, identifier.id, other_root.id],
+    );
+
+    // Descendants are every folder nested anywhere below the given one.
+    assert.deepEqual(channel_folders.get_channel_folder_descendant_ids(project.id), [
+        subproject.id,
+        identifier.id,
+    ]);
+    assert.deepEqual(channel_folders.get_channel_folder_descendant_ids(subproject.id), [
+        identifier.id,
+    ]);
+    assert.deepEqual(channel_folders.get_channel_folder_descendant_ids(identifier.id), []);
+    assert.deepEqual(channel_folders.get_channel_folder_descendant_ids(other_root.id), []);
+});
+
+run_test("folders with accessible channels include nested parents", () => {
+    const project = {
+        name: "Project",
+        description: "",
+        rendered_description: "",
+        creator_id: null,
+        date_created: 1,
+        id: 30,
+        is_archived: false,
+        order: 0,
+        parent_id: null,
+    };
+    const subproject = {
+        name: "Subproject",
+        description: "",
+        rendered_description: "",
+        creator_id: null,
+        date_created: 2,
+        id: 31,
+        is_archived: false,
+        order: 1,
+        parent_id: project.id,
+    };
+    // An empty root folder with no channels anywhere in its subtree.
+    const empty_root = {
+        name: "Empty",
+        description: "",
+        rendered_description: "",
+        creator_id: null,
+        date_created: 3,
+        id: 32,
+        is_archived: false,
+        order: 2,
+        parent_id: null,
+    };
+    channel_folders.initialize({channel_folders: [project, subproject, empty_root]});
+
+    // The only channel lives in the leaf subproject; the parent project has no
+    // directly-assigned channels.
+    const leaf_channel = make_stream({
+        stream_id: 60,
+        name: "leaf",
+        folder_id: subproject.id,
+    });
+    stream_data.add_sub_for_tests(leaf_channel);
+
+    // Both the leaf and its ancestor are considered to have accessible
+    // channels; the wholly-empty root is not.
+    assert.deepEqual(
+        channel_folders.get_folders_with_accessible_channels().map((folder) => folder.id),
+        [project.id, subproject.id],
+    );
+});

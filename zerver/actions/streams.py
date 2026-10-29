@@ -1500,6 +1500,15 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
     stream.name = new_name
     stream.save(update_fields=["name"])
 
+    # DRC: if the new name matches the "A - B - C - D" convention, move the
+    # channel into the auto-built A > B > C folder tree. Renaming to a name
+    # that does not match the convention leaves the channel's folder unchanged.
+    from zerver.actions.channel_folders import resolve_auto_channel_folder
+
+    auto_folder = resolve_auto_channel_folder(stream.realm, new_name, acting_user=user_profile)
+    if auto_folder is not None and stream.folder_id != auto_folder.id:
+        do_change_stream_folder(stream, auto_folder, acting_user=user_profile)
+
     RealmAuditLog.objects.create(
         realm=stream.realm,
         acting_user=user_profile,
@@ -1935,7 +1944,10 @@ def do_change_stream_group_based_setting(
         old_user_group.delete()
 
 
-@transaction.atomic(durable=True)
+# Not durable: normally the outermost action for a folder change, but also
+# called from do_rename_stream when a rename matches the auto-folder naming
+# convention, where a nested durable block is disallowed.
+@transaction.atomic
 def do_change_stream_folder(
     stream: Stream, folder: ChannelFolder | None, *, acting_user: UserProfile
 ) -> None:

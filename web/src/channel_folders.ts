@@ -3,12 +3,21 @@ import type * as z from "zod/mini";
 
 import {FoldDict} from "./fold_dict.ts";
 import type {ChannelFolderUpdateEvent} from "./server_event_types.ts";
+import {current_user} from "./state_data.ts";
 import type {StateData, channel_folder_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 export type ChannelFolder = z.infer<typeof channel_folder_schema>;
+
+// Whether the nested channel-folder view should be shown in the left sidebar.
+// Guests only ever get a flat list of channels and never see any folder view,
+// regardless of their personal setting.
+export function should_show_channel_folders(): boolean {
+    return user_settings.web_left_sidebar_show_channel_folders && !current_user.is_guest;
+}
 
 let channel_folder_name_dict: FoldDict<ChannelFolder>;
 let channel_folder_by_id_dict: Map<number, ChannelFolder>;
@@ -76,6 +85,82 @@ export function get_channel_folder_by_id(folder_id: number): ChannelFolder {
     return channel_folder;
 }
 
+// Number of ancestors above this folder: 0 for a top-level folder, 1 for a
+// folder whose parent is top-level, and so on. Used to indent nested folder
+// sections in the left sidebar.
+export function get_channel_folder_depth(folder_id: number): number {
+    let depth = 0;
+    let folder = channel_folder_by_id_dict.get(folder_id);
+    while (folder !== undefined && folder.parent_id !== null) {
+        depth += 1;
+        folder = channel_folder_by_id_dict.get(folder.parent_id);
+    }
+    return depth;
+}
+
+// Ids of every ancestor of this folder, nearest parent first. Used to roll up
+// unread counts from a folder to all of its ancestors.
+export function get_channel_folder_ancestor_ids(folder_id: number): number[] {
+    const ancestor_ids: number[] = [];
+    let folder = channel_folder_by_id_dict.get(folder_id);
+    while (folder !== undefined && folder.parent_id !== null) {
+        ancestor_ids.push(folder.parent_id);
+        folder = channel_folder_by_id_dict.get(folder.parent_id);
+    }
+    return ancestor_ids;
+}
+
+// Active folders in depth-first pre-order: each folder is immediately followed
+// by its descendants, with siblings ordered by their `order` field. This is the
+// order folder sections should appear in the sidebar so that the nesting reads
+// as a tree.
+export function get_channel_folders_in_tree_order(): ChannelFolder[] {
+    const folders_by_parent = new Map<number | null, ChannelFolder[]>();
+    for (const folder of get_channel_folders()) {
+        const siblings = folders_by_parent.get(folder.parent_id) ?? [];
+        siblings.push(folder);
+        folders_by_parent.set(folder.parent_id, siblings);
+    }
+
+    const ordered: ChannelFolder[] = [];
+    const visit = (parent_id: number | null): void => {
+        for (const folder of folders_by_parent.get(parent_id) ?? []) {
+            ordered.push(folder);
+            visit(folder.id);
+        }
+    };
+    // A folder whose parent is archived (and thus absent from get_channel_folders)
+    // would never be reached from the top-level walk, so collect any such
+    // orphaned subtrees as additional roots.
+    const reachable_parent_ids = new Set<number | null>([null]);
+    visit(null);
+    for (const folder of ordered) {
+        reachable_parent_ids.add(folder.id);
+    }
+    for (const [parent_id, siblings] of folders_by_parent) {
+        if (!reachable_parent_ids.has(parent_id)) {
+            for (const folder of siblings) {
+                ordered.push(folder);
+                visit(folder.id);
+            }
+        }
+    }
+    return ordered;
+}
+
+// Ids of every folder nested anywhere beneath `folder_id` (children,
+// grandchildren, and so on). Used to collapse/hide an entire subtree when its
+// parent folder is collapsed in the sidebar.
+export function get_channel_folder_descendant_ids(folder_id: number): number[] {
+    const descendant_ids: number[] = [];
+    for (const candidate of get_channel_folders()) {
+        if (get_channel_folder_ancestor_ids(candidate.id).includes(folder_id)) {
+            descendant_ids.push(candidate.id);
+        }
+    }
+    return descendant_ids;
+}
+
 export function user_has_folders(): boolean {
     const subscribed_subs = stream_data.subscribed_subs();
 
@@ -90,8 +175,8 @@ export function user_has_folders(): boolean {
 
 export function update_channel_folder(
     folder_id: number,
-    property: "name" | "description" | "rendered_description" | "is_archived",
-    value: string | boolean,
+    property: "name" | "description" | "rendered_description" | "is_archived" | "parent_id",
+    value: string | boolean | number | null,
 ): void {
     const channel_folder = get_channel_folder_by_id(folder_id);
 
@@ -101,6 +186,12 @@ export function update_channel_folder(
         if (channel_folder.is_archived) {
             active_channel_folder_ids.delete(channel_folder.id);
         }
+        return;
+    }
+
+    if (property === "parent_id") {
+        assert(value === null || typeof value === "number");
+        channel_folder.parent_id = value;
         return;
     }
 
@@ -133,6 +224,10 @@ export function update(event: ChannelFolderUpdateEvent): void {
 
     if (event.data.is_archived !== undefined) {
         update_channel_folder(folder_id, "is_archived", event.data.is_archived);
+    }
+
+    if (event.data.parent_id !== undefined) {
+        update_channel_folder(folder_id, "parent_id", event.data.parent_id);
     }
 }
 
@@ -188,6 +283,16 @@ export function get_folders_with_accessible_channels(): ChannelFolder[] {
     for (const sub of all_subs) {
         if (sub.folder_id !== null) {
             channel_folder_ids.add(sub.folder_id);
+        }
+    }
+
+    // A parent folder in a nested tree has no directly-assigned channels but
+    // should still count as having accessible channels when a descendant does,
+    // so mark every ancestor of a folder that holds a channel.
+    const folder_ids_with_direct_channels = [...channel_folder_ids];
+    for (const folder_id of folder_ids_with_direct_channels) {
+        for (const ancestor_id of get_channel_folder_ancestor_ids(folder_id)) {
+            channel_folder_ids.add(ancestor_id);
         }
     }
 

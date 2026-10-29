@@ -17,7 +17,7 @@ const {set_current_user, set_realm} = zrequire("state_data");
 set_global("document", "document-stub");
 
 page_params.realm_users = [];
-const current_user = {};
+const current_user = {is_guest: false};
 set_current_user(current_user);
 
 // We use this with override.
@@ -47,6 +47,7 @@ const stream_list = zrequire("stream_list");
 stream_list.set_update_inbox_channel_view_callback(noop);
 const stream_list_sort = zrequire("stream_list_sort");
 const user_groups = zrequire("user_groups");
+const channel_folders = zrequire("channel_folders");
 const {initialize_user_settings} = zrequire("user_settings");
 const settings_config = zrequire("settings_config");
 mock_esm("../src/settings_data", {
@@ -574,6 +575,7 @@ test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
     mock_template("stream_sidebar_row.hbs", false, (payload) => {
         assert.deepEqual(payload, {
             name: "Development",
+            full_name: "Development",
             id: 1000,
             url: "#narrow/channel/1000-Development",
             is_muted: false,
@@ -667,4 +669,81 @@ test_ui("create_initial_sidebar_rows", ({override, override_rewire, mock_templat
 
     assert.equal(html_dict.get(1000), "<div>stub-html-devel");
     assert.equal(html_dict.get(5000), "<div>stub-html-Denmark");
+});
+
+run_test("get_sidebar_display_name for nested channels", ({override}) => {
+    const folder = {
+        name: "EAK120FT",
+        description: "",
+        rendered_description: "",
+        creator_id: null,
+        date_created: 1,
+        id: 70,
+        is_archived: false,
+        order: 0,
+        parent_id: null,
+    };
+    channel_folders.initialize({channel_folders: [folder]});
+
+    const foldered = make_stream({
+        stream_id: 7001,
+        name: "EAK120FT - G6E - Omar Vance - Supervisors",
+        folder_id: folder.id,
+    });
+    const unfoldered = make_stream({
+        stream_id: 7002,
+        name: "general",
+        folder_id: null,
+    });
+    // In a folder, but the name does not match the exact 4-part convention.
+    const foldered_non_pattern = make_stream({
+        stream_id: 7003,
+        name: "Weekly Standup",
+        folder_id: folder.id,
+    });
+    // In a folder, three segments (not four) — also not the convention.
+    const foldered_three_part = make_stream({
+        stream_id: 7004,
+        name: "EAK120FT - G6E - Notes",
+        folder_id: folder.id,
+    });
+
+    override(user_settings, "web_left_sidebar_show_channel_folders", true);
+
+    // Inside a folder, only the final " - " segment is shown in the sidebar.
+    assert.equal(stream_list.get_sidebar_display_name(foldered, false), "Supervisors");
+    // The modal/zoomed row keeps the full name.
+    assert.equal(
+        stream_list.get_sidebar_display_name(foldered, true),
+        "EAK120FT - G6E - Omar Vance - Supervisors",
+    );
+    // A channel not in any folder is unchanged.
+    assert.equal(stream_list.get_sidebar_display_name(unfoldered, false), "general");
+
+    // A channel manually placed in a folder but not matching the exact 4-part
+    // convention shows its full name, not a trimmed segment.
+    assert.equal(
+        stream_list.get_sidebar_display_name(foldered_non_pattern, false),
+        "Weekly Standup",
+    );
+    assert.equal(
+        stream_list.get_sidebar_display_name(foldered_three_part, false),
+        "EAK120FT - G6E - Notes",
+    );
+
+    // Guests never see the folder view, so even a four-part foldered channel
+    // shows its full name for a guest.
+    override(current_user, "is_guest", true);
+    assert.equal(
+        stream_list.get_sidebar_display_name(foldered, false),
+        "EAK120FT - G6E - Omar Vance - Supervisors",
+    );
+    override(current_user, "is_guest", false);
+
+    // When folders are disabled, the full name is shown even for foldered channels.
+    override(user_settings, "web_left_sidebar_show_channel_folders", false);
+    assert.equal(
+        stream_list.get_sidebar_display_name(foldered, false),
+        "EAK120FT - G6E - Omar Vance - Supervisors",
+    );
 });
