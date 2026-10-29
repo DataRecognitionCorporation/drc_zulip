@@ -317,10 +317,10 @@
     /* 15px at 8px/1em (masked unreads are sized to 0.5em) */
     --left-sidebar-single-digit-unread-width: 1.875em;
     --left-sidebar-right-margin: 12px;
-    /* DRC: widened from 20.6429em (~289px) to ~350px so longer channel names,
+    /* DRC: widened from 20.6429em (~289px) to ~392px so longer channel names,
        such as the full "A - B - C - D" names guests see unfoldered, fit
        without clipping. Still held to 33vw on narrow screens below. */
-    --left-sidebar-max-width: calc(25em - var(--left-sidebar-right-margin));
+    --left-sidebar-max-width: calc(28em - var(--left-sidebar-right-margin));
     --realm-logo-max-width: 12.5em; /* 200px at 16px em */
     /* Value updated on realm_logo.render() */
     --realm-logo-current-width: var(--realm-logo-max-width);
