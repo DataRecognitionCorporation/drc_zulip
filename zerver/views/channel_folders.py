@@ -4,12 +4,14 @@ from typing import Annotated
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from pydantic import Json, StringConstraints
+from pydantic_partials.sentinels import Missing, MissingType
 
 from zerver.actions.channel_folders import (
     check_add_channel_folder,
     do_archive_channel_folder,
     do_change_channel_folder_description,
     do_change_channel_folder_name,
+    do_change_channel_folder_parent,
     do_unarchive_channel_folder,
     try_reorder_realm_channel_folders,
 )
@@ -17,6 +19,8 @@ from zerver.decorator import require_realm_admin
 from zerver.lib.channel_folders import (
     check_channel_folder_in_use,
     check_channel_folder_name,
+    check_channel_folder_parent,
+    check_channel_folder_parent_for_new_folder,
     get_channel_folder_by_id,
     get_channel_folders_in_realm,
 )
@@ -35,10 +39,19 @@ def create_channel_folder(
     *,
     description: Annotated[str, StringConstraints(max_length=ChannelFolder.MAX_DESCRIPTION_LENGTH)],
     name: Annotated[str, StringConstraints(max_length=ChannelFolder.MAX_NAME_LENGTH)],
+    parent_id: Json[int] | None = None,
 ) -> HttpResponse:
     realm = user_profile.realm
     check_channel_folder_name(name, realm)
-    channel_folder = check_add_channel_folder(realm, name, description, acting_user=user_profile)
+
+    parent: ChannelFolder | None = None
+    if parent_id is not None:
+        parent = get_channel_folder_by_id(parent_id, realm)
+        check_channel_folder_parent_for_new_folder(parent)
+
+    channel_folder = check_add_channel_folder(
+        realm, name, description, acting_user=user_profile, parent=parent
+    )
 
     return json_success(request, data={"channel_folder_id": channel_folder.id})
 
@@ -81,6 +94,7 @@ def update_channel_folder(
     ] = None,
     is_archived: Json[bool] | None = None,
     name: Annotated[str | None, StringConstraints(max_length=ChannelFolder.MAX_NAME_LENGTH)] = None,
+    parent_id: Json[int | None] | MissingType = Missing,
 ) -> HttpResponse:
     channel_folder = get_channel_folder_by_id(channel_folder_id, user_profile.realm)
 
@@ -90,6 +104,13 @@ def update_channel_folder(
 
     if description is not None and channel_folder.description != description:
         do_change_channel_folder_description(channel_folder, description, acting_user=user_profile)
+
+    if not isinstance(parent_id, MissingType) and channel_folder.parent_id != parent_id:
+        parent: ChannelFolder | None = None
+        if parent_id is not None:
+            parent = get_channel_folder_by_id(parent_id, user_profile.realm)
+        check_channel_folder_parent(channel_folder, parent)
+        do_change_channel_folder_parent(channel_folder, parent, acting_user=user_profile)
 
     if is_archived is not None and channel_folder.is_archived != is_archived:
         if is_archived:

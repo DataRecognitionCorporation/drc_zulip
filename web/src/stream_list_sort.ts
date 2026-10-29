@@ -111,6 +111,13 @@ export type StreamListSection = {
     muted_streams: number[];
     inactive_streams: number[];
     order?: number; // Only used for folder sections
+    // Nesting depth for folder sections: 0 for pinned/normal/top-level folders,
+    // increasing by one per ancestor folder. Used to indent nested folders.
+    depth: number;
+    // True for a folder section that itself or any descendant folder contains
+    // at least one channel. A parent folder with channels only in its children
+    // uses this so it is not hidden/collapsed as "empty".
+    subtree_has_streams?: boolean;
 };
 
 type StreamListSortResult = {
@@ -129,6 +136,7 @@ export function sort_groups(
         default_visible_streams: [],
         muted_streams: [],
         inactive_streams: [],
+        depth: 0,
     };
     const normal_section: StreamListSection = {
         id: "normal-streams",
@@ -137,6 +145,7 @@ export function sort_groups(
         default_visible_streams: [],
         muted_streams: [],
         inactive_streams: [],
+        depth: 0,
     };
     const NORMAL_SECTION_TITLE_WITH_OTHER_FOLDERS = $t({defaultMessage: "OTHER"});
 
@@ -256,6 +265,7 @@ export function sort_groups(
                     muted_streams: [],
                     inactive_streams: [],
                     order: folder.order,
+                    depth: channel_folders.get_channel_folder_depth(sub.folder_id),
                 };
                 folder_sections.set(sub.folder_id, section);
             }
@@ -283,17 +293,99 @@ export function sort_groups(
         );
     }
 
-    // Demote folders where all channels are muted or inactive.
-    const regular_folder_sections = sort_by_order(
-        [...folder_sections.values()].filter(
-            (section) => section.default_visible_streams.length > 0,
-        ),
-    );
-    const demoted_folder_sections = sort_by_order(
-        [...folder_sections.values()].filter(
-            (section) => section.default_visible_streams.length === 0,
-        ),
-    );
+    // Build the folder sections in depth-first tree order so that a parent
+    // folder is immediately followed by its descendants, producing a nested
+    // (indented) tree in the sidebar. A folder that has no subscribed channels
+    // of its own but does have descendants with channels still needs a section
+    // to act as a collapsible header, so we materialize an empty placeholder
+    // for every ancestor of a non-empty folder.
+    const make_empty_folder_section = (folder_id: number): StreamListSection => {
+        const folder = channel_folders.get_channel_folder_by_id(folder_id);
+        return {
+            id: folder_id.toString(),
+            folder_id,
+            section_title: folder.name.toUpperCase(),
+            default_visible_streams: [],
+            muted_streams: [],
+            inactive_streams: [],
+            order: folder.order,
+            depth: channel_folders.get_channel_folder_depth(folder_id),
+        };
+    };
+
+    const folder_ids_needing_section = new Set<number>();
+    for (const folder_id of folder_sections.keys()) {
+        folder_ids_needing_section.add(folder_id);
+        for (const ancestor_id of channel_folders.get_channel_folder_ancestor_ids(folder_id)) {
+            folder_ids_needing_section.add(ancestor_id);
+        }
+    }
+
+    const build_section_for_folder = (folder_id: number): StreamListSection => {
+        const section = folder_sections.get(folder_id) ?? make_empty_folder_section(folder_id);
+        // Every folder in folder_ids_needing_section either has its own channels
+        // or is an ancestor of a folder that does, so its subtree is non-empty
+        // and the section should stay visible.
+        section.subtree_has_streams = true;
+        return section;
+    };
+
+    const regular_folder_sections: StreamListSection[] = [];
+    const demoted_folder_sections: StreamListSection[] = [];
+    if (user_settings.web_left_sidebar_show_channel_folders) {
+        // Build folder sections in depth-first tree order (parent immediately
+        // followed by its descendants) so the sidebar reads as an indented
+        // tree. A folder with channels only in its descendants still needs a
+        // section to act as a collapsible header, which is why every ancestor
+        // of a non-empty folder is in folder_ids_needing_section.
+        const children_by_parent = new Map<number | null, number[]>();
+        for (const folder of channel_folders.get_channel_folders_in_tree_order()) {
+            const siblings = children_by_parent.get(folder.parent_id) ?? [];
+            siblings.push(folder.id);
+            children_by_parent.set(folder.parent_id, siblings);
+        }
+
+        // Walk the tree in pre-order, emitting a section for each folder that
+        // is part of a non-empty subtree. Returns the sections for the subtree
+        // rooted at `folder_id` (root first), and whether that subtree has any
+        // default-visible (active, unmuted) channel, used to decide root
+        // demotion.
+        const collect_subtree = (
+            folder_id: number,
+        ): {sections: StreamListSection[]; has_visible: boolean} => {
+            const sections: StreamListSection[] = [];
+            let has_visible = false;
+            if (folder_ids_needing_section.has(folder_id)) {
+                const section = build_section_for_folder(folder_id);
+                sections.push(section);
+                has_visible ||= section.default_visible_streams.length > 0;
+            }
+            for (const child_id of children_by_parent.get(folder_id) ?? []) {
+                const child_result = collect_subtree(child_id);
+                sections.push(...child_result.sections);
+                has_visible ||= child_result.has_visible;
+            }
+            return {sections, has_visible};
+        };
+
+        // Root folders keep their subtree contiguous. A root whose entire
+        // subtree has no active, unmuted channels is demoted below "OTHER",
+        // matching the prior flat behavior for single folders.
+        for (const root_id of children_by_parent.get(null) ?? []) {
+            if (!folder_ids_needing_section.has(root_id)) {
+                continue;
+            }
+            const {sections, has_visible} = collect_subtree(root_id);
+            if (has_visible) {
+                regular_folder_sections.push(...sections);
+            } else {
+                demoted_folder_sections.push(...sections);
+            }
+        }
+    } else {
+        // When folders are disabled, preserve the prior flat ordering by order.
+        regular_folder_sections.push(...sort_by_order([...folder_sections.values()]));
+    }
 
     if (
         pinned_section.default_visible_streams.length > 0 ||

@@ -6674,6 +6674,12 @@ paths:
                                       description: |
                                         Whether the channel folder is archived or not. Only present if
                                         the channel folder is archived or unarchived.
+                                    parent_id:
+                                      type: integer
+                                      nullable: true
+                                      description: |
+                                        The ID of the channel folder's new parent folder, or `null` if
+                                        it became a top-level folder. Only present if the parent changed.
                               example:
                                 {
                                   "type": "channel_folder",
@@ -29943,6 +29949,12 @@ components:
           type: boolean
           description: |
             Whether the channel folder is archived or not.
+        parent_id:
+          type: integer
+          nullable: true
+          description: |
+            The ID of this channel folder's parent folder, enabling nested
+            (multi-tier) channel folders, or `null` for a top-level folder.
     JsonResponseBase:
       type: object
       properties:

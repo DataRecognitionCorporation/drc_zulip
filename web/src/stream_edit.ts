@@ -393,12 +393,15 @@ export function set_up_channel_privacy_dropdown_widget(
     if (sub) {
         default_id = stream_data.get_stream_privacy_policy(sub.stream_id);
     } else {
-        if (settings_data.user_can_create_public_streams()) {
-            default_id = settings_config.stream_privacy_policy_values.public.code;
-        } else if (settings_data.user_can_create_web_public_streams()) {
-            default_id = settings_config.stream_privacy_policy_values.web_public.code;
-        } else {
+        // DRC: new channels default to private. Fall back to the public or
+        // web-public option only if the user isn't permitted to create private
+        // channels, so the default is always an option they can actually pick.
+        if (settings_data.user_can_create_private_streams()) {
             default_id = settings_config.stream_privacy_policy_values.private.code;
+        } else if (settings_data.user_can_create_public_streams()) {
+            default_id = settings_config.stream_privacy_policy_values.public.code;
+        } else {
+            default_id = settings_config.stream_privacy_policy_values.web_public.code;
         }
     }
 

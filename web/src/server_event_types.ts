@@ -123,6 +123,7 @@ export const channel_folder_update_event_schema = z.object({
         description: z.optional(z.string()),
         rendered_description: z.optional(z.string()),
         is_archived: z.optional(z.boolean()),
+        parent_id: z.optional(z.nullable(z.number())),
     }),
 });
 export type ChannelFolderUpdateEvent = z.output<typeof channel_folder_update_event_schema>;

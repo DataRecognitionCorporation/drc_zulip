@@ -417,6 +417,17 @@ def create_stream_if_needed(
     if topics_policy is None:
         topics_policy = StreamTopicsPolicyEnum.inherit.value
 
+    # DRC: a channel whose name matches the "A - B - C - D" convention is
+    # auto-organized into the A > B > C folder tree, with the channel placed in
+    # the leaf folder. This overrides any explicitly passed folder when the
+    # name matches; non-matching names keep the caller-provided folder.
+    if acting_user is not None:
+        from zerver.actions.channel_folders import resolve_auto_channel_folder
+
+        auto_folder = resolve_auto_channel_folder(realm, stream_name, acting_user=acting_user)
+        if auto_folder is not None:
+            folder = auto_folder
+
     (stream, created) = Stream.objects.get_or_create(
         realm=realm,
         name__iexact=stream_name,

@@ -41,6 +41,7 @@ const frontend_folder = {
     id: 1,
     is_archived: false,
     order: 3,
+    parent_id: null,
 };
 const backend_folder = {
     name: "Backend",
@@ -51,6 +52,7 @@ const backend_folder = {
     id: 2,
     is_archived: false,
     order: 2,
+    parent_id: null,
 };
 const expect_demoted_folder = {
     name: "Empty",
@@ -61,6 +63,7 @@ const expect_demoted_folder = {
     id: 3,
     is_archived: false,
     order: 1,
+    parent_id: null,
 };
 
 const scalene = make_stream({
@@ -193,6 +196,7 @@ test("no_subscribed_streams", () => {
                 muted_streams: [],
                 section_title: "translated: PINNED CHANNELS",
                 default_visible_streams: [],
+                depth: 0,
             },
             {
                 id: "normal-streams",
@@ -201,6 +205,7 @@ test("no_subscribed_streams", () => {
                 muted_streams: [],
                 section_title: "translated: CHANNELS",
                 default_visible_streams: [],
+                depth: 0,
             },
         ],
         same_as_before: sorted.same_as_before,
@@ -444,6 +449,7 @@ test("current_section_id_for_stream", ({override}) => {
             muted_streams: [8],
             section_title: "translated: PINNED CHANNELS",
             default_visible_streams: [1],
+            depth: 0,
         },
         {
             folder_id: 2,
@@ -453,6 +459,8 @@ test("current_section_id_for_stream", ({override}) => {
             order: 2,
             section_title: "BACKEND",
             default_visible_streams: [6],
+            depth: 0,
+            subtree_has_streams: true,
         },
         {
             folder_id: 1,
@@ -462,6 +470,8 @@ test("current_section_id_for_stream", ({override}) => {
             order: 3,
             section_title: "FRONTEND",
             default_visible_streams: [2],
+            depth: 0,
+            subtree_has_streams: true,
         },
         {
             folder_id: null,
@@ -470,6 +480,7 @@ test("current_section_id_for_stream", ({override}) => {
             muted_streams: [],
             section_title: "translated: OTHER",
             default_visible_streams: [4],
+            depth: 0,
         },
         {
             folder_id: 3,
@@ -479,6 +490,8 @@ test("current_section_id_for_stream", ({override}) => {
             order: 1,
             section_title: "EMPTY",
             default_visible_streams: [],
+            depth: 0,
+            subtree_has_streams: true,
         },
     ]);
 });
@@ -523,6 +536,91 @@ test("left_sidebar_search", ({override}) => {
     assert.deepEqual(sorted_sections[1].default_visible_streams, [fast_tortoise.stream_id]);
     assert.deepEqual(sorted_sections[0].default_visible_streams, []);
     assert.deepEqual(sorted_sections[2].default_visible_streams, []);
+});
+
+test("nested_folder_sections", ({override}) => {
+    override(user_settings, "web_left_sidebar_show_channel_folders", true);
+
+    // project -> subproject -> identifier; only the identifier (leaf) holds a
+    // channel. The two ancestors must still appear, as collapsible headers,
+    // directly above it and in increasing depth order.
+    const project = {
+        name: "Project",
+        description: "",
+        rendered_description: "",
+        creator_id: null,
+        date_created: 1,
+        id: 20,
+        is_archived: false,
+        order: 0,
+        parent_id: null,
+    };
+    const subproject = {
+        name: "Subproject",
+        description: "",
+        rendered_description: "",
+        creator_id: null,
+        date_created: 2,
+        id: 21,
+        is_archived: false,
+        order: 0,
+        parent_id: project.id,
+    };
+    const identifier = {
+        name: "Identifier",
+        description: "",
+        rendered_description: "",
+        creator_id: null,
+        date_created: 3,
+        id: 22,
+        is_archived: false,
+        order: 0,
+        parent_id: subproject.id,
+    };
+    channel_folders.initialize({channel_folders: [project, subproject, identifier]});
+
+    const leaf_channel = make_stream({
+        subscribed: true,
+        name: "leaf channel",
+        stream_id: 50,
+        pin_to_top: false,
+        is_recently_active: true,
+        folder_id: identifier.id,
+    });
+    stream_data.add_sub_for_tests(leaf_channel);
+
+    const sections = sort_groups("").sections;
+
+    // pinned, project, subproject, identifier, normal.
+    const folder_sections = sections.filter((section) => section.folder_id !== null);
+    assert.deepEqual(
+        folder_sections.map((section) => [section.id, section.depth]),
+        [
+            [project.id.toString(), 0],
+            [subproject.id.toString(), 1],
+            [identifier.id.toString(), 2],
+        ],
+    );
+
+    // The ancestors have no channels of their own but stay visible via subtree.
+    const [project_section, subproject_section, identifier_section] = folder_sections;
+    assert.deepEqual(project_section.default_visible_streams, []);
+    assert.ok(project_section.subtree_has_streams);
+    assert.deepEqual(subproject_section.default_visible_streams, []);
+    assert.ok(subproject_section.subtree_has_streams);
+    assert.deepEqual(identifier_section.default_visible_streams, [leaf_channel.stream_id]);
+
+    // The folder tree is contiguous and sits between pinned and normal.
+    assert.deepEqual(
+        sections.map((section) => section.id),
+        [
+            "pinned-streams",
+            project.id.toString(),
+            subproject.id.toString(),
+            identifier.id.toString(),
+            "normal-streams",
+        ],
+    );
 });
 
 test("filter inactives", ({override}) => {
