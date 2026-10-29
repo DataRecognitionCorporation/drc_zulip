@@ -203,7 +203,7 @@ export function sort_groups(
 
     // If the channel folder matches the search term, include all channels
     // of that folder.
-    if (user_settings.web_left_sidebar_show_channel_folders && search_term) {
+    if (channel_folders.should_show_channel_folders() && search_term) {
         matching_stream_ids = [
             ...new Set([
                 ...matching_stream_ids,
@@ -232,7 +232,7 @@ export function sort_groups(
             ...all_subscribed_stream_ids.filter((stream_id) => {
                 const is_pinned = sub_store.get(stream_id)!.pin_to_top;
                 const is_in_folder =
-                    user_settings.web_left_sidebar_show_channel_folders &&
+                    channel_folders.should_show_channel_folders() &&
                     sub_store.get(stream_id)!.folder_id !== null;
                 return !is_pinned && !is_in_folder;
             }),
@@ -253,7 +253,7 @@ export function sort_groups(
                 // since the user wants chose to put them in the pinned section.
                 pinned_section.default_visible_streams.push(stream_id);
             }
-        } else if (user_settings.web_left_sidebar_show_channel_folders && sub.folder_id) {
+        } else if (channel_folders.should_show_channel_folders() && sub.folder_id) {
             const folder = channel_folders.get_channel_folder_by_id(sub.folder_id);
             let section = folder_sections.get(sub.folder_id);
             if (!section) {
@@ -332,7 +332,7 @@ export function sort_groups(
 
     const regular_folder_sections: StreamListSection[] = [];
     const demoted_folder_sections: StreamListSection[] = [];
-    if (user_settings.web_left_sidebar_show_channel_folders) {
+    if (channel_folders.should_show_channel_folders()) {
         // Build folder sections in depth-first tree order (parent immediately
         // followed by its descendants) so the sidebar reads as an indented
         // tree. A folder with channels only in its descendants still needs a

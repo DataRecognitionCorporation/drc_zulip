@@ -393,7 +393,7 @@ function maybe_change_channel_folders_option_visibility(): void {
 // This must be called before `build_stream_list`, so that it has the correct
 // saved collapsed section state.
 export function update_collapsed_state_on_show_channel_folders_change(): void {
-    if (user_settings.web_left_sidebar_show_channel_folders) {
+    if (channel_folders.should_show_channel_folders()) {
         // No folders -> folders: If the normal streams (Channels / Other) section was
         // collapsed, collapse all folders. Otherwise, expand all folders.
         for (const folder_id of channel_folders.get_active_folder_ids()) {
@@ -649,7 +649,7 @@ function toggle_section_collapse($container: JQuery): void {
 // parent. So a descendant folder's container is hidden (via
 // `collapsed-by-ancestor`) whenever any of its ancestor folders is collapsed.
 function update_descendant_folder_visibility(): void {
-    if (!user_settings.web_left_sidebar_show_channel_folders) {
+    if (!channel_folders.should_show_channel_folders()) {
         return;
     }
     for (const folder_id of channel_folders.get_all_folder_ids()) {
@@ -884,11 +884,7 @@ const CHANNEL_FOLDER_NAME_SEPARATOR = " - ";
 const CHANNEL_FOLDER_NAME_SEGMENT_COUNT = 4;
 
 export function get_sidebar_display_name(sub: StreamSubscription, for_modal: boolean): string {
-    if (
-        for_modal ||
-        !user_settings.web_left_sidebar_show_channel_folders ||
-        sub.folder_id === null
-    ) {
+    if (for_modal || !channel_folders.should_show_channel_folders() || sub.folder_id === null) {
         return sub.name;
     }
     const segments = sub.name.split(CHANNEL_FOLDER_NAME_SEPARATOR);
@@ -1078,7 +1074,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
         if (sub.pin_to_top) {
             pinned_unread_counts.unmuted += stream_count_info.unmuted_count;
             pinned_unread_counts.muted += stream_count_info.muted_count;
-        } else if (sub.folder_id !== null && user_settings.web_left_sidebar_show_channel_folders) {
+        } else if (sub.folder_id !== null && channel_folders.should_show_channel_folders()) {
             if (!folder_unread_counts.has(sub.folder_id)) {
                 folder_unread_counts.set(sub.folder_id, {
                     unmuted: 0,
@@ -1121,7 +1117,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
     // entire subtree. Only the header-visible unmuted/muted totals are rolled
     // up; the inactive/muted-channel sub-totals remain per-folder (they drive
     // that folder's own "show inactive or muted" toggle).
-    if (user_settings.web_left_sidebar_show_channel_folders) {
+    if (channel_folders.should_show_channel_folders()) {
         const own_folder_counts = new Map(
             [...folder_unread_counts.entries()].map(([folder_id, unread_counts]) => [
                 folder_id,
@@ -1184,7 +1180,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
             normal_section_unread_counts.muted_channel_muted,
     );
 
-    if (user_settings.web_left_sidebar_show_channel_folders) {
+    if (channel_folders.should_show_channel_folders()) {
         for (const folder_id of channel_folders.get_all_folder_ids()) {
             const unread_counts = folder_unread_counts.get(folder_id) ?? {
                 unmuted: 0,

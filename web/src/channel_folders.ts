@@ -3,12 +3,21 @@ import type * as z from "zod/mini";
 
 import {FoldDict} from "./fold_dict.ts";
 import type {ChannelFolderUpdateEvent} from "./server_event_types.ts";
+import {current_user} from "./state_data.ts";
 import type {StateData, channel_folder_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
 export type ChannelFolder = z.infer<typeof channel_folder_schema>;
+
+// Whether the nested channel-folder view should be shown in the left sidebar.
+// Guests only ever get a flat list of channels and never see any folder view,
+// regardless of their personal setting.
+export function should_show_channel_folders(): boolean {
+    return user_settings.web_left_sidebar_show_channel_folders && !current_user.is_guest;
+}
 
 let channel_folder_name_dict: FoldDict<ChannelFolder>;
 let channel_folder_by_id_dict: Map<number, ChannelFolder>;

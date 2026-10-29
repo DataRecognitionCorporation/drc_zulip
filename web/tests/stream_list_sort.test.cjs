@@ -25,6 +25,9 @@ state_data.set_realm(
     }),
 );
 
+// A non-guest current user; channel folders are hidden for guests.
+state_data.set_current_user({is_guest: false});
+
 // Start with always filtering out inactive streams.
 const user_settings = {
     demote_inactive_streams: settings_config.demote_inactive_streams_values.always.code,

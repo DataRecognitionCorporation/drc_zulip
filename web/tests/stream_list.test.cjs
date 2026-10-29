@@ -17,7 +17,7 @@ const {set_current_user, set_realm} = zrequire("state_data");
 set_global("document", "document-stub");
 
 page_params.realm_users = [];
-const current_user = {};
+const current_user = {is_guest: false};
 set_current_user(current_user);
 
 // We use this with override.
@@ -730,6 +730,15 @@ run_test("get_sidebar_display_name for nested channels", ({override}) => {
         stream_list.get_sidebar_display_name(foldered_three_part, false),
         "EAK120FT - G6E - Notes",
     );
+
+    // Guests never see the folder view, so even a four-part foldered channel
+    // shows its full name for a guest.
+    override(current_user, "is_guest", true);
+    assert.equal(
+        stream_list.get_sidebar_display_name(foldered, false),
+        "EAK120FT - G6E - Omar Vance - Supervisors",
+    );
+    override(current_user, "is_guest", false);
 
     // When folders are disabled, the full name is shown even for foldered channels.
     override(user_settings, "web_left_sidebar_show_channel_folders", false);
