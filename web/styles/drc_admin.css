@@ -1,0 +1,90 @@
+/* Styles for the in-app DRC admin tools modal (web/templates/drc_admin_modal.hbs).
+   Colors intentionally come from the app's semantic theme variables so the
+   panel follows the active light/dark theme automatically. */
+
+#drc-admin-modal .modal__container {
+    /* Give the tool list room without becoming a full-screen overlay. */
+    width: min(720px, 90vw);
+    max-width: 90vw;
+}
+
+.drc-admin-modal .drc-admin-whoami {
+    margin: 0 0 16px;
+    color: var(--color-text-default);
+}
+
+.drc-admin-modal .drc-admin-group {
+    margin-bottom: 20px;
+}
+
+.drc-admin-modal .drc-admin-group-heading {
+    margin: 0 0 8px;
+    padding-bottom: 4px;
+    font-size: 1em;
+    font-weight: 600;
+    color: var(--color-text-default);
+    border-bottom: 1px solid var(--color-border-legacy-input);
+}
+
+.drc-admin-modal .drc-tool {
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--color-border-legacy-input);
+    border-radius: 4px;
+}
+
+.drc-admin-modal .drc-tool-summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--color-text-default);
+}
+
+.drc-admin-modal .drc-tool-danger .drc-tool-summary {
+    color: var(--color-text-danger-banner);
+}
+
+.drc-admin-modal .drc-tool-body {
+    margin-top: 10px;
+}
+
+.drc-admin-modal .drc-tool-description {
+    margin: 0 0 10px;
+    color: var(--color-text-default);
+    opacity: 0.75;
+}
+
+.drc-admin-modal .drc-tool .input-group {
+    margin-bottom: 10px;
+}
+
+.drc-admin-modal .drc-tool-date-range {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.drc-admin-modal .drc-tool-run {
+    margin-top: 4px;
+}
+
+.drc-admin-modal .drc-tool-result {
+    margin-top: 12px;
+    overflow-x: auto;
+    color: var(--color-text-default);
+}
+
+.drc-admin-modal .drc-tool-result table {
+    border-collapse: collapse;
+    font-size: 0.85em;
+}
+
+.drc-admin-modal .drc-tool-result th,
+.drc-admin-modal .drc-tool-result td {
+    padding: 2px 6px;
+    text-align: left;
+    border: 1px solid var(--color-border-table-bordered);
+}
+
+.drc-admin-modal .drc-tool-result-error {
+    color: var(--color-text-danger-banner);
+}
