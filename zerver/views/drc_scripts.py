@@ -1,0 +1,709 @@
+import csv
+from collections.abc import Mapping, Sequence
+from datetime import datetime
+from html import escape
+from io import StringIO
+from typing import Any
+
+from django.core.mail import get_connection
+from django.db import connection
+from django.db.backends.utils import CursorWrapper
+from django.http import HttpRequest, HttpResponse
+from django.utils.timezone import now as timezone_now
+from psycopg2.sql import SQL, Literal
+
+from zerver.lib.exceptions import AccessDeniedError, IncompatibleParametersError, UnauthorizedError
+from zerver.lib.response import json_success
+from zerver.lib.send_email import EmailNotDeliveredError, build_email, log_email_config_errors
+from zerver.models import UserProfile
+
+DELIMITER = "|"
+
+# Only realm owners (100) and administrators (200) may use these tools.
+MAX_ALLOWED_ROLE = UserProfile.ROLE_REALM_ADMINISTRATOR
+
+
+def send_report(
+    to_emails: list[str],
+    context: Mapping[str, Any] = {},
+    request: HttpRequest | None = None,
+    csv_values: str | None = None,
+    csv_file_name: str = "data.csv",
+) -> None:
+    """Email a DRC report as a CSV attachment.
+
+    This is intentionally self-contained rather than relying on
+    ``zerver.lib.send_email.send_email``: upstream's ``send_email`` enqueues
+    through ``send_immediate_email`` and has no attachment support, so we
+    build the message and send it over a connection directly here.
+    """
+    mail = build_email(
+        "zerver/emails/drc_reports",
+        to_user_ids=None,
+        to_emails=to_emails,
+        from_name="noreply",
+        from_address="zulip@datarecognitioncorp.com",
+        reply_to_email="zulip@datarecognitioncorp.com",
+        language=None,
+        context=context,
+        realm=None,
+    )
+
+    if csv_values is not None:
+        mail.attach(csv_file_name, csv_values, "text/csv")
+
+    log_email_config_errors()
+
+    mail.connection = get_connection()
+    try:
+        mail.send()
+    except Exception as e:
+        raise EmailNotDeliveredError from e
+
+
+def dictfetchall(cursor: CursorWrapper) -> list[dict[str, Any]]:
+    """Return all rows from a cursor as a list of dicts.
+
+    Assume the column names are unique.
+    """
+    columns = [col[0] for col in cursor.description]
+    return [dict(zip(columns, row, strict=False)) for row in cursor.fetchall()]
+
+
+def csv_to_html_table(
+    csv_string: str, delimeter: str = DELIMITER, header_width: Sequence[int] = []
+) -> str:
+    # Split the CSV string into rows
+    rows = csv_string.splitlines()
+
+    # Extract the headers (first row)
+    headers = rows[0].split(delimeter)
+
+    # Start HTML table
+    html = '<table border="1" style="border-collapse: collapse; width: 100%;">'
+
+    # Add header row
+    html += "<tr>"
+    n = 0
+    for header in headers:
+        if len(header_width) > 0 and len(headers) == len(header_width):
+            width = header_width[n]
+            html += f'<th width="{width}%">{escape(header)}</th>'
+            n += 1
+        else:
+            html += f"<th>{escape(header)}</th>"
+    html += "</tr>"
+
+    # Add data rows
+    for row in rows[1:]:
+        html += "<tr>"
+        cells = row.split(delimeter)
+        for cell in cells:
+            html += f"<td>{escape(cell)}</td>"
+        html += "</tr>"
+
+    # Close the table
+    html += "</table>"
+
+    return html
+
+
+def results_as_csv(results: list[dict[str, Any]], delimiter: str = DELIMITER) -> StringIO:
+    csvfile = StringIO()
+    writer = csv.writer(csvfile, delimiter=delimiter)
+    header = results[0].keys()
+    writer.writerow(header)
+    for result in results:
+        writer.writerow(result.values())
+
+    return csvfile
+
+
+allowed_scripts = {
+    "get_conversation": {
+        "pretty_name": "Get Conversation",
+        "script_name": "conversation_between_two_users_date_range_get",
+    },
+    "messages_user_get": {
+        "pretty_name": "Get User Messages",
+        "script_name": "messages_user_get",
+    },
+    "users_role_get": {
+        "pretty_name": "Get User Roles",
+        "script_name": "users_role_get",
+    },
+    "subscriptions_for_user_get": {
+        "pretty_name": "Get User Subscriptions",
+        "script_name": "subscriptions_for_user_get",
+    },
+    "muted_topics_get": {
+        "pretty_name": "Get Muted Topics",
+        "script_name": "mutedtopics_get",
+    },
+    "conversation_for_a_stream_get": {
+        "pretty_name": "Get Stream Conversation",
+        "script_name": "conversation_for_a_stream_get",
+    },
+    "get_mobile_devices": {
+        "pretty_name": "Get Mobile Services",
+        "script_name": "mobiledevices_get",
+    },
+    "enable_login_emails": {
+        "pretty_name": "Enable Login Emails",
+        "script_name": "users_enable_login_emails_get",
+    },
+    "update_enable_login_emails": {
+        "pretty_name": "Disable Login Emails",
+        "script_name": "users_enable_login_emails_update",
+    },
+    "get_user_activity": {
+        "pretty_name": "Get User Activity",
+        "script_name": "get_user_activity",
+    },
+    "get_mobile_access_requests": {
+        "pretty_name": "Get Mobile Access Requests",
+        "script_name": "get_mobile_access_requests",
+    },
+}
+
+
+def get_script_name(request: HttpRequest) -> dict[str, str]:
+    for item in request.POST:
+        if item in allowed_scripts:
+            return allowed_scripts[item]
+
+    raise IncompatibleParametersError([])
+
+
+def run_script(request: HttpRequest, script_info: dict[str, str]) -> HttpResponse:
+    script_name = script_info["script_name"]
+
+    if script_name == "users_role_get":
+        output = get_user_role(request)
+    elif script_name == "messages_user_get":
+        output = get_user_messages(request)
+    elif script_name == "conversation_between_two_users_date_range_get":
+        output = get_conversation(request)
+    elif script_name == "conversation_for_a_stream_get":
+        output = get_stream_messages(request)
+    elif script_name == "subscriptions_for_user_get":
+        output = get_user_subscriptions(request)
+    elif script_name == "mutedtopics_get":
+        output = get_muted_topics(request)
+    elif script_name == "mobiledevices_get":
+        output = get_mobile_devices(request)
+    elif script_name == "users_enable_login_emails_get":
+        output = enable_login_emails(request)
+    elif script_name == "users_enable_login_emails_update":
+        output = update_login_emails(request)
+    elif script_name == "get_user_activity":
+        output = get_user_activity(request)
+    elif script_name == "get_mobile_access_requests":
+        output = get_mobile_access_requests(request)
+    else:
+        output = ""
+
+    # Return the result as an HTML fragment that the in-app modal injects
+    # into its result container.
+    return json_success(request, data={"html": output})
+
+
+def _authorize(request: HttpRequest) -> UserProfile:
+    """Return the requester's profile, or raise unless they are an owner/admin."""
+    user_profile = request.user
+    if not isinstance(user_profile, UserProfile):
+        raise AccessDeniedError
+
+    if user_profile.role > MAX_ALLOWED_ROLE:
+        raise UnauthorizedError
+
+    return user_profile
+
+
+def drc_admin(request: HttpRequest) -> HttpResponse:
+    """Run a DRC admin tool and return its result as an HTML fragment.
+
+    The panel UI itself is rendered in-app by the web client (a dialog
+    modal); this endpoint only authorizes the requester and runs the tool
+    named in the POST payload, returning the result HTML for the modal to
+    display.
+    """
+    _authorize(request)
+    script = get_script_name(request)
+    return run_script(request, script)
+
+
+def get_user_role(request: HttpRequest) -> str:
+    email = request.POST.get("send_to")
+    if email is None:
+        return "No destination email provided."
+
+    csv_file_name = "user_roles.csv"
+
+    sqlstmt = SQL(
+        """
+        SELECT role,full_name,delivery_email,is_active
+        FROM zerver_userprofile
+        WHERE zerver_userprofile.role <= 400
+        ORDER BY ROLE,is_active,full_name;
+        """
+    )
+    with connection.cursor() as cursor:
+        cursor.execute(sqlstmt)
+        results = dictfetchall(cursor)
+
+    csvfile = results_as_csv(results)
+
+    context = {
+        "email_subject": "Get User Roles",
+        "email_body": "Please see attached report for roles.",
+    }
+    send_report([email], context, request, csvfile.getvalue(), csv_file_name)
+
+    return csv_to_html_table(csvfile.getvalue(), DELIMITER)
+
+
+def get_conversation(request: HttpRequest) -> str:
+    email = request.POST.get("send_to")
+    if email is None:
+        return "No destination email provided."
+    email_1 = request.POST.get("email_1")
+    email_2 = request.POST.get("email_2")
+    start_date = request.POST.get("start-date")
+    end_date = request.POST.get("end-date")
+
+    csv_file_name = "conversation.csv"
+
+    sqlstmt = SQL(
+        """
+        SELECT message.id AS message_id, content AS message_content, message.edit_history AS message_edits, message.last_edit_time AS last_edited,
+        profile_sending.full_name AS sender, profile_sending.delivery_email AS sender_email, profile_recieving.full_name AS recipient,
+        profile_recieving.delivery_email AS recipient_email, client.name AS sending_device,date_sent
+        FROM zerver_message AS message
+        INNER JOIN zerver_userprofile AS profile_sending ON message.sender_id = profile_sending.id
+        INNER JOIN zerver_recipient AS recipients ON message.recipient_id = recipients.id
+        INNER JOIN zerver_userprofile AS profile_recieving ON recipients.type_id = profile_recieving.id
+        INNER JOIN zerver_client AS client ON message.sending_client_id = client.id
+        WHERE ((profile_sending.delivery_email = {email_1} AND profile_recieving.delivery_email = {email_2})
+        OR (profile_sending.delivery_email = {email_2} AND profile_recieving.delivery_email = {email_1}))
+        AND date_sent BETWEEN {start_date} AND {end_date}
+        ORDER BY date_sent;
+        """
+    ).format(
+        email_1=Literal(email_1),
+        email_2=Literal(email_2),
+        start_date=Literal(start_date),
+        end_date=Literal(end_date),
+    )
+
+    with connection.cursor() as cursor:
+        cursor.execute(sqlstmt)
+        results = dictfetchall(cursor)
+
+    if results != []:
+        csvfile = results_as_csv(results)
+        context = {
+            "email_subject": "Get Conversation",
+            "email_body": "Please see attached for report.",
+        }
+        send_report([email], context, request, csvfile.getvalue(), csv_file_name)
+        output = f"Conversation has been sent to {email}"
+    else:
+        output = f"No conversation between {email_1} and {email_2} between dates {start_date} and {end_date}."
+
+    return output
+
+
+def get_user_messages(request: HttpRequest) -> str:
+    email = request.POST.get("send_to")
+    if email is None:
+        return "No destination email provided."
+    email_1 = request.POST.get("email_1")
+
+    csv_file_name = "user_messages.csv"
+
+    sqlstmt = SQL(
+        """
+        SELECT message.content AS message_content,
+        message.date_sent AS message_sent,
+        message.edit_history AS message_edits,
+        message.last_edit_time AS message_last_edited,
+        profile_sending.full_name AS sender,
+        profile_sending.delivery_email AS sender_email,
+        profile_recieving.full_name AS recipient,
+        profile_recieving.delivery_email AS recipient_email,
+        client.name AS sending_device
+        FROM zerver_message AS message
+        INNER JOIN zerver_userprofile AS profile_sending ON message.sender_id = profile_sending.id
+        INNER JOIN zerver_recipient AS recipients ON message.recipient_id = recipients.id
+        INNER JOIN zerver_userprofile AS profile_recieving ON recipients.type_id = profile_recieving.id
+        INNER JOIN zerver_client AS client ON message.sending_client_id = client.id
+        WHERE ((profile_sending.delivery_email = {email_1}) OR (profile_recieving.delivery_email = {email_1})) ORDER BY date_sent;
+        """
+    ).format(
+        email_1=Literal(email_1),
+    )
+
+    with connection.cursor() as cursor:
+        cursor.execute(sqlstmt)
+        results = dictfetchall(cursor)
+
+    if results != []:
+        csvfile = results_as_csv(results)
+        context = {
+            "email_subject": "Get User Messages",
+            "email_body": "Please see attached for report.",
+        }
+        send_report([email], context, request, csvfile.getvalue(), csv_file_name)
+        output = f"Messages have been sent to {email}"
+    else:
+        output = f"No messages found for user {email_1}."
+
+    return output
+
+
+def get_stream_messages(request: HttpRequest) -> str:
+    email = request.POST.get("send_to")
+    if email is None:
+        return "No destination email provided."
+    stream_name = request.POST.get("stream_name")
+    csv_file_name = "stream_messages.csv"
+
+    sqlstmt = SQL(
+        """
+        SELECT message.id AS message_id, content AS message_content, profile_sending.full_name AS sender, profile_sending.delivery_email AS sender_email, client.name AS sending_device,date_sent
+        FROM zerver_message as message
+        INNER JOIN zerver_recipient AS recipients ON recipients.id = message.recipient_id
+        INNER JOIN zerver_stream as stream on recipients.type_id = stream.id
+        INNER JOIN zerver_userprofile AS profile_sending ON message.sender_id = profile_sending.id
+        INNER JOIN zerver_client AS client ON message.sending_client_id = client.id
+        WHERE stream.name = {stream_name}
+        ORDER BY message.date_sent;
+        """
+    ).format(
+        stream_name=Literal(stream_name),
+    )
+
+    with connection.cursor() as cursor:
+        cursor.execute(sqlstmt)
+        results = dictfetchall(cursor)
+
+    if results != []:
+        csvfile = results_as_csv(results)
+        context = {
+            "email_subject": "Get Stream Messages",
+            "email_body": "Please see attached for report.",
+        }
+        send_report([email], context, request, csvfile.getvalue(), csv_file_name)
+        output = f"Messages have been sent to {email}"
+    else:
+        output = f"No messages found for stream {stream_name}."
+
+    return output
+
+
+def get_user_subscriptions(request: HttpRequest) -> str:
+    email_1 = request.POST.get("email_1")
+
+    sqlstmt = SQL(
+        """
+        SELECT userprofile.full_name AS full_name, userprofile.delivery_email AS email, stream.name AS stream, subscription.active AS active,
+        subscription.is_muted AS muted, subscription.is_user_active AS user_active FROM zerver_subscription AS subscription
+        INNER JOIN zerver_userprofile AS userprofile ON userprofile.id = subscription.user_profile_id INNER JOIN zerver_recipient AS recipient
+        ON recipient.id = subscription.recipient_id INNER JOIN zerver_stream AS stream ON stream.id = recipient.type_id
+        WHERE userprofile.delivery_email = {email_1} ORDER BY active DESC, stream
+        """
+    ).format(
+        email_1=Literal(email_1),
+    )
+
+    with connection.cursor() as cursor:
+        cursor.execute(sqlstmt)
+        results = dictfetchall(cursor)
+
+    if results != []:
+        csvfile = results_as_csv(results)
+        output = csv_to_html_table(csvfile.getvalue())
+    else:
+        output = f"No subscriptions found for {email_1}."
+
+    return output
+
+
+def get_muted_topics(request: HttpRequest) -> str:
+    sqlstmt = SQL(
+        """
+        SELECT UPID.full_name AS user_name,
+            UPID.delivery_email AS user_email,
+            MUTED_TOPIC.topic_name,
+            RID.full_name AS rept_name,
+            RID.delivery_email AS rcpt_email,
+            STREAM.name
+        FROM zerver_usertopic AS MUTED_TOPIC
+        JOIN zerver_userprofile AS UPID ON UPID.id = MUTED_TOPIC.user_profile_id
+        JOIN zerver_userprofile AS RID ON RID.id = MUTED_TOPIC.recipient_id
+        JOIN zerver_stream AS STREAM ON STREAM.id = MUTED_TOPIC.stream_id
+        ORDER BY user_name
+        """
+    )
+
+    with connection.cursor() as cursor:
+        cursor.execute(sqlstmt)
+        results = dictfetchall(cursor)
+
+    if results != []:
+        csvfile = results_as_csv(results)
+        output = csv_to_html_table(csvfile.getvalue())
+    else:
+        output = "No muted topics found."
+
+    return output
+
+
+def get_mobile_devices(request: HttpRequest) -> str:
+    sqlstmt = SQL(
+        """
+        SELECT DISTINCT profile_sending.full_name AS sender, profile_sending.delivery_email AS sender_email,
+        client.name AS sending_device FROM zerver_message AS message INNER JOIN zerver_userprofile AS profile_sending
+        ON message.sender_id = profile_sending.id INNER JOIN zerver_client AS client ON message.sending_client_id = client.id
+        WHERE client.name = 'ZulipMobile' ORDER BY sender_email
+        """
+    )
+
+    with connection.cursor() as cursor:
+        cursor.execute(sqlstmt)
+        results = dictfetchall(cursor)
+
+    if results != []:
+        csvfile = results_as_csv(results)
+        output = csv_to_html_table(csvfile.getvalue())
+    else:
+        output = "No mobile devices found."
+
+    return output
+
+
+def enable_login_emails(request: HttpRequest) -> str:
+    sqlstmt = SQL(
+        """
+        SELECT full_name, delivery_email
+        FROM zerver_userprofile
+        WHERE enable_login_emails = 'true';
+        """
+    )
+
+    with connection.cursor() as cursor:
+        cursor.execute(sqlstmt)
+        results = dictfetchall(cursor)
+
+    if results != []:
+        csvfile = results_as_csv(results)
+        output = csv_to_html_table(csvfile.getvalue())
+    else:
+        output = "No users found with enable login emails set."
+
+    return output
+
+
+def update_login_emails(request: HttpRequest) -> str:
+    sqlstmt = SQL(
+        """
+        SELECT full_name, delivery_email
+        FROM zerver_userprofile
+        WHERE enable_login_emails ='true';
+        """
+    )
+
+    with connection.cursor() as cursor:
+        cursor.execute(sqlstmt)
+        results = dictfetchall(cursor)
+
+    if results != []:
+        csvfile = results_as_csv(results)
+        csv_table = csv_to_html_table(csvfile.getvalue())
+
+        sqlstmt = SQL(
+            """
+            UPDATE zerver_userprofile
+            SET enable_login_emails = 'false'
+            WHERE enable_login_emails = 'true';
+            """
+        )
+
+        with connection.cursor() as cursor:
+            cursor.execute(sqlstmt)
+
+        output = (
+            "The following accounts have had enable login emails set to false...<br><br>"
+            + csv_table
+        )
+    else:
+        output = "No users found with enable login emails set."
+
+    return output
+
+
+def get_user_activity(request: HttpRequest) -> str:
+    email_1 = request.POST.get("email_1")
+    start_date = request.POST.get("start-date")
+    end_date = request.POST.get("end-date")
+    sqlstmt = SQL(
+        """
+        SELECT userprofile.full_name AS FULL_NAME,
+        userprofile.delivery_email AS EMAIL,
+        userprofile.last_login AS LAST_LOGIN
+        FROM zerver_userprofile AS userprofile
+        WHERE userprofile.delivery_email ilike {email_1};
+        """
+    ).format(email_1=Literal(email_1))
+
+    with connection.cursor() as cursor:
+        cursor.execute(sqlstmt)
+        login_results = dictfetchall(cursor)
+
+    sqlstmt = SQL(
+        """
+        SELECT userprofile.full_name AS FULL_NAME,
+            userprofile.delivery_email AS EMAIL,
+            usercount.property AS PROPERTY,
+            usercount.end_time AS END_TIME,
+            usercount.value AS VALUE
+        FROM zerver_userprofile AS userprofile
+        JOIN analytics_usercount AS usercount ON usercount.user_id = userprofile.id
+        WHERE userprofile.delivery_email ilike {email_1}
+            AND usercount.property <> 'active_users_audit:is_bot:day'
+            AND usercount.end_time BETWEEN {start_date} AND {end_date}
+        ORDER BY usercount.end_time DESC;
+        """
+    ).format(
+        email_1=Literal(email_1),
+        start_date=Literal(start_date),
+        end_date=Literal(end_date),
+    )
+
+    with connection.cursor() as cursor:
+        cursor.execute(sqlstmt)
+        analytics_results = dictfetchall(cursor)
+
+    sqlstmt = SQL(
+        """
+        SELECT userprofile.full_name AS FULL_NAME,
+            userprofile.delivery_email AS EMAIL,
+            useractivity."query" AS QUERY,
+            useractivity."count" AS COUNT,
+            useractivity.last_visit AS LAST_VISIT
+        FROM zerver_userprofile AS userprofile
+        JOIN zerver_useractivity as useractivity ON useractivity.user_profile_id = userprofile.id
+        WHERE userprofile.delivery_email ilike {email_1}
+            AND useractivity.last_visit BETWEEN {start_date} AND {end_date}
+        ORDER BY useractivity.last_visit DESC;
+        """
+    ).format(
+        email_1=Literal(email_1),
+        start_date=Literal(start_date),
+        end_date=Literal(end_date),
+    )
+
+    with connection.cursor() as cursor:
+        cursor.execute(sqlstmt)
+        user_activity_results = dictfetchall(cursor)
+
+    sqlstmt = SQL(
+        """
+        SELECT userprofile.full_name AS FULL_NAME,
+            userprofile.delivery_email AS EMAIL,
+            message.date_sent AS DATE_SENT
+        FROM zerver_userprofile AS userprofile
+        JOIN zerver_usermessage AS usermessage ON usermessage.user_profile_id = userprofile.id
+        JOIN zerver_message AS message ON message.id = usermessage.message_id
+        WHERE userprofile.delivery_email ilike {email_1}
+            AND message.date_sent BETWEEN {start_date} AND {end_date}
+        ORDER BY message.date_sent DESC;
+        """
+    ).format(
+        email_1=Literal(email_1),
+        start_date=Literal(start_date),
+        end_date=Literal(end_date),
+    )
+
+    with connection.cursor() as cursor:
+        cursor.execute(sqlstmt)
+        messages_sent_results = dictfetchall(cursor)
+
+    if login_results != []:
+        login_data = csv_to_html_table(results_as_csv(login_results).getvalue())
+    else:
+        login_data = "Not found"
+
+    if analytics_results != []:
+        analytics_data = csv_to_html_table(results_as_csv(analytics_results).getvalue())
+    else:
+        analytics_data = "Not found"
+
+    if user_activity_results != []:
+        user_activity_data = csv_to_html_table(results_as_csv(user_activity_results).getvalue())
+    else:
+        user_activity_data = "Not found"
+
+    if messages_sent_results != []:
+        messages_sent_data = csv_to_html_table(results_as_csv(messages_sent_results).getvalue())
+    else:
+        messages_sent_data = "Not found"
+
+    output = f"""
+    User Email: {escape(email_1 or "")}
+    Start Date: {escape(start_date or "")}
+    End Date: {escape(end_date or "")}
+
+    <b>User Login Data:</b> {login_data}
+    <b>Analytics Data:</b> {analytics_data}
+    <b>User Activity Data:</b> {user_activity_data}
+    <b>Messages Sent Data:</b> {messages_sent_data}
+    """
+    return output
+
+
+def get_mobile_access_requests(request: HttpRequest) -> str:
+    start_date = request.POST.get("start-date")
+    if start_date is None:
+        return "No start date provided."
+    now = timezone_now()
+    start = datetime.strptime(start_date, "%Y-%m-%d").replace(tzinfo=now.tzinfo)
+    delta = now - start
+
+    sqlstmt = SQL(
+        """
+        SELECT
+            u.full_name,
+            c.name AS client_name,
+            COUNT(*) AS query_count,
+            MAX(a.last_visit) AS latest_visit
+        FROM zerver_useractivity a
+        JOIN zerver_userprofile u
+            ON a.user_profile_id = u.id
+        JOIN zerver_client c
+            ON a.client_id = c.id
+        WHERE
+            c.name IN ('ZulipElectron', 'ZulipMobile', 'ZulipFlutter', 'Dart')
+            AND a.last_visit >= NOW() - INTERVAL '{days} days'
+        GROUP BY
+            u.full_name,
+            c.name
+        ORDER BY
+            latest_visit DESC;
+        """
+    ).format(
+        days=Literal(delta.days),
+    )
+
+    with connection.cursor() as cursor:
+        cursor.execute(sqlstmt)
+        results = dictfetchall(cursor)
+
+    if results != []:
+        csvfile = results_as_csv(results)
+        output = csv_to_html_table(csvfile.getvalue())
+    else:
+        output = "No mobile access found."
+
+    return output
