@@ -16,7 +16,6 @@ from zerver.lib.exceptions import AccessDeniedError, IncompatibleParametersError
 from zerver.lib.response import json_success
 from zerver.lib.send_email import EmailNotDeliveredError, build_email, log_email_config_errors
 from zerver.models import UserProfile
-from zerver.models.users import get_user_profile_by_email
 
 DELIMITER = "|"
 
@@ -211,11 +210,8 @@ def run_script(request: HttpRequest, script_info: dict[str, str]) -> HttpRespons
 
 def _authorize(request: HttpRequest) -> UserProfile:
     """Return the requester's profile, or raise unless they are an owner/admin."""
-    if not request.user.is_authenticated:
-        raise AccessDeniedError
-    try:
-        user_profile = get_user_profile_by_email(request.user.delivery_email)
-    except Exception:
+    user_profile = request.user
+    if not isinstance(user_profile, UserProfile):
         raise AccessDeniedError
 
     if user_profile.role > MAX_ALLOWED_ROLE:
