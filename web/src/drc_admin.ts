@@ -38,7 +38,7 @@ function run_tool($form: JQuery): void {
     $result.empty().removeClass("drc-tool-result-error");
 
     void channel.post({
-        url: "/drc_admin",
+        url: "/drc_admin/",
         data,
         success(raw_data) {
             const response = run_script_response_schema.parse(raw_data);
