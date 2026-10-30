@@ -58,6 +58,7 @@ from zerver.views.devices import register_device, remove_device
 from zerver.views.digest import digest_page
 from zerver.views.documentation import MarkdownDirectoryView, integrations_catalog, integrations_doc
 from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_drafts
+from zerver.views.drc_scripts import drc_admin
 from zerver.views.events_register import events_register_backend
 from zerver.views.health import health
 from zerver.views.home import accounts_accept_terms, desktop_home, doc_permalinks_view, home
@@ -765,6 +766,8 @@ i18n_urls = [
         integrations_doc,
         name="integration_doc",
     ),
+    # DRC admin scripts & reports panel (consolidated maintenance + reports).
+    path("drc_admin/", drc_admin, name="drc_admin"),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english

@@ -1,0 +1,380 @@
+<div class="drc-admin-modal">
+    <p class="drc-admin-whoami">
+        {{#tr}}Signed in as
+            <b>{whoami}</b>. Reports are emailed as CSV attachments to the
+            address in each tool's
+            <i>Send results to</i>
+            field.{{/tr}}
+    </p>
+
+    <section class="drc-admin-group">
+        <h2 class="drc-admin-group-heading">{{t "Reports"}}</h2>
+
+        <details class="drc-tool">
+            <summary class="drc-tool-summary">{{t "Get conversation"}}</summary>
+            <div class="drc-tool-body">
+                <p class="drc-tool-description">{{t
+                        "Export the direct messages between two users within a date range."
+                    }}</p>
+                <form class="drc-tool-form" data-tool="get_conversation">
+                    <div class="input-group">
+                        <label class="modal-field-label">{{t
+                                "Send results to"
+                            }}</label>
+                        <input
+                            class="modal_text_input"
+                            type="text"
+                            name="send_to"
+                            value="{{whoami}}"
+                        />
+                    </div>
+                    <div class="input-group">
+                        <label class="modal-field-label">{{t "Email A"}}</label>
+                        <input
+                            class="modal_text_input"
+                            type="text"
+                            name="email_1"
+                        />
+                    </div>
+                    <div class="input-group">
+                        <label class="modal-field-label">{{t "Email B"}}</label>
+                        <input
+                            class="modal_text_input"
+                            type="text"
+                            name="email_2"
+                        />
+                    </div>
+                    <div class="drc-tool-date-range">
+                        <div class="input-group">
+                            <label class="modal-field-label">{{t
+                                    "Start date"
+                                }}</label>
+                            <input
+                                class="modal_text_input"
+                                type="date"
+                                name="start-date"
+                                value="{{last_month}}"
+                            />
+                        </div>
+                        <div class="input-group">
+                            <label class="modal-field-label">{{t
+                                    "End date"
+                                }}</label>
+                            <input
+                                class="modal_text_input"
+                                type="date"
+                                name="end-date"
+                                value="{{today}}"
+                            />
+                        </div>
+                    </div>
+                    <button
+                        type="submit"
+                        class="modal__button dialog_submit_button drc-tool-run"
+                    >{{t "Run"}}</button>
+                    <div class="drc-tool-result"></div>
+                </form>
+            </div>
+        </details>
+
+        <details class="drc-tool">
+            <summary class="drc-tool-summary">{{t
+                    "Get user messages"
+                }}</summary>
+            <div class="drc-tool-body">
+                <p class="drc-tool-description">{{t
+                        "Export all messages sent or received by a user. Results are emailed to the first field."
+                    }}</p>
+                <form class="drc-tool-form" data-tool="messages_user_get">
+                    <div class="input-group">
+                        <label class="modal-field-label">{{t
+                                "Send results to"
+                            }}</label>
+                        <input
+                            class="modal_text_input"
+                            type="text"
+                            name="send_to"
+                            value="{{whoami}}"
+                        />
+                    </div>
+                    <div class="input-group">
+                        <label class="modal-field-label">{{t
+                                "User email"
+                            }}</label>
+                        <input
+                            class="modal_text_input"
+                            type="text"
+                            name="email_1"
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        class="modal__button dialog_submit_button drc-tool-run"
+                    >{{t "Run"}}</button>
+                    <div class="drc-tool-result"></div>
+                </form>
+            </div>
+        </details>
+
+        <details class="drc-tool">
+            <summary class="drc-tool-summary">{{t
+                    "Get user activity"
+                }}</summary>
+            <div class="drc-tool-body">
+                <p class="drc-tool-description">{{t
+                        "Show login, analytics, activity, and message data for a user in a date range."
+                    }}</p>
+                <form class="drc-tool-form" data-tool="get_user_activity">
+                    <div class="input-group">
+                        <label class="modal-field-label">{{t
+                                "User email"
+                            }}</label>
+                        <input
+                            class="modal_text_input"
+                            type="text"
+                            name="email_1"
+                        />
+                    </div>
+                    <div class="drc-tool-date-range">
+                        <div class="input-group">
+                            <label class="modal-field-label">{{t
+                                    "Start date"
+                                }}</label>
+                            <input
+                                class="modal_text_input"
+                                type="date"
+                                name="start-date"
+                                value="{{last_month}}"
+                            />
+                        </div>
+                        <div class="input-group">
+                            <label class="modal-field-label">{{t
+                                    "End date"
+                                }}</label>
+                            <input
+                                class="modal_text_input"
+                                type="date"
+                                name="end-date"
+                                value="{{today}}"
+                            />
+                        </div>
+                    </div>
+                    <button
+                        type="submit"
+                        class="modal__button dialog_submit_button drc-tool-run"
+                    >{{t "Run"}}</button>
+                    <div class="drc-tool-result"></div>
+                </form>
+            </div>
+        </details>
+
+        <details class="drc-tool">
+            <summary class="drc-tool-summary">{{t
+                    "Get stream conversation"
+                }}</summary>
+            <div class="drc-tool-body">
+                <p class="drc-tool-description">{{t
+                        "Export all messages in a stream. Results are emailed to the first field."
+                    }}</p>
+                <form
+                    class="drc-tool-form"
+                    data-tool="conversation_for_a_stream_get"
+                >
+                    <div class="input-group">
+                        <label class="modal-field-label">{{t
+                                "Send results to"
+                            }}</label>
+                        <input
+                            class="modal_text_input"
+                            type="text"
+                            name="send_to"
+                            value="{{whoami}}"
+                        />
+                    </div>
+                    <div class="input-group">
+                        <label class="modal-field-label">{{t
+                                "Stream name"
+                            }}</label>
+                        <input
+                            class="modal_text_input"
+                            type="text"
+                            name="stream_name"
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        class="modal__button dialog_submit_button drc-tool-run"
+                    >{{t "Run"}}</button>
+                    <div class="drc-tool-result"></div>
+                </form>
+            </div>
+        </details>
+
+        <details class="drc-tool">
+            <summary class="drc-tool-summary">{{t "Get user roles"}}</summary>
+            <div class="drc-tool-body">
+                <p class="drc-tool-description">{{t
+                        "Export a CSV of all user roles. Results are emailed to the field below."
+                    }}</p>
+                <form class="drc-tool-form" data-tool="users_role_get">
+                    <div class="input-group">
+                        <label class="modal-field-label">{{t
+                                "Send results to"
+                            }}</label>
+                        <input
+                            class="modal_text_input"
+                            type="text"
+                            name="send_to"
+                            value="{{whoami}}"
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        class="modal__button dialog_submit_button drc-tool-run"
+                    >{{t "Run"}}</button>
+                    <div class="drc-tool-result"></div>
+                </form>
+            </div>
+        </details>
+
+        <details class="drc-tool">
+            <summary class="drc-tool-summary">{{t
+                    "Get user subscriptions"
+                }}</summary>
+            <div class="drc-tool-body">
+                <p class="drc-tool-description">{{t
+                        "List the streams a user is subscribed to."
+                    }}</p>
+                <form
+                    class="drc-tool-form"
+                    data-tool="subscriptions_for_user_get"
+                >
+                    <div class="input-group">
+                        <label class="modal-field-label">{{t
+                                "User email"
+                            }}</label>
+                        <input
+                            class="modal_text_input"
+                            type="text"
+                            name="email_1"
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        class="modal__button dialog_submit_button drc-tool-run"
+                    >{{t "Run"}}</button>
+                    <div class="drc-tool-result"></div>
+                </form>
+            </div>
+        </details>
+
+        <details class="drc-tool">
+            <summary class="drc-tool-summary">{{t "Get muted topics"}}</summary>
+            <div class="drc-tool-body">
+                <p class="drc-tool-description">{{t
+                        "List all muted topics across the server."
+                    }}</p>
+                <form class="drc-tool-form" data-tool="muted_topics_get">
+                    <button
+                        type="submit"
+                        class="modal__button dialog_submit_button drc-tool-run"
+                    >{{t "Run"}}</button>
+                    <div class="drc-tool-result"></div>
+                </form>
+            </div>
+        </details>
+
+        <details class="drc-tool">
+            <summary class="drc-tool-summary">{{t
+                    "Get mobile devices"
+                }}</summary>
+            <div class="drc-tool-body">
+                <p class="drc-tool-description">{{t
+                        "List users who have sent messages from the Zulip mobile app."
+                    }}</p>
+                <form class="drc-tool-form" data-tool="get_mobile_devices">
+                    <button
+                        type="submit"
+                        class="modal__button dialog_submit_button drc-tool-run"
+                    >{{t "Run"}}</button>
+                    <div class="drc-tool-result"></div>
+                </form>
+            </div>
+        </details>
+
+        <details class="drc-tool">
+            <summary class="drc-tool-summary">{{t
+                    "Get mobile access requests"
+                }}</summary>
+            <div class="drc-tool-body">
+                <p class="drc-tool-description">{{t
+                        "List successful mobile and desktop app access since the start date. No results means mobile agents are being blocked successfully."
+                    }}</p>
+                <form
+                    class="drc-tool-form"
+                    data-tool="get_mobile_access_requests"
+                >
+                    <div class="input-group">
+                        <label class="modal-field-label">{{t
+                                "Start date"
+                            }}</label>
+                        <input
+                            class="modal_text_input"
+                            type="date"
+                            name="start-date"
+                            value="{{last_month}}"
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        class="modal__button dialog_submit_button drc-tool-run"
+                    >{{t "Run"}}</button>
+                    <div class="drc-tool-result"></div>
+                </form>
+            </div>
+        </details>
+    </section>
+
+    <section class="drc-admin-group">
+        <h2 class="drc-admin-group-heading">{{t "Maintenance"}}</h2>
+
+        <details class="drc-tool">
+            <summary class="drc-tool-summary">{{t
+                    "List login-email users"
+                }}</summary>
+            <div class="drc-tool-body">
+                <p class="drc-tool-description">{{t
+                        "List users who have login-email notifications enabled."
+                    }}</p>
+                <form class="drc-tool-form" data-tool="enable_login_emails">
+                    <button
+                        type="submit"
+                        class="modal__button dialog_submit_button drc-tool-run"
+                    >{{t "Run"}}</button>
+                    <div class="drc-tool-result"></div>
+                </form>
+            </div>
+        </details>
+
+        <details class="drc-tool drc-tool-danger">
+            <summary class="drc-tool-summary">{{t
+                    "Disable login emails for all users"
+                }}</summary>
+            <div class="drc-tool-body">
+                <p class="drc-tool-description">{{t
+                        "Set enable_login_emails to false for every user who currently has it enabled. This is a bulk update; the affected accounts are listed in the result."
+                    }}</p>
+                <form
+                    class="drc-tool-form"
+                    data-tool="update_enable_login_emails"
+                >
+                    <button
+                        type="submit"
+                        class="modal__button dialog_submit_button drc-tool-run"
+                    >{{t "Run"}}</button>
+                    <div class="drc-tool-result"></div>
+                </form>
+            </div>
+        </details>
+    </section>
+</div>

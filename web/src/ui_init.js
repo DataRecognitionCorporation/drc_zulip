@@ -44,6 +44,7 @@ import * as desktop_integration from "./desktop_integration.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as drafts from "./drafts.ts";
+import * as drc_admin from "./drc_admin.ts";
 import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
 import * as echo from "./echo.ts";
 import * as emoji from "./emoji.ts";
@@ -633,6 +634,7 @@ export async function initialize_everything(state_data) {
     });
     overlays.initialize();
     invite.initialize();
+    drc_admin.initialize();
     message_view_header.initialize();
     server_events_state.initialize({
         ...state_data.server_events_state,
