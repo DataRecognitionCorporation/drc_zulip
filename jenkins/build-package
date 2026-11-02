@@ -30,7 +30,6 @@ pipeline {
 
   environment {
     GITHUB_ACTIONS = true
-    VIRTUAL_ENV = "/srv/zulip-py3-venv"
   }
 
   stages {

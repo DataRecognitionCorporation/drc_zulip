@@ -15,7 +15,7 @@ from psycopg2.sql import SQL, Literal
 from zerver.lib.exceptions import AccessDeniedError, IncompatibleParametersError, UnauthorizedError
 from zerver.lib.response import json_success
 from zerver.lib.send_email import EmailNotDeliveredError, build_email, log_email_config_errors
-from zerver.models import UserProfile
+from zerver.models import Recipient, UserProfile
 
 DELIMITER = "|"
 
@@ -264,6 +264,7 @@ def get_user_role(request: HttpRequest) -> str:
 
 
 def get_conversation(request: HttpRequest) -> str:
+    user_profile = _authorize(request)
     email = request.POST.get("send_to")
     if email is None:
         return "No destination email provided."
@@ -282,11 +283,18 @@ def get_conversation(request: HttpRequest) -> str:
         FROM zerver_message AS message
         INNER JOIN zerver_userprofile AS profile_sending ON message.sender_id = profile_sending.id
         INNER JOIN zerver_recipient AS recipients ON message.recipient_id = recipients.id
-        INNER JOIN zerver_userprofile AS profile_recieving ON recipients.type_id = profile_recieving.id
+        INNER JOIN zerver_huddle AS conversation ON conversation.recipient_id = recipients.id
+        INNER JOIN zerver_subscription AS subscription ON subscription.recipient_id = recipients.id
+        INNER JOIN zerver_userprofile AS profile_recieving ON subscription.user_profile_id = profile_recieving.id
+            AND (profile_recieving.id != profile_sending.id OR conversation.group_size = 1)
         INNER JOIN zerver_client AS client ON message.sending_client_id = client.id
         WHERE ((profile_sending.delivery_email = {email_1} AND profile_recieving.delivery_email = {email_2})
         OR (profile_sending.delivery_email = {email_2} AND profile_recieving.delivery_email = {email_1}))
-        AND date_sent BETWEEN {start_date} AND {end_date}
+        AND recipients.type = {direct_message_type}
+        AND conversation.group_size <= 2
+        AND profile_sending.realm_id = {realm_id}
+        AND date_sent >= {start_date}::date
+        AND date_sent < {end_date}::date + INTERVAL '1 day'
         ORDER BY date_sent;
         """
     ).format(
@@ -294,6 +302,8 @@ def get_conversation(request: HttpRequest) -> str:
         email_2=Literal(email_2),
         start_date=Literal(start_date),
         end_date=Literal(end_date),
+        direct_message_type=Literal(Recipient.DIRECT_MESSAGE_GROUP),
+        realm_id=Literal(user_profile.realm_id),
     )
 
     with connection.cursor() as cursor:
