@@ -116,9 +116,23 @@ export function error(
 // Install a window-wide onerror handler in development to display the stacktraces, to make them
 // hard to miss
 if (DEVELOPMENT) {
+    // "ResizeObserver loop limit exceeded" / "ResizeObserver loop completed
+    // with undelivered notifications" are benign browser warnings: per the
+    // ResizeObserver spec they mean some notifications were deferred to the
+    // next frame, with no data lost and nothing broken. They have no stack
+    // trace and can be triggered by any observer on the page (compose, the
+    // sidebars, popovers, dialog scrollbars) when layout changes — e.g. when a
+    // modal opens or closes. Ignore them so they don't raise the dev
+    // stacktrace overlay.
+    const is_benign_resize_observer_error = (message: string): boolean =>
+        message.startsWith("ResizeObserver loop");
+
     $(window).on("error", (event: JQuery.TriggeredEvent) => {
         const {originalEvent} = event;
         if (originalEvent instanceof ErrorEvent) {
+            if (is_benign_resize_observer_error(originalEvent.message)) {
+                return;
+            }
             void display_stacktrace(originalEvent.error, originalEvent.message);
         }
     });
