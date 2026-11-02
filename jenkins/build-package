@@ -87,27 +87,27 @@ pipeline {
               arti_url: 'https://artifactory.datarecognitioncorp.com/artifactory',
               isYumRepo: false
             ])
-            stage('Deploy Dev') {
-              when {
-                allOf {
-                  changeRequest target: 'drc_12.3.x'
-                  expression { !env.CHANGE_FORK }
-                }
-              }
-              steps {
-                configFileProvider([configFile(fileId: 'zulip-dev-deploy', variable: 'DEPLOY_CONFIG')]) {
-                  script {
-                    def config = readJSON file: env.DEPLOY_CONFIG
-                    build job: config.job, wait: true, propagate: true, parameters: [
-                      string(name: 'PR_NUMBER', value: env.CHANGE_ID),
-                      string(name: 'VERSION', value: env.PACKAGE_VERSION),
-                      string(name: 'SHA256', value: env.PACKAGE_SHA256),
-                      string(name: 'REVISION', value: env.SOURCE_REVISION)
-                    ]
-                  }
-                }
-              }
-            }
+          }
+        }
+      }
+    }
+    stage('Deploy Dev') {
+      when {
+        allOf {
+          changeRequest target: 'drc_12.3.x'
+          expression { !env.CHANGE_FORK }
+        }
+      }
+      steps {
+        configFileProvider([configFile(fileId: 'zulip-dev-deploy', variable: 'DEPLOY_CONFIG')]) {
+          script {
+            def config = readJSON file: env.DEPLOY_CONFIG
+            build job: config.job, wait: true, propagate: true, parameters: [
+              string(name: 'PR_NUMBER', value: env.CHANGE_ID),
+              string(name: 'VERSION', value: env.PACKAGE_VERSION),
+              string(name: 'SHA256', value: env.PACKAGE_SHA256),
+              string(name: 'REVISION', value: env.SOURCE_REVISION)
+            ]
           }
         }
       }
