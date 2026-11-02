@@ -2,9 +2,9 @@
    Colors intentionally come from the app's semantic theme variables so the
    panel follows the active light/dark theme automatically. */
 
-#drc-admin-modal .modal__container {
+#drc-admin-modal.modal__container {
     /* Give the tool list room without becoming a full-screen overlay. */
-    width: min(720px, 90vw);
+    width: min(1100px, 90vw);
     max-width: 90vw;
 }
 
