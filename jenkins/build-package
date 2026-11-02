@@ -52,6 +52,10 @@ pipeline {
       steps {
         dir("${WORKSPACE}"){
           script {
+            env.SOURCE_REVISION = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
+            def ref = env.CHANGE_ID ? "pr-${env.CHANGE_ID}" : env.BRANCH_NAME.replaceAll(/[^A-Za-z0-9._-]/, '-')
+            env.PACKAGE_VERSION = "test-${ref}-${env.BUILD_NUMBER}-${env.SOURCE_REVISION.take(12)}"
+            env.PACKAGE_FILE = "zulip-server-${env.PACKAGE_VERSION}.tar.gz"
             sh """#!/bin/bash
               set -eu
               git config zulip.zulipRemote origin
@@ -59,23 +63,51 @@ pipeline {
               source ./tools/ci/activate-venv
 
               ./tools/ci/production-build
-              mv /tmp/production-build/zulip-server-test.tar.gz ./zulip-server-test-\$(date +\"%Y%m%d%H%M\").tar.gz
+              mv /tmp/production-build/zulip-server-test.tar.gz "\$PACKAGE_FILE"
             """
+            env.PACKAGE_SHA256 = sh(returnStdout: true, script: 'sha256sum "$PACKAGE_FILE"').trim().tokenize()[0]
+            writeJSON file: 'deployment.json', json: [
+              version: env.PACKAGE_VERSION,
+              sha256: env.PACKAGE_SHA256,
+              revision: env.SOURCE_REVISION
+            ]
+            archiveArtifacts artifacts: 'deployment.json', fingerprint: true
           }
         }
       }
     }
-    stage('Deploy') {
+    stage('Publish Package') {
       steps {
         dir("${WORKSPACE}"){
           script {
             uploadToArtifactory([
               repo: 'devops-generic-dev',
-              pattern: "./zulip-server-test-*.tar.gz",
+              pattern: "./${env.PACKAGE_FILE}",
               git_proj: 'zulip',
               arti_url: 'https://artifactory.datarecognitioncorp.com/artifactory',
               isYumRepo: false
             ])
+            stage('Deploy Dev') {
+              when {
+                allOf {
+                  changeRequest target: 'drc_12.3.x'
+                  expression { !env.CHANGE_FORK }
+                }
+              }
+              steps {
+                configFileProvider([configFile(fileId: 'zulip-dev-deploy', variable: 'DEPLOY_CONFIG')]) {
+                  script {
+                    def config = readJSON file: env.DEPLOY_CONFIG
+                    build job: config.job, wait: true, propagate: true, parameters: [
+                      string(name: 'PR_NUMBER', value: env.CHANGE_ID),
+                      string(name: 'VERSION', value: env.PACKAGE_VERSION),
+                      string(name: 'SHA256', value: env.PACKAGE_SHA256),
+                      string(name: 'REVISION', value: env.SOURCE_REVISION)
+                    ]
+                  }
+                }
+              }
+            }
           }
         }
       }
