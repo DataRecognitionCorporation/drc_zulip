@@ -10,21 +10,17 @@
 </div>
 <form id="invite-user-form">
     <div class="input-group" id="invitee_emails_container">
-        <label for="invitee_emails" class="modal-field-label">{{t "Emails (one on each line or comma-separated)" }}
-            {{> help_link_widget link="/help/invite-new-users#send-email-invitations" }}
-        </label>
-        <div class="pill-container {{#unless user_has_email_set}}not-editable-by-user{{/unless}}">
-            <div class="input" {{#if user_has_email_set}}contenteditable="true"{{/if}}></div>
-        </div>
+        <label for="invitee_emails" class="modal-field-label">{{t "One user per line: Last name, First name, Email" }}</label>
+        <textarea rows="8" id="invitee_emails" name="invitee_emails" class="modal-textarea" placeholder="{{t 'Last name, First name, Email'}}"></textarea>
     </div>
-    <div class="input-group" id="receive-invite-acceptance-notification-container">
+    <div class="input-group new-style" id="invite_multiple_container">
         <label class="checkbox display-block">
-            <input type="checkbox" id="receive-invite-acceptance-notification" checked/>
+            <input type="checkbox" id="invite_multiple" checked disabled/>
             <span class="rendered-checkbox"></span>
-            {{t "Send me a direct message when my invitation is accepted" }}
+            {{t "Add users with last name, first name and email"}}
         </label>
     </div>
-    <div class="input-group">
+    <div class="input-group" id="invite-expiration-container">
         <label for="expires_in" class="modal-field-label">{{t "Invitation expires after" }}</label>
         <select id="expires_in" name="expires_in" class="invite-user-select modal_select bootstrap-focus-style">
             {{#each (object_values expires_in_options)}}
@@ -48,13 +44,11 @@
             {{> help_link_widget link="/help/user-roles" }}
         </label>
         <select id="invite_as" name="invite_as" class="invite-user-select modal_select bootstrap-focus-style">
-            <option value="{{ invite_as_options.guest.code }}">{{t "Guests" }}</option>
-            <option selected="selected" value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
-            {{#if is_admin}}
+            <option selected="selected" value="{{ invite_as_options.guest.code }}">{{t "Guests" }}</option>
+            <option value="{{ invite_as_options.member.code }}">{{t "Members" }}</option>
+            {{#if is_owner}}
             <option value="{{ invite_as_options.moderator.code }}">{{t "Moderators" }}</option>
             <option value="{{ invite_as_options.admin.code }}">{{t "Administrators" }}</option>
-            {{/if}}
-            {{#if is_owner}}
             <option value="{{ invite_as_options.owner.code }}">{{t "Owners" }}</option>
             {{/if}}
         </select>
@@ -100,7 +94,7 @@
         </div>
     {{/if}}
     {{#if is_admin}}
-    <div class="input-group">
+    <div class="input-group" id="invite-welcome-message-container">
         {{#if default_welcome_message_custom_text}}
         <label class="checkbox display-block modal-field-label">
             <input type="checkbox" id="send_default_realm_welcome_message_custom_text" checked="checked"/>

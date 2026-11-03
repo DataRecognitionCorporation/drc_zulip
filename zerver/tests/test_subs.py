@@ -9,14 +9,16 @@ from unittest import mock
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import transaction
+from django.db import connection, transaction
 from django.http import HttpResponse
+from django.test.utils import CaptureQueriesContext
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from zerver.actions.bots import do_change_bot_owner
 from zerver.actions.channel_folders import check_add_channel_folder
 from zerver.actions.create_realm import do_create_realm
+from zerver.actions.create_user import do_create_user
 from zerver.actions.default_streams import do_add_default_stream, do_create_default_stream_group
 from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.realm_settings import (
@@ -4435,6 +4437,61 @@ class SubscriptionAPITest(ZulipTestCase):
         json = self.assert_json_success(result)
         self.assertEqual(json["subscribed"], {str(member.id): ["stream_name1"]})
         self.assertEqual(json["already_subscribed"], {})
+
+    def test_guest_subscribe_query_count_independent_of_subscriber_count(self) -> None:
+        realm = get_realm("zulip")
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_access_all_users_group", members_group, acting_user=None
+        )
+        new_members = [
+            do_create_user(
+                f"subscriber{i}@zulip.com",
+                None,
+                realm,
+                f"Subscriber {i}",
+                acting_user=None,
+                add_initial_stream_subscriptions=False,
+            )
+            for i in range(6)
+        ]
+
+        def count_queries_subscribing_guest(
+            guest_email: str, subscribers: list[UserProfile]
+        ) -> tuple[int, int]:
+            guest = do_create_user(
+                guest_email,
+                None,
+                realm,
+                "Guest",
+                role=UserProfile.ROLE_GUEST,
+                acting_user=None,
+                add_initial_stream_subscriptions=False,
+            )
+            stream = self.make_stream(f"stream for {guest_email}")
+            bulk_add_subscriptions(realm, [stream], subscribers, acting_user=None)
+            with (
+                CaptureQueriesContext(connection) as queries,
+                mock.patch("zerver.actions.create_user.send_event_on_commit") as send_event,
+            ):
+                bulk_add_subscriptions(realm, [stream], [guest], acting_user=None)
+            realm_user_add_events_to_guest = [
+                call
+                for call in send_event.call_args_list
+                if call.args[1]["type"] == "realm_user" and call.args[2] == [guest.id]
+            ]
+            return len(queries.captured_queries), len(realm_user_add_events_to_guest)
+
+        small_queries, small_events = count_queries_subscribing_guest(
+            "guest1@zulip.com", new_members[:2]
+        )
+        large_queries, large_events = count_queries_subscribing_guest(
+            "guest2@zulip.com", new_members
+        )
+        self.assertEqual((small_events, large_events), (2, 6))
+        self.assertEqual(small_queries, large_queries)
 
     def test_guest_user_subscribe(self) -> None:
         """Guest users cannot subscribe themselves to anything"""

@@ -10,12 +10,14 @@ from pydantic import Json, StringConstraints
 
 from confirmation import settings as confirmation_settings
 from zerver.actions.invites import (
+    do_bulk_import_users,
     do_create_multiuse_invite_link,
     do_get_invites_controlled_by_user,
     do_invite_users,
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
     do_send_user_invite_email,
+    parse_bulk_import_users,
 )
 from zerver.decorator import require_human_non_guest_user
 from zerver.lib.exceptions import InvitationError, JsonableError, OrganizationOwnerRequiredError
@@ -144,6 +146,7 @@ def invite_users_backend(
         Json[int],
         check_int_in_validator(list(PreregistrationUser.INVITE_AS.values())),
     ] = PreregistrationUser.INVITE_AS["MEMBER"],
+    bulk_import_users: Json[bool] = False,
     invite_expires_in_minutes: Json[int | None] = INVITATION_LINK_VALIDITY_MINUTES,
     invitee_emails_raw: Annotated[str, ApiParamConfig("invitee_emails")],
     notify_referrer_on_join: Json[bool] = True,
@@ -170,9 +173,9 @@ def invite_users_backend(
     check_role_based_permissions(invite_as, user_profile, require_admin=require_admin)
 
     if not invitee_emails_raw:
+        if bulk_import_users:
+            raise JsonableError(_("You must specify at least one user."))
         raise JsonableError(_("You must specify at least one email address."))
-
-    invitee_emails = get_invitees_set(invitee_emails_raw)
 
     streams = access_streams_for_invite(stream_ids, user_profile)
     user_groups = access_user_groups_for_invite(group_ids, user_profile)
@@ -180,6 +183,18 @@ def invite_users_backend(
     if welcome_message_custom_text is not None and not user_profile.is_realm_admin:
         raise JsonableError(_("Must be an organization administrator"))
 
+    if bulk_import_users:
+        do_bulk_import_users(
+            user_profile,
+            parse_bulk_import_users(invitee_emails_raw),
+            streams,
+            user_groups,
+            include_realm_default_subscriptions=include_realm_default_subscriptions,
+            invite_as=invite_as,
+        )
+        return json_success(request)
+
+    invitee_emails = get_invitees_set(invitee_emails_raw)
     skipped = do_invite_users(
         user_profile,
         invitee_emails,

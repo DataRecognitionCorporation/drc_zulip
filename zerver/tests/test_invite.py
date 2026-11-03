@@ -54,7 +54,7 @@ from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.send_email import queue_scheduled_emails
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import find_key_by_email
+from zerver.lib.test_helpers import find_key_by_email, get_subscription
 from zerver.lib.types import Invitee
 from zerver.lib.user_groups import get_direct_user_groups, is_user_in_group
 from zerver.models import (
@@ -220,6 +220,7 @@ class InviteUserBase(ZulipTestCase):
         body: str = "",
         invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
         include_realm_default_subscriptions: bool = False,
+        bulk_import_users: bool = False,
         realm: Realm | None = None,
         welcome_message_custom_text: str | None = None,
     ) -> "TestHttpResponse":
@@ -253,6 +254,9 @@ class InviteUserBase(ZulipTestCase):
             "notify_referrer_on_join": orjson.dumps(notify_referrer_on_join).decode(),
         }
 
+        if bulk_import_users:
+            payload["bulk_import_users"] = orjson.dumps(True).decode()
+
         if welcome_message_custom_text is not None:
             payload["welcome_message_custom_text"] = welcome_message_custom_text
 
@@ -265,6 +269,68 @@ class InviteUserBase(ZulipTestCase):
 
 
 class InviteUserTest(InviteUserBase):
+    def test_bulk_import_users(self) -> None:
+        inviter = self.example_user("iago")
+        existing_user = self.example_user("hamlet")
+        self.login_user(inviter)
+
+        denmark = get_stream("Denmark", inviter.realm)
+        do_add_default_stream(denmark)
+        self.unsubscribe(existing_user, denmark.name)
+
+        existing_email = existing_user.delivery_email
+        new_email = "newbulkimportuser@zulip.com"
+        mail.outbox = []
+        ScheduledEmail.objects.all().delete()
+        result = self.invite(
+            f"Existing, User, {existing_email}\nSmith, Alex, {new_email}",
+            ["Rome"],
+            invite_as=PreregistrationUser.INVITE_AS["GUEST_USER"],
+            include_realm_default_subscriptions=True,
+            bulk_import_users=True,
+        )
+        self.assert_json_success(result)
+
+        new_user = get_user_by_delivery_email(new_email, inviter.realm)
+        self.assertEqual(new_user.full_name, "Alex Smith")
+        self.assertTrue(new_user.is_guest)
+        self.assertTrue(new_user.has_usable_password())
+        self.assert_length(mail.outbox, 0)
+        self.assertFalse(ScheduledEmail.objects.exists())
+        self.assertEqual(existing_user.role, UserProfile.ROLE_MEMBER)
+        self.assertEqual(existing_user.full_name, "King Hamlet")
+        self.assertFalse(
+            PreregistrationUser.objects.filter(
+                realm=inviter.realm, email__in=[existing_email, new_email]
+            ).exists()
+        )
+
+        self.assertIn(denmark, get_slim_realm_default_streams(inviter.realm_id))
+        get_subscription("Denmark", new_user)
+        get_subscription("Denmark", existing_user)
+        get_subscription("Rome", new_user)
+        get_subscription("Rome", existing_user)
+
+    def test_bulk_import_users_rejects_invalid_rows_and_duplicate_emails(self) -> None:
+        self.login("iago")
+
+        result = self.invite(
+            "Smith, Alex",
+            ["Denmark"],
+            bulk_import_users=True,
+        )
+        self.assert_json_error_contains(result, "last name, first name, and email")
+
+        result = self.invite(
+            "Smith, Alex, duplicate@zulip.com\nJones, Casey, DUPLICATE@zulip.com",
+            ["Denmark"],
+            bulk_import_users=True,
+        )
+        self.assert_json_error_contains(result, "Duplicate email addresses")
+        self.assertFalse(
+            UserProfile.objects.filter(delivery_email__iexact="duplicate@zulip.com").exists()
+        )
+
     def test_successful_invite_user(self) -> None:
         """
         A call to /json/invites with valid parameters causes an invitation

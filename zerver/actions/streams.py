@@ -712,7 +712,7 @@ def send_user_creation_events_on_adding_subscriptions(
             subscriber_ids_dict[stream_id].add(user.id)
             subscribers_user_id_map[user.id] = user
 
-    from zerver.actions.create_user import notify_created_user
+    from zerver.actions.create_user import notify_created_user, send_realm_user_add_events
 
     for user in altered_users:
         streams_for_user = altered_streams_dict[user]
@@ -747,7 +747,7 @@ def send_user_creation_events_on_adding_subscriptions(
             )
             for accessible_user_id in new_accessible_user_ids:
                 accessible_user = subscribers_user_id_map[accessible_user_id]
-                notify_created_user(accessible_user, [user.id])
+                send_realm_user_add_events(realm, accessible_user, [user])
 
 
 SubT: TypeAlias = tuple[list[SubInfo], list[SubInfo]]
