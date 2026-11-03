@@ -1,6 +1,7 @@
 import csv
 import io
 import logging
+import secrets
 from collections.abc import Collection, Sequence
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
@@ -36,7 +37,6 @@ from zerver.lib.email_validation import (
     validate_email_is_valid,
 )
 from zerver.lib.exceptions import InvitationError, JsonableError
-from zerver.lib.initial_password import initial_password
 from zerver.lib.invites import notify_invites_changed
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, clear_scheduled_invitation_emails, send_future_email
@@ -329,13 +329,16 @@ def do_bulk_import_users(
     for user in users_to_create:
         new_user = do_create_user(
             user.email,
-            initial_password(user.email),
+            # Imported users sign in via SSO; a random password keeps
+            # local password login unusable in practice.
+            secrets.token_urlsafe(30),
             realm,
             f"{user.first_name} {user.last_name}".strip(),
             role=invite_as,
             tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
             acting_user=user_profile,
             add_initial_stream_subscriptions=include_realm_default_subscriptions,
+            send_new_user_emails=False,
         )
         profile_data: list[ProfileDataElementUpdateDict] = [
             {"id": custom_fields[field_name], "value": value}

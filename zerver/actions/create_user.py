@@ -286,6 +286,7 @@ def process_new_human_user(
     default_stream_groups: Sequence[DefaultStreamGroup] = [],
     realm_creation: bool = False,
     add_initial_stream_subscriptions: bool = True,
+    send_new_user_emails: bool = True,
 ) -> None:
     # subscribe to default/invitation streams, add to groups and
     # fill in some recent historical messages
@@ -342,12 +343,13 @@ def process_new_human_user(
     # Clear any scheduled invitation emails to prevent them
     # from being sent after the user is created.
     clear_scheduled_invitation_emails(user_profile.delivery_email)
-    if realm.send_welcome_emails:
-        enqueue_welcome_emails(user_profile, realm_creation)
+    if send_new_user_emails:
+        if realm.send_welcome_emails:
+            enqueue_welcome_emails(user_profile, realm_creation)
 
-    # Schedule an initial email with the user's
-    # new account details and log-in information.
-    send_account_registered_email(user_profile, realm_creation)
+        # Schedule an initial email with the user's
+        # new account details and log-in information.
+        send_account_registered_email(user_profile, realm_creation)
 
     # We have an import loop here; it's intentional, because we want
     # to keep all the onboarding code in zerver/lib/onboarding.py.
@@ -537,6 +539,7 @@ def do_create_user(
     email_address_visibility: int | None = None,
     add_initial_stream_subscriptions: bool = True,
     external_auth_id_dict: dict[str, str] | None = None,
+    send_new_user_emails: bool = True,
 ) -> UserProfile:
     if settings.BILLING_ENABLED:
         from corporate.lib.stripe import RealmBillingSession
@@ -663,6 +666,7 @@ def do_create_user(
             default_stream_groups=default_stream_groups,
             realm_creation=realm_creation,
             add_initial_stream_subscriptions=add_initial_stream_subscriptions,
+            send_new_user_emails=send_new_user_emails,
         )
 
     return user_profile

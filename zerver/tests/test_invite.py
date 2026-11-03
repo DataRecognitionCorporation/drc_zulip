@@ -280,6 +280,8 @@ class InviteUserTest(InviteUserBase):
 
         existing_email = existing_user.delivery_email
         new_email = "newbulkimportuser@zulip.com"
+        mail.outbox = []
+        ScheduledEmail.objects.all().delete()
         result = self.invite(
             f"Existing, User, {existing_email}\nSmith, Alex, {new_email}",
             ["Rome"],
@@ -292,6 +294,9 @@ class InviteUserTest(InviteUserBase):
         new_user = get_user_by_delivery_email(new_email, inviter.realm)
         self.assertEqual(new_user.full_name, "Alex Smith")
         self.assertTrue(new_user.is_guest)
+        self.assertTrue(new_user.has_usable_password())
+        self.assert_length(mail.outbox, 0)
+        self.assertFalse(ScheduledEmail.objects.exists())
         self.assertEqual(existing_user.role, UserProfile.ROLE_MEMBER)
         self.assertEqual(existing_user.full_name, "King Hamlet")
         self.assertFalse(
