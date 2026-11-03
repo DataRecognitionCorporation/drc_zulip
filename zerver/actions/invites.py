@@ -1,3 +1,5 @@
+import csv
+import io
 import logging
 from collections.abc import Collection, Sequence
 from dataclasses import asdict, dataclass
@@ -22,18 +24,24 @@ from confirmation.models import (
     create_confirmation_link,
     create_confirmation_object,
 )
+from zerver.actions.create_user import do_create_user
+from zerver.actions.custom_profile_fields import do_update_user_custom_profile_data_if_changed
+from zerver.actions.streams import bulk_add_subscriptions
+from zerver.actions.user_groups import bulk_add_members_to_user_groups
 from zerver.context_processors import common_context
+from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.email_validation import (
     get_existing_user_errors,
     get_realm_email_validator,
     validate_email_is_valid,
 )
-from zerver.lib.exceptions import InvitationError
+from zerver.lib.exceptions import InvitationError, JsonableError
+from zerver.lib.initial_password import initial_password
 from zerver.lib.invites import notify_invites_changed
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, clear_scheduled_invitation_emails, send_future_email
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import Invitee
+from zerver.lib.types import Invitee, ProfileDataElementUpdateDict
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Message,
@@ -43,10 +51,13 @@ from zerver.models import (
     Realm,
     RealmAuditLog,
     Stream,
+    UserGroupMembership,
     UserProfile,
 )
+from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
 from zerver.models.prereg_users import filter_to_valid_prereg_users
 from zerver.models.realm_audit_logs import AuditLogEventType
+from zerver.models.users import get_users_by_delivery_email
 
 
 def estimate_recent_invites(realms: Collection[Realm] | QuerySet[Realm], *, days: int) -> int:
@@ -183,6 +194,191 @@ def check_invite_limit(realm: Realm, num_invitees: int) -> None:
                 [],
                 sent_invitations=False,
                 daily_limit_reached=True,
+            )
+
+
+@dataclass(frozen=True)
+class BulkImportUser:
+    last_name: str
+    first_name: str
+    email: str
+
+
+def parse_bulk_import_users(raw_users: str) -> list[BulkImportUser]:
+    users: list[BulkImportUser] = []
+    seen_emails: set[str] = set()
+
+    try:
+        rows = csv.reader(io.StringIO(raw_users), skipinitialspace=True, strict=True)
+        for row in rows:
+            if not row or all(not value.strip() for value in row):
+                continue
+            if len(row) != 3 or any(not value.strip() for value in row):
+                raise JsonableError(
+                    _("Each line must contain a last name, first name, and email address.")
+                )
+
+            last_name, first_name, email = (value.strip() for value in row)
+            normalized_email = email.casefold()
+            if normalized_email in seen_emails:
+                raise JsonableError(_("Duplicate email addresses are not allowed."))
+            seen_emails.add(normalized_email)
+            users.append(BulkImportUser(last_name, first_name, email))
+    except csv.Error:
+        raise JsonableError(_("Each line must contain a last name, first name, and email address."))
+
+    if not users:
+        raise JsonableError(_("You must specify at least one user."))
+    return users
+
+
+@transaction.atomic(durable=True)
+def do_bulk_import_users(
+    user_profile: UserProfile,
+    users: Sequence[BulkImportUser],
+    streams: Collection[Stream],
+    user_groups: Collection[NamedUserGroup],
+    *,
+    include_realm_default_subscriptions: bool,
+    invite_as: int,
+) -> None:
+    realm = Realm.objects.select_for_update(no_key=True).get(id=user_profile.realm_id)
+    invitees = {user.email for user in users}
+    validate_email_allowed_in_realm = get_realm_email_validator(realm)
+    errors: list[tuple[str, str, bool]] = []
+    valid_users: list[BulkImportUser] = []
+    for user in users:
+        email_error = validate_email_is_valid(user.email, validate_email_allowed_in_realm)
+        if email_error:
+            errors.append((user.email, email_error, False))
+        else:
+            valid_users.append(user)
+
+    existing_user_errors = get_existing_user_errors(
+        realm,
+        {user.email for user in valid_users},
+        allow_inactive_mirror_dummies=False,
+    )
+    existing_users = {
+        user.delivery_email.casefold(): user
+        for user in get_users_by_delivery_email(invitees, realm)
+    }
+
+    users_to_create: list[BulkImportUser] = []
+    existing_users_to_update: list[UserProfile] = []
+    for user in valid_users:
+        error = existing_user_errors.get(user.email)
+        existing_user = existing_users.get(user.email.casefold())
+        if error is None:
+            users_to_create.append(user)
+        elif (
+            existing_user is not None
+            and existing_user.is_active
+            and error[0] == _("Already has an account.")
+        ):
+            existing_users_to_update.append(existing_user)
+        else:
+            errors.append((user.email, error[0], error[1]))
+
+    if errors:
+        raise InvitationError(
+            _("Some users could not be imported."),
+            errors,
+            sent_invitations=False,
+        )
+
+    if not users_to_create and not existing_users_to_update:
+        raise JsonableError(_("You must specify at least one user."))
+
+    if users_to_create:
+        check_invite_limit(realm, len(users_to_create))
+        if settings.BILLING_ENABLED:
+            from corporate.lib.registration import (
+                check_spare_licenses_available_for_inviting_new_users,
+            )
+
+            if invite_as == PreregistrationUser.INVITE_AS["GUEST_USER"]:
+                check_spare_licenses_available_for_inviting_new_users(
+                    realm, extra_guests_count=len(users_to_create)
+                )
+            else:
+                check_spare_licenses_available_for_inviting_new_users(
+                    realm, extra_non_guests_count=len(users_to_create)
+                )
+
+        if not realm.invite_required:
+            min_age = timedelta(days=settings.INVITES_MIN_USER_AGE_DAYS)
+            if (
+                user_profile.date_joined > timezone_now() - min_age
+                and not user_profile.is_realm_admin
+            ):
+                raise InvitationError(
+                    _(
+                        "Your account is too new to add users to this organization. "
+                        "Ask an organization admin, or a more experienced user."
+                    ),
+                    [],
+                    sent_invitations=False,
+                )
+
+    default_streams = get_slim_realm_default_streams(realm.id)
+    if not include_realm_default_subscriptions:
+        default_streams = set()
+    custom_fields = {field.name: field.id for field in custom_profile_fields_for_realm(realm.id)}
+    imported_users = existing_users_to_update.copy()
+    for user in users_to_create:
+        new_user = do_create_user(
+            user.email,
+            initial_password(user.email),
+            realm,
+            f"{user.first_name} {user.last_name}".strip(),
+            role=invite_as,
+            tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
+            acting_user=user_profile,
+            add_initial_stream_subscriptions=include_realm_default_subscriptions,
+        )
+        profile_data: list[ProfileDataElementUpdateDict] = [
+            {"id": custom_fields[field_name], "value": value}
+            for field_name, value in (
+                ("first_name", user.first_name),
+                ("last_name", user.last_name),
+            )
+            if field_name in custom_fields
+        ]
+        if profile_data:
+            do_update_user_custom_profile_data_if_changed(
+                new_user, profile_data, acting_user=user_profile, notify=True
+            )
+        imported_users.append(new_user)
+
+    if streams:
+        bulk_add_subscriptions(realm, streams, imported_users, acting_user=user_profile)
+    if default_streams and existing_users_to_update:
+        bulk_add_subscriptions(
+            realm, default_streams, existing_users_to_update, acting_user=user_profile
+        )
+
+    if user_groups:
+        existing_memberships = set(
+            UserGroupMembership.objects.filter(
+                user_profile__in=imported_users, user_group__in=user_groups
+            ).values_list("user_profile_id", "user_group_id")
+        )
+        group_ids_to_add: dict[tuple[int, ...], list[int]] = {}
+        group_by_id = {group.id: group for group in user_groups}
+        for imported_user in imported_users:
+            missing_group_ids = tuple(
+                group.id
+                for group in user_groups
+                if (imported_user.id, group.id) not in existing_memberships
+            )
+            if missing_group_ids:
+                group_ids_to_add.setdefault(missing_group_ids, []).append(imported_user.id)
+        for group_ids, user_ids in group_ids_to_add.items():
+            bulk_add_members_to_user_groups(
+                [group_by_id[group_id] for group_id in group_ids],
+                user_ids,
+                acting_user=user_profile,
             )
 
 

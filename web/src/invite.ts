@@ -19,7 +19,6 @@ import {show_copied_confirmation} from "./copied_tooltip.ts";
 import {csrf_token} from "./csrf.ts";
 import * as demo_organizations_ui from "./demo_organizations_ui.ts";
 import * as dialog_widget from "./dialog_widget.ts";
-import * as email_pill from "./email_pill.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as invite_stream_picker_pill from "./invite_stream_picker_pill.ts";
 import * as loading from "./loading.ts";
@@ -40,7 +39,6 @@ import * as util from "./util.ts";
 
 let custom_expiration_time_input = 10;
 let custom_expiration_time_unit = "days";
-let email_pill_widget: email_pill.EmailPillWidget;
 let stream_pill_widget: stream_pill.StreamPillWidget;
 let user_group_pill_widget: user_group_pill.UserGroupPillWidget;
 let guest_invite_stream_ids: number[] = [];
@@ -78,7 +76,7 @@ function get_common_invitation_data(): CommonInvitationData {
         $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
         10,
     );
-    const notify_referrer_on_join = $("#receive-invite-acceptance-notification").is(":checked");
+    const notify_referrer_on_join = false;
     const raw_expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in").val()!;
     // See settings_config.expires_in_values for why we do this conversion.
     let expires_in: number | null;
@@ -113,20 +111,9 @@ function get_common_invitation_data(): CommonInvitationData {
         stream_ids: JSON.stringify(stream_ids),
         invite_expires_in_minutes: JSON.stringify(expires_in),
         group_ids: JSON.stringify(group_ids),
-        invitee_emails: email_pill_widget
-            .items()
-            .map((item) => item.email)
-            .join(","),
+        invitee_emails: $<HTMLTextAreaElement>("#invitee_emails").val()!,
         include_realm_default_subscriptions: JSON.stringify(include_realm_default_subscriptions),
     };
-    const current_email = email_pill.get_current_email(email_pill_widget);
-    if (current_email) {
-        if (email_pill_widget.items().length === 0) {
-            data.invitee_emails = current_email;
-        } else {
-            data.invitee_emails += "," + current_email;
-        }
-    }
 
     if (current_user.is_admin) {
         const realm_welcome_message_configured = realm.realm_welcome_message_custom_text.length > 0;
@@ -169,14 +156,17 @@ function beforeSend(): void {
 function submit_invitation_form(): void {
     const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
     const $invite_status = $("#dialog_error");
-    const data = get_common_invitation_data();
+    const data = {...get_common_invitation_data(), bulk_import_users: JSON.stringify(true)};
 
     void channel.post({
         url: "/json/invites",
         data,
         beforeSend,
         success() {
-            const number_of_invites_sent = email_pill_widget.items().length;
+            const number_of_users_added = $<HTMLTextAreaElement>("#invitee_emails")
+                .val()!
+                .split(/\r?\n/)
+                .filter((line) => line.trim().length > 0).length;
             banners.open(
                 {
                     intent: "success",
@@ -184,9 +174,9 @@ function submit_invitation_form(): void {
                         $t_html(
                             {
                                 defaultMessage:
-                                    "{N, plural, one {User invited successfully.} other {Users invited successfully.}}",
+                                    "{N, plural, one {User added successfully.} other {Users added successfully.}}",
                             },
-                            {N: number_of_invites_sent},
+                            {N: number_of_users_added},
                         ),
                     ),
                     buttons: [],
@@ -195,7 +185,7 @@ function submit_invitation_form(): void {
                 },
                 $("#invite-success-banner-container"),
             );
-            email_pill_widget.clear();
+            $<HTMLTextAreaElement>("#invitee_emails").val("");
 
             if (page_params.development_environment) {
                 banners.open(
@@ -236,8 +226,7 @@ function submit_invitation_form(): void {
                 // There was a fatal error, no partial processing occurred.
                 ui_report.error($t({defaultMessage: "Failed"}), xhr, $invite_status);
             } else {
-                // Some users were not invited.
-                const invitee_emails_errored = [];
+                // Some users could not be imported.
                 const error_list = [];
                 let is_invitee_deactivated = false;
                 for (const [email, error_message, deactivated] of parsed.data.errors) {
@@ -245,7 +234,6 @@ function submit_invitation_form(): void {
                     if (deactivated) {
                         is_invitee_deactivated = true;
                     }
-                    invitee_emails_errored.push(email);
                 }
 
                 const error_response = render_invitation_failed_error({
@@ -258,16 +246,10 @@ function submit_invitation_form(): void {
                     daily_limit_reached: parsed.data.daily_limit_reached,
                 });
                 ui_report.message(error_response, $invite_status, "alert-error");
-
-                if (parsed.data.sent_invitations) {
-                    for (const email of invitee_emails_errored) {
-                        email_pill_widget.appendValue(email);
-                    }
-                }
             }
         },
         complete() {
-            $("#invite-user-modal .dialog_submit_button").text($t({defaultMessage: "Invite"}));
+            $("#invite-user-modal .dialog_submit_button").text($t({defaultMessage: "Add users"}));
             $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
             $("#invite-user-modal .dialog_exit_button").prop("disabled", false);
             util.the($invite_status).scrollIntoView();
@@ -508,8 +490,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
     function invite_user_modal_post_render(): void {
         const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
-        const $pill_container = $("#invitee_emails_container .pill-container");
-        email_pill_widget = email_pill.create_pills($pill_container);
+        const $invitee_emails = $<HTMLTextAreaElement>("#invitee_emails");
 
         $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
 
@@ -567,24 +548,21 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                 "disabled",
                 !user_has_email_set ||
                     (selected_tab === "invite-email-tab" &&
-                        email_pill_widget.items().length === 0 &&
-                        email_pill.get_current_email(email_pill_widget) === null) ||
+                        $invitee_emails.val()!.trim().length === 0) ||
                     ($expires_in.val() === "custom" && !valid_custom_time),
             );
             if (selected_tab === "invite-email-tab") {
-                $button.text($t({defaultMessage: "Invite"}));
-                $button.attr("data-loading-text", $t({defaultMessage: "Inviting…"}));
+                $button.text($t({defaultMessage: "Add users"}));
+                $button.attr("data-loading-text", $t({defaultMessage: "Adding users…"}));
             } else {
                 $button.text($t({defaultMessage: "Create link"}));
                 $button.attr("data-loading-text", $t({defaultMessage: "Creating link…"}));
             }
         }
 
-        email_pill_widget.onPillCreate(toggle_invite_submit_button);
-        email_pill_widget.onPillRemove(() => {
+        $invitee_emails.on("input", () => {
             toggle_invite_submit_button();
         });
-        email_pill_widget.onTextInputHook(toggle_invite_submit_button);
 
         $expires_in.on("change", () => {
             if (!util.validate_custom_time_input(custom_expiration_time_input, false)) {
@@ -665,23 +643,26 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
             }
         }
 
+        $("#invite-expiration-container, #invite-welcome-message-container").hide();
         const toggler = components.toggle({
             html_class: "invite_users_option_tabs large allow-overflow",
             selected: 0,
             child_wants_focus: true,
             values: [
-                {label: $t({defaultMessage: "Email invitation"}), key: "invite-email-tab"},
+                {label: $t({defaultMessage: "Bulk import users"}), key: "invite-email-tab"},
                 {label: $t({defaultMessage: "Invitation link"}), key: "invite-link-tab"},
             ],
             callback(_name, key) {
                 switch (key) {
                     case "invite-email-tab":
                         $("#invitee_emails_container").show();
-                        $("#receive-invite-acceptance-notification-container").show();
+                        $("#invite_multiple_container").show();
+                        $("#invite-expiration-container, #invite-welcome-message-container").hide();
                         break;
                     case "invite-link-tab":
                         $("#invitee_emails_container").hide();
-                        $("#receive-invite-acceptance-notification-container").hide();
+                        $("#invite_multiple_container").hide();
+                        $("#invite-expiration-container, #invite-welcome-message-container").show();
                         break;
                 }
                 toggle_invite_submit_button(key);
@@ -698,6 +679,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         }
         const $elem = toggler.get();
         $tab_switcher_container.append($elem);
+        toggle_invite_submit_button();
         setTimeout(() => {
             $(".invite_users_option_tabs .ind-tab.selected").trigger("focus");
         }, 0);
@@ -717,7 +699,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     dialog_widget.launch({
         modal_title_html: $t_html({defaultMessage: "Invite users to organization"}),
         modal_content_html,
-        modal_submit_button_text: $t({defaultMessage: "Invite"}),
+        modal_submit_button_text: $t({defaultMessage: "Add users"}),
         has_tab_switcher: true,
         id: "invite-user-modal",
         loading_spinner: true,
