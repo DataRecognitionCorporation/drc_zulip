@@ -60,6 +60,16 @@ pipeline {
               set -eu
               git config zulip.zulipRemote origin
 
+              # The SCM checkout omits tags and the fork lacks upstream release
+              # tags, so without this, tools/cache-zulip-git-version records a
+              # bare SHA as ZULIP_VERSION, which upgrade-zulip can misread as an
+              # ancient release and refuse to install.
+              git fetch --no-tags https://github.com/zulip/zulip.git '+refs/tags/*:refs/tags/*'
+              if ! git describe --tags --match='[0-9]*' HEAD; then
+                echo "No release tag found in HEAD's history; refusing to build an unversioned package." >&2
+                exit 1
+              fi
+
               source ./tools/ci/activate-venv
 
               ./tools/ci/production-build
