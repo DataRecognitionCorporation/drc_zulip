@@ -385,24 +385,6 @@ def process_new_human_user(
 
 
 def notify_created_user(user_profile: UserProfile, notify_user_ids: list[int]) -> None:
-    user_row = user_profile_to_user_row(user_profile)
-
-    format_user_row_kwargs: dict[str, Any] = {
-        "realm_id": user_profile.realm_id,
-        "row": user_row,
-        # Since we don't know what the client
-        # supports at this point in the code, we
-        # just assume client_gravatar and
-        # user_avatar_url_field_optional = False :(
-        "client_gravatar": False,
-        "user_avatar_url_field_optional": False,
-        # We assume there's no custom profile
-        # field data for a new user; initial
-        # values are expected to be added in a
-        # later event.
-        "custom_profile_field_data": {},
-    }
-
     user_ids_without_access_to_created_user: list[int] = []
     users_with_access_to_created_users: list[UserProfile] = []
 
@@ -427,12 +409,49 @@ def notify_created_user(user_profile: UserProfile, notify_user_ids: list[int]) -
         else:
             users_with_access_to_created_users = active_realm_users
 
+    send_realm_user_add_events(user_profile.realm, user_profile, users_with_access_to_created_users)
+
+    if user_ids_without_access_to_created_user:
+        event = dict(
+            type="realm_user",
+            op="add",
+            person=get_data_for_inaccessible_user(user_profile.realm, user_profile.id),
+            inaccessible_user=True,
+        )
+        send_event_on_commit(user_profile.realm, event, user_ids_without_access_to_created_user)
+
+
+def send_realm_user_add_events(
+    realm: Realm, user_profile: UserProfile, recipients: list[UserProfile]
+) -> None:
+    """Sends realm_user add events for user_profile to the given active
+    recipients, who the caller has verified can access user_profile.
+    Takes the realm and recipients explicitly so that callers looping
+    over many users avoid per-user database queries."""
+    user_row = user_profile_to_user_row(user_profile)
+
+    format_user_row_kwargs: dict[str, Any] = {
+        "realm_id": user_profile.realm_id,
+        "row": user_row,
+        # Since we don't know what the client
+        # supports at this point in the code, we
+        # just assume client_gravatar and
+        # user_avatar_url_field_optional = False :(
+        "client_gravatar": False,
+        "user_avatar_url_field_optional": False,
+        # We assume there's no custom profile
+        # field data for a new user; initial
+        # values are expected to be added in a
+        # later event.
+        "custom_profile_field_data": {},
+    }
+
     user_ids_with_real_email_access = []
     user_ids_without_real_email_access = []
 
     person_for_real_email_access_users = None
     person_for_without_real_email_access_users = None
-    for recipient_user in users_with_access_to_created_users:
+    for recipient_user in recipients:
         if can_access_delivery_email(
             recipient_user, user_profile.id, user_row["email_address_visibility"]
         ):
@@ -458,21 +477,12 @@ def notify_created_user(user_profile: UserProfile, notify_user_ids: list[int]) -
         event: dict[str, Any] = dict(
             type="realm_user", op="add", person=person_for_real_email_access_users
         )
-        send_event_on_commit(user_profile.realm, event, user_ids_with_real_email_access)
+        send_event_on_commit(realm, event, user_ids_with_real_email_access)
 
     if user_ids_without_real_email_access:
         assert person_for_without_real_email_access_users is not None
         event = dict(type="realm_user", op="add", person=person_for_without_real_email_access_users)
-        send_event_on_commit(user_profile.realm, event, user_ids_without_real_email_access)
-
-    if user_ids_without_access_to_created_user:
-        event = dict(
-            type="realm_user",
-            op="add",
-            person=get_data_for_inaccessible_user(user_profile.realm, user_profile.id),
-            inaccessible_user=True,
-        )
-        send_event_on_commit(user_profile.realm, event, user_ids_without_access_to_created_user)
+        send_event_on_commit(realm, event, user_ids_without_real_email_access)
 
 
 def created_bot_event(user_profile: UserProfile) -> dict[str, Any]:
