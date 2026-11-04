@@ -126,6 +126,8 @@ export const update_person = function update(event: UserUpdate): void {
         settings_users.update_user_data(event.user_id, event);
         user_profile.update_profile_modal_ui(user, event);
         settings_account.set_user_own_role_dropdown_value();
+        // DRC: Buddy list name format and styling depend on admin status.
+        activity_ui.redraw();
 
         if (people.is_my_user_id(event.user_id) && current_user.is_guest !== user.is_guest) {
             current_user.is_guest = user.is_guest;
@@ -205,6 +207,8 @@ export const update_person = function update(event: UserUpdate): void {
     if ("custom_profile_field" in event) {
         people.set_custom_profile_field_data(event.user_id, event.custom_profile_field);
         user_profile.update_user_custom_profile_fields(user);
+        // DRC: Buddy list names are built from custom profile fields.
+        activity_ui.redraw();
         if (event.user_id === people.my_current_user_id()) {
             navbar_alerts.maybe_toggle_empty_required_profile_fields_banner();
 

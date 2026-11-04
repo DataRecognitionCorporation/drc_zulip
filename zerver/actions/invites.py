@@ -325,6 +325,17 @@ def do_bulk_import_users(
     if not include_realm_default_subscriptions:
         default_streams = set()
     custom_fields = {field.name: field.id for field in custom_profile_fields_for_realm(realm.id)}
+    # DRC: The buddy list builds names from these fields, so every
+    # imported user must have them.
+    missing_name_fields = [
+        field_name for field_name in ("first_name", "last_name") if field_name not in custom_fields
+    ]
+    if users_to_create and missing_name_fields:
+        raise JsonableError(
+            _("Missing custom profile fields: {field_names}").format(
+                field_names=", ".join(missing_name_fields)
+            )
+        )
     imported_users = existing_users_to_update.copy()
     for user in users_to_create:
         new_user = do_create_user(
@@ -341,17 +352,12 @@ def do_bulk_import_users(
             send_new_user_emails=False,
         )
         profile_data: list[ProfileDataElementUpdateDict] = [
-            {"id": custom_fields[field_name], "value": value}
-            for field_name, value in (
-                ("first_name", user.first_name),
-                ("last_name", user.last_name),
-            )
-            if field_name in custom_fields
+            {"id": custom_fields["first_name"], "value": user.first_name},
+            {"id": custom_fields["last_name"], "value": user.last_name},
         ]
-        if profile_data:
-            do_update_user_custom_profile_data_if_changed(
-                new_user, profile_data, acting_user=user_profile, notify=True
-            )
+        do_update_user_custom_profile_data_if_changed(
+            new_user, profile_data, acting_user=user_profile, notify=True
+        )
         imported_users.append(new_user)
 
     if streams:

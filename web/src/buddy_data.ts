@@ -8,7 +8,7 @@ import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as presence from "./presence.ts";
-import {current_user} from "./state_data.ts";
+import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as timerender from "./timerender.ts";
 import * as unread from "./unread.ts";
@@ -27,6 +27,10 @@ import * as util from "./util.ts";
 
 // DRC: Guests may not see any other users in this channel.
 export const PAS_ANNOUNCEMENTS_CHANNEL_NAME = "PAS Announcements";
+
+const FIRST_NAME_FIELD = "first_name";
+const LAST_NAME_FIELD = "last_name";
+const ADMIN_NAME_SUFFIX = " - Tech Support";
 
 let is_searching_users = false;
 
@@ -129,14 +133,37 @@ export function compare_function(
         return diff;
     }
 
-    // Sort equivalent direct message names alphabetically
-    const person_a = people.maybe_get_user_by_id(a);
-    const person_b = people.maybe_get_user_by_id(b);
+    // Sort equivalent users alphabetically by their buddy list name.
+    const name_a = people.maybe_get_user_by_id(a) ? buddy_list_name(a) : "";
+    const name_b = people.maybe_get_user_by_id(b) ? buddy_list_name(b) : "";
 
-    const full_name_a = person_a ? person_a.full_name : "";
-    const full_name_b = person_b ? person_b.full_name : "";
+    return util.strcmp(name_a, name_b);
+}
 
-    return util.strcmp(full_name_a, full_name_b);
+function get_profile_field_value(user_id: number, field_name: string): string | undefined {
+    const field = realm.custom_profile_fields.find((field) => field.name === field_name);
+    if (field === undefined) {
+        return undefined;
+    }
+    const value = people.get_custom_profile_data(user_id, field.id)?.value?.trim();
+    return value === "" ? undefined : value;
+}
+
+// DRC: Buddy list names come from the first_name/last_name custom
+// profile fields: "Last, First" for most users, and
+// "First Last - Tech Support" for administrators. Falls back to the
+// full name if either field is missing.
+export function buddy_list_name(user_id: number): string {
+    const person = people.get_by_user_id(user_id);
+    const first_name = get_profile_field_value(user_id, FIRST_NAME_FIELD);
+    const last_name = get_profile_field_value(user_id, LAST_NAME_FIELD);
+    if (first_name === undefined || last_name === undefined) {
+        return person.full_name;
+    }
+    if (person.is_admin) {
+        return `${first_name} ${last_name}${ADMIN_NAME_SUFFIX}`;
+    }
+    return `${last_name}, ${first_name}`;
 }
 
 export function sort_users(user_ids: number[], conversation_participants: Set<number>): number[] {
@@ -207,6 +234,7 @@ export type BuddyUserInfo = {
         WITH_AVATAR: boolean;
     };
     should_add_guest_user_indicator: boolean;
+    is_admin: boolean;
     faded?: boolean;
 };
 
@@ -227,7 +255,7 @@ export function info_for(user_id: number, direct_message_recipients: Set<number>
 
     return {
         href: hash_util.pm_with_url(user_id.toString()),
-        name: people.get_full_name(user_id),
+        name: buddy_list_name(user_id),
         user_id,
         status_emoji_info,
         profile_picture: people.small_avatar_url_for_user_id(user_id),
@@ -238,6 +266,7 @@ export function info_for(user_id: number, direct_message_recipients: Set<number>
         has_status_text: Boolean(status_text),
         user_list_style,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
+        is_admin: people.get_by_user_id(user_id).is_admin,
     };
 }
 

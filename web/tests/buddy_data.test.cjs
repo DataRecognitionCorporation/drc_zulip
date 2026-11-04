@@ -576,6 +576,50 @@ test("compare_function", () => {
     );
 });
 
+test("buddy_list_name uses first and last name profile fields", ({override}) => {
+    override(realm, "custom_profile_fields", [
+        {id: 1, name: "first_name"},
+        {id: 2, name: "last_name"},
+    ]);
+    const admin = make_user({
+        user_id: 2001,
+        full_name: "Joe Gorgol - Tech Support",
+        email: "joe@example.com",
+        is_admin: true,
+        profile_data: {1: {value: "Joe"}, 2: {value: "Gorgol"}},
+    });
+    const member = make_user({
+        user_id: 2002,
+        full_name: "LaRhonda Cox",
+        email: "larhonda@example.com",
+        profile_data: {1: {value: " LaRhonda "}, 2: {value: "Cox"}},
+    });
+    const no_last_name = make_user({
+        user_id: 2003,
+        full_name: "Aaron Zed",
+        email: "aaron@example.com",
+        profile_data: {1: {value: "Aaron"}, 2: {value: "  "}},
+    });
+    people.add_active_user(admin);
+    people.add_active_user(member);
+    people.add_active_user(no_last_name);
+
+    assert.equal(buddy_data.buddy_list_name(admin.user_id), "Joe Gorgol - Tech Support");
+    assert.equal(buddy_data.buddy_list_name(member.user_id), "Cox, LaRhonda");
+    assert.equal(buddy_data.buddy_list_name(no_last_name.user_id), "Aaron Zed");
+
+    const info = buddy_data.info_for(admin.user_id, new Set());
+    assert.equal(info.name, "Joe Gorgol - Tech Support");
+    assert.ok(info.is_admin);
+
+    // Sorting uses the buddy list name: "Aaron Zed" < "Cox, LaRhonda"
+    // < "Joe Gorgol - Tech Support".
+    assert.deepEqual(
+        buddy_data.sort_users([admin.user_id, member.user_id, no_last_name.user_id], new Set()),
+        [no_last_name.user_id, member.user_id, admin.user_id],
+    );
+});
+
 test("user_last_seen_time_status", ({override}) => {
     page_params.presence_history_limit_days_for_web_app = 365;
     people.add_active_user(old_user);
@@ -662,6 +706,7 @@ test("get_items_for_users", ({override}) => {
             user_id: 1001,
             user_list_style,
             should_add_guest_user_indicator: false,
+            is_admin: false,
         },
         {
             href: "#narrow/dm/1002-Alice-Smith",
@@ -676,6 +721,7 @@ test("get_items_for_users", ({override}) => {
             user_id: 1002,
             user_list_style,
             should_add_guest_user_indicator: false,
+            is_admin: false,
         },
         {
             href: "#narrow/dm/1003-Fred-Flintstone",
@@ -690,6 +736,7 @@ test("get_items_for_users", ({override}) => {
             user_id: 1003,
             user_list_style,
             should_add_guest_user_indicator: false,
+            is_admin: false,
         },
     ]);
 });

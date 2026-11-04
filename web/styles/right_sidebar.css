@@ -408,6 +408,11 @@
     cursor: pointer;
 }
 
+/* DRC: Tech Support (administrators) stand out in the buddy list. */
+.user_sidebar_entry.buddy-list-admin .user-name {
+    font-weight: 700;
+}
+
 .user_list_style_values {
     .user-name-and-status-emoji {
         display: flex;
