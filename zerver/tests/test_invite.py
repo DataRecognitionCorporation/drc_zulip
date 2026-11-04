@@ -31,6 +31,7 @@ from zerver.actions.create_user import (
     process_new_human_user,
     set_up_streams_and_groups_for_new_human_user,
 )
+from zerver.actions.custom_profile_fields import try_add_realm_custom_profile_field
 from zerver.actions.default_streams import do_add_default_stream, do_remove_default_stream
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
@@ -58,6 +59,8 @@ from zerver.lib.test_helpers import find_key_by_email, get_subscription
 from zerver.lib.types import Invitee
 from zerver.lib.user_groups import get_direct_user_groups, is_user_in_group
 from zerver.models import (
+    CustomProfileField,
+    CustomProfileFieldValue,
     DefaultStream,
     Message,
     MultiuseInvite,
@@ -269,10 +272,19 @@ class InviteUserBase(ZulipTestCase):
 
 
 class InviteUserTest(InviteUserBase):
+    def add_name_profile_fields(self, realm: Realm) -> dict[str, CustomProfileField]:
+        return {
+            field_name: try_add_realm_custom_profile_field(
+                realm, field_name, CustomProfileField.SHORT_TEXT
+            )
+            for field_name in ("first_name", "last_name")
+        }
+
     def test_bulk_import_users(self) -> None:
         inviter = self.example_user("iago")
         existing_user = self.example_user("hamlet")
         self.login_user(inviter)
+        name_fields = self.add_name_profile_fields(inviter.realm)
 
         denmark = get_stream("Denmark", inviter.realm)
         do_add_default_stream(denmark)
@@ -293,6 +305,18 @@ class InviteUserTest(InviteUserBase):
 
         new_user = get_user_by_delivery_email(new_email, inviter.realm)
         self.assertEqual(new_user.full_name, "Alex Smith")
+        self.assertEqual(
+            CustomProfileFieldValue.objects.get(
+                user_profile=new_user, field=name_fields["first_name"]
+            ).value,
+            "Alex",
+        )
+        self.assertEqual(
+            CustomProfileFieldValue.objects.get(
+                user_profile=new_user, field=name_fields["last_name"]
+            ).value,
+            "Smith",
+        )
         self.assertTrue(new_user.is_guest)
         self.assertTrue(new_user.has_usable_password())
         self.assert_length(mail.outbox, 0)
@@ -310,6 +334,18 @@ class InviteUserTest(InviteUserBase):
         get_subscription("Denmark", existing_user)
         get_subscription("Rome", new_user)
         get_subscription("Rome", existing_user)
+
+    def test_bulk_import_users_requires_name_profile_fields(self) -> None:
+        self.login("iago")
+        new_email = "missingfields@zulip.com"
+
+        result = self.invite(
+            f"Smith, Alex, {new_email}",
+            ["Denmark"],
+            bulk_import_users=True,
+        )
+        self.assert_json_error(result, "Missing custom profile fields: first_name, last_name")
+        self.assertFalse(UserProfile.objects.filter(delivery_email=new_email).exists())
 
     def test_bulk_import_users_rejects_invalid_rows_and_duplicate_emails(self) -> None:
         self.login("iago")

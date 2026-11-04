@@ -336,7 +336,7 @@ test("muted users excluded from search", () => {
     assert.ok(buddy_data.matches_filter("selm", selma.user_id));
 });
 
-test("bulk_data_hacks", ({override_rewire}) => {
+test("bulk_data_hacks", () => {
     // sanity check
     assert.equal(mark.user_id, 1005);
 
@@ -365,13 +365,12 @@ test("bulk_data_hacks", ({override_rewire}) => {
 
     let user_ids;
 
-    // Even though we have 1000 users, we only get the 400 active
-    // users.  This is a consequence of buddy_data.maybe_shrink_list.
+    // DRC: All active users are shown regardless of presence.
     user_ids = buddy_data.get_filtered_and_sorted_user_ids();
-    assert.equal(user_ids.length, 400);
+    assert.equal(user_ids.length, 1001);
 
     user_ids = buddy_data.get_filtered_and_sorted_user_ids("");
-    assert.equal(user_ids.length, 400);
+    assert.equal(user_ids.length, 1001);
 
     // We don't match on "so", because it's not at the start of a
     // word in the name/email.
@@ -386,12 +385,6 @@ test("bulk_data_hacks", ({override_rewire}) => {
     // We match on "p" for the email.
     user_ids = buddy_data.get_filtered_and_sorted_user_ids("p");
     assert.equal(user_ids.length, 994);
-
-    // Make our shrink limit higher, and go back to an empty search.
-    // We won't get all 1000 users, just the present ones.
-    override_rewire(buddy_data, "max_size_before_shrinking", 50000);
-    user_ids = buddy_data.get_filtered_and_sorted_user_ids("");
-    assert.equal(user_ids.length, 700);
 });
 
 test("always show me", () => {
@@ -409,57 +402,45 @@ test("always show pm users", () => {
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, selma.user_id]);
 });
 
-test("show offline channel subscribers for small channels", ({override_rewire}) => {
-    // Add a bunch of users to hit max_size_before_shrinking, which will hide some
-    // offline users.
-    for (const i of _.range(2000, 2700)) {
-        const person = {
-            user_id: i,
-            full_name: `Human ${i}`,
-            email: `person${i}@example.com`,
-        };
-        people.add_active_user(person);
-    }
-    for (const user_id of _.range(2000, 2700)) {
-        set_presence(user_id, "offline");
-    }
+test("guests only see users in the current narrow", ({override}) => {
+    override(current_user, "is_guest", true);
+    add_canned_users();
 
-    people.add_active_user(alice);
-    set_presence(alice.user_id, "active");
-    people.add_active_user(fred);
-    set_presence(fred.user_id, "offline");
-    people.add_active_user(selma);
-    set_presence(selma.user_id, "offline");
-    people.add_active_user(jill);
-    set_presence(jill.user_id, "offline");
+    // Outside a channel or DM view, guests see nobody.
+    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), []);
+    assert.ok(!buddy_data.matches_filter("", alice.user_id));
 
-    const stream_id = 1001;
-    const sub = make_stream({name: "Rome", stream_id});
+    const sub = make_stream({name: "Rome", stream_id: 1001});
     stream_data.add_sub_for_tests(sub);
-    peer_data.set_subscribers(stream_id, [
-        selma.user_id,
-        alice.user_id,
-        fred.user_id,
-        jill.user_id,
-        me.user_id,
-    ]);
-
-    const filter_terms = [
-        {operator: "channel", operand: String(sub.stream_id)},
-        {operator: "topic", operand: "Foo"},
-    ];
-    message_lists.set_current(make_message_list(filter_terms));
-    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [
-        me.user_id,
-        alice.user_id,
-        fred.user_id,
-        selma.user_id,
-        jill.user_id,
-    ]);
-
-    // Make the max channel size lower, so that we hide the offline users
-    override_rewire(buddy_data, "max_channel_size_to_show_all_subscribers", 2);
+    peer_data.set_subscribers(sub.stream_id, [alice.user_id, me.user_id]);
+    message_lists.set_current(
+        make_message_list([
+            {operator: "channel", operand: String(sub.stream_id)},
+            {operator: "topic", operand: "Foo"},
+        ]),
+    );
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, alice.user_id]);
+    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids("fred"), []);
+
+    message_lists.set_current(make_message_list([{operator: "dm", operand: [selma.user_id]}]));
+    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, selma.user_id]);
+});
+
+test("guests see nobody in PAS Announcements", ({override}) => {
+    add_canned_users();
+    const sub = make_stream({name: "PAS Announcements", stream_id: 1001});
+    stream_data.add_sub_for_tests(sub);
+    peer_data.set_subscribers(sub.stream_id, [alice.user_id, me.user_id]);
+    message_lists.set_current(
+        make_message_list([{operator: "channel", operand: String(sub.stream_id)}]),
+    );
+
+    assert.ok(!buddy_data.is_guest_viewing_pas_announcements());
+    assert.ok(buddy_data.get_filtered_and_sorted_user_ids("").includes(alice.user_id));
+
+    override(current_user, "is_guest", true);
+    assert.ok(buddy_data.is_guest_viewing_pas_announcements());
+    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), []);
 });
 
 test("get_conversation_participants", () => {
@@ -595,6 +576,50 @@ test("compare_function", () => {
     );
 });
 
+test("buddy_list_name uses first and last name profile fields", ({override}) => {
+    override(realm, "custom_profile_fields", [
+        {id: 1, name: "first_name"},
+        {id: 2, name: "last_name"},
+    ]);
+    const admin = make_user({
+        user_id: 2001,
+        full_name: "Joe Gorgol - Tech Support",
+        email: "joe@example.com",
+        is_admin: true,
+        profile_data: {1: {value: "Joe"}, 2: {value: "Gorgol"}},
+    });
+    const member = make_user({
+        user_id: 2002,
+        full_name: "LaRhonda Cox",
+        email: "larhonda@example.com",
+        profile_data: {1: {value: " LaRhonda "}, 2: {value: "Cox"}},
+    });
+    const no_last_name = make_user({
+        user_id: 2003,
+        full_name: "Aaron Zed",
+        email: "aaron@example.com",
+        profile_data: {1: {value: "Aaron"}, 2: {value: "  "}},
+    });
+    people.add_active_user(admin);
+    people.add_active_user(member);
+    people.add_active_user(no_last_name);
+
+    assert.equal(buddy_data.buddy_list_name(admin.user_id), "Joe Gorgol - Tech Support");
+    assert.equal(buddy_data.buddy_list_name(member.user_id), "Cox, LaRhonda");
+    assert.equal(buddy_data.buddy_list_name(no_last_name.user_id), "Aaron Zed");
+
+    const info = buddy_data.info_for(admin.user_id, new Set());
+    assert.equal(info.name, "Joe Gorgol - Tech Support");
+    assert.ok(info.is_admin);
+
+    // Sorting uses the buddy list name: "Aaron Zed" < "Cox, LaRhonda"
+    // < "Joe Gorgol - Tech Support".
+    assert.deepEqual(
+        buddy_data.sort_users([admin.user_id, member.user_id, no_last_name.user_id], new Set()),
+        [no_last_name.user_id, member.user_id, admin.user_id],
+    );
+});
+
 test("user_last_seen_time_status", ({override}) => {
     page_params.presence_history_limit_days_for_web_app = 365;
     people.add_active_user(old_user);
@@ -681,6 +706,7 @@ test("get_items_for_users", ({override}) => {
             user_id: 1001,
             user_list_style,
             should_add_guest_user_indicator: false,
+            is_admin: false,
         },
         {
             href: "#narrow/dm/1002-Alice-Smith",
@@ -695,6 +721,7 @@ test("get_items_for_users", ({override}) => {
             user_id: 1002,
             user_list_style,
             should_add_guest_user_indicator: false,
+            is_admin: false,
         },
         {
             href: "#narrow/dm/1003-Fred-Flintstone",
@@ -709,6 +736,7 @@ test("get_items_for_users", ({override}) => {
             user_id: 1003,
             user_list_style,
             should_add_guest_user_indicator: false,
+            is_admin: false,
         },
     ]);
 });
@@ -725,4 +753,6 @@ test("unknown user id in presence", () => {
     // This user id should not be present in the filtered list,
     // it's meant to be ignored until we know about the user.
     assert.equal(user_ids.includes(999), false);
+    // Presence events redraw users through matches_filter.
+    assert.ok(!buddy_data.matches_filter("", 999));
 });

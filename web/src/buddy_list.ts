@@ -750,13 +750,18 @@ export class BuddyList extends BuddyListConf {
         // for Inbox view. We hide all headers and show only users from the "others"
         // section and should hide the other two sections.
         const {hide_headers, other_users_count, get_all_participant_ids} = this.render_data;
+        // DRC: Guests see no users at all in PAS Announcements, not even counts.
+        const hide_all_sections = buddy_data.is_guest_viewing_pas_announcements();
 
-        const hide_participants = hide_headers || get_all_participant_ids().size === 0;
+        const hide_participants =
+            hide_all_sections || hide_headers || get_all_participant_ids().size === 0;
         // We always show the users matching view section, even if there's nobody in it,
         // since it can be confusing to see "others" out of context of the main population
         // of that narrow.
-        const hide_users_matching_view = hide_headers;
-        const hide_other_users = other_users_count === 0;
+        const hide_users_matching_view = hide_all_sections || hide_headers;
+        // DRC: Guests never see the "Others" section.
+        const hide_other_users =
+            hide_all_sections || current_user.is_guest || other_users_count === 0;
 
         $("#buddy-list-users-matching-view-container").toggleClass(
             "no-display",
