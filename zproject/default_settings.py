@@ -124,6 +124,8 @@ SOCIAL_AUTH_SYNC_ATTRS_DICT: dict[
 # Other auth
 SSO_APPEND_DOMAIN: str | None = None
 CUSTOM_HOME_NOT_LOGGED_IN: str | None = None
+# DRC: external SSO portal that /login/ redirects to; None serves the normal login page.
+EDIRECT_REDIRECT: str | None = None
 
 VIDEO_ZOOM_API_URL: str = "https://api.zoom.us"
 VIDEO_ZOOM_OAUTH_URL: str = "https://zoom.us"

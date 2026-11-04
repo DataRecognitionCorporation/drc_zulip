@@ -153,6 +153,8 @@ INLINE_URL_EMBED_PREVIEW = False
 
 HOME_NOT_LOGGED_IN = "/login/"
 LOGIN_URL = "/accounts/login/"
+# Keep upstream tests that expect the login page at /login/ working.
+EDIRECT_REDIRECT: str | None = None
 
 # If dev_settings.py found a key or cert file to use here, ignore it.
 APNS_TOKEN_KEY_FILE: str | None = None
