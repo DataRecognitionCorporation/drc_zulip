@@ -30,7 +30,13 @@ from zerver.actions.message_summary import get_ai_requests, get_ai_time
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
 from zerver.lib.db_connections import reset_queries
 from zerver.lib.debug import maybe_tracemalloc_listen
-from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError, WebhookError
+from zerver.lib.exceptions import (
+    ClientBlockedError,
+    ErrorCode,
+    JsonableError,
+    MissingAuthenticationError,
+    WebhookError,
+)
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.push_notifications import FailedToConnectBouncerError, InternalBouncerServerError
@@ -45,7 +51,7 @@ from zerver.lib.response import (
 from zerver.lib.server_initialization import server_initialized
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.typed_endpoint import INTENTIONALLY_UNDOCUMENTED, ApiParamConfig, typed_endpoint
-from zerver.lib.user_agent import parse_user_agent
+from zerver.lib.user_agent import is_client_blocked, parse_user_agent
 from zerver.models import Realm
 from zerver.models.realms import get_realm
 from zproject.config import get_config
@@ -374,6 +380,17 @@ class LogRequests(MiddlewareMixin):
             error_content=content,
         )
         return response
+
+
+class BlockClientsMiddleware(MiddlewareMixin):
+    def process_request(self, request: HttpRequest) -> HttpResponse | None:
+        # LogRequests has parsed the client parameter; also check the raw header
+        # so overriding that parameter cannot conceal an app's User-Agent.
+        if is_client_blocked(
+            RequestNotes.get_notes(request).client_name, request.headers.get("User-Agent", "")
+        ):
+            return json_response_from_error(ClientBlockedError())
+        return None
 
 
 class JsonErrorHandler(MiddlewareMixin):

@@ -127,6 +127,18 @@ CUSTOM_HOME_NOT_LOGGED_IN: str | None = None
 # DRC: external SSO portal that /login/ redirects to; None serves the normal login page.
 EDIRECT_REDIRECT: str | None = None
 
+BLOCKED_CLIENT_NAMES: set[str] = {
+    "ZulipMobile",
+    "ZulipFlutter",
+    "ZulipElectron",
+    "ZulipDesktop",
+    "ZulipAndroid",
+    "ZulipiOS",
+    "Dart",
+}
+# Match app signatures, not operating systems: mobile browsers remain supported.
+BLOCKED_USER_AGENTS: list[str] = ["Electron/"]
+
 VIDEO_ZOOM_API_URL: str = "https://api.zoom.us"
 VIDEO_ZOOM_OAUTH_URL: str = "https://zoom.us"
 VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID = get_secret("video_zoom_account_id", development_only=True)

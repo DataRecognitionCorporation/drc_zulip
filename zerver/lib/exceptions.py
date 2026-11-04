@@ -629,6 +629,13 @@ class AccessDeniedError(JsonableError):
         return _("Access denied")
 
 
+class ClientBlockedError(AccessDeniedError):
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Mobile and desktop apps are disabled. Please use a web browser.")
+
+
 class ResourceNotFoundError(JsonableError):
     http_status_code = 404
 
