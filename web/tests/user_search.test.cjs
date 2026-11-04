@@ -40,10 +40,11 @@ const buddy_data = zrequire("buddy_data");
 const message_lists = zrequire("message_lists");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
-const {set_realm} = zrequire("state_data");
+const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 
 const realm = make_realm();
+set_current_user({});
 set_realm(realm);
 
 const me = make_user({
@@ -68,7 +69,6 @@ const jill = make_user({
     full_name: "Jill Hill",
 });
 
-const all_user_ids = [alice.user_id, fred.user_id, jill.user_id, me.user_id];
 const ordered_user_ids = [me.user_id, alice.user_id, fred.user_id, jill.user_id];
 
 function test(label, f) {
@@ -98,7 +98,6 @@ function stub_buddy_list_empty_list_message_lengths() {
 
 test("clear_search with button", ({override}) => {
     override(presence, "get_status", () => "active");
-    override(presence, "get_user_ids", () => all_user_ids);
     override(popovers, "hide_all", noop);
 
     stub_buddy_list_empty_list_message_lengths();
@@ -134,7 +133,6 @@ test("clear_search", ({override}) => {
 });
 
 test("fetch on search", async ({override}) => {
-    override(presence, "get_user_ids", () => all_user_ids);
     override(presence, "get_status", () => "active");
     let populate_call_count = 0;
     override(fake_buddy_list, "populate", () => {
@@ -230,7 +228,6 @@ test("filter_user_ids", ({override}) => {
     };
 
     override(presence, "get_status", (user_id) => user_presence[user_id]);
-    override(presence, "get_user_ids", () => all_user_ids);
 
     function test_filter(search_text, expected_users) {
         const expected_user_ids = expected_users.map((user) => user.user_id);

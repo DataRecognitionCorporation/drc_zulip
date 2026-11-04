@@ -25,9 +25,10 @@ const background_task = mock_esm("../src/background_task");
 const buddy_data = zrequire("buddy_data");
 const {BuddyList} = zrequire("buddy_list");
 const people = zrequire("people");
-const {set_realm} = zrequire("state_data");
+const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
+set_current_user({});
 set_realm(make_realm());
 initialize_user_settings({user_settings: {}});
 
