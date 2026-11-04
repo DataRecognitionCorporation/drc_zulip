@@ -633,7 +633,7 @@ class ClientBlockedError(AccessDeniedError):
     @staticmethod
     @override
     def msg_format() -> str:
-        return _("Mobile and desktop apps are disabled. Please use a web browser.")
+        return _("Mobile access and desktop apps are disabled. Please use a desktop web browser.")
 
 
 class ResourceNotFoundError(JsonableError):

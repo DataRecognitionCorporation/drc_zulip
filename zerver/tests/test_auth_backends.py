@@ -738,11 +738,11 @@ class AppLoginBlockingTest(ZulipTestCase):
                     "/accounts/login/sso/",
                     {flow: "1234abcd" * 8},
                     REMOTE_USER=self.example_email("hamlet"),
-                    HTTP_USER_AGENT="Mozilla/5.0 (iPhone) ISLAND/1.0",
+                    HTTP_USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) ISLAND/1.0",
                 )
                 self.assert_json_error(
                     response,
-                    "Mobile and desktop apps are disabled. Please use a web browser.",
+                    "Mobile access and desktop apps are disabled. Please use a desktop web browser.",
                     403,
                 )
                 self.assert_logged_in_user_id(None)

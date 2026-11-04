@@ -136,8 +136,20 @@ BLOCKED_CLIENT_NAMES: set[str] = {
     "ZulipiOS",
     "Dart",
 }
-# Match app signatures, not operating systems: mobile browsers remain supported.
-BLOCKED_USER_AGENTS: list[str] = ["Electron/"]
+# Block app and mobile-device signatures, including mobile browsers.
+BLOCKED_USER_AGENTS: list[str] = [
+    "Electron/",
+    "Android",
+    "iPhone",
+    "iPad",
+    "iPod",
+    "Mobile",
+    "Windows Phone",
+    "BlackBerry",
+    "BB10",
+    "Opera Mini",
+    "Opera Mobi",
+]
 
 VIDEO_ZOOM_API_URL: str = "https://api.zoom.us"
 VIDEO_ZOOM_OAUTH_URL: str = "https://zoom.us"

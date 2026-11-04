@@ -22,7 +22,7 @@ from zproject import default_settings
     BLOCKED_USER_AGENTS=default_settings.BLOCKED_USER_AGENTS,
 )
 class BlockClientsTest(ZulipTestCase):
-    error_message = "Mobile and desktop apps are disabled. Please use a web browser."
+    error_message = "Mobile access and desktop apps are disabled. Please use a desktop web browser."
 
     def test_blocked_apps(self) -> None:
         for user_agent in [
@@ -46,8 +46,10 @@ class BlockClientsTest(ZulipTestCase):
 
     @override_settings(EDIRECT_REDIRECT="https://example.com/sso")
     def test_app_blocking_precedes_login_redirect(self) -> None:
-        response = self.client_get("/login/", HTTP_USER_AGENT="ZulipElectron/5.0.0")
-        self.assert_json_error(response, self.error_message, 403)
+        for user_agent in ["ZulipElectron/5.0.0", "Mozilla/5.0 (iPhone) ISLAND/1.0"]:
+            with self.subTest(user_agent=user_agent):
+                response = self.client_get("/login/", HTTP_USER_AGENT=user_agent)
+                self.assert_json_error(response, self.error_message, 403)
 
         response = self.client_get("/login/")
         self.assertEqual(response.status_code, 302)
@@ -91,15 +93,46 @@ class BlockClientsTest(ZulipTestCase):
             self.api_get(hamlet, "/api/v1/users/me", HTTP_USER_AGENT="Mozilla/5.0")
         )
 
-    def test_browsers_are_allowed(self) -> None:
+    def test_mobile_browsers_are_blocked(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+        for user_agent in [
+            "Mozilla/5.0 (Linux; Android 14) Chrome/130.0 Mobile Safari/537.36",
+            "Mozilla/5.0 (Linux; Android 14; Tablet) Chrome/130.0 Safari/537.36",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) Mobile/15E148 Safari/604.1",
+            "Mozilla/5.0 (iPad; CPU OS 17_4 like Mac OS X) Mobile/15E148 Safari/604.1",
+            "Mozilla/5.0 (iPod touch; CPU iPhone OS 15_8 like Mac OS X) Safari/604.1",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) Version/17.0 Mobile/15E148 Safari/604.1",
+            "Mozilla/5.0 (Windows Phone 10.0; ARM; Trident/7.0; Touch; rv:11.0) like Gecko",
+            "BlackBerry9700/5.0.0.862 Profile/MIDP-2.1",
+            "Mozilla/5.0 (BB10; Touch) AppleWebKit/537.35+",
+            "Opera/9.80 (J2ME/MIDP; Opera Mini/9.0) Presto/2.12.423",
+            "Opera/9.80 (Opera Mobi/12.0) Presto/2.12.423",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) ISLAND/1.0",
+            "Mozilla/5.0 (Linux; Android 14) ISLAND/1.0",
+            "mozilla/5.0 (ipad) island/1.0",
+        ]:
+            with self.subTest(user_agent=user_agent):
+                for path in ["/", "/login/", "/login_local/", "/api/v1/server_settings"]:
+                    response = self.client_get(
+                        path, {"client": "website"}, HTTP_USER_AGENT=user_agent
+                    )
+                    self.assert_json_error(response, self.error_message, 403)
+
+                response = self.client_post(
+                    "/accounts/login/", {"client": "website"}, HTTP_USER_AGENT=user_agent
+                )
+                self.assert_json_error(response, self.error_message, 403)
+                response = self.api_get(hamlet, "/api/v1/users/me", HTTP_USER_AGENT=user_agent)
+                self.assert_json_error(response, self.error_message, 403)
+
+    def test_desktop_browsers_are_allowed(self) -> None:
         for user_agent in [
             "",
             "Mozilla/5.0 (X11; Linux x86_64) Firefox/130.0",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0 Safari/537.36",
-            "Mozilla/5.0 (Linux; Android 14) Chrome/130.0 Mobile Safari/537.36",
-            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) Mobile/15E148 Safari/604.1",
-            "Mozilla/5.0 (iPad; CPU OS 17_4 like Mac OS X) Mobile/15E148 Safari/604.1",
-            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) ISLAND/1.0",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Version/17.0 Safari/605.1.15",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) ISLAND/1.0",
         ]:
             with self.subTest(user_agent=user_agent):
                 for path in ["/login/", "/login_local/"]:
