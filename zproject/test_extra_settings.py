@@ -88,6 +88,8 @@ RATE_LIMITING_AUTHENTICATE = False
 # Upstream tests exercise app behavior; blocking tests enable the default policy.
 BLOCKED_CLIENT_NAMES: set[str] = set()
 BLOCKED_USER_AGENTS: list[str] = []
+# Upstream tests email regular users; blocking tests enable the default policy.
+BLOCK_EMAIL_TO_NON_ADMIN_USERS = False
 # Don't use RabbitMQ from the test suite -- the user_profile_ids for
 # any generated queue elements won't match those being used by the
 # real app.

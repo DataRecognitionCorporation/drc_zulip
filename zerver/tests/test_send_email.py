@@ -9,6 +9,7 @@ from smtplib import (
 from unittest import mock
 
 import time_machine
+from django.core import mail
 from django.core.mail.backends.locmem import EmailBackend
 from django.core.mail.message import sanitize_address
 from django.test import override_settings
@@ -451,3 +452,73 @@ class TestSendEmail(ZulipTestCase):
                 from_address=FromAddress.NOREPLY,
                 language="en",
             )
+
+
+@override_settings(BLOCK_EMAIL_TO_NON_ADMIN_USERS=True)
+class TestBlockEmailToNonAdminUsers(ZulipTestCase):
+    def send_password_reset(
+        self, to_user_ids: list[int] | None = None, to_emails: list[str] | None = None
+    ) -> None:
+        send_email(
+            "zerver/emails/password_reset",
+            to_user_ids=to_user_ids,
+            to_emails=to_emails,
+            from_name="Test",
+            from_address=FromAddress.NOREPLY,
+            language="en",
+        )
+
+    def test_guests_members_and_moderators_are_not_emailed(self) -> None:
+        for user in [
+            self.example_user("polonius"),
+            self.example_user("hamlet"),
+            self.example_user("shiva"),
+        ]:
+            with self.assertLogs(logger=logger, level="INFO") as info_log:
+                self.send_password_reset(to_user_ids=[user.id])
+            self.assertEqual(
+                info_log.output,
+                [
+                    (
+                        f"INFO:{logger.name}:Skipping password_reset email to [{user.id}]: "
+                        "guests, members and moderators are not emailed"
+                    )
+                ],
+            )
+
+            # Address matching ignores case and display names.
+            self.send_password_reset(to_emails=[user.delivery_email.upper()])
+            self.send_password_reset(to_emails=[f"{user.full_name} <{user.delivery_email}>"])
+
+        self.assert_length(mail.outbox, 0)
+
+    def test_admins_owners_and_unknown_addresses_are_emailed(self) -> None:
+        admin = self.example_user("iago")
+        owner = self.example_user("desdemona")
+        self.send_password_reset(to_user_ids=[admin.id])
+        self.send_password_reset(to_user_ids=[owner.id])
+        self.send_password_reset(to_emails=["invitee@example.com"])
+        self.assertEqual(
+            [email.to[0] for email in mail.outbox],
+            [
+                f"{admin.full_name} <{admin.delivery_email}>",
+                f"{owner.full_name} <{owner.delivery_email}>",
+                "invitee@example.com",
+            ],
+        )
+
+    def test_any_blocked_recipient_drops_the_whole_email(self) -> None:
+        self.send_password_reset(
+            to_user_ids=[self.example_user("iago").id, self.example_user("hamlet").id]
+        )
+        self.assert_length(mail.outbox, 0)
+
+    def test_enqueued_emails_are_blocked(self) -> None:
+        with self.settings(EMAIL_ALWAYS_ENQUEUED=True), self.captureOnCommitCallbacks(execute=True):
+            self.send_password_reset(to_user_ids=[self.example_user("hamlet").id])
+        self.assert_length(mail.outbox, 0)
+
+        # The queue does deliver to administrators, so the check above is meaningful.
+        with self.settings(EMAIL_ALWAYS_ENQUEUED=True), self.captureOnCommitCallbacks(execute=True):
+            self.send_password_reset(to_user_ids=[self.example_user("iago").id])
+        self.assert_length(mail.outbox, 1)

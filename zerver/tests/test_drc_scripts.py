@@ -3,6 +3,9 @@ from datetime import datetime, timezone
 from io import StringIO
 from unittest.mock import patch
 
+from django.core import mail
+from django.test import override_settings
+
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message
 from zerver.views.drc_scripts import DELIMITER
@@ -106,3 +109,27 @@ class ConversationReportTest(ZulipTestCase):
         send_report.assert_called_once()
         rows = list(csv.DictReader(StringIO(send_report.call_args.args[3]), delimiter=DELIMITER))
         self.assertEqual([int(row["message_id"]) for row in rows], [message_id])
+
+
+class ReportRecipientTest(ZulipTestCase):
+    @override_settings(BLOCK_EMAIL_TO_NON_ADMIN_USERS=True)
+    def test_reports_are_only_emailed_to_owners_and_admins(self) -> None:
+        self.login("iago")
+        for name in ["polonius", "hamlet", "shiva"]:
+            result = self.client_post(
+                "/drc_admin/",
+                {"users_role_get": "1", "send_to": self.example_user(name).delivery_email},
+            )
+            self.assert_json_error(
+                result, "Reports cannot be emailed to guests, members or moderators."
+            )
+        self.assert_length(mail.outbox, 0)
+
+        owner = self.example_user("desdemona")
+        result = self.client_post(
+            "/drc_admin/", {"users_role_get": "1", "send_to": owner.delivery_email}
+        )
+        self.assert_json_success(result)
+        self.assert_length(mail.outbox, 1)
+        self.assertEqual(mail.outbox[0].to, [owner.delivery_email])
+        self.assertIn("user_roles.csv", mail.outbox[0].message().as_string())
