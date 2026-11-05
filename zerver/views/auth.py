@@ -48,6 +48,7 @@ from zerver.forms import (
 )
 from zerver.lib.exceptions import (
     AuthenticationFailedError,
+    ClientBlockedError,
     InvalidSubdomainError,
     JsonableError,
     PasswordAuthDisabledError,
@@ -71,7 +72,7 @@ from zerver.lib.subdomains import (
 )
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.url_encoding import append_url_query_string
-from zerver.lib.user_agent import parse_user_agent
+from zerver.lib.user_agent import is_client_blocked, parse_user_agent
 from zerver.lib.users import get_users_for_api, is_2fa_verified
 from zerver.lib.utils import has_api_key_format
 from zerver.lib.validator import validate_login_email
@@ -452,6 +453,11 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
     )
     mobile_flow_otp = result.data_dict.get("mobile_flow_otp")
     desktop_flow_otp = result.data_dict.get("desktop_flow_otp")
+    if (mobile_flow_otp is not None and is_client_blocked("ZulipMobile")) or (
+        desktop_flow_otp is not None and is_client_blocked("ZulipElectron")
+    ):
+        raise ClientBlockedError
+
     if not mobile_flow_otp and not desktop_flow_otp:
         # We don't want to store anything in the browser session if we're doing
         # mobile or desktop flows, since that's just an intermediary step and the
@@ -501,6 +507,9 @@ def finish_desktop_flow(
     of being created, as nothing more powerful is needed for the desktop flow
     and this ensures the key can only be used for completing this authentication attempt.
     """
+    if is_client_blocked("ZulipElectron"):
+        raise ClientBlockedError
+
     data_dict = None
     if params_to_store_in_authenticated_session:
         data_dict = ExternalAuthDataDict(
@@ -522,6 +531,9 @@ def finish_desktop_flow(
 
 
 def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
+    if is_client_blocked("ZulipMobile"):
+        raise ClientBlockedError
+
     # For the mobile OAuth flow, we send the API key and other
     # necessary details in a redirect to a zulip:// URL scheme.
     api_key = user_profile.api_key

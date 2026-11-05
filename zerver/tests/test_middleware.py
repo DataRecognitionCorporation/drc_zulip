@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from bs4 import BeautifulSoup
 from django.http import HttpResponse
+from django.test import override_settings
 
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.lib.realm_icon import get_realm_icon_url
@@ -13,6 +14,146 @@ from zerver.lib.utils import assert_is_not_none
 from zerver.middleware import LogRequests, is_slow_query, write_log_line
 from zerver.models.realms import get_realm
 from zilencer.models import RemoteZulipServer
+from zproject import default_settings
+
+
+@override_settings(
+    BLOCKED_CLIENT_NAMES=default_settings.BLOCKED_CLIENT_NAMES,
+    BLOCKED_USER_AGENTS=default_settings.BLOCKED_USER_AGENTS,
+)
+class BlockClientsTest(ZulipTestCase):
+    error_message = "Mobile access and desktop apps are disabled. Please use a desktop web browser."
+
+    def test_blocked_apps(self) -> None:
+        for user_agent in [
+            "ZulipMobile/27.0 (Android 14)",
+            "ZulipMobile/27.0 (iOS 17.4)",
+            "ZulipFlutter/0.0.15+15 (Android 14)",
+            "ZulipFlutter",
+            "ZulipElectron/5.0.0 Mozilla/5.0",
+            "ZulipDesktop/0.4.4 (Mac)",
+            "ZulipAndroid/1.0",
+            "ZulipiOS/1.0",
+            "Dart/3.5 (dart:io)",
+            "Mozilla/5.0 Chrome/120.0 Electron/28.0 Safari/537.36",
+            "zulipmobile/27.0",
+            "ZulipMobile/27.0 ISLAND",
+        ]:
+            for path in ["/login/", "/login_local/", "/api/v1/server_settings"]:
+                with self.subTest(user_agent=user_agent, path=path):
+                    response = self.client_get(path, HTTP_USER_AGENT=user_agent)
+                    self.assert_json_error(response, self.error_message, 403)
+
+    @override_settings(EDIRECT_REDIRECT="https://example.com/sso")
+    def test_app_blocking_precedes_login_redirect(self) -> None:
+        for user_agent in ["ZulipElectron/5.0.0", "Mozilla/5.0 (iPhone) ISLAND/1.0"]:
+            with self.subTest(user_agent=user_agent):
+                response = self.client_get("/login/", HTTP_USER_AGENT=user_agent)
+                self.assert_json_error(response, self.error_message, 403)
+
+        response = self.client_get("/login/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "https://example.com/sso")
+
+    def test_client_parameter_cannot_hide_blocked_user_agent(self) -> None:
+        for client in ["website", "Unspecified", ""]:
+            with self.subTest(client=client):
+                response = self.client_get(
+                    "/api/v1/server_settings",
+                    {"client": client},
+                    HTTP_USER_AGENT="ZulipFlutter/0.0.15+15 (iOS 17.4)",
+                )
+                self.assert_json_error(response, self.error_message, 403)
+                response = self.client_post(
+                    "/api/v1/fetch_api_key",
+                    {"client": client},
+                    HTTP_USER_AGENT="ZulipMobile/27.0 (Android 14)",
+                )
+                self.assert_json_error(response, self.error_message, 403)
+
+    def test_blocked_client_parameter(self) -> None:
+        for client in ["ZulipMobile", "ZulipFlutter", "ZulipElectron", "zulipmobile"]:
+            with self.subTest(client=client):
+                response = self.client_get("/api/v1/server_settings", {"client": client})
+                self.assert_json_error(response, self.error_message, 403)
+                response = self.client_post("/api/v1/fetch_api_key", {"client": client})
+                self.assert_json_error(response, self.error_message, 403)
+
+    def test_existing_app_credentials_are_blocked(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+        for user_agent in ["ZulipMobile/27.0", "ZulipFlutter", "ZulipElectron/5.0.0"]:
+            with self.subTest(user_agent=user_agent):
+                response = self.client_get("/", HTTP_USER_AGENT=user_agent)
+                self.assert_json_error(response, self.error_message, 403)
+                response = self.api_get(hamlet, "/api/v1/users/me", HTTP_USER_AGENT=user_agent)
+                self.assert_json_error(response, self.error_message, 403)
+
+        self.assert_json_success(
+            self.api_get(hamlet, "/api/v1/users/me", HTTP_USER_AGENT="Mozilla/5.0")
+        )
+
+    def test_mobile_browsers_are_blocked(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+        for user_agent in [
+            "Mozilla/5.0 (Linux; Android 14) Chrome/130.0 Mobile Safari/537.36",
+            "Mozilla/5.0 (Linux; Android 14; Tablet) Chrome/130.0 Safari/537.36",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) Mobile/15E148 Safari/604.1",
+            "Mozilla/5.0 (iPad; CPU OS 17_4 like Mac OS X) Mobile/15E148 Safari/604.1",
+            "Mozilla/5.0 (iPod touch; CPU iPhone OS 15_8 like Mac OS X) Safari/604.1",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15) Version/17.0 Mobile/15E148 Safari/604.1",
+            "Mozilla/5.0 (Windows Phone 10.0; ARM; Trident/7.0; Touch; rv:11.0) like Gecko",
+            "BlackBerry9700/5.0.0.862 Profile/MIDP-2.1",
+            "Mozilla/5.0 (BB10; Touch) AppleWebKit/537.35+",
+            "Opera/9.80 (J2ME/MIDP; Opera Mini/9.0) Presto/2.12.423",
+            "Opera/9.80 (Opera Mobi/12.0) Presto/2.12.423",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) ISLAND/1.0",
+            "Mozilla/5.0 (Linux; Android 14) ISLAND/1.0",
+            "mozilla/5.0 (ipad) island/1.0",
+        ]:
+            with self.subTest(user_agent=user_agent):
+                for path in ["/", "/login/", "/login_local/", "/api/v1/server_settings"]:
+                    response = self.client_get(
+                        path, {"client": "website"}, HTTP_USER_AGENT=user_agent
+                    )
+                    self.assert_json_error(response, self.error_message, 403)
+
+                response = self.client_post(
+                    "/accounts/login/", {"client": "website"}, HTTP_USER_AGENT=user_agent
+                )
+                self.assert_json_error(response, self.error_message, 403)
+                response = self.api_get(hamlet, "/api/v1/users/me", HTTP_USER_AGENT=user_agent)
+                self.assert_json_error(response, self.error_message, 403)
+
+    def test_desktop_browsers_are_allowed(self) -> None:
+        for user_agent in [
+            "",
+            "Mozilla/5.0 (X11; Linux x86_64) Firefox/130.0",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0 Safari/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Version/17.0 Safari/605.1.15",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) ISLAND/1.0",
+        ]:
+            with self.subTest(user_agent=user_agent):
+                for path in ["/login/", "/login_local/"]:
+                    response = self.client_get(path, HTTP_USER_AGENT=user_agent)
+                    self.assertEqual(response.status_code, 200)
+                response = self.client_get("/api/v1/server_settings", HTTP_USER_AGENT=user_agent)
+                self.assert_json_success(response)
+
+        response = self.client_get("/api/v1/server_settings", skip_user_agent=True)
+        self.assert_json_success(response)
+
+    def test_blocking_settings(self) -> None:
+        with self.settings(BLOCKED_CLIENT_NAMES=set(), BLOCKED_USER_AGENTS=[]):
+            response = self.client_get(
+                "/api/v1/server_settings", HTTP_USER_AGENT="ZulipMobile/27.0"
+            )
+            self.assert_json_success(response)
+
+        with self.settings(BLOCKED_CLIENT_NAMES=set(), BLOCKED_USER_AGENTS=["CustomApp"]):
+            response = self.client_get("/api/v1/server_settings", HTTP_USER_AGENT="customapp/1.0")
+            self.assert_json_error(response, self.error_message, 403)
 
 
 class SlowQueryTest(ZulipTestCase):

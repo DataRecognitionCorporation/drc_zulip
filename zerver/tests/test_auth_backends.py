@@ -70,7 +70,7 @@ from zerver.lib.email_validation import (
     get_realm_email_validator,
     validate_email_is_valid,
 )
-from zerver.lib.exceptions import JsonableError, RateLimitedError
+from zerver.lib.exceptions import ClientBlockedError, JsonableError, RateLimitedError
 from zerver.lib.initial_password import initial_password
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.storage import static_path
@@ -120,7 +120,14 @@ from zerver.models.groups import SystemGroups, UserGroupMembership
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
 from zerver.models.users import ExternalAuthID, PasswordTooWeakError, get_user_by_delivery_email
 from zerver.signals import JUST_CREATED_THRESHOLD
-from zerver.views.auth import log_into_subdomain, maybe_send_to_registration
+from zerver.views.auth import (
+    finish_desktop_flow,
+    finish_mobile_flow,
+    log_into_subdomain,
+    login_or_register_remote_user,
+    maybe_send_to_registration,
+)
+from zproject import default_settings
 from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
     EMAIL_WITH_ENCODED_DISCORD_ID,
@@ -711,6 +718,58 @@ class CheckPasswordStrengthTest(ZulipTestCase):
             self.assertFalse(check_password_strength("longer"))
             # Good password:
             self.assertTrue(check_password_strength("f657gdGGk9"))
+
+
+@override_settings(
+    BLOCKED_CLIENT_NAMES=default_settings.BLOCKED_CLIENT_NAMES,
+    BLOCKED_USER_AGENTS=default_settings.BLOCKED_USER_AGENTS,
+)
+class AppLoginBlockingTest(ZulipTestCase):
+    @override_settings(
+        AUTHENTICATION_BACKENDS=(
+            "zproject.backends.ZulipRemoteUserBackend",
+            "zproject.backends.ZulipDummyBackend",
+        )
+    )
+    def test_app_sso_handoffs_are_blocked_in_browser(self) -> None:
+        for flow in ["mobile_flow_otp", "desktop_flow_otp"]:
+            with self.subTest(flow=flow):
+                response = self.client_get(
+                    "/accounts/login/sso/",
+                    {flow: "1234abcd" * 8},
+                    REMOTE_USER=self.example_email("hamlet"),
+                    HTTP_USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) ISLAND/1.0",
+                )
+                self.assert_json_error(
+                    response,
+                    "Mobile access and desktop apps are disabled. Please use a desktop web browser.",
+                    403,
+                )
+                self.assert_logged_in_user_id(None)
+                self.assertNotIn("Location", response)
+
+    def test_app_registration_handoffs_are_blocked(self) -> None:
+        for flow in ["mobile", "desktop"]:
+            data_dict: ExternalAuthDataDict = {}
+            if flow == "mobile":
+                data_dict["mobile_flow_otp"] = "1234abcd" * 8
+            else:
+                data_dict["desktop_flow_otp"] = "1234abcd" * 8
+            result = ExternalAuthResult(data_dict=data_dict)
+            with (
+                self.subTest(flow=flow),
+                mock.patch("zerver.views.auth.register_remote_user") as register,
+                self.assertRaises(ClientBlockedError),
+            ):
+                login_or_register_remote_user(HostRequestMock(), result)
+            register.assert_not_called()
+
+    def test_pending_app_registration_cannot_issue_credentials(self) -> None:
+        user = self.example_user("hamlet")
+        with self.assertRaises(ClientBlockedError):
+            finish_mobile_flow(HostRequestMock(), user, "1234abcd" * 8)
+        with self.assertRaises(ClientBlockedError):
+            finish_desktop_flow(HostRequestMock(), user, "1234abcd" * 8)
 
 
 class DesktopFlowTestingLib(ZulipTestCase):
