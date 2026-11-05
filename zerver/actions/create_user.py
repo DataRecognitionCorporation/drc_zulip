@@ -237,10 +237,12 @@ def add_new_user_history(
 
     if len(message_history_ids) > 0:
         # Handle the race condition where a message arrives between
-        # bulk_add_subscriptions above and the recent message query just above
+        # bulk_add_subscriptions above and the recent message query just above.
+        # DRC: Checking all history ids also makes repeat calls safe, which
+        # bulk import relies on to add channel history after user creation.
         already_used_ids = set(
             UserMessage.objects.filter(
-                message_id__in=recent_message_ids, user_profile=user_profile
+                message_id__in=message_history_ids, user_profile=user_profile
             ).values_list("message_id", flat=True)
         )
 
@@ -398,7 +400,10 @@ def notify_created_user(user_profile: UserProfile, notify_user_ids: list[int]) -
             user_profile.realm.get_active_users().filter(id__in=notify_user_ids)
         )
     else:
-        active_realm_users = list(user_profile.realm.get_active_users())
+        # DRC: Recipients only need the fields read by
+        # send_realm_user_add_events; loading every active user in full
+        # for each new user made bulk imports slow in large realms.
+        active_realm_users = list(user_profile.realm.get_active_users().only("id", "role"))
 
         if user_access_restricted_in_realm(user_profile):
             for user in active_realm_users:

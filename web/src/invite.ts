@@ -2,6 +2,7 @@ import ClipboardJS from "clipboard";
 import {add} from "date-fns";
 import Handlebars from "handlebars/runtime.js";
 import $ from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
@@ -153,108 +154,145 @@ function beforeSend(): void {
     $("#invite-user-modal .dialog_submit_button").prop("disabled", true);
 }
 
+// DRC: Bulk imports are sent in chunks so that no single request runs
+// long enough to hit the load balancer's request timeout.
+const BULK_IMPORT_CHUNK_SIZE = 50;
+
 function submit_invitation_form(): void {
     const $expires_in = $<HTMLSelectOneElement>("select:not([multiple])#expires_in");
     const $invite_status = $("#dialog_error");
+    const $invitee_emails = $<HTMLTextAreaElement>("#invitee_emails");
     const data = {...get_common_invitation_data(), bulk_import_users: JSON.stringify(true)};
+    const rows = data.invitee_emails.split(/\r?\n/).filter((line) => line.trim().length > 0);
+    const chunks = _.chunk(rows, BULK_IMPORT_CHUNK_SIZE);
+    assert(chunks.length > 0);
+    let number_of_users_added = 0;
 
-    void channel.post({
-        url: "/json/invites",
-        data,
-        beforeSend,
-        success() {
-            const number_of_users_added = $<HTMLTextAreaElement>("#invitee_emails")
-                .val()!
-                .split(/\r?\n/)
-                .filter((line) => line.trim().length > 0).length;
-            banners.open(
-                {
-                    intent: "success",
-                    label: new Handlebars.SafeString(
-                        $t_html(
-                            {
-                                defaultMessage:
-                                    "{N, plural, one {User added successfully.} other {Users added successfully.}}",
-                            },
-                            {N: number_of_users_added},
-                        ),
-                    ),
-                    buttons: [],
-                    close_button: false,
-                    custom_classes: "invite-user-modal-banner",
-                },
-                $("#invite-success-banner-container"),
-            );
-            $<HTMLTextAreaElement>("#invitee_emails").val("");
+    function finish_import(): void {
+        $("#invite-user-modal .dialog_submit_button").text($t({defaultMessage: "Add users"}));
+        $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
+        $("#invite-user-modal .dialog_exit_button").prop("disabled", false);
+        util.the($invite_status).scrollIntoView();
+    }
 
-            if (page_params.development_environment) {
+    function import_chunk(chunk_index: number): void {
+        const chunk = chunks[chunk_index]!;
+        void channel.post({
+            url: "/json/invites",
+            data: {...data, invitee_emails: chunk.join("\n")},
+            success() {
+                number_of_users_added += chunk.length;
+                // Leave only rows not yet imported, so that after a
+                // failure the user can fix and resubmit just those.
+                $invitee_emails.val(rows.slice(number_of_users_added).join("\n"));
+                if (chunk_index + 1 < chunks.length) {
+                    import_chunk(chunk_index + 1);
+                    return;
+                }
+
+                finish_import();
                 banners.open(
-                    DEV_ENV_EMAIL_ACCESS_BANNER,
-                    $("#dev-env-email-access-banner-container"),
+                    {
+                        intent: "success",
+                        label: new Handlebars.SafeString(
+                            $t_html(
+                                {
+                                    defaultMessage:
+                                        "{N, plural, one {User added successfully.} other {Users added successfully.}}",
+                                },
+                                {N: number_of_users_added},
+                            ),
+                        ),
+                        buttons: [],
+                        close_button: false,
+                        custom_classes: "invite-user-modal-banner",
+                    },
+                    $("#invite-success-banner-container"),
                 );
-            }
 
-            if ($expires_in.val() === "custom") {
-                // Hide the custom inputs if the custom input is set
-                // to one of the dropdown's standard options.
-                const time_in_minutes = util.get_custom_time_in_minutes(
-                    custom_expiration_time_unit,
-                    custom_expiration_time_input,
-                );
-                for (const option of Object.values(settings_config.expires_in_values)) {
-                    if (option.value === time_in_minutes) {
-                        $("#custom-invite-expiration-time").hide();
-                        $expires_in.val(time_in_minutes);
-                        return;
-                    }
-                }
-            }
-        },
-        error(xhr) {
-            const parsed = z
-                .object({
-                    result: z.literal("error"),
-                    code: z.literal("INVITATION_FAILED"),
-                    msg: z.string(),
-                    errors: z.array(z.tuple([z.string(), z.string(), z.boolean()])),
-                    sent_invitations: z.boolean(),
-                    license_limit_reached: z.boolean(),
-                    daily_limit_reached: z.boolean(),
-                })
-                .safeParse(xhr.responseJSON);
-            if (!parsed.success) {
-                // There was a fatal error, no partial processing occurred.
-                ui_report.error($t({defaultMessage: "Failed"}), xhr, $invite_status);
-            } else {
-                // Some users could not be imported.
-                const error_list = [];
-                let is_invitee_deactivated = false;
-                for (const [email, error_message, deactivated] of parsed.data.errors) {
-                    error_list.push(`${email}: ${error_message}`);
-                    if (deactivated) {
-                        is_invitee_deactivated = true;
-                    }
+                if (page_params.development_environment) {
+                    banners.open(
+                        DEV_ENV_EMAIL_ACCESS_BANNER,
+                        $("#dev-env-email-access-banner-container"),
+                    );
                 }
 
-                const error_response = render_invitation_failed_error({
-                    error_message: parsed.data.msg,
-                    error_list,
-                    is_admin: current_user.is_admin,
-                    is_invitee_deactivated,
-                    license_limit_reached: parsed.data.license_limit_reached,
-                    has_billing_access: settings_data.user_has_billing_access(),
-                    daily_limit_reached: parsed.data.daily_limit_reached,
-                });
-                ui_report.message(error_response, $invite_status, "alert-error");
-            }
-        },
-        complete() {
-            $("#invite-user-modal .dialog_submit_button").text($t({defaultMessage: "Add users"}));
-            $("#invite-user-modal .dialog_submit_button").prop("disabled", false);
-            $("#invite-user-modal .dialog_exit_button").prop("disabled", false);
-            util.the($invite_status).scrollIntoView();
-        },
-    });
+                if ($expires_in.val() === "custom") {
+                    // Hide the custom inputs if the custom input is set
+                    // to one of the dropdown's standard options.
+                    const time_in_minutes = util.get_custom_time_in_minutes(
+                        custom_expiration_time_unit,
+                        custom_expiration_time_input,
+                    );
+                    for (const option of Object.values(settings_config.expires_in_values)) {
+                        if (option.value === time_in_minutes) {
+                            $("#custom-invite-expiration-time").hide();
+                            $expires_in.val(time_in_minutes);
+                            return;
+                        }
+                    }
+                }
+            },
+            error(xhr) {
+                finish_import();
+                let error_prefix = "";
+                if (number_of_users_added > 0) {
+                    error_prefix = $t(
+                        {
+                            defaultMessage:
+                                "{N, plural, one {# user was added before this error; the remaining users are still listed.} other {# users were added before this error; the remaining users are still listed.}}",
+                        },
+                        {N: number_of_users_added},
+                    );
+                }
+                const parsed = z
+                    .object({
+                        result: z.literal("error"),
+                        code: z.literal("INVITATION_FAILED"),
+                        msg: z.string(),
+                        errors: z.array(z.tuple([z.string(), z.string(), z.boolean()])),
+                        sent_invitations: z.boolean(),
+                        license_limit_reached: z.boolean(),
+                        daily_limit_reached: z.boolean(),
+                    })
+                    .safeParse(xhr.responseJSON);
+                if (!parsed.success) {
+                    // There was a fatal error; this chunk was not imported.
+                    ui_report.error(
+                        error_prefix || $t({defaultMessage: "Failed"}),
+                        xhr,
+                        $invite_status,
+                    );
+                } else {
+                    // Some users could not be imported.
+                    const error_list = [];
+                    let is_invitee_deactivated = false;
+                    for (const [email, error_message, deactivated] of parsed.data.errors) {
+                        error_list.push(`${email}: ${error_message}`);
+                        if (deactivated) {
+                            is_invitee_deactivated = true;
+                        }
+                    }
+
+                    const error_response = render_invitation_failed_error({
+                        error_message: error_prefix
+                            ? `${error_prefix} ${parsed.data.msg}`
+                            : parsed.data.msg,
+                        error_list,
+                        is_admin: current_user.is_admin,
+                        is_invitee_deactivated,
+                        license_limit_reached: parsed.data.license_limit_reached,
+                        has_billing_access: settings_data.user_has_billing_access(),
+                        daily_limit_reached: parsed.data.daily_limit_reached,
+                    });
+                    ui_report.message(error_response, $invite_status, "alert-error");
+                }
+            },
+        });
+    }
+
+    beforeSend();
+    import_chunk(0);
 }
 
 const copy_invite_link_banner = (invite_link: string): Banner => ({

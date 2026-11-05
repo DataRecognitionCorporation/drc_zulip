@@ -696,9 +696,14 @@ def send_user_creation_events_on_adding_subscriptions(
     altered_user_dict: dict[int, set[int]],
     altered_streams_dict: dict[UserProfile, set[int]],
     subscribers_of_altered_user_subscriptions: dict[int, set[int]],
+    *,
+    from_user_creation: bool,
 ) -> None:
     altered_users = list(altered_streams_dict.keys())
     non_guest_user_ids = active_non_guest_user_ids(realm.id)
+    # DRC: Users created in this transaction can't have event queues
+    # yet, so events addressed to them would just be dropped.
+    new_user_ids = {user.id for user in altered_users} if from_user_creation else set()
 
     users_involved_in_dms = get_users_involved_in_dms_with_target_users(altered_users, realm)
 
@@ -712,8 +717,11 @@ def send_user_creation_events_on_adding_subscriptions(
             subscriber_ids_dict[stream_id].add(user.id)
             subscribers_user_id_map[user.id] = user
 
-    from zerver.actions.create_user import notify_created_user, send_realm_user_add_events
+    from zerver.actions.create_user import send_realm_user_add_events
 
+    # DRC: Grouped so each newly accessible user is sent in one event
+    # to all guests gaining access, not one event per guest.
+    guests_gaining_access: dict[int, list[UserProfile]] = defaultdict(list)
     for user in altered_users:
         streams_for_user = altered_streams_dict[user]
         subscribers_in_altered_streams: set[int] = set()
@@ -728,12 +736,18 @@ def send_user_creation_events_on_adding_subscriptions(
         )
 
         users_to_receive_creation_event = (
-            subscribers_in_altered_streams - users_already_with_access_to_altered_user
+            subscribers_in_altered_streams
+            - users_already_with_access_to_altered_user
+            - new_user_ids
         )
         if users_to_receive_creation_event:
-            notify_created_user(user, list(users_to_receive_creation_event))
+            send_realm_user_add_events(
+                realm,
+                user,
+                [subscribers_user_id_map[user_id] for user_id in users_to_receive_creation_event],
+            )
 
-        if user.is_guest:
+        if user.is_guest and not from_user_creation:
             # If the altered user is a guest, then the user may receive
             # user creation events for subscribers of the new stream.
             users_already_accessible_to_altered_user = (
@@ -746,8 +760,10 @@ def send_user_creation_events_on_adding_subscriptions(
                 subscribers_in_altered_streams - users_already_accessible_to_altered_user
             )
             for accessible_user_id in new_accessible_user_ids:
-                accessible_user = subscribers_user_id_map[accessible_user_id]
-                send_realm_user_add_events(realm, accessible_user, [user])
+                guests_gaining_access[accessible_user_id].append(user)
+
+    for accessible_user_id, guests in guests_gaining_access.items():
+        send_realm_user_add_events(realm, subscribers_user_id_map[accessible_user_id], guests)
 
 
 SubT: TypeAlias = tuple[list[SubInfo], list[SubInfo]]
@@ -909,6 +925,7 @@ def bulk_add_subscriptions(
             altered_user_dict,
             altered_streams_dict,
             subscribers_of_altered_user_subscriptions,
+            from_user_creation=from_user_creation,
         )
 
     send_peer_subscriber_events(

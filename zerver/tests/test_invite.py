@@ -65,6 +65,7 @@ from zerver.models import (
     Message,
     MultiuseInvite,
     NamedUserGroup,
+    OnboardingUserMessage,
     PreregistrationUser,
     Realm,
     RealmAuditLog,
@@ -292,6 +293,12 @@ class InviteUserTest(InviteUserBase):
 
         existing_email = existing_user.delivery_email
         new_email = "newbulkimportuser@zulip.com"
+        self.subscribe(inviter, "Rome")
+        rome_message_id = self.send_stream_message(inviter, "Rome")
+        # Onboarding messages are added to new users outside channel
+        # history, so they must not be added twice.
+        onboarding_message_id = self.send_personal_message(inviter, existing_user)
+        OnboardingUserMessage.objects.create(realm=inviter.realm, message_id=onboarding_message_id)
         mail.outbox = []
         ScheduledEmail.objects.all().delete()
         result = self.invite(
@@ -334,6 +341,15 @@ class InviteUserTest(InviteUserBase):
         get_subscription("Denmark", existing_user)
         get_subscription("Rome", new_user)
         get_subscription("Rome", existing_user)
+        # New users get recent history from selected channels, not just defaults.
+        self.assertTrue(
+            UserMessage.objects.filter(user_profile=new_user, message_id=rome_message_id).exists()
+        )
+        self.assertTrue(
+            UserMessage.objects.filter(
+                user_profile=new_user, message_id=onboarding_message_id
+            ).exists()
+        )
 
     def test_bulk_import_users_requires_name_profile_fields(self) -> None:
         self.login("iago")

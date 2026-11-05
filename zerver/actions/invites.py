@@ -25,7 +25,7 @@ from confirmation.models import (
     create_confirmation_link,
     create_confirmation_object,
 )
-from zerver.actions.create_user import do_create_user
+from zerver.actions.create_user import add_new_user_history, do_create_user
 from zerver.actions.custom_profile_fields import do_update_user_custom_profile_data_if_changed
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_groups import bulk_add_members_to_user_groups
@@ -336,7 +336,7 @@ def do_bulk_import_users(
                 field_names=", ".join(missing_name_fields)
             )
         )
-    imported_users = existing_users_to_update.copy()
+    new_users: list[UserProfile] = []
     for user in users_to_create:
         new_user = do_create_user(
             user.email,
@@ -348,23 +348,41 @@ def do_bulk_import_users(
             role=invite_as,
             tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
             acting_user=user_profile,
-            add_initial_stream_subscriptions=include_realm_default_subscriptions,
+            # Subscribed below in one batch; subscribing each user
+            # separately made large imports time out.
+            add_initial_stream_subscriptions=False,
             send_new_user_emails=False,
         )
+        new_users.append(new_user)
+    imported_users = existing_users_to_update + new_users
+
+    streams_to_add = set(streams) | default_streams
+    if streams_to_add:
+        if new_users:
+            bulk_add_subscriptions(
+                realm,
+                streams_to_add,
+                new_users,
+                from_user_creation=True,
+                acting_user=user_profile,
+            )
+            for new_user in new_users:
+                add_new_user_history(new_user, streams_to_add)
+        if existing_users_to_update:
+            bulk_add_subscriptions(
+                realm, streams_to_add, existing_users_to_update, acting_user=user_profile
+            )
+
+    # Set after subscribing, so users who just gained access to the new
+    # users also receive these updates. No bot DM about the change is
+    # needed for a brand-new account.
+    for user, new_user in zip(users_to_create, new_users, strict=True):
         profile_data: list[ProfileDataElementUpdateDict] = [
             {"id": custom_fields["first_name"], "value": user.first_name},
             {"id": custom_fields["last_name"], "value": user.last_name},
         ]
         do_update_user_custom_profile_data_if_changed(
-            new_user, profile_data, acting_user=user_profile, notify=True
-        )
-        imported_users.append(new_user)
-
-    if streams:
-        bulk_add_subscriptions(realm, streams, imported_users, acting_user=user_profile)
-    if default_streams and existing_users_to_update:
-        bulk_add_subscriptions(
-            realm, default_streams, existing_users_to_update, acting_user=user_profile
+            new_user, profile_data, acting_user=user_profile, notify=False
         )
 
     if user_groups:

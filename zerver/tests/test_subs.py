@@ -4493,6 +4493,58 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual((small_events, large_events), (2, 6))
         self.assertEqual(small_queries, large_queries)
 
+    def test_subscribing_guests_sends_one_realm_user_event_per_subscriber(self) -> None:
+        realm = get_realm("zulip")
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm, "can_access_all_users_group", members_group, acting_user=None
+        )
+
+        def create_user(email: str, role: int) -> UserProfile:
+            return do_create_user(
+                email,
+                None,
+                realm,
+                "Test user",
+                role=role,
+                acting_user=None,
+                add_initial_stream_subscriptions=False,
+            )
+
+        subscribers = [
+            create_user(f"subscriber{i}@zulip.com", UserProfile.ROLE_MEMBER) for i in range(3)
+        ]
+        guests = [create_user(f"guest{i}@zulip.com", UserProfile.ROLE_GUEST) for i in range(2)]
+        stream = self.make_stream("guest stream")
+        bulk_add_subscriptions(realm, [stream], subscribers, acting_user=None)
+
+        with mock.patch("zerver.actions.create_user.send_event_on_commit") as send_event:
+            bulk_add_subscriptions(realm, [stream], guests, acting_user=None)
+        guest_ids = sorted(guest.id for guest in guests)
+        users_sent_to_all_guests = sorted(
+            call.args[1]["person"]["user_id"]
+            for call in send_event.call_args_list
+            if sorted(call.args[2]) == guest_ids
+        )
+        self.assertEqual(users_sent_to_all_guests, sorted(user.id for user in subscribers))
+
+        # Brand-new users can't have event queues yet, so nothing is sent
+        # to them; existing guests still learn about the new guest.
+        new_guest = create_user("newguest@zulip.com", UserProfile.ROLE_GUEST)
+        with mock.patch("zerver.actions.create_user.send_event_on_commit") as send_event:
+            bulk_add_subscriptions(
+                realm, [stream], [new_guest], from_user_creation=True, acting_user=None
+            )
+        self.assertEqual(
+            [
+                (call.args[1]["person"]["user_id"], sorted(call.args[2]))
+                for call in send_event.call_args_list
+            ],
+            [(new_guest.id, guest_ids)],
+        )
+
     def test_guest_user_subscribe(self) -> None:
         """Guest users cannot subscribe themselves to anything"""
         guest_user = self.example_user("polonius")
