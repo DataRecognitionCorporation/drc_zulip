@@ -261,6 +261,32 @@ class NoEmailArgumentError(CommandError):
         super().__init__(msg)
 
 
+# DRC: guests, members and moderators are managed through SSO and must never
+# be emailed, so only owners and administrators may receive email.
+MAX_EMAILED_ROLE = UserProfile.ROLE_REALM_ADMINISTRATOR
+
+
+def has_blocked_recipient(
+    to_user_ids: list[int] | None = None, to_emails: list[str] | None = None
+) -> bool:
+    """Whether any recipient is a user who must not be emailed.
+
+    Addresses without a Zulip account (e.g. invitees) are not blocked.
+    """
+    if not settings.BLOCK_EMAIL_TO_NON_ADMIN_USERS:
+        return False
+    if to_user_ids is not None:
+        return any(
+            get_user_profile_by_id(user_id).role > MAX_EMAILED_ROLE for user_id in to_user_ids
+        )
+    return any(
+        UserProfile.objects.filter(
+            delivery_email__iexact=parseaddr(address)[1], role__gt=MAX_EMAILED_ROLE
+        ).exists()
+        for address in to_emails or []
+    )
+
+
 @smtp_connection_backoff
 def _send_messages(connection: BaseEmailBackend, messages: list[EmailMultiAlternatives]) -> int:
     return connection.send_messages(messages)
@@ -286,6 +312,18 @@ def send_immediate_email(
     references: str | None = None,
     remove_suppressed_destination: bool = False,
 ) -> None:
+    template = template_prefix.rsplit("/", 1)[-1]
+
+    # Direct, enqueued and scheduled emails all end up here, which makes this
+    # the one place that can guarantee blocked users get nothing.
+    if has_blocked_recipient(to_user_ids, to_emails):
+        logger.info(
+            "Skipping %s email to %s: guests, members and moderators are not emailed",
+            template,
+            to_user_ids if to_user_ids is not None else to_emails,
+        )
+        return
+
     mail = build_email(
         template_prefix,
         to_user_ids=to_user_ids,
@@ -300,7 +338,6 @@ def send_immediate_email(
         in_reply_to=in_reply_to,
         references=references,
     )
-    template = template_prefix.rsplit("/", 1)[-1]
 
     log_email_config_errors()
 

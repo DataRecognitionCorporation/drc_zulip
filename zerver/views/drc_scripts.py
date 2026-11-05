@@ -10,11 +10,22 @@ from django.db import connection
 from django.db.backends.utils import CursorWrapper
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 from psycopg2.sql import SQL, Literal
 
-from zerver.lib.exceptions import AccessDeniedError, IncompatibleParametersError, UnauthorizedError
+from zerver.lib.exceptions import (
+    AccessDeniedError,
+    IncompatibleParametersError,
+    JsonableError,
+    UnauthorizedError,
+)
 from zerver.lib.response import json_success
-from zerver.lib.send_email import EmailNotDeliveredError, build_email, log_email_config_errors
+from zerver.lib.send_email import (
+    EmailNotDeliveredError,
+    build_email,
+    has_blocked_recipient,
+    log_email_config_errors,
+)
 from zerver.models import Recipient, UserProfile
 
 DELIMITER = "|"
@@ -37,6 +48,9 @@ def send_report(
     through ``send_immediate_email`` and has no attachment support, so we
     build the message and send it over a connection directly here.
     """
+    if has_blocked_recipient(to_emails=to_emails):
+        raise JsonableError(_("Reports cannot be emailed to guests, members or moderators."))
+
     mail = build_email(
         "zerver/emails/drc_reports",
         to_user_ids=None,

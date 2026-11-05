@@ -529,6 +529,10 @@ WARN_NO_EMAIL = False
 # correct.
 EMAIL_ALWAYS_ENQUEUED = False
 
+# DRC: if True, only realm owners and administrators are ever emailed; guests,
+# members and moderators are managed through SSO and never receive email.
+BLOCK_EMAIL_TO_NON_ADMIN_USERS: bool = True
+
 # If True, disable rate-limiting and other filters on sending error messages
 # to admins, and enable logging on the error-reporting itself.  Useful
 # mainly in development.
