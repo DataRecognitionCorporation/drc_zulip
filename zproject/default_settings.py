@@ -533,6 +533,9 @@ EMAIL_ALWAYS_ENQUEUED = False
 # members and moderators are managed through SSO and never receive email.
 BLOCK_EMAIL_TO_NON_ADMIN_USERS: bool = True
 
+# DRC: if True, deactivating a human user removes them from every channel.
+REMOVE_CHANNELS_ON_USER_DEACTIVATION: bool = True
+
 # If True, disable rate-limiting and other filters on sending error messages
 # to admins, and enable logging on the error-reporting itself.  Useful
 # mainly in development.

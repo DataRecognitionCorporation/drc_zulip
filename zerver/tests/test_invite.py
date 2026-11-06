@@ -49,10 +49,11 @@ from zerver.actions.realm_settings import (
 from zerver.actions.streams import do_change_stream_group_based_setting
 from zerver.actions.user_groups import check_add_user_group, do_change_user_group_permission_setting
 from zerver.actions.user_settings import do_change_full_name
-from zerver.actions.users import change_user_is_active
+from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.lib.create_user import create_user
 from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.send_email import queue_scheduled_emails
+from zerver.lib.stream_subscription import get_user_subscribed_streams
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import find_key_by_email, get_subscription
@@ -350,6 +351,187 @@ class InviteUserTest(InviteUserBase):
                 user_profile=new_user, message_id=onboarding_message_id
             ).exists()
         )
+
+    def test_bulk_import_reactivates_deactivated_user(self) -> None:
+        inviter = self.example_user("iago")
+        deactivated_user = self.example_user("hamlet")
+        self.login_user(inviter)
+        # Users deactivated before this policy may still have channels.
+        do_deactivate_user(deactivated_user, acting_user=None)
+        self.assertTrue(get_user_subscribed_streams(deactivated_user).exists())
+
+        with self.settings(REMOVE_CHANNELS_ON_USER_DEACTIVATION=True):
+            result = self.invite(
+                f"Hamlet, King, {deactivated_user.delivery_email}",
+                ["Rome"],
+                invite_as=PreregistrationUser.INVITE_AS["GUEST_USER"],
+                bulk_import_users=True,
+            )
+        self.assert_json_success(result)
+
+        deactivated_user.refresh_from_db()
+        self.assertTrue(deactivated_user.is_active)
+        self.assertTrue(deactivated_user.is_guest)
+        self.assertEqual(
+            [stream.name for stream in get_user_subscribed_streams(deactivated_user)],
+            ["Rome"],
+        )
+
+    def test_invite_reactivates_deactivated_user(self) -> None:
+        inviter = self.example_user("iago")
+        user = self.example_user("hamlet")
+        self.login_user(inviter)
+        old_stream = self.make_stream("old-private-channel", invite_only=True)
+        selected_stream = get_stream("Rome", inviter.realm)
+        existing_group = check_add_user_group(
+            inviter.realm, "existing-group", [user], acting_user=inviter
+        )
+        new_group = check_add_user_group(inviter.realm, "new-group", [inviter], acting_user=inviter)
+
+        for include_defaults in (False, True):
+            with self.subTest(include_defaults=include_defaults):
+                self.set_user_role(user, UserProfile.ROLE_MEMBER)
+                self.subscribe(user, old_stream.name)
+                # Simulate accounts deactivated before channel removal was enabled.
+                do_deactivate_user(user, acting_user=inviter)
+                self.assertIn(old_stream, get_user_subscribed_streams(user))
+                counts_before = self.fetch_streams_subscriber_count(
+                    {old_stream.id, selected_stream.id}
+                )
+                reactivations_before = RealmAuditLog.objects.filter(
+                    modified_user=user, event_type=AuditLogEventType.USER_REACTIVATED
+                ).count()
+                mail.outbox = []
+
+                with self.settings(REMOVE_CHANNELS_ON_USER_DEACTIVATION=True):
+                    result = self.invite(
+                        f"Hamlet <{user.delivery_email.upper()}>, King <{user.delivery_email}>",
+                        [selected_stream.name],
+                        invite_as=PreregistrationUser.INVITE_AS["GUEST_USER"],
+                        include_realm_default_subscriptions=include_defaults,
+                        group_ids=[existing_group.id, new_group.id],
+                    )
+                self.assert_json_success(result)
+                user.refresh_from_db()
+                self.assertTrue(user.is_active)
+                self.assertTrue(user.is_guest)
+                expected_streams = {selected_stream.id}
+                if include_defaults:
+                    expected_streams.update(
+                        stream.id for stream in get_slim_realm_default_streams(inviter.realm_id)
+                    )
+                self.assertEqual(
+                    set(get_user_subscribed_streams(user).values_list("id", flat=True)),
+                    expected_streams,
+                )
+                old_stream.refresh_from_db()
+                selected_stream.refresh_from_db()
+                self.assertEqual(old_stream.subscriber_count, counts_before[old_stream.id])
+                self.assertEqual(
+                    selected_stream.subscriber_count, counts_before[selected_stream.id] + 1
+                )
+                self.assertEqual(
+                    RealmAuditLog.objects.filter(
+                        modified_user=user, event_type=AuditLogEventType.USER_REACTIVATED
+                    ).count(),
+                    reactivations_before + 1,
+                )
+                self.assertTrue(is_user_in_group(existing_group.id, user))
+                self.assertTrue(is_user_in_group(new_group.id, user))
+                self.assertFalse(
+                    PreregistrationUser.objects.filter(email__iexact=user.delivery_email).exists()
+                )
+                self.check_sent_emails([])
+
+    @override_settings(REMOVE_CHANNELS_ON_USER_DEACTIVATION=True)
+    def test_invite_new_and_deactivated_users(self) -> None:
+        inviter = self.example_user("iago")
+        user = self.example_user("hamlet")
+        self.login_user(inviter)
+        do_deactivate_user(user, acting_user=inviter)
+        new_email = "new-invite@zulip.com"
+        mail.outbox = []
+
+        result = self.invite(
+            f"{user.delivery_email}, {new_email}, invalid-email",
+            ["Rome"],
+            invite_as=PreregistrationUser.INVITE_AS["GUEST_USER"],
+        )
+        self.assert_json_error(
+            result, "Some emails did not validate, so we didn't send any invitations."
+        )
+        user.refresh_from_db()
+        self.assertFalse(user.is_active)
+        self.assertFalse(get_user_subscribed_streams(user).exists())
+        self.assertFalse(PreregistrationUser.objects.filter(email=new_email).exists())
+        self.check_sent_emails([])
+
+        result = self.invite(
+            f"{user.delivery_email}, {new_email}, {inviter.delivery_email}",
+            ["Rome"],
+            invite_as=PreregistrationUser.INVITE_AS["GUEST_USER"],
+        )
+        self.assert_json_error(
+            result,
+            "Some of those addresses are already using Zulip, so we didn't send them an"
+            " invitation. We did send invitations to everyone else!",
+        )
+        response = orjson.loads(result.content)
+        self.assertTrue(response["sent_invitations"])
+        self.assertEqual(
+            response["errors"], [[inviter.delivery_email, "Already has an account.", False]]
+        )
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
+        self.assertTrue(user.is_guest)
+        self.assertEqual(
+            list(get_user_subscribed_streams(user).values_list("name", flat=True)), ["Rome"]
+        )
+        prereg_user = PreregistrationUser.objects.get(email=new_email)
+        self.assertEqual(prereg_user.invited_as, UserProfile.ROLE_GUEST)
+        self.assertEqual(list(prereg_user.streams.values_list("name", flat=True)), ["Rome"])
+        self.assertFalse(
+            PreregistrationUser.objects.filter(email__iexact=user.delivery_email).exists()
+        )
+        self.check_sent_emails([new_email])
+
+    def test_invite_reactivation_requires_permission(self) -> None:
+        cordelia = self.example_user("cordelia")
+        desdemona = self.example_user("desdemona")
+        do_deactivate_user(cordelia, acting_user=None)
+        do_deactivate_user(desdemona, acting_user=None)
+
+        for bulk_import in (False, True):
+            for inviter_name, user in (("hamlet", cordelia), ("iago", desdemona)):
+                with self.subTest(bulk_import=bulk_import, inviter=inviter_name):
+                    self.login(inviter_name)
+                    invitee = user.delivery_email
+                    if bulk_import:
+                        invitee = f"Existing, User, {invitee}"
+                    result = self.invite(
+                        invitee,
+                        ["Denmark"],
+                        invite_as=PreregistrationUser.INVITE_AS["GUEST_USER"],
+                        bulk_import_users=bulk_import,
+                    )
+                    self.assert_json_error(
+                        result,
+                        "Some users could not be imported."
+                        if bulk_import
+                        else "We weren't able to invite anyone.",
+                    )
+                    self.assertEqual(
+                        orjson.loads(result.content)["errors"],
+                        [
+                            [
+                                user.delivery_email,
+                                "Insufficient permission to reactivate this user.",
+                                False,
+                            ]
+                        ],
+                    )
+                    user.refresh_from_db()
+                    self.assertFalse(user.is_active)
 
     def test_bulk_import_users_requires_name_profile_fields(self) -> None:
         self.login("iago")

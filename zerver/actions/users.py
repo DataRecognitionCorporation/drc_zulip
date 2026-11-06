@@ -239,6 +239,18 @@ def do_delete_user_core(
     )
 
 
+def remove_user_from_all_channels(
+    user_profile: UserProfile, *, acting_user: UserProfile | None
+) -> None:
+    bulk_remove_subscriptions(
+        user_profile.realm,
+        [user_profile],
+        get_user_subscribed_streams(user_profile),
+        acting_user=acting_user,
+        skip_events_for_removed_user=True,
+    )
+
+
 def change_user_is_active(user_profile: UserProfile, value: bool) -> None:
     """
     Helper function for changing the .is_active field. Not meant as a standalone function
@@ -501,6 +513,8 @@ def do_deactivate_user(
                 deactivate_user_actions=deactivate_user_actions,
             )
     with transaction.atomic(savepoint=False):
+        if settings.REMOVE_CHANNELS_ON_USER_DEACTIVATION and not user_profile.is_bot:
+            remove_user_from_all_channels(user_profile, acting_user=acting_user)
         change_user_is_active(user_profile, False)
 
         clear_scheduled_emails([user_profile.id])

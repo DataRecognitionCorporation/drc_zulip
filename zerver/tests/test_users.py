@@ -2139,6 +2139,33 @@ class ActivateTest(ZulipTestCase):
             expected_difference=0,
         )
 
+    @override_settings(REMOVE_CHANNELS_ON_USER_DEACTIVATION=True)
+    def test_deactivate_user_removes_channel_subscriptions(self) -> None:
+        self.login("iago")
+        user = self.example_user("hamlet")
+        private_stream = self.make_stream("private-channel", invite_only=True)
+        self.subscribe(user, private_stream.name)
+        streams_subscriber_counts_before = self.build_streams_subscriber_count(
+            streams=get_user_subscribed_streams(user)
+        )
+        self.assertNotEqual(streams_subscriber_counts_before, {})
+
+        self.assert_json_success(self.client_delete(f"/json/users/{user.id}"))
+
+        self.assertFalse(get_user_subscribed_streams(user).exists())
+        self.assert_stream_subscriber_count(
+            streams_subscriber_counts_before,
+            self.fetch_streams_subscriber_count(set(streams_subscriber_counts_before)),
+            expected_difference=-1,
+        )
+        self.assert_json_success(self.client_post(f"/json/users/{user.id}/reactivate"))
+        self.assertFalse(get_user_subscribed_streams(user).exists())
+        self.assert_stream_subscriber_count(
+            streams_subscriber_counts_before,
+            self.fetch_streams_subscriber_count(set(streams_subscriber_counts_before)),
+            expected_difference=-1,
+        )
+
     def test_email_sent(self) -> None:
         self.login("iago")
         user = self.example_user("hamlet")

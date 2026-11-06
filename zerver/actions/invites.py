@@ -25,10 +25,11 @@ from confirmation.models import (
     create_confirmation_link,
     create_confirmation_object,
 )
-from zerver.actions.create_user import add_new_user_history, do_create_user
+from zerver.actions.create_user import add_new_user_history, do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import do_update_user_custom_profile_data_if_changed
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_groups import bulk_add_members_to_user_groups
+from zerver.actions.users import do_change_user_role, remove_user_from_all_channels
 from zerver.context_processors import common_context
 from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.email_validation import (
@@ -232,6 +233,55 @@ def parse_bulk_import_users(raw_users: str) -> list[BulkImportUser]:
     return users
 
 
+def can_reactivate_user_for_invite(acting_user: UserProfile, target_user: UserProfile) -> bool:
+    # Inviting a deactivated user changes their role, so it needs
+    # the same owner protection as role changes.
+    return acting_user.can_admin_user(target_user) and (
+        acting_user.is_realm_owner or not target_user.is_realm_owner
+    )
+
+
+def reactivate_users_for_invite(
+    users: Collection[UserProfile], *, invite_as: int, acting_user: UserProfile
+) -> None:
+    for user in users:
+        if settings.REMOVE_CHANNELS_ON_USER_DEACTIVATION:
+            # Users deactivated before this policy may still have channels.
+            remove_user_from_all_channels(user, acting_user=acting_user)
+        do_reactivate_user(user, acting_user=acting_user)
+        do_change_user_role(user, invite_as, acting_user=acting_user, notify=False)
+
+
+def add_users_to_invite_groups(
+    users: Collection[UserProfile],
+    user_groups: Collection[NamedUserGroup],
+    *,
+    acting_user: UserProfile,
+) -> None:
+    if not users or not user_groups:
+        return
+
+    existing_memberships = set(
+        UserGroupMembership.objects.filter(
+            user_profile__in=users, user_group__in=user_groups
+        ).values_list("user_profile_id", "user_group_id")
+    )
+    group_ids_to_add: dict[tuple[int, ...], list[int]] = {}
+    group_by_id = {group.id: group for group in user_groups}
+    for user in users:
+        missing_group_ids = tuple(
+            group.id for group in user_groups if (user.id, group.id) not in existing_memberships
+        )
+        if missing_group_ids:
+            group_ids_to_add.setdefault(missing_group_ids, []).append(user.id)
+    for group_ids, user_ids in group_ids_to_add.items():
+        bulk_add_members_to_user_groups(
+            [group_by_id[group_id] for group_id in group_ids],
+            user_ids,
+            acting_user=acting_user,
+        )
+
+
 @transaction.atomic(durable=True)
 def do_bulk_import_users(
     user_profile: UserProfile,
@@ -266,17 +316,23 @@ def do_bulk_import_users(
 
     users_to_create: list[BulkImportUser] = []
     existing_users_to_update: list[UserProfile] = []
+    users_to_reactivate: list[UserProfile] = []
     for user in valid_users:
         error = existing_user_errors.get(user.email)
         existing_user = existing_users.get(user.email.casefold())
         if error is None:
             users_to_create.append(user)
-        elif (
-            existing_user is not None
-            and existing_user.is_active
-            and error[0] == _("Already has an account.")
-        ):
+        elif existing_user is None or existing_user.is_bot:
+            errors.append((user.email, error[0], error[1]))
+        elif existing_user.is_active and error[0] == _("Already has an account."):
             existing_users_to_update.append(existing_user)
+        elif not existing_user.is_active and not existing_user.is_mirror_dummy:
+            if can_reactivate_user_for_invite(user_profile, existing_user):
+                users_to_reactivate.append(existing_user)
+            else:
+                errors.append(
+                    (user.email, _("Insufficient permission to reactivate this user."), False)
+                )
         else:
             errors.append((user.email, error[0], error[1]))
 
@@ -287,39 +343,35 @@ def do_bulk_import_users(
             sent_invitations=False,
         )
 
-    if not users_to_create and not existing_users_to_update:
+    if not users_to_create and not existing_users_to_update and not users_to_reactivate:
         raise JsonableError(_("You must specify at least one user."))
 
+    users_to_activate_count = len(users_to_create) + len(users_to_reactivate)
     if users_to_create:
         check_invite_limit(realm, len(users_to_create))
-        if settings.BILLING_ENABLED:
-            from corporate.lib.registration import (
-                check_spare_licenses_available_for_inviting_new_users,
+    if users_to_activate_count and settings.BILLING_ENABLED:
+        from corporate.lib.registration import check_spare_licenses_available_for_inviting_new_users
+
+        if invite_as == PreregistrationUser.INVITE_AS["GUEST_USER"]:
+            check_spare_licenses_available_for_inviting_new_users(
+                realm, extra_guests_count=users_to_activate_count
+            )
+        else:
+            check_spare_licenses_available_for_inviting_new_users(
+                realm, extra_non_guests_count=users_to_activate_count
             )
 
-            if invite_as == PreregistrationUser.INVITE_AS["GUEST_USER"]:
-                check_spare_licenses_available_for_inviting_new_users(
-                    realm, extra_guests_count=len(users_to_create)
-                )
-            else:
-                check_spare_licenses_available_for_inviting_new_users(
-                    realm, extra_non_guests_count=len(users_to_create)
-                )
-
-        if not realm.invite_required:
-            min_age = timedelta(days=settings.INVITES_MIN_USER_AGE_DAYS)
-            if (
-                user_profile.date_joined > timezone_now() - min_age
-                and not user_profile.is_realm_admin
-            ):
-                raise InvitationError(
-                    _(
-                        "Your account is too new to add users to this organization. "
-                        "Ask an organization admin, or a more experienced user."
-                    ),
-                    [],
-                    sent_invitations=False,
-                )
+    if users_to_create and not realm.invite_required:
+        min_age = timedelta(days=settings.INVITES_MIN_USER_AGE_DAYS)
+        if user_profile.date_joined > timezone_now() - min_age and not user_profile.is_realm_admin:
+            raise InvitationError(
+                _(
+                    "Your account is too new to add users to this organization. "
+                    "Ask an organization admin, or a more experienced user."
+                ),
+                [],
+                sent_invitations=False,
+            )
 
     default_streams = get_slim_realm_default_streams(realm.id)
     if not include_realm_default_subscriptions:
@@ -354,7 +406,10 @@ def do_bulk_import_users(
             send_new_user_emails=False,
         )
         new_users.append(new_user)
-    imported_users = existing_users_to_update + new_users
+
+    reactivate_users_for_invite(users_to_reactivate, invite_as=invite_as, acting_user=user_profile)
+    existing_users_to_subscribe = existing_users_to_update + users_to_reactivate
+    imported_users = existing_users_to_subscribe + new_users
 
     streams_to_add = set(streams) | default_streams
     if streams_to_add:
@@ -368,9 +423,9 @@ def do_bulk_import_users(
             )
             for new_user in new_users:
                 add_new_user_history(new_user, streams_to_add)
-        if existing_users_to_update:
+        if existing_users_to_subscribe:
             bulk_add_subscriptions(
-                realm, streams_to_add, existing_users_to_update, acting_user=user_profile
+                realm, streams_to_add, existing_users_to_subscribe, acting_user=user_profile
             )
 
     # Set after subscribing, so users who just gained access to the new
@@ -385,28 +440,7 @@ def do_bulk_import_users(
             new_user, profile_data, acting_user=user_profile, notify=False
         )
 
-    if user_groups:
-        existing_memberships = set(
-            UserGroupMembership.objects.filter(
-                user_profile__in=imported_users, user_group__in=user_groups
-            ).values_list("user_profile_id", "user_group_id")
-        )
-        group_ids_to_add: dict[tuple[int, ...], list[int]] = {}
-        group_by_id = {group.id: group for group in user_groups}
-        for imported_user in imported_users:
-            missing_group_ids = tuple(
-                group.id
-                for group in user_groups
-                if (imported_user.id, group.id) not in existing_memberships
-            )
-            if missing_group_ids:
-                group_ids_to_add.setdefault(missing_group_ids, []).append(imported_user.id)
-        for group_ids, user_ids in group_ids_to_add.items():
-            bulk_add_members_to_user_groups(
-                [group_by_id[group_id] for group_id in group_ids],
-                user_ids,
-                acting_user=user_profile,
-            )
+    add_users_to_invite_groups(imported_users, user_groups, acting_user=user_profile)
 
 
 @transaction.atomic(durable=True)
@@ -475,14 +509,31 @@ def do_invite_users(
     error_dict = get_existing_user_errors(
         realm, {invitee.email for invitee in good_invitees}, allow_inactive_mirror_dummies=True
     )
+    deactivated_users = (
+        {
+            user.delivery_email.casefold(): user
+            for user in get_users_by_delivery_email(set(error_dict), realm)
+            .filter(is_active=False, is_bot=False, is_mirror_dummy=False)
+            .select_related("realm")
+        }
+        if error_dict
+        else {}
+    )
 
+    users_to_reactivate: dict[int, UserProfile] = {}
     skipped: list[tuple[str, str, bool]] = []
-    for email in error_dict:
-        msg, deactivated = error_dict[email]
+    for email, (msg, deactivated) in error_dict.items():
+        existing_user = deactivated_users.get(email.casefold())
+        if existing_user is not None:
+            if can_reactivate_user_for_invite(user_profile, existing_user):
+                # Different names or email casing can refer to the same account.
+                users_to_reactivate[existing_user.id] = existing_user
+                continue
+            msg = _("Insufficient permission to reactivate this user.")
+            deactivated = False
         skipped.append((email, msg, deactivated))
-        good_invitees = {item for item in good_invitees if item.email != email}
 
-    validated_invitees = list(good_invitees)
+    validated_invitees = [invitee for invitee in good_invitees if invitee.email not in error_dict]
 
     if errors:
         raise InvitationError(
@@ -491,11 +542,25 @@ def do_invite_users(
             sent_invitations=False,
         )
 
-    if skipped and len(skipped) == len(invitees):
+    if not validated_invitees and not users_to_reactivate:
         # All e-mails were skipped, so we didn't actually invite anyone.
         raise InvitationError(
             _("We weren't able to invite anyone."), skipped, sent_invitations=False
         )
+
+    reactivated_users = list(users_to_reactivate.values())
+    if reactivated_users:
+        reactivate_users_for_invite(
+            reactivated_users, invite_as=invite_as, acting_user=user_profile
+        )
+        streams_to_add = set(streams)
+        if include_realm_default_subscriptions:
+            streams_to_add.update(get_slim_realm_default_streams(realm.id))
+        if streams_to_add:
+            bulk_add_subscriptions(
+                realm, streams_to_add, reactivated_users, acting_user=user_profile
+            )
+        add_users_to_invite_groups(reactivated_users, user_groups, acting_user=user_profile)
 
     # Now that we are past all the possible errors, we actually create
     # the PreregistrationUser objects and trigger the email invitations.
