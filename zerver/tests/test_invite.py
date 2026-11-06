@@ -1,4 +1,6 @@
+import os
 import re
+import subprocess
 from collections.abc import Sequence
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
@@ -56,7 +58,7 @@ from zerver.lib.send_email import queue_scheduled_emails
 from zerver.lib.stream_subscription import get_user_subscribed_streams
 from zerver.lib.streams import ensure_stream
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import find_key_by_email, get_subscription
+from zerver.lib.test_helpers import avatar_disk_path, find_key_by_email, get_subscription
 from zerver.lib.types import Invitee
 from zerver.lib.user_groups import get_direct_user_groups, is_user_in_group
 from zerver.models import (
@@ -351,6 +353,32 @@ class InviteUserTest(InviteUserBase):
                 user_profile=new_user, message_id=onboarding_message_id
             ).exists()
         )
+
+    def test_bulk_import_users_generates_avatars_in_one_process(self) -> None:
+        inviter = self.example_user("iago")
+        self.login_user(inviter)
+        self.add_name_profile_fields(inviter.realm)
+        emails = [f"bulkavatar{i}@zulip.com" for i in range(3)]
+
+        with patch(
+            "zerver.lib.avatar.subprocess.check_output", wraps=subprocess.check_output
+        ) as check_output:
+            result = self.invite(
+                "\n".join(f"Smith, Bulk{i}, {email}" for i, email in enumerate(emails)),
+                ["Rome"],
+                invite_as=PreregistrationUser.INVITE_AS["MEMBER"],
+                include_realm_default_subscriptions=False,
+                bulk_import_users=True,
+            )
+        self.assert_json_success(result)
+
+        # Starting Node for each new user made large imports time out.
+        check_output.assert_called_once()
+        for email in emails:
+            new_user = get_user_by_delivery_email(email, inviter.realm)
+            self.assertEqual(new_user.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+            self.assertTrue(os.path.isfile(avatar_disk_path(new_user)))
+            self.assertTrue(os.path.isfile(avatar_disk_path(new_user, medium=True)))
 
     def test_bulk_import_reactivates_deactivated_user(self) -> None:
         inviter = self.example_user("iago")

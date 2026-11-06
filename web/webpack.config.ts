@@ -274,6 +274,7 @@ const config = (
             katex_server: "babel-loader!./server/katex_server.ts",
             "katex-cli": "shebang-loader!katex/cli",
             jdenticon: "shebang-loader!../node_modules/jdenticon/bin/jdenticon.js",
+            jdenticon_bulk: "./server/jdenticon_bulk.cjs",
         },
         output: {
             path: path.resolve(import.meta.dirname, "../static/webpack-bundles"),

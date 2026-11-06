@@ -545,6 +545,7 @@ def do_create_user(
     add_initial_stream_subscriptions: bool = True,
     external_auth_id_dict: dict[str, str] | None = None,
     send_new_user_emails: bool = True,
+    generate_jdenticon_avatar: bool = True,
 ) -> UserProfile:
     if settings.BILLING_ENABLED:
         from corporate.lib.stripe import RealmBillingSession
@@ -569,7 +570,10 @@ def do_create_user(
         email_address_visibility=email_address_visibility,
     )
 
-    if user_profile.avatar_source == UserProfile.AVATAR_FROM_JDENTICON:
+    if (
+        generate_jdenticon_avatar
+        and user_profile.avatar_source == UserProfile.AVATAR_FROM_JDENTICON
+    ):
         generate_and_upload_jdenticon_avatar(user_profile, str(realm.uuid), future=False)
 
     event_time = user_profile.date_joined

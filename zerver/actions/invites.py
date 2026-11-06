@@ -31,6 +31,7 @@ from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_groups import bulk_add_members_to_user_groups
 from zerver.actions.users import do_change_user_role, remove_user_from_all_channels
 from zerver.context_processors import common_context
+from zerver.lib.avatar import generate_and_upload_jdenticon_avatars
 from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.email_validation import (
     get_existing_user_errors,
@@ -404,8 +405,12 @@ def do_bulk_import_users(
             # separately made large imports time out.
             add_initial_stream_subscriptions=False,
             send_new_user_emails=False,
+            # Generated below by a single Node process; starting one
+            # for each user made large imports time out.
+            generate_jdenticon_avatar=False,
         )
         new_users.append(new_user)
+    generate_and_upload_jdenticon_avatars(new_users, str(realm.uuid), future=False)
 
     reactivate_users_for_invite(users_to_reactivate, invite_as=invite_as, acting_user=user_profile)
     existing_users_to_subscribe = existing_users_to_update + users_to_reactivate
