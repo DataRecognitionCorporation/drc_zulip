@@ -90,6 +90,8 @@ BLOCKED_CLIENT_NAMES: set[str] = set()
 BLOCKED_USER_AGENTS: list[str] = []
 # Upstream tests email regular users; blocking tests enable the default policy.
 BLOCK_EMAIL_TO_NON_ADMIN_USERS = False
+# Upstream tests keep subscriptions across deactivation; DRC tests enable this.
+REMOVE_CHANNELS_ON_USER_DEACTIVATION = False
 # Don't use RabbitMQ from the test suite -- the user_profile_ids for
 # any generated queue elements won't match those being used by the
 # real app.

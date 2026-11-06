@@ -30,6 +30,8 @@ from zerver.lib.attachments import validate_attachment_request
 from zerver.lib.avatar import (
     DEFAULT_AVATAR_FILE,
     avatar_url,
+    generate_avatar_jdenticon,
+    generate_avatar_jdenticons,
     get_avatar_field,
     get_static_avatar_url,
 )
@@ -1494,6 +1496,25 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         cordelia.save()
 
         self._test_get_avatar_medium()
+
+    def test_generate_avatar_jdenticons(self) -> None:
+        keys = ["realm-uuid:1", "realm-uuid:2"]
+        avatars = generate_avatar_jdenticons(keys)
+
+        # Generating avatars in bulk must render the same images as
+        # generating each of them separately.
+        self.assertEqual(
+            avatars,
+            [
+                (
+                    generate_avatar_jdenticon(key, medium=False),
+                    generate_avatar_jdenticon(key, medium=True),
+                )
+                for key in keys
+            ],
+        )
+        self.assertNotEqual(avatars[0], avatars[1])
+        self.assertEqual(generate_avatar_jdenticons([]), [])
 
     def test_non_valid_user_avatar(self) -> None:
         # It's debatable whether we should generate avatars for non-users,

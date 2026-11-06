@@ -1,6 +1,8 @@
+import base64
 import logging
 import os
 import subprocess
+from collections.abc import Sequence
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -211,11 +213,37 @@ def generate_avatar_jdenticon(input: str, medium: bool) -> bytes:
         raise error
 
 
-def generate_and_upload_jdenticon_avatar(
-    user_profile: UserProfile,
-    realm_uuid: str,
-    future: bool,
-) -> None:
+def generate_avatar_jdenticons(inputs: Sequence[str]) -> list[tuple[bytes, bytes]]:
+    """Returns the default size and medium avatars for each input.
+
+    Starting Node dominates the time to generate an avatar, so this
+    renders all of them in one process. Use it when creating many users.
+    """
+    from zerver.lib.storage import static_path
+
+    if not inputs:
+        return []
+    script_path = (
+        static_path("webpack-bundles/jdenticon_bulk.js")
+        if settings.PRODUCTION
+        else os.path.join(settings.DEPLOY_ROOT, "web/server/jdenticon_bulk.cjs")
+    )
+    command = ["node", script_path, str(DEFAULT_AVATAR_SIZE), str(MEDIUM_AVATAR_SIZE)]
+    try:
+        stdout = subprocess.check_output(command, input="\n".join(inputs), text=True)
+    except subprocess.CalledProcessError as error:  # nocoverage
+        logger.exception("Jdenticon generation failed for %d avatars", len(inputs))
+        raise error
+
+    avatars: list[tuple[bytes, bytes]] = []
+    for line in stdout.splitlines():
+        image_data, image_data_medium = line.split()
+        avatars.append((base64.b64decode(image_data), base64.b64decode(image_data_medium)))
+    assert len(avatars) == len(inputs)
+    return avatars
+
+
+def get_jdenticon_key(user_profile: UserProfile, realm_uuid: str) -> str:
     # We use a combination of user ID and realm_uuid (salt) as the key
     # for Jdenticon generation, so that clients that prefer to use computation
     # instead of network to provide default avatars for users can do that
@@ -227,7 +255,33 @@ def generate_and_upload_jdenticon_avatar(
     #
     # Note: The key effectively changes when user IDs are renumbered when
     # migrating between Zulip servers,
-    jdenticon_key = f"{realm_uuid}:{user_profile.id}"
+    return f"{realm_uuid}:{user_profile.id}"
+
+
+def generate_and_upload_jdenticon_avatars(
+    user_profiles: Sequence[UserProfile],
+    realm_uuid: str,
+    future: bool,
+) -> None:
+    avatars = generate_avatar_jdenticons(
+        [get_jdenticon_key(user_profile, realm_uuid) for user_profile in user_profiles]
+    )
+    for user_profile, (image_data, image_data_medium) in zip(user_profiles, avatars, strict=True):
+        write_jdenticon_avatars(
+            user_avatar_path(user_profile, future),
+            user_profile,
+            image_data=image_data,
+            image_data_medium=image_data_medium,
+            future=future,
+        )
+
+
+def generate_and_upload_jdenticon_avatar(
+    user_profile: UserProfile,
+    realm_uuid: str,
+    future: bool,
+) -> None:
+    jdenticon_key = get_jdenticon_key(user_profile, realm_uuid)
     image_data = generate_avatar_jdenticon(jdenticon_key, medium=False)
     image_data_medium = generate_avatar_jdenticon(jdenticon_key, medium=True)
     file_path = user_avatar_path(user_profile, future)
