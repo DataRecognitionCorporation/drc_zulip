@@ -58,12 +58,15 @@
     </div>
     <ul role="menu" class="popover-menu-list">
         {{!-- Group 1 --}}
+        {{!-- DRC: Members and guests cannot open channel settings. --}}
+        {{#unless has_drc_channel_restrictions}}
         <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
             <a role="menuitem" href="#channels/subscribed" class="navigate-link-on-enter popover-menu-link">
                 <i class="popover-menu-icon zulip-icon zulip-icon-hash" aria-hidden="true"></i>
                 <span class="popover-menu-label">{{t 'Channel settings' }}</span>
             </a>
         </li>
+        {{/unless}}
         <li role="none" class="link-item popover-menu-list-item admin-menu-item hidden-for-spectators">
             <a role="menuitem" href="#organization" class="navigate-link-on-enter popover-menu-link">
                 <i class="popover-menu-icon zulip-icon zulip-icon-building" aria-hidden="true"></i>

@@ -30,12 +30,18 @@ export function populate_list(): void {
         name: "user-topics-list",
         get_item: ListWidget.default_get_item,
         modifier_html(user_topic) {
+            const {muted, ...other_policy_values} =
+                settings_config.user_topic_visibility_policy_values;
             const context = {
                 user_topic,
                 topic_display_name: util.get_final_topic_display_name(user_topic.topic),
                 is_empty_string_topic: user_topic.topic === "",
-                user_topic_visibility_policy_values:
-                    settings_config.user_topic_visibility_policy_values,
+                // DRC: Members and guests can unmute a topic, but not mute it.
+                user_topic_visibility_policy_values: user_topics.should_offer_mute_option(
+                    user_topic.visibility_policy,
+                )
+                    ? settings_config.user_topic_visibility_policy_values
+                    : other_policy_values,
             };
             return render_user_topic_ui_row(context);
         },

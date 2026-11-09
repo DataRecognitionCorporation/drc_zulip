@@ -92,6 +92,8 @@ BLOCKED_USER_AGENTS: list[str] = []
 BLOCK_EMAIL_TO_NON_ADMIN_USERS = False
 # Upstream tests keep subscriptions across deactivation; DRC tests enable this.
 REMOVE_CHANNELS_ON_USER_DEACTIVATION = False
+# Upstream tests let members mute and manage subscriptions; DRC tests enable this.
+RESTRICT_CHANNEL_CONTROLS_FOR_MEMBERS_AND_GUESTS = False
 # Don't use RabbitMQ from the test suite -- the user_profile_ids for
 # any generated queue elements won't match those being used by the
 # real app.

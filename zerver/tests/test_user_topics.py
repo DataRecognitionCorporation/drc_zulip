@@ -1,8 +1,9 @@
 from datetime import datetime, timezone
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import orjson
 import time_machine
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.reactions import check_add_reaction, do_add_reaction
@@ -16,6 +17,9 @@ from zerver.lib.user_topics import get_topic_mutes, topic_has_visibility_policy
 from zerver.models import Message, Reaction, UserProfile, UserTopic
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zerver.models.streams import get_stream
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
 class MutedTopicsTestsDeprecated(ZulipTestCase):
@@ -705,6 +709,44 @@ class UserTopicsTests(ZulipTestCase):
         self.assert_json_error(
             result, "Invalid visibility_policy: Value error, Not in the list of possible values"
         )
+
+
+@override_settings(RESTRICT_CHANNEL_CONTROLS_FOR_MEMBERS_AND_GUESTS=True)
+class RestrictTopicMutingTest(ZulipTestCase):
+    def set_visibility_policy(self, user: UserProfile, policy: int) -> "TestHttpResponse":
+        stream = get_stream("Verona", user.realm)
+        data = {"stream_id": stream.id, "topic": "restricted", "visibility_policy": policy}
+        return self.api_post(user, "/api/v1/user_topics", data)
+
+    def test_members_and_guests_cannot_mute_topics(self) -> None:
+        for user in [self.example_user("hamlet"), self.example_user("polonius")]:
+            stream = get_stream("Verona", user.realm)
+            result = self.set_visibility_policy(user, UserTopic.VisibilityPolicy.MUTED)
+            self.assert_json_error(result, "Insufficient permission")
+
+            result = self.api_patch(
+                user,
+                "/api/v1/users/me/subscriptions/muted_topics",
+                {"stream_id": stream.id, "topic": "restricted", "op": "add"},
+            )
+            self.assert_json_error(result, "Insufficient permission")
+            self.assertFalse(
+                topic_has_visibility_policy(
+                    user, stream.id, "restricted", UserTopic.VisibilityPolicy.MUTED
+                )
+            )
+
+            # Unmuting and following remain allowed.
+            do_set_user_topic_visibility_policy(
+                user, stream, "restricted", visibility_policy=UserTopic.VisibilityPolicy.MUTED
+            )
+            for policy in [UserTopic.VisibilityPolicy.UNMUTED, UserTopic.VisibilityPolicy.INHERIT]:
+                self.assert_json_success(self.set_visibility_policy(user, policy))
+
+    def test_moderators_can_mute_topics(self) -> None:
+        shiva = self.example_user("shiva")
+        result = self.set_visibility_policy(shiva, UserTopic.VisibilityPolicy.MUTED)
+        self.assert_json_success(result)
 
 
 class AutomaticallyFollowTopicsTests(ZulipTestCase):

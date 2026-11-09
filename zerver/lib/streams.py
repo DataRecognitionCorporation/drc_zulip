@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, TypedDict
 
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Exists, OuterRef, Q, QuerySet
 from django.utils.timezone import now as timezone_now
@@ -765,6 +766,16 @@ def check_for_can_create_topic_group_violation(
             return
 
     raise JsonableError(_("You do not have permission to create new topics in this channel."))
+
+
+def check_can_manage_own_channel_controls(user_profile: UserProfile) -> None:
+    # DRC: human members and guests may not mute channels or topics, or
+    # subscribe or unsubscribe themselves.
+    if not settings.RESTRICT_CHANNEL_CONTROLS_FOR_MEMBERS_AND_GUESTS:
+        return
+    if user_profile.is_bot or user_profile.is_realm_admin or user_profile.is_moderator:
+        return
+    raise JsonableError(_("Insufficient permission"))
 
 
 def check_for_exactly_one_stream_arg(stream_id: int | None, stream: str | None) -> None:

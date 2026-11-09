@@ -14,7 +14,7 @@
                 {{#tr}}
                     You subscribed to <z-stream-name></z-stream-name>. <channel-settings-link></channel-settings-link>
                     {{#*inline "z-stream-name"}}{{> stream_privacy . }} {{stream_name}}{{/inline}}
-                    {{#*inline "channel-settings-link"}} <a class="bookend-channel-settings-link" href="#channels/{{stream_id}}/{{stream_name}}/personal">{{t 'Manage channel settings'}}</a>{{/inline}}
+                    {{#*inline "channel-settings-link"}}{{!-- DRC: Members and guests cannot open channel settings. --}}{{#unless has_drc_channel_restrictions}} <a class="bookend-channel-settings-link" href="#channels/{{stream_id}}/{{stream_name}}/personal">{{t 'Manage channel settings'}}</a>{{/unless}}{{/inline}}
                 {{/tr}}
             </span>
         {{else if just_unsubscribed }}
@@ -44,7 +44,7 @@
                     {{#tr}}
                         You unsubscribed from <z-stream-name></z-stream-name>. <channel-settings-link></channel-settings-link>
                         {{#*inline "z-stream-name"}}{{> stream_privacy . }} {{stream_name}}{{/inline}}
-                        {{#*inline "channel-settings-link"}} <a class="bookend-channel-settings-link" href="#channels/{{stream_id}}/{{stream_name}}/general">{{t 'View in channel settings'}}</a>{{/inline}}
+                        {{#*inline "channel-settings-link"}}{{!-- DRC: Members and guests cannot open channel settings. --}}{{#unless has_drc_channel_restrictions}} <a class="bookend-channel-settings-link" href="#channels/{{stream_id}}/{{stream_name}}/general">{{t 'View in channel settings'}}</a>{{/unless}}{{/inline}}
                     {{/tr}}
                 </span>
             {{/if}}

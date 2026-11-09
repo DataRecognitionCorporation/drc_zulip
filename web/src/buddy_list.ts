@@ -24,6 +24,7 @@ import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
 import {disconnect_toggle_class, observe_toggle_class} from "./sidebar_tooltip_helpers.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -807,7 +808,9 @@ export class BuddyList extends BuddyListConf {
         if (
             current_sub &&
             stream_data.can_view_subscribers(current_sub) &&
-            has_inactive_users_matching_view
+            has_inactive_users_matching_view &&
+            // DRC: Members and guests cannot open channel settings.
+            !settings_data.user_has_drc_channel_restrictions()
         ) {
             const stream_edit_hash = hash_util.channels_settings_edit_url(
                 current_sub,

@@ -24,6 +24,7 @@ import * as recent_view_ui from "./recent_view_ui.ts";
 import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as settings from "./settings.ts";
+import * as settings_data from "./settings_data.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_toggle from "./settings_toggle.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
@@ -272,6 +273,15 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
 
     if (base === "groups" && current_user.is_guest) {
         // The #groups settings page is unfinished, and disabled in production.
+        show_home_view();
+        return;
+    }
+
+    // DRC: Members and guests cannot browse, create, or view settings for channels.
+    if (
+        (base === "streams" || base === "channels") &&
+        settings_data.user_has_drc_channel_restrictions()
+    ) {
         show_home_view();
         return;
     }

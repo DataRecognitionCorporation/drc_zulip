@@ -54,6 +54,7 @@ mock_esm("../src/settings_data", {
     user_can_create_private_streams: () => true,
     user_has_permission_for_group_setting: () => true,
     should_mask_unread_count: () => false,
+    user_has_drc_channel_restrictions: () => false,
 });
 
 // Start with always filtering out inactive streams.

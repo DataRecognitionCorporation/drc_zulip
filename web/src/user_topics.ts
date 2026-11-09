@@ -9,6 +9,7 @@ import * as feedback_widget from "./feedback_widget.ts";
 import {FoldDict} from "./fold_dict.ts";
 import {$t} from "./i18n.ts";
 import * as loading from "./loading.ts";
+import * as settings_data from "./settings_data.ts";
 import * as settings_ui from "./settings_ui.ts";
 import type {StateData, user_topic_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -50,6 +51,15 @@ export const all_visibility_policies = {
     UNMUTED: 2,
     FOLLOWED: 3,
 } as const;
+
+// DRC: Members and guests can unmute a topic, but not mute it, so the
+// mute option is only offered when the topic is already muted.
+export function should_offer_mute_option(visibility_policy: number | false): boolean {
+    return (
+        !settings_data.user_has_drc_channel_restrictions() ||
+        visibility_policy === all_visibility_policies.MUTED
+    );
+}
 
 export function update_user_topics(
     stream_id: number,

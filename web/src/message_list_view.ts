@@ -37,6 +37,7 @@ import * as reactions from "./reactions.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as resolved_topic from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
+import * as settings_data from "./settings_data.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
@@ -94,6 +95,7 @@ export type MessageGroup = {
           is_stream: true;
           all_visibility_policies: AllVisibilityPolicies;
           display_recipient: string;
+          has_drc_channel_restrictions: boolean;
           invite_only: boolean;
           is_subscribed: boolean;
           is_topic_editable: boolean;
@@ -431,6 +433,7 @@ export function populate_group_from_message(
             ...get_topic_edit_properties(message),
             user_can_resolve_topic,
             ...subscription_markers,
+            has_drc_channel_restrictions: settings_data.user_has_drc_channel_restrictions(),
             date_html,
             display_recipient,
             date_unchanged,
@@ -1958,6 +1961,7 @@ export class MessageListView {
                 invite_only,
                 is_web_public,
                 can_subscribe,
+                has_drc_channel_restrictions: settings_data.user_has_drc_channel_restrictions(),
             }),
         );
         this.$list.append($rendered_trailing_bookend);

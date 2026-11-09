@@ -49,7 +49,9 @@ const {initialize_user_settings} = zrequire("user_settings");
 
 const realm = make_realm();
 set_realm(realm);
-set_current_user({});
+// DRC: Moderators are exempt from DRC channel restrictions, so upstream
+// tests keep upstream behavior.
+set_current_user({is_moderator: true});
 initialize_user_settings({user_settings: {}});
 
 const admins_group = make_user_group({

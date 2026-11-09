@@ -23,7 +23,7 @@ const overlays = mock_esm("../src/overlays");
 const popovers = mock_esm("../src/popovers");
 const recent_view_ui = mock_esm("../src/recent_view_ui");
 const settings = mock_esm("../src/settings");
-mock_esm("../src/settings_data", {
+const settings_data = mock_esm("../src/settings_data", {
     user_can_create_public_streams: () => true,
 });
 const spectators = mock_esm("../src/spectators", {
@@ -310,6 +310,15 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [ui_report, "error"],
     ]);
 
+    // DRC: Members and guests cannot open the channels overlay.
+    override(settings_data, "user_has_drc_channel_restrictions", () => true);
+    window.location.hash = "#channels/subscribed";
+
+    helper.clear_events();
+    $window_stub.trigger("hashchange");
+    helper.assert_events([]);
+
+    override(settings_data, "user_has_drc_channel_restrictions", () => false);
     window.location.hash = "#channels/subscribed";
 
     helper.clear_events();

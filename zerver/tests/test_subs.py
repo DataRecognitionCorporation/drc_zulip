@@ -11,6 +11,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import connection, transaction
 from django.http import HttpResponse
+from django.test import override_settings
 from django.test.utils import CaptureQueriesContext
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
@@ -71,7 +72,7 @@ from zerver.lib.subscription_info import (
     validate_user_access_to_subscribers_helper,
 )
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
-from zerver.lib.test_helpers import HostRequestMock, cache_tries_captured
+from zerver.lib.test_helpers import HostRequestMock, cache_tries_captured, get_subscription
 from zerver.lib.types import UserGroupMembersData
 from zerver.lib.user_groups import UserGroupMembershipDetails, get_group_setting_value_for_api
 from zerver.models import (
@@ -5824,3 +5825,86 @@ class NoRecipientIDsTest(ZulipTestCase):
         #
         # This covers a rare corner case.
         self.assert_length(subs, 0)
+
+
+@override_settings(RESTRICT_CHANNEL_CONTROLS_FOR_MEMBERS_AND_GUESTS=True)
+class RestrictChannelControlsTest(ZulipTestCase):
+    def unsubscribe_via_api(
+        self, user: UserProfile, principals: list[int] | None = None
+    ) -> "TestHttpResponse":
+        data = {"subscriptions": orjson.dumps(["Denmark"]).decode()}
+        if principals is not None:
+            data["principals"] = orjson.dumps(principals).decode()
+        return self.api_delete(user, "/api/v1/users/me/subscriptions", data)
+
+    def set_property_via_api(
+        self, user: UserProfile, property: str, value: bool
+    ) -> "TestHttpResponse":
+        stream_id = get_stream("Denmark", user.realm).id
+        subscription_data = [{"stream_id": stream_id, "property": property, "value": value}]
+        return self.api_post(
+            user,
+            "/api/v1/users/me/subscriptions/properties",
+            {"subscription_data": orjson.dumps(subscription_data).decode()},
+        )
+
+    def test_members_and_guests_cannot_unsubscribe_themselves(self) -> None:
+        for user in [self.example_user("hamlet"), self.example_user("polonius")]:
+            self.subscribe(user, "Denmark")
+            result = self.unsubscribe_via_api(user)
+            self.assert_json_error(result, "Insufficient permission")
+            get_subscription("Denmark", user)
+
+    def test_admins_moderators_and_bots_can_unsubscribe(self) -> None:
+        for user in [
+            self.example_user("iago"),
+            self.example_user("shiva"),
+            self.example_user("default_bot"),
+        ]:
+            self.subscribe(user, "Denmark")
+            self.assert_json_success(self.unsubscribe_via_api(user))
+
+        hamlet = self.example_user("hamlet")
+        self.subscribe(hamlet, "Denmark")
+        result = self.unsubscribe_via_api(self.example_user("iago"), principals=[hamlet.id])
+        self.assert_json_success(result)
+
+    def test_members_cannot_subscribe_themselves(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.unsubscribe(hamlet, "Denmark")
+        with self.artificial_transaction_savepoint():
+            result = self.subscribe_via_post(hamlet, ["Denmark"], allow_fail=True)
+        self.assert_json_error(result, "Insufficient permission")
+
+        with self.artificial_transaction_savepoint():
+            result = self.api_post(
+                hamlet,
+                "/api/v1/channels/create",
+                {"name": "new channel", "subscribers": orjson.dumps([hamlet.id]).decode()},
+            )
+        self.assert_json_error(result, "Insufficient permission")
+        self.assertFalse(Stream.objects.filter(name="new channel").exists())
+
+        shiva = self.example_user("shiva")
+        self.unsubscribe(shiva, "Denmark")
+        self.assert_json_success(self.subscribe_via_post(shiva, ["Denmark"]))
+
+    def test_members_and_guests_cannot_mute_channels(self) -> None:
+        for user in [self.example_user("hamlet"), self.example_user("polonius")]:
+            self.subscribe(user, "Denmark")
+            result = self.set_property_via_api(user, "is_muted", True)
+            self.assert_json_error(result, "Insufficient permission")
+            result = self.set_property_via_api(user, "in_home_view", False)
+            self.assert_json_error(result, "Insufficient permission")
+            self.assertFalse(get_subscription("Denmark", user).is_muted)
+
+            # Unmuting a channel that was muted before the restriction is allowed.
+            sub = get_subscription("Denmark", user)
+            sub.is_muted = True
+            sub.save()
+            self.assert_json_success(self.set_property_via_api(user, "is_muted", False))
+            self.assertFalse(get_subscription("Denmark", user).is_muted)
+
+        shiva = self.example_user("shiva")
+        self.subscribe(shiva, "Denmark")
+        self.assert_json_success(self.set_property_via_api(shiva, "is_muted", True))

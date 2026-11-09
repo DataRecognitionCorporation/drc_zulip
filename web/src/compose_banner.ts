@@ -9,6 +9,7 @@ import render_unknown_zoom_user_error from "../templates/compose_banner/unknown_
 
 import {$t} from "./i18n.ts";
 import * as scroll_util from "./scroll_util.ts";
+import * as settings_data from "./settings_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 
@@ -238,6 +239,7 @@ export function show_stream_does_not_exist_error(stream_name: string): void {
         banner_type: ERROR,
         channel_name: stream_name,
         classname: CLASSNAMES.stream_does_not_exist,
+        has_drc_channel_restrictions: settings_data.user_has_drc_channel_restrictions(),
     });
     append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
     hide_compose_spinner();

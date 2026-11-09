@@ -20,6 +20,8 @@
             {subscribers_count, plural, =0 {No subscribers} =1 {1 subscriber} other {# subscribers}}
             {{/tr}}
         </li>
+        {{!-- DRC: Members and guests cannot open channel settings. --}}
+        {{#unless has_drc_channel_restrictions}}
         <li role="separator" class="popover-menu-separator hidden-for-spectators"></li>
         <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
             <a role="menuitem" class="open_stream_settings popover-menu-link" tabindex="0">
@@ -27,5 +29,6 @@
                 <span class="popover-menu-label">{{t "Channel settings" }}</span>
             </a>
         </li>
+        {{/unless}}
     </ul>
 </div>
