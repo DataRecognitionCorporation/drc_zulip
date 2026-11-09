@@ -48,12 +48,15 @@
             </a>
         </li>
         <li role="separator" class="popover-menu-separator hidden-for-spectators"></li>
+        {{!-- DRC: Members and guests cannot open channel settings. --}}
+        {{#unless has_drc_channel_restrictions}}
         <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
             <a role="menuitem" href="{{stream_edit_hash}}" class="open_stream_settings navigate-link-on-enter popover-menu-link" tabindex="0">
                 <i class="popover-menu-icon zulip-icon zulip-icon-gear" aria-hidden="true"></i>
                 <span class="popover-menu-label">{{t "Channel settings" }}</span>
             </a>
         </li>
+        {{/unless}}
         <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
             <a role="menuitem" class="pin_to_top popover-menu-link" tabindex="0">
                 {{#if stream.pin_to_top}}
@@ -65,6 +68,8 @@
                 {{/if}}
             </a>
         </li>
+        {{!-- DRC: Members and guests can unmute a channel, but not mute it. --}}
+        {{#if (or stream.is_muted (not has_drc_channel_restrictions))}}
         <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
             <a role="menuitem" class="toggle_stream_muted popover-menu-link" tabindex="0">
                 {{#if stream.is_muted}}
@@ -76,13 +81,17 @@
                 {{/if}}
             </a>
         </li>
+        {{/if}}
         {{#unless stream.is_archived}}
+        {{!-- DRC: Members and guests cannot unsubscribe themselves. --}}
+        {{#unless has_drc_channel_restrictions}}
         <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
             <a role="menuitem" class="popover_sub_unsub_button popover-menu-link" tabindex="0">
                 <i class="popover-menu-icon zulip-icon zulip-icon-circle-x" aria-hidden="true"></i>
                 <span class="popover-menu-label">{{t "Unsubscribe"}}</span>
             </a>
         </li>
+        {{/unless}}
         <li role="separator" class="popover-menu-separator hidden-for-spectators"></li>
         <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
             <a role="menuitem" class="choose_stream_color popover-menu-link" data-stream-id="{{ stream.stream_id }}" tabindex="0">

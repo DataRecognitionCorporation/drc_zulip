@@ -30,7 +30,9 @@ const {initialize_user_settings} = zrequire("user_settings");
 const bot_data = mock_esm("../src/bot_data");
 const channel = mock_esm("../src/channel");
 
-const current_user = {};
+// DRC: Moderators are exempt from DRC channel restrictions, so upstream
+// tests keep upstream behavior. DRC tests turn this off.
+const current_user = {is_moderator: true};
 set_current_user(current_user);
 const realm = make_realm();
 set_realm(realm);
@@ -2482,6 +2484,29 @@ run_test("can_toggle_subscription", ({override}) => {
     social.can_add_subscribers_group = nobody_group.id;
     assert.equal(stream_data.can_toggle_subscription(social), false);
     social.can_subscribe_group = me_group.id;
+    assert.equal(stream_data.can_toggle_subscription(social), true);
+});
+
+run_test("can_toggle_subscription with DRC restrictions", ({override}) => {
+    const social = {
+        subscribed: true,
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        is_muted: false,
+        invite_only: false,
+        history_public_to_subscribers: false,
+        can_add_subscribers_group: nobody_group.id,
+        can_administer_channel_group: nobody_group.id,
+        can_subscribe_group: nobody_group.id,
+    };
+
+    override(current_user, "user_id", me.user_id);
+    override(current_user, "is_moderator", false);
+    assert.equal(stream_data.can_toggle_subscription(social), false);
+    assert.equal(stream_data.can_toggle_subscription_ignoring_drc_restrictions(social), true);
+
+    override(current_user, "is_admin", true);
     assert.equal(stream_data.can_toggle_subscription(social), true);
 });
 

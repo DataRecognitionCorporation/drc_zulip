@@ -9,6 +9,7 @@ import * as narrow_state from "./narrow_state.ts";
 import * as overlays from "./overlays.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import * as settings_data from "./settings_data.ts";
 import * as settings_user_topics from "./settings_user_topics.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
@@ -170,7 +171,8 @@ export function toggle_topic_visibility_policy(
                 user_topics.all_visibility_policies.INHERIT,
                 true,
             );
-        } else {
+        } else if (!settings_data.user_has_drc_channel_restrictions()) {
+            // DRC: Members and guests can unmute a topic, but not mute it.
             user_topics.set_user_topic_visibility_policy(
                 stream_id,
                 topic,

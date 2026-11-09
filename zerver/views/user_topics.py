@@ -13,6 +13,7 @@ from zerver.lib.streams import (
     access_stream_by_name,
     access_stream_to_remove_visibility_policy_by_id,
     access_stream_to_remove_visibility_policy_by_name,
+    check_can_manage_own_channel_controls,
     check_for_exactly_one_stream_arg,
 )
 from zerver.lib.typed_endpoint import typed_endpoint
@@ -28,6 +29,8 @@ def mute_topic(
     topic_name: str,
     date_muted: datetime,
 ) -> None:
+    check_can_manage_own_channel_controls(user_profile)
+
     if stream_name is not None:
         (stream, _sub) = access_stream_by_name(user_profile, stream_name)
     else:
@@ -103,6 +106,9 @@ def update_user_topic(
         Annotated[int, check_int_in_validator(UserTopic.VisibilityPolicy.values)]
     ],
 ) -> HttpResponse:
+    if visibility_policy == UserTopic.VisibilityPolicy.MUTED:
+        check_can_manage_own_channel_controls(user_profile)
+
     if visibility_policy == UserTopic.VisibilityPolicy.INHERIT:
         error = _("Invalid channel ID")
         stream = access_stream_to_remove_visibility_policy_by_id(user_profile, stream_id, error)

@@ -7,6 +7,7 @@ import * as browser_history from "./browser_history.ts";
 import * as hash_util from "./hash_util.ts";
 import * as peer_data from "./peer_data.ts";
 import * as popover_menus from "./popover_menus.ts";
+import * as settings_data from "./settings_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as ui_util from "./ui_util.ts";
@@ -36,6 +37,8 @@ export function initialize(): void {
                                 ...sub_store.get(stream_id),
                             },
                             subscribers_count,
+                            has_drc_channel_restrictions:
+                                settings_data.user_has_drc_channel_restrictions(),
                         }),
                     ),
                 );

@@ -530,7 +530,7 @@ export class MessageList {
         // trailing bookend if user is subscribed.
         const sub = stream_data.get_sub_by_id(stream_id);
 
-        if (sub && !stream_data.can_toggle_subscription(sub)) {
+        if (sub && !stream_data.can_toggle_subscription_ignoring_drc_restrictions(sub)) {
             // If the user is not subscribed and cannot subscribe
             // (e.g., they don't have content access to the channel),
             // then we don't show a trailing bookend.

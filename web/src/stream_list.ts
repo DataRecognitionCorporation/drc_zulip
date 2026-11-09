@@ -344,7 +344,12 @@ export let stream_list_section_container_html = function (
         id: section.id,
         section_title: section.section_title,
         plus_icon_url: can_create_streams ? get_section_channel_plus_icon_url(section) : undefined,
-        show_folder_action_icon: !page_params.is_spectator && section.folder_id !== null,
+        // DRC: The folder menu only offers members and guests "View
+        // channels", which opens the channels overlay they cannot use.
+        show_folder_action_icon:
+            !page_params.is_spectator &&
+            section.folder_id !== null &&
+            !settings_data.user_has_drc_channel_restrictions(),
         depth: section.depth,
     });
 };
@@ -362,6 +367,18 @@ function get_section_channel_plus_icon_url(section: StreamListSection): string |
         return "#channels/new";
     }
     return undefined;
+}
+
+function can_create_streams_from_sidebar(): boolean {
+    // DRC: Members and guests cannot open the channel creation form.
+    if (settings_data.user_has_drc_channel_restrictions()) {
+        return false;
+    }
+    return (
+        settings_data.user_can_create_private_streams() ||
+        settings_data.user_can_create_public_streams() ||
+        settings_data.user_can_create_web_public_streams()
+    );
 }
 
 export function update_unread_counts_visibility(): void {
@@ -454,10 +471,7 @@ export function build_stream_list(force_rerender: boolean): void {
 
     clear_topics();
     $("#stream_filters").empty();
-    const can_create_streams =
-        settings_data.user_can_create_private_streams() ||
-        settings_data.user_can_create_public_streams() ||
-        settings_data.user_can_create_web_public_streams();
+    const can_create_streams = can_create_streams_from_sidebar();
     for (const section of stream_groups.sections) {
         $("#stream_filters").append(
             $(stream_list_section_container_html(section, can_create_streams)),
@@ -764,10 +778,7 @@ export function update_subscribe_to_more_streams_link(): void {
         .unsubscribed_subs()
         .filter((sub) => !sub.is_archived && stream_data.can_toggle_subscription(sub)).length;
 
-    const can_create_streams =
-        settings_data.user_can_create_private_streams() ||
-        settings_data.user_can_create_public_streams() ||
-        settings_data.user_can_create_web_public_streams();
+    const can_create_streams = can_create_streams_from_sidebar();
 
     $("#subscribe-to-more-streams").html(
         render_subscribe_to_more_streams({

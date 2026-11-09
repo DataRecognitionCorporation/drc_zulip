@@ -33,6 +33,7 @@ import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {left_sidebar_tippy_options} from "./popover_menus.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_api from "./stream_settings_api.ts";
@@ -143,6 +144,7 @@ function build_stream_popover(opts: {elt: HTMLElement; stream_id: number}): void
         has_unread_messages,
         show_go_to_channel_feed,
         show_go_to_list_of_topics,
+        has_drc_channel_restrictions: settings_data.user_has_drc_channel_restrictions(),
     });
 
     popover_menus.toggle_popover_menu(

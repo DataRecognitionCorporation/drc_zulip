@@ -76,6 +76,7 @@ from zerver.lib.streams import (
     access_stream_for_send_message,
     access_web_public_stream,
     channel_events_topic_name,
+    check_can_manage_own_channel_controls,
     check_channel_creation_permissions,
     check_stream_name_available,
     create_stream_if_needed,
@@ -629,6 +630,9 @@ def remove_subscriptions_backend(
     else:
         people_to_unsub = {user_profile}
 
+    if user_profile in people_to_unsub:
+        check_can_manage_own_channel_controls(user_profile)
+
     streams, __ = list_to_streams(
         streams_as_dict,
         user_profile,
@@ -704,6 +708,9 @@ def create_channel(
 ) -> HttpResponse:
     realm = user_profile.realm
     request_settings_dict = locals()
+
+    if user_profile.id in subscribers:
+        check_can_manage_own_channel_controls(user_profile)
 
     check_stream_name_available(realm, name)
 
@@ -913,6 +920,9 @@ def add_subscriptions_backend(
         subscribers = bulk_principals_to_user_profiles(principals, user_profile)
     else:
         subscribers = {user_profile}
+
+    if user_profile in subscribers:
+        check_can_manage_own_channel_controls(user_profile)
 
     if is_default_stream:
         for stream in created_streams:
@@ -1382,6 +1392,13 @@ def update_subscription_properties_backend(
         stream_id = change.stream_id
         property = change.property
         value = change.value
+
+        # DRC: muting is restricted; unmuting is always allowed.
+        is_mute_request = (property == "is_muted" and value is True) or (
+            property == "in_home_view" and value is False
+        )
+        if is_mute_request:
+            check_can_manage_own_channel_controls(user_profile)
 
         (stream, sub) = access_stream_by_id(user_profile, stream_id)
         if sub is None:

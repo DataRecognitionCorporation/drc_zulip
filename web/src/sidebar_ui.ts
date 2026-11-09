@@ -344,6 +344,7 @@ export function initialize_left_sidebar(): void {
     const rendered_sidebar = render_left_sidebar({
         is_guest: current_user.is_guest,
         is_spectator: page_params.is_spectator,
+        has_drc_channel_restrictions: settings_data.user_has_drc_channel_restrictions(),
         primary_condensed_views,
         expanded_views,
         LEFT_SIDEBAR_NAVIGATION_AREA_TITLE,

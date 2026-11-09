@@ -69,6 +69,7 @@ type TopicPopoverContext = {
     url: string;
     visibility_policy: number | false;
     all_visibility_policies: AllVisibilityPolicies;
+    show_mute_option: boolean;
     can_summarize_topics: boolean;
     show_ai_features: boolean;
 };
@@ -80,6 +81,7 @@ type VisibilityChangePopoverContext = {
     stream_muted: boolean;
     topic_unmuted: boolean;
     all_visibility_policies: AllVisibilityPolicies;
+    show_mute_option: boolean;
 };
 
 type PersonalMenuContext = {
@@ -126,6 +128,7 @@ type GearMenuContext = {
     can_create_multiuse_invite: boolean;
     can_invite_users_by_email: boolean;
     is_guest: boolean;
+    has_drc_channel_restrictions: boolean;
     login_link: string;
     promote_sponsoring_zulip: boolean;
     show_billing: boolean;
@@ -303,6 +306,7 @@ export function get_topic_popover_content_context({
         url,
         visibility_policy,
         all_visibility_policies,
+        show_mute_option: user_topics.should_offer_mute_option(visibility_policy),
         can_summarize_topics: settings_data.user_can_summarize_topics(),
         show_ai_features: !user_settings.hide_ai_features,
     };
@@ -324,6 +328,7 @@ export function get_change_visibility_policy_popover_content_context(
         stream_muted: sub.is_muted,
         topic_unmuted,
         all_visibility_policies,
+        show_mute_option: user_topics.should_offer_mute_option(visibility_policy),
     };
 }
 
@@ -417,6 +422,7 @@ export function get_gear_menu_content_context(): GearMenuContext {
         can_create_multiuse_invite: settings_data.user_can_create_multiuse_invite(),
         can_invite_users_by_email: settings_data.user_can_invite_users_by_email(),
         is_guest: current_user.is_guest,
+        has_drc_channel_restrictions: settings_data.user_has_drc_channel_restrictions(),
         login_link: page_params.development_environment ? "/devlogin/" : "/login/",
         promote_sponsoring_zulip: page_params.promote_sponsoring_zulip,
         show_billing: billing_info.show_billing,

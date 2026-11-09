@@ -295,7 +295,9 @@ function get_fetched_user_unsub_streams(user_id: number): dropdown_widget.Option
 
 function format_user_stream_list_item_html(stream: StreamSubscription, user: User): string {
     const show_unsubscribe_button =
-        people.can_admin_user(user) || stream_data.can_unsubscribe_others(stream);
+        (people.can_admin_user(user) || stream_data.can_unsubscribe_others(stream)) &&
+        // DRC: Members and guests cannot unsubscribe themselves.
+        !(people.is_my_user_id(user.user_id) && settings_data.user_has_drc_channel_restrictions());
     const show_private_stream_unsub_tooltip =
         people.is_my_user_id(user.user_id) && stream.invite_only;
     const show_last_user_in_private_stream_unsub_tooltip =

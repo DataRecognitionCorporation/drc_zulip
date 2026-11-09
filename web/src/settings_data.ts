@@ -428,6 +428,12 @@ export function can_user_manage_folder(): boolean {
     return current_user.is_admin;
 }
 
+// DRC: Members and guests cannot mute channels or topics, subscribe or
+// unsubscribe themselves, or open the channel settings overlay.
+export function user_has_drc_channel_restrictions(): boolean {
+    return !current_user.is_admin && !current_user.is_moderator;
+}
+
 export function two_tier_billing_enabled(): boolean {
     if (typeof realm.realm_workplace_users_group !== "number") {
         return true;

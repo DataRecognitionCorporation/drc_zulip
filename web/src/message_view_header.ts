@@ -13,6 +13,7 @@ import * as peer_data from "./peer_data.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as search from "./search.ts";
+import * as settings_data from "./settings_data.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
@@ -29,6 +30,7 @@ type MessageViewHeaderContext = {
     is_admin?: boolean;
     stream?: StreamSubscription;
     stream_settings_link?: string;
+    has_drc_channel_restrictions?: boolean;
 } & (
     | {
           zulip_icon: string;
@@ -126,6 +128,7 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
             sub_count,
             stream: current_stream,
             stream_settings_link: hash_util.channels_settings_edit_url(current_stream, "general"),
+            has_drc_channel_restrictions: settings_data.user_has_drc_channel_restrictions(),
         };
     }
 

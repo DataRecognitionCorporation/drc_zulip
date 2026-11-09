@@ -369,6 +369,7 @@ run_test("bookend", ({override}) => {
     override(stream_data, "is_subscribed", () => is_subscribed);
     override(stream_data, "get_sub_by_id", () => ({invite_only, name: "IceCream"}));
     override(stream_data, "can_toggle_subscription", () => true);
+    override(stream_data, "can_toggle_subscription_ignoring_drc_restrictions", () => true);
 
     {
         const stub = make_stub();
@@ -479,7 +480,7 @@ run_test("bookend", ({override}) => {
 
     // If the user is not subscribed and cannot subscribe to the
     // private channel, no bookend is shown.
-    override(stream_data, "can_toggle_subscription", () => false);
+    override(stream_data, "can_toggle_subscription_ignoring_drc_restrictions", () => false);
     {
         const stub = make_stub();
         list.view.render_trailing_bookend = stub.f;

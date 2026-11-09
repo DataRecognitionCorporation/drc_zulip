@@ -716,6 +716,18 @@ export function user_can_set_topics_policy(sub?: StreamSubscription): boolean {
 }
 
 export function can_toggle_subscription(sub: StreamSubscription): boolean {
+    // DRC: Members and guests cannot subscribe or unsubscribe themselves.
+    if (settings_data.user_has_drc_channel_restrictions()) {
+        return false;
+    }
+    return can_toggle_subscription_ignoring_drc_restrictions(sub);
+}
+
+// DRC: Upstream's can_toggle_subscription, for callers that use it to
+// check channel access rather than to offer a subscribe button.
+export function can_toggle_subscription_ignoring_drc_restrictions(
+    sub: StreamSubscription,
+): boolean {
     if (page_params.is_spectator) {
         return false;
     }
@@ -753,7 +765,7 @@ export function can_access_topic_history(sub: StreamSubscription): boolean {
     // Anyone can access topic history for web-public streams and
     // subscriptions; additionally, members can access history for
     // public streams.
-    return sub.is_web_public || can_toggle_subscription(sub);
+    return sub.is_web_public || can_toggle_subscription_ignoring_drc_restrictions(sub);
 }
 
 export function can_preview(sub: StreamSubscription): boolean {

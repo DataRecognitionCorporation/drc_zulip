@@ -1,4 +1,10 @@
 {{#if stream_settings_link}}
+{{!-- DRC: Members and guests cannot open channel settings. --}}
+{{#if has_drc_channel_restrictions}}
+<span class="message-header-stream-settings-button">
+    {{> navbar_icon_and_title . }}
+</span>
+{{else}}
 <a class="message-header-stream-settings-button tippy-zulip-tooltip" data-tooltip-template-id="stream-details-tooltip-template" data-tippy-placement="bottom" href="{{stream_settings_link}}">
     {{> navbar_icon_and_title . }}
 </a>
@@ -12,6 +18,7 @@
         {{/unless}}
     </div>
 </template>
+{{/if}}
 <span class="narrow_description rendered_markdown single-line-rendered-markdown">
     {{#if rendered_narrow_description}}
     {{rendered_markdown rendered_narrow_description}}

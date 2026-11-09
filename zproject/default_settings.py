@@ -536,6 +536,10 @@ BLOCK_EMAIL_TO_NON_ADMIN_USERS: bool = True
 # DRC: if True, deactivating a human user removes them from every channel.
 REMOVE_CHANNELS_ON_USER_DEACTIVATION: bool = True
 
+# DRC: if True, human members and guests may not mute channels or topics, or
+# subscribe or unsubscribe themselves; administrators and moderators can.
+RESTRICT_CHANNEL_CONTROLS_FOR_MEMBERS_AND_GUESTS: bool = True
+
 # If True, disable rate-limiting and other filters on sending error messages
 # to admins, and enable logging on the error-reporting itself.  Useful
 # mainly in development.

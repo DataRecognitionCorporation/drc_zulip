@@ -313,7 +313,7 @@ export function pick_empty_narrow_banner(current_filter: Filter): NarrowBannerDa
                     return SPECTATOR_STREAM_NARROW_BANNER;
                 }
                 if (stream_sub) {
-                    if (stream_data.can_toggle_subscription(stream_sub)) {
+                    if (stream_data.can_toggle_subscription_ignoring_drc_restrictions(stream_sub)) {
                         // You have content access to the channel, and therefore
                         // can subscribe to the channel.
                         return default_banner;
