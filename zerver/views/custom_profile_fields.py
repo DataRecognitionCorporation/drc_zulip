@@ -22,7 +22,10 @@ from zerver.lib.external_accounts import validate_external_account_field_data
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData
-from zerver.lib.users import validate_user_custom_profile_data
+from zerver.lib.users import (
+    check_can_change_own_status_and_profile,
+    validate_user_custom_profile_data,
+)
 from zerver.lib.validator import check_capped_string, validate_select_field_data
 from zerver.models import CustomProfileField, Realm, UserProfile
 from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
@@ -325,6 +328,7 @@ def remove_user_custom_profile_data(
     *,
     data: Json[list[int]],
 ) -> HttpResponse:
+    check_can_change_own_status_and_profile(user_profile)
     with transaction.atomic(durable=True):
         for field_id in data:
             check_remove_custom_profile_field_value(
@@ -341,6 +345,7 @@ def update_user_custom_profile_data(
     *,
     data: Json[list[ProfileDataElementUpdateDict]],
 ) -> HttpResponse:
+    check_can_change_own_status_and_profile(user_profile)
     validate_user_custom_profile_data(user_profile.realm.id, data, acting_user=user_profile)
     with transaction.atomic(durable=True):
         do_update_user_custom_profile_data_if_changed(user_profile, data, user_profile, notify=True)

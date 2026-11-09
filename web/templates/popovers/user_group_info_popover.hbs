@@ -45,6 +45,8 @@
                             <span class="popover-group-menu-member-name">{{full_name}}</span>
                         </li>
                     {{/each}}
+                    {{!-- DRC: Members and guests cannot open organization or group settings. --}}
+                    {{#unless has_drc_settings_restrictions}}
                     {{#unless display_all_subgroups_and_members}}
                         <li class="popover-group-menu-member">
                             <span class="popover-group-menu-member-name">
@@ -68,11 +70,14 @@
                             </span>
                         </li>
                     {{/unless}}
+                    {{/unless}}
                 </ul>
             {{else}}
                 <span class="popover-group-menu-placeholder"><i>{{t 'This group has no members.'}}</i></span>
             {{/unless}}
         </li>
+        {{!-- DRC: Members and guests cannot open organization or group settings. --}}
+        {{#unless has_drc_settings_restrictions}}
         {{#unless is_guest}}
             <li role="separator" class="popover-menu-separator hidden-for-spectators"></li>
             <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
@@ -81,6 +86,7 @@
                     <span class="popover-menu-label">{{t "Group settings" }}</span>
                 </a>
             </li>
+        {{/unless}}
         {{/unless}}
     </ul>
 </div>

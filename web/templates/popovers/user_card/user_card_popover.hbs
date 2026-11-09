@@ -54,14 +54,16 @@
                         {{/if}}
                     </span>
                 </span>
-                {{#if is_me}}
+                {{!-- DRC: Members and guests cannot clear their status. --}}
+                {{#if show_own_status_controls}}
                     <a role="menuitem" tabindex="0" class="personal-menu-clear-status user-card-clear-status-button popover-menu-link" aria-label="{{t 'Clear status'}}" data-tippy-content="{{t 'Clear your status' }}">
                         <i class="personal-menu-clear-status-icon popover-menu-icon zulip-icon zulip-icon-x-circle" aria-hidden="true"></i>
                     </a>
                 {{/if}}
             </li>
         {{/if}}
-        {{#if is_me}}
+        {{!-- DRC: Members and guests cannot set a status or go invisible. --}}
+        {{#if show_own_status_controls}}
             {{#if status_content_available}}
                 <li role="none" class="link-item popover-menu-list-item hidden-for-spectators">
                     <a role="menuitem" tabindex="0" class="update_status_text popover-menu-link">
@@ -95,7 +97,7 @@
                 </li>
             {{/if}}
         {{/if}}
-        {{#if (or is_me status_content_available)}}
+        {{#if (or show_own_status_controls status_content_available)}}
             <li role="separator" class="popover-menu-separator hidden-for-spectators"></li>
         {{/if}}
         {{#if show_last_active_status}}

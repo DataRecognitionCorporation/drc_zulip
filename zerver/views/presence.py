@@ -22,7 +22,11 @@ from zerver.lib.typed_endpoint import (
     typed_endpoint_without_parameters,
 )
 from zerver.lib.user_status import check_update_user_status, get_user_status
-from zerver.lib.users import access_user_by_id, check_can_access_user
+from zerver.lib.users import (
+    access_user_by_id,
+    check_can_access_user,
+    check_can_change_own_status_and_profile,
+)
 from zerver.models import UserPresence, UserProfile
 from zerver.models.users import get_active_user, get_active_user_profile_by_id_in_realm
 
@@ -115,6 +119,8 @@ def update_user_status_backend(
         str | None, StringConstraints(strip_whitespace=True, max_length=60)
     ] = None,
 ) -> HttpResponse:
+    check_can_change_own_status_and_profile(user_profile)
+
     user_status = check_update_user_status(
         user_profile.realm,
         away=away,

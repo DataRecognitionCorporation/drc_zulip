@@ -150,6 +150,23 @@ run_test("user_has_drc_channel_restrictions", ({override}) => {
     assert.equal(settings_data.user_has_drc_channel_restrictions(), false);
 });
 
+run_test("user_has_drc_settings_restrictions", ({override}) => {
+    override(current_user, "is_admin", false);
+    override(current_user, "is_moderator", false);
+    assert.equal(settings_data.user_has_drc_settings_restrictions(), true);
+
+    page_params.is_spectator = true;
+    assert.equal(settings_data.user_has_drc_settings_restrictions(), false);
+    page_params.is_spectator = false;
+
+    override(current_user, "is_moderator", true);
+    assert.equal(settings_data.user_has_drc_settings_restrictions(), false);
+
+    override(current_user, "is_moderator", false);
+    override(current_user, "is_admin", true);
+    assert.equal(settings_data.user_has_drc_settings_restrictions(), false);
+});
+
 run_test("user_can_change_name", ({override}) => {
     const can_change_name = settings_data.user_can_change_name;
 

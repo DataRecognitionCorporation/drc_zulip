@@ -1,7 +1,7 @@
 from collections.abc import Iterable
 from datetime import timedelta
 from email.headerregistry import Address
-from typing import Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 from unittest import mock
 
 import orjson
@@ -87,6 +87,7 @@ from zerver.models import (
     Subscription,
     UserGroupMembership,
     UserProfile,
+    UserStatus,
     UserTopic,
 )
 from zerver.models.clients import get_client
@@ -103,6 +104,9 @@ from zerver.models.users import (
     get_user_by_delivery_email,
     get_user_by_id_in_realm_including_cross_realm,
 )
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 K = TypeVar("K")
 V = TypeVar("V")
@@ -4167,3 +4171,45 @@ class TestBulkRegenerateAPIKey(ZulipTestCase):
         self.assertNotEqual(cordelia_old_api_key, cordelia.api_key)
 
         self.assertEqual(othello_old_api_key, othello.api_key)
+
+
+@override_settings(RESTRICT_STATUS_AND_PROFILE_FOR_MEMBERS_AND_GUESTS=True)
+class RestrictStatusAndProfileTest(ZulipTestCase):
+    def change_status_and_profile(self, user: UserProfile) -> list["TestHttpResponse"]:
+        field = CustomProfileField.objects.get(name="Phone number", realm=user.realm)
+        return [
+            self.api_post(user, "/api/v1/users/me/status", {"status_text": "On vacation"}),
+            self.api_patch(user, "/api/v1/settings", {"presence_enabled": "false"}),
+            self.api_patch(
+                user,
+                "/api/v1/users/me/profile_data",
+                {"data": orjson.dumps([{"id": field.id, "value": "555-0100"}]).decode()},
+            ),
+            self.api_delete(
+                user, "/api/v1/users/me/profile_data", {"data": orjson.dumps([field.id]).decode()}
+            ),
+        ]
+
+    def test_members_and_guests_cannot_change_status_or_profile(self) -> None:
+        for user in [self.example_user("hamlet"), self.example_user("polonius")]:
+            for result in self.change_status_and_profile(user):
+                self.assert_json_error(result, "Insufficient permission")
+
+            user.refresh_from_db()
+            self.assertTrue(user.presence_enabled)
+            self.assertFalse(UserStatus.objects.filter(user_profile=user).exists())
+            self.assertFalse(
+                CustomProfileFieldValue.objects.filter(user_profile=user, value="555-0100").exists()
+            )
+
+            # Turning invisible mode off remains allowed.
+            do_change_user_setting(user, "presence_enabled", False, acting_user=None)
+            result = self.api_patch(user, "/api/v1/settings", {"presence_enabled": "true"})
+            self.assert_json_success(result)
+            user.refresh_from_db()
+            self.assertTrue(user.presence_enabled)
+
+    def test_moderators_and_admins_can_change_status_and_profile(self) -> None:
+        for user in [self.example_user("shiva"), self.example_user("iago")]:
+            for result in self.change_status_and_profile(user):
+                self.assert_json_success(result)

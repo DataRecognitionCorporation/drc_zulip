@@ -94,6 +94,8 @@ BLOCK_EMAIL_TO_NON_ADMIN_USERS = False
 REMOVE_CHANNELS_ON_USER_DEACTIVATION = False
 # Upstream tests let members mute and manage subscriptions; DRC tests enable this.
 RESTRICT_CHANNEL_CONTROLS_FOR_MEMBERS_AND_GUESTS = False
+# Upstream tests let members set statuses and profile fields; DRC tests enable this.
+RESTRICT_STATUS_AND_PROFILE_FOR_MEMBERS_AND_GUESTS = False
 # Don't use RabbitMQ from the test suite -- the user_profile_ids for
 # any generated queue elements won't match those being used by the
 # real app.

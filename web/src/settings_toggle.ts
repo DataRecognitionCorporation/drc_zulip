@@ -3,6 +3,7 @@ import $ from "jquery";
 import * as components from "./components.ts";
 import type {Toggle} from "./components.ts";
 import {$t} from "./i18n.ts";
+import * as settings_data from "./settings_data.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 
 let toggler: Toggle | undefined;
@@ -30,6 +31,14 @@ export function initialize(): void {
     });
 
     settings_panel_menu.set_key_handlers(toggler);
+
+    // DRC: Members and guests cannot open organization settings, so the
+    // Personal/Organization switcher is not shown and its Organization
+    // tab is disabled for keyboard navigation.
+    if (settings_data.user_has_drc_settings_restrictions()) {
+        toggler.disable_tab("organization");
+        return;
+    }
 
     toggler.get().appendTo("#settings_overlay_container .tab-container");
 }

@@ -480,6 +480,16 @@ export function validate_settings_hash(
         "data-exports-admin",
     ]);
 
+    // DRC: Members and guests cannot see these personal settings sections.
+    const drc_hidden_personal_section_values = new Set(["account-and-privacy", "bots", "topics"]);
+    if (
+        base === "settings" &&
+        drc_hidden_personal_section_values.has(section) &&
+        settings_data.user_has_drc_settings_restrictions()
+    ) {
+        return "#settings/profile";
+    }
+
     if (base === "settings" && !valid_personal_section_values.has(section)) {
         return "#settings/profile";
     }

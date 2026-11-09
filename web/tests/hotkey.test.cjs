@@ -443,7 +443,7 @@ test_while_not_editing_text("streams", ({override}) => {
     assert_unmapped("n");
 });
 
-test_while_not_editing_text("basic mappings", () => {
+test_while_not_editing_text("basic mappings", ({override}) => {
     assert_mapping("?", browser_history, "go_to_location");
     assert_mapping("/", search, "initiate_search");
     assert_mapping("w", activity_ui, "initiate_search");
@@ -456,7 +456,12 @@ test_while_not_editing_text("basic mappings", () => {
     assert_mapping("x", compose_actions, "start");
     assert_mapping("P", message_view, "show", true);
     assert_mapping("g", gear_menu, "toggle");
+    override(settings_data, "user_has_drc_settings_restrictions", () => false);
     assert_mapping("Y", user_status_ui, "open_user_status_modal", true);
+
+    // DRC: Members and guests cannot set a status.
+    override(settings_data, "user_has_drc_settings_restrictions", () => true);
+    assert_unmapped("Y");
 });
 
 test_while_not_editing_text("drafts open", ({override}) => {

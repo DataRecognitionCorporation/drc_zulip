@@ -20,6 +20,7 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {recent_view_messages_data} from "./recent_view_messages_data.ts";
+import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as timerender from "./timerender.ts";
@@ -108,6 +109,12 @@ export function should_show_server_upgrade_banner(ls: LocalStorage): boolean {
 }
 
 export function maybe_toggle_empty_required_profile_fields_banner(): void {
+    // DRC: Members and guests cannot edit their custom profile fields, so
+    // they are never asked to fill in the required ones.
+    if (settings_data.user_has_drc_settings_restrictions()) {
+        return;
+    }
+
     const $banner = $("#navbar_alerts_wrapper").find(".banner");
     const empty_required_profile_fields_exist = realm.custom_profile_fields
         .map((f) => ({

@@ -518,6 +518,16 @@ def get_accounts_for_email(email: str) -> list[Account]:
     ]
 
 
+def check_can_change_own_status_and_profile(user_profile: UserProfile) -> None:
+    # DRC: human members and guests may not set a status, turn on invisible
+    # mode, or edit their custom profile fields.
+    if not settings.RESTRICT_STATUS_AND_PROFILE_FOR_MEMBERS_AND_GUESTS:
+        return
+    if user_profile.is_bot or user_profile.is_realm_admin or user_profile.is_moderator:
+        return
+    raise JsonableError(_("Insufficient permission"))
+
+
 def validate_user_custom_profile_field(
     realm_id: int, field: CustomProfileField, value: ProfileDataElementValue
 ) -> ProfileDataElementValue:

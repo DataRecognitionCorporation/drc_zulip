@@ -213,6 +213,11 @@ export function add_custom_profile_fields_to_settings(): void {
         return;
     }
 
+    // DRC: Members and guests cannot edit their custom profile fields.
+    if (settings_data.user_has_drc_settings_restrictions()) {
+        return;
+    }
+
     const element_id = "#profile-settings .custom-profile-fields-form";
     $(element_id).empty();
 
