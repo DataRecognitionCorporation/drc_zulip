@@ -9,5 +9,8 @@
 
     {{>preferences_information .}}
 
+    {{!-- DRC: Members and guests cannot see the Left sidebar preferences. --}}
+    {{#unless has_drc_settings_restrictions}}
     {{>preferences_left_sidebar .}}
+    {{/unless}}
 </form>

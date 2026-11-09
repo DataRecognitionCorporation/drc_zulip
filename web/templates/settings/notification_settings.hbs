@@ -1,4 +1,6 @@
 <form class="notification-settings-form">
+    {{!-- DRC: Members and guests can only change the notification sound. --}}
+    {{#unless has_drc_settings_restrictions}}
     <div class="general_notifications {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
         <div class="subsection-header">
             <h3>{{t "Notification triggers" }}</h3>
@@ -136,16 +138,22 @@
             </select>
         </div>
     </div>
+    {{/unless}}
 
     <div class="desktop_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header">
+            {{!-- DRC: The saving indicator below stays for the notification sound. --}}
+            {{#unless has_drc_settings_restrictions}}
             <h3>{{t "Desktop message notifications" }}
                 {{> ../help_link_widget link="/help/desktop-notifications" }}
             </h3>
+            {{/unless}}
             {{> settings_save_discard_widget section_name="desktop-message-settings" show_save_discard_buttons=for_realm_settings show_saving_indicator=true }}
         </div>
 
+        {{!-- DRC: Members and guests can only change the notification sound. --}}
+        {{#unless has_drc_settings_restrictions}}
         {{#if (eq prefix "user_")}}
         <div class="desktop-notification-settings-banners banner-wrapper"></div>
         {{/if}}
@@ -167,6 +175,7 @@
               prefix=../prefix
               show_reset_button=../for_realm_settings}}
         {{/each}}
+        {{/unless}}
 
         <div class="input-group">
             <label for="{{prefix}}notification_sound" class="settings-field-label">
@@ -191,6 +200,8 @@
             </div>
         </div>
 
+        {{!-- DRC: Members and guests can only change the notification sound. --}}
+        {{#unless has_drc_settings_restrictions}}
         <div class="input-group">
             <label for="{{prefix}}desktop_icon_count_display" class="settings-field-label">
                 {{ settings_label.desktop_icon_count_display }}
@@ -202,8 +213,11 @@
                 {{> dropdown_options_widget option_values=(object_values desktop_icon_count_display_values)}}
             </select>
         </div>
+        {{/unless}}
     </div>
 
+    {{!-- DRC: Members and guests can only change the notification sound. --}}
+    {{#unless has_drc_settings_restrictions}}
     <div class="mobile_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header">
@@ -301,4 +315,5 @@
               show_reset_button=../for_realm_settings}}
         {{/each}}
     </div>
+    {{/unless}}
 </form>

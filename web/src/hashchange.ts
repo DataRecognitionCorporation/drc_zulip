@@ -286,6 +286,15 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
         return;
     }
 
+    // DRC: Members and guests cannot open organization or group settings.
+    if (
+        (base === "organization" || base === "groups") &&
+        settings_data.user_has_drc_settings_restrictions()
+    ) {
+        show_home_view();
+        return;
+    }
+
     const coming_from_overlay = hash_parser.is_overlay_hash(old_hash);
     if (base === "settings" || base === "organization") {
         let settings_panel_object = settings_panel_menu.normal_settings;

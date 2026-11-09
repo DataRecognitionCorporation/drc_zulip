@@ -41,8 +41,10 @@ const hashchange = zrequire("hashchange");
 const message_view = zrequire("../src/message_view");
 const stream_data = zrequire("stream_data");
 const {Filter} = zrequire("../src/filter");
+const {set_current_user} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
+set_current_user({});
 const user_settings = {};
 initialize_user_settings({user_settings});
 
@@ -328,6 +330,17 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [stream_settings_ui, "launch"],
     ]);
 
+    // DRC: Members and guests cannot open organization or group settings.
+    override(settings_data, "user_has_drc_settings_restrictions", () => true);
+    for (const hash of ["#organization/users/active", "#groups/your"]) {
+        window.location.hash = hash;
+
+        helper.clear_events();
+        $window_stub.trigger("hashchange");
+        helper.assert_events([]);
+    }
+    override(settings_data, "user_has_drc_settings_restrictions", () => false);
+
     recent_view_ui_shown = false;
     window.location.hash = "#reload:send_after_reload=0...";
 
@@ -407,6 +420,27 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [admin, "build_page"],
         [admin, "launch", ["users", "active"]],
     ]);
+
+    // DRC: Members and guests are sent to their profile instead of hidden sections.
+    override(settings_data, "user_has_drc_settings_restrictions", () => true);
+    for (const hash of [
+        "#settings/account-and-privacy",
+        "#settings/your-bots",
+        "#settings/topics",
+    ]) {
+        window.location.hash = hash;
+        fixed_url = undefined;
+
+        helper.clear_events();
+        $window_stub.trigger("hashchange");
+        assert.equal(fixed_url, "http://zulip.zulipdev.com/#settings/profile");
+        helper.assert_events([
+            [overlays, "close_for_hash_change"],
+            [settings, "build_page"],
+            [admin, "build_page"],
+            [settings, "launch"],
+        ]);
+    }
 
     helper.clear_events();
     browser_history.exit_overlay();

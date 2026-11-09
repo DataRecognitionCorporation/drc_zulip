@@ -434,6 +434,13 @@ export function user_has_drc_channel_restrictions(): boolean {
     return !current_user.is_admin && !current_user.is_moderator;
 }
 
+// DRC: Members and guests get a reduced settings UI, cannot open
+// organization or group settings, and cannot set a status, go invisible,
+// mute users, or edit their custom profile fields.
+export function user_has_drc_settings_restrictions(): boolean {
+    return !page_params.is_spectator && !current_user.is_admin && !current_user.is_moderator;
+}
+
 export function two_tier_billing_enabled(): boolean {
     if (typeof realm.realm_workplace_users_group !== "number") {
         return true;

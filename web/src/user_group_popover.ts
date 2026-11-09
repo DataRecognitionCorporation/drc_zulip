@@ -121,6 +121,8 @@ export function toggle_user_group_info_popover(
                     group_description: group.description,
                     group_edit_url: hash_util.group_edit_url(group, "general"),
                     is_guest: current_user.is_guest,
+                    has_drc_settings_restrictions:
+                        settings_data.user_has_drc_settings_restrictions(),
                     is_system_group: group.is_system_group,
                     deactivated: group.deactivated,
                     members_count: all_individual_members.length,

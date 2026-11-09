@@ -540,6 +540,11 @@ REMOVE_CHANNELS_ON_USER_DEACTIVATION: bool = True
 # subscribe or unsubscribe themselves; administrators and moderators can.
 RESTRICT_CHANNEL_CONTROLS_FOR_MEMBERS_AND_GUESTS: bool = True
 
+# DRC: if True, human members and guests may not set a status, turn on
+# invisible mode, or edit their custom profile fields; administrators and
+# moderators can.
+RESTRICT_STATUS_AND_PROFILE_FOR_MEMBERS_AND_GUESTS: bool = True
+
 # If True, disable rate-limiting and other filters on sending error messages
 # to admins, and enable logging on the error-reporting itself.  Useful
 # mainly in development.

@@ -825,7 +825,11 @@ export class BuddyList extends BuddyListConf {
 
         // We give a link to view the list of all users to help reduce confusion about
         // there being hidden (inactive) "other" users.
-        if (has_inactive_other_users) {
+        if (
+            has_inactive_other_users &&
+            // DRC: Members and guests cannot open organization settings.
+            !settings_data.user_has_drc_settings_restrictions()
+        ) {
             $("#buddy-list-other-users-container .view-all-users-link").html(
                 render_view_all_users(),
             );

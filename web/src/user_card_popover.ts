@@ -38,6 +38,7 @@ import * as popovers from "./popovers.ts";
 import {hide_all} from "./popovers.ts";
 import * as presence from "./presence.ts";
 import * as rows from "./rows.ts";
+import * as settings_data from "./settings_data.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import {current_user, realm} from "./state_data.ts";
@@ -212,6 +213,7 @@ type UserCardPopoverData = {
     is_active: boolean;
     is_bot: boolean;
     is_me: boolean;
+    show_own_status_controls: boolean;
     is_sender_popover: boolean;
     pm_with_url: string;
     user_circle_class: string;
@@ -327,7 +329,12 @@ function get_user_card_popover_data(
     const status_text = user_status.get_status_text(user.user_id);
     const status_emoji_info = user_status.get_status_emoji(user.user_id);
     const spectator_view = page_params.is_spectator;
-    const show_manage_section = !spectator_view && !is_me;
+    const has_drc_settings_restrictions = settings_data.user_has_drc_settings_restrictions();
+    // DRC: Members and guests cannot set a status or go invisible.
+    const show_own_status_controls = is_me && !has_drc_settings_restrictions;
+    // DRC: Members and guests cannot mute or unmute users, which is all
+    // this section offers them.
+    const show_manage_section = !spectator_view && !is_me && !has_drc_settings_restrictions;
     const is_muted = muted_users.is_user_muted(user.user_id);
     const muting_allowed = !is_me;
     const can_mute = muting_allowed && !is_muted;
@@ -366,6 +373,7 @@ function get_user_card_popover_data(
         is_active,
         is_bot: user.is_bot,
         is_me,
+        show_own_status_controls,
         is_sender_popover,
         pm_with_url: hash_util.pm_with_url(user.user_id.toString()),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
@@ -932,11 +940,14 @@ function register_click_handlers(): void {
     $("body").on("click", ".update_status_text", open_user_status_modal);
 
     // Clicking on one's own status emoji should open the user status modal.
-    $(".buddy-list-section").on(
-        "click",
-        ".user_sidebar_entry_me .status-emoji",
-        open_user_status_modal,
-    );
+    $(".buddy-list-section").on("click", ".user_sidebar_entry_me .status-emoji", (e) => {
+        // DRC: Members and guests cannot set a status, so the click
+        // falls through to the buddy list row instead.
+        if (settings_data.user_has_drc_settings_restrictions()) {
+            return;
+        }
+        open_user_status_modal(e);
+    });
 
     $(".buddy-list-section").on("click", ".user-list-sidebar-menu-icon", (e) => {
         e.stopPropagation();

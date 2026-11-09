@@ -89,6 +89,7 @@ type PersonalMenuContext = {
     invisible_mode: boolean;
     user_is_guest: boolean;
     spectator_view: boolean;
+    has_drc_settings_restrictions: boolean;
     user_avatar?: string | undefined | null;
     is_active: boolean;
     user_circle_class: string;
@@ -129,6 +130,7 @@ type GearMenuContext = {
     can_invite_users_by_email: boolean;
     is_guest: boolean;
     has_drc_channel_restrictions: boolean;
+    has_drc_settings_restrictions: boolean;
     login_link: string;
     promote_sponsoring_zulip: boolean;
     show_billing: boolean;
@@ -342,6 +344,7 @@ export function get_personal_menu_content_context(): PersonalMenuContext {
         invisible_mode,
         user_is_guest: current_user.is_guest,
         spectator_view: page_params.is_spectator,
+        has_drc_settings_restrictions: settings_data.user_has_drc_settings_restrictions(),
 
         // user information
         user_avatar: current_user.avatar_url_medium,
@@ -423,6 +426,7 @@ export function get_gear_menu_content_context(): GearMenuContext {
         can_invite_users_by_email: settings_data.user_can_invite_users_by_email(),
         is_guest: current_user.is_guest,
         has_drc_channel_restrictions: settings_data.user_has_drc_channel_restrictions(),
+        has_drc_settings_restrictions: settings_data.user_has_drc_settings_restrictions(),
         login_link: page_params.development_environment ? "/devlogin/" : "/login/",
         promote_sponsoring_zulip: page_params.promote_sponsoring_zulip,
         show_billing: billing_info.show_billing,

@@ -1181,7 +1181,8 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             gear_menu.toggle();
             return true;
         case "set_status":
-            if (page_params.is_spectator) {
+            // DRC: Members and guests cannot set a status.
+            if (page_params.is_spectator || settings_data.user_has_drc_settings_restrictions()) {
                 return false;
             }
             user_status_ui.open_user_status_modal();

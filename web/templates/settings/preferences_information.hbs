@@ -66,6 +66,8 @@
         </select>
     </div>
 
+    {{!-- DRC: Members and guests cannot change whether they see typing notifications. --}}
+    {{#unless has_drc_settings_restrictions}}
     {{> settings_checkbox
       setting_name="receives_typing_notifications"
       is_checked=settings_object.receives_typing_notifications
@@ -73,6 +75,7 @@
       render_only=settings_render_only.receives_typing_notifications
       prefix=prefix
       show_reset_button=for_realm_settings}}
+    {{/unless}}
 
     {{> settings_checkbox
       setting_name="web_inbox_show_channel_folders"

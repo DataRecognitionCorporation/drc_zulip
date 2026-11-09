@@ -71,7 +71,7 @@ from zerver.lib.user_groups import (
     get_recursive_group_members_union_for_groups,
     user_group_ids_to_user_groups,
 )
-from zerver.lib.users import user_ids_to_users
+from zerver.lib.users import check_can_change_own_status_and_profile, user_ids_to_users
 from zerver.models import EmailChangeStatus, RealmAuditLog, UserBaseSettings, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import avatar_changes_disabled, name_changes_disabled
@@ -459,6 +459,11 @@ def json_change_settings(
                 )
 
         return json_success(request, data={})
+
+    if presence_enabled is False:
+        # DRC: Restricted users may turn invisible mode off, but not on;
+        # administrators cannot change this setting for them.
+        check_can_change_own_status_and_profile(user_profile)
 
     if (
         default_language is not None
