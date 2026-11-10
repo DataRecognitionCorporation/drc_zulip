@@ -1,6 +1,8 @@
 from collections.abc import Set as AbstractSet
+from io import StringIO
 from unittest import mock
 
+from django.core.management import call_command
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.alert_words import do_add_alert_words
@@ -25,6 +27,7 @@ from zerver.models import (
     Message,
     RealmAuditLog,
     Stream,
+    Subscription,
     UserActivity,
     UserMessage,
     UserProfile,
@@ -787,3 +790,46 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         # Sanity check after removing the alert word for Hamlet.
         AlertWord.objects.filter(user_profile=long_term_idle_user).delete()
         assert_stream_message_not_sent_to_idle_user("no alert words")
+
+
+class DeleteOrphanedChannelSubscriptionsTest(ZulipTestCase):
+    def test_orphaned_subscriptions_break_catch_up_until_deleted(self) -> None:
+        user = self.example_user("hamlet")
+        other_realm_user = self.mit_user("starnine")
+        stream = self.make_stream("deleted-channel")
+        self.subscribe(user, stream.name)
+        mit_stream = self.make_stream("mit-deleted-channel", realm=other_realm_user.realm)
+        self.subscribe(other_realm_user, mit_stream.name)
+        recipient_id = stream.recipient_id
+        mit_recipient_id = mit_stream.recipient_id
+        assert recipient_id is not None and mit_recipient_id is not None
+        orphan_recipient_ids = [recipient_id, mit_recipient_id]
+        with self.assertLogs(logger_string, level="INFO"):
+            do_soft_deactivate_user(user)
+
+        # Deleting channel rows directly leaves subscriptions behind and
+        # cascades away their subscription audit history.
+        Stream.objects.filter(id__in=[stream.id, mit_stream.id]).delete()
+        with self.assertRaises(IndexError):
+            reactivate_user_if_soft_deactivated(user)
+
+        output = StringIO()
+        call_command("delete_orphaned_channel_subscriptions", "--realm=zulip", stdout=output)
+        self.assertIn("Would delete 1 subscriptions of 1 users", output.getvalue())
+        self.assertEqual(
+            Subscription.objects.filter(recipient_id__in=orphan_recipient_ids).count(), 2
+        )
+
+        output = StringIO()
+        call_command(
+            "delete_orphaned_channel_subscriptions", "--realm=zulip", "--apply", stdout=output
+        )
+        self.assertIn("Deleted 1 subscriptions of 1 users", output.getvalue())
+        self.assertFalse(Subscription.objects.filter(recipient_id=recipient_id).exists())
+        self.assertTrue(Subscription.objects.filter(recipient_id=mit_recipient_id).exists())
+        self.assertTrue(Subscription.objects.filter(user_profile=user).exists())
+
+        with self.assertLogs(logger_string, level="INFO"):
+            reactivate_user_if_soft_deactivated(user)
+        user.refresh_from_db()
+        self.assertFalse(user.long_term_idle)
