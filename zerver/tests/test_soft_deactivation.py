@@ -3,7 +3,6 @@ from io import StringIO
 from unittest import mock
 
 from django.core.management import call_command
-from django.core.management.base import CommandError
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.alert_words import do_add_alert_words
@@ -36,7 +35,6 @@ from zerver.models import (
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
-from zerver.tornado.django_api import EventQueueData
 
 logger_string = "zulip.soft_deactivation"
 
@@ -794,203 +792,44 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         assert_stream_message_not_sent_to_idle_user("no alert words")
 
 
-class BackfillSubscriptionAuditLogsTests(ZulipTestCase):
-    def remove_subscription_history(self, user: UserProfile, stream: Stream) -> None:
-        RealmAuditLog.objects.filter(
-            modified_user=user,
-            modified_stream=stream,
-            event_type__in=[
-                AuditLogEventType.SUBSCRIPTION_CREATED,
-                AuditLogEventType.SUBSCRIPTION_ACTIVATED,
-                AuditLogEventType.SUBSCRIPTION_DEACTIVATED,
-            ],
-        ).delete()
-
-    def test_dry_run_repair_and_reactivation(self) -> None:
+class DeleteOrphanedChannelSubscriptionsTest(ZulipTestCase):
+    def test_orphaned_subscriptions_break_catch_up_until_deleted(self) -> None:
         user = self.example_user("hamlet")
-        sender = self.example_user("iago")
-        stream = self.make_stream(
-            "repair-private", invite_only=True, history_public_to_subscribers=False
-        )
-        self.subscribe(sender, stream.name)
-        hidden_id = self.send_stream_message(sender, stream.name, "Before subscription")
+        other_realm_user = self.mit_user("starnine")
+        stream = self.make_stream("deleted-channel")
         self.subscribe(user, stream.name)
-        first_id = self.send_stream_message(sender, stream.name, "Before idle")
+        mit_stream = self.make_stream("mit-deleted-channel", realm=other_realm_user.realm)
+        self.subscribe(other_realm_user, mit_stream.name)
+        recipient_id = stream.recipient_id
+        mit_recipient_id = mit_stream.recipient_id
+        assert recipient_id is not None and mit_recipient_id is not None
+        orphan_recipient_ids = [recipient_id, mit_recipient_id]
         with self.assertLogs(logger_string, level="INFO"):
             do_soft_deactivate_user(user)
-        missing_id = self.send_stream_message(sender, stream.name, "While idle")
-        self.remove_subscription_history(user, stream)
 
+        # Deleting channel rows directly leaves subscriptions behind and
+        # cascades away their subscription audit history.
+        Stream.objects.filter(id__in=[stream.id, mit_stream.id]).delete()
         with self.assertRaises(IndexError):
             reactivate_user_if_soft_deactivated(user)
 
-        existing_logs = list(RealmAuditLog.objects.order_by("id").values())
         output = StringIO()
-        call_command("backfill_subscription_audit_logs", "--realm=zulip", stdout=output)
-        self.assertIn("Dry run: no changes made.", output.getvalue())
-        self.assertEqual(list(RealmAuditLog.objects.order_by("id").values()), existing_logs)
-
-        output = StringIO()
-        call_command("backfill_subscription_audit_logs", "--realm=zulip", "--apply", stdout=output)
-        log = RealmAuditLog.objects.get(modified_user=user, modified_stream=stream)
-        self.assertEqual(log.event_type, AuditLogEventType.SUBSCRIPTION_CREATED)
-        self.assertEqual(log.realm_id, user.realm_id)
-        self.assertTrue(log.backfilled)
-        self.assertEqual(log.event_last_message_id, first_id - 1)
-        self.assertEqual(log.event_time, Message.objects.get(id=first_id).date_sent)
+        call_command("delete_orphaned_channel_subscriptions", "--realm=zulip", stdout=output)
+        self.assertIn("Would delete 1 subscriptions of 1 users", output.getvalue())
         self.assertEqual(
-            list(RealmAuditLog.objects.exclude(id=log.id).order_by("id").values()), existing_logs
+            Subscription.objects.filter(recipient_id__in=orphan_recipient_ids).count(), 2
         )
 
-        user.refresh_from_db()
-        self.assertTrue(user.long_term_idle)
-        self.assertFalse(
-            UserMessage.objects.filter(user_profile=user, message_id=missing_id).exists()
+        output = StringIO()
+        call_command(
+            "delete_orphaned_channel_subscriptions", "--realm=zulip", "--apply", stdout=output
         )
-        self.login("hamlet")
-        with (
-            self.assertLogs(logger_string, level="INFO"),
-            mock.patch(
-                "zerver.lib.events.request_event_queue",
-                return_value=EventQueueData(queue_id="test-queue-id", idle_queue_timeout_secs=600),
-            ),
-            mock.patch("zerver.lib.events.get_user_events", return_value=[]),
-        ):
-            self.assertEqual(self.client_get("/").status_code, 200)
+        self.assertIn("Deleted 1 subscriptions of 1 users", output.getvalue())
+        self.assertFalse(Subscription.objects.filter(recipient_id=recipient_id).exists())
+        self.assertTrue(Subscription.objects.filter(recipient_id=mit_recipient_id).exists())
+        self.assertTrue(Subscription.objects.filter(user_profile=user).exists())
+
+        with self.assertLogs(logger_string, level="INFO"):
+            reactivate_user_if_soft_deactivated(user)
         user.refresh_from_db()
         self.assertFalse(user.long_term_idle)
-        self.assertTrue(
-            UserMessage.objects.filter(user_profile=user, message_id=missing_id).exists()
-        )
-        self.assertFalse(
-            UserMessage.objects.filter(user_profile=user, message_id=hidden_id).exists()
-        )
-
-        repaired_logs = list(RealmAuditLog.objects.order_by("id").values())
-        call_command(
-            "backfill_subscription_audit_logs", "--realm=zulip", "--apply", stdout=StringIO()
-        )
-        self.assertEqual(list(RealmAuditLog.objects.order_by("id").values()), repaired_logs)
-
-    def test_no_received_messages(self) -> None:
-        user = self.example_user("hamlet")
-        sender = self.example_user("iago")
-        stream = self.make_stream(
-            "repair-empty-history", invite_only=True, history_public_to_subscribers=False
-        )
-        self.subscribe(sender, stream.name)
-        self.subscribe(user, stream.name)
-        with self.assertLogs(logger_string, level="INFO"):
-            do_soft_deactivate_user(user)
-        hidden_id = self.send_stream_message(
-            sender, stream.name, "No evidence of subscription time"
-        )
-        self.remove_subscription_history(user, stream)
-
-        output = StringIO()
-        call_command("backfill_subscription_audit_logs", "--realm=zulip", stdout=output)
-        self.assertIn("no received messages", output.getvalue())
-        self.assertIn("omit older messages", output.getvalue())
-        self.assertFalse(
-            RealmAuditLog.objects.filter(modified_user=user, modified_stream=stream).exists()
-        )
-        call_command(
-            "backfill_subscription_audit_logs", "--realm=zulip", "--apply", stdout=StringIO()
-        )
-        log = RealmAuditLog.objects.get(modified_user=user, modified_stream=stream)
-        self.assertEqual(log.event_last_message_id, hidden_id)
-        future_id = self.send_stream_message(sender, stream.name, "After repair boundary")
-        with self.assertLogs(logger_string, level="INFO"):
-            reactivate_user_if_soft_deactivated(user)
-        self.assertFalse(
-            UserMessage.objects.filter(user_profile=user, message_id=hidden_id).exists()
-        )
-        self.assertTrue(
-            UserMessage.objects.filter(user_profile=user, message_id=future_id).exists()
-        )
-
-    def test_inactive_subscription(self) -> None:
-        user = self.example_user("hamlet")
-        sender = self.example_user("iago")
-        stream = self.subscribe(user, "repair-inactive")
-        assert stream.recipient_id is not None
-        self.subscribe(sender, stream.name)
-        first_id = self.send_stream_message(sender, stream.name, "First received")
-        last_id = self.send_stream_message(sender, stream.name, "Last received")
-        self.unsubscribe(user, stream.name)
-        self.remove_subscription_history(user, stream)
-        with self.assertLogs(logger_string, level="INFO"):
-            do_soft_deactivate_user(user)
-        excluded_id = self.send_stream_message(sender, stream.name, "After unsubscribe")
-
-        call_command(
-            "backfill_subscription_audit_logs", "--realm=zulip", "--apply", stdout=StringIO()
-        )
-        logs = list(
-            RealmAuditLog.objects.filter(modified_user=user, modified_stream=stream).order_by("id")
-        )
-        self.assertEqual(
-            [(log.event_type, log.event_last_message_id) for log in logs],
-            [
-                (AuditLogEventType.SUBSCRIPTION_CREATED, first_id - 1),
-                (AuditLogEventType.SUBSCRIPTION_DEACTIVATED, last_id),
-            ],
-        )
-        self.assertTrue(all(log.backfilled for log in logs))
-        self.assertEqual(logs[1].event_time, Message.objects.get(id=last_id).date_sent)
-        with self.assertLogs(logger_string, level="INFO"):
-            reactivate_user_if_soft_deactivated(user)
-        self.assertFalse(
-            UserMessage.objects.filter(user_profile=user, message_id=excluded_id).exists()
-        )
-        self.assertFalse(
-            Subscription.objects.get(user_profile=user, recipient_id=stream.recipient_id).active
-        )
-
-    def test_inactive_subscription_without_messages(self) -> None:
-        user = self.example_user("hamlet")
-        stream = self.subscribe(user, "repair-inactive-empty")
-        self.unsubscribe(user, stream.name)
-        self.remove_subscription_history(user, stream)
-        last_id = Message.objects.latest("id").id
-
-        call_command(
-            "backfill_subscription_audit_logs", "--realm=zulip", "--apply", stdout=StringIO()
-        )
-        logs = list(
-            RealmAuditLog.objects.filter(modified_user=user, modified_stream=stream).order_by("id")
-        )
-        self.assertEqual(
-            [(log.event_type, log.event_last_message_id) for log in logs],
-            [
-                (AuditLogEventType.SUBSCRIPTION_CREATED, last_id),
-                (AuditLogEventType.SUBSCRIPTION_DEACTIVATED, last_id),
-            ],
-        )
-
-    def test_realm_scope(self) -> None:
-        user = self.mit_user("sipbtest")
-        stream = self.subscribe(user, "repair-other-realm")
-        self.remove_subscription_history(user, stream)
-        existing_logs = list(RealmAuditLog.objects.order_by("id").values())
-
-        with self.assertRaisesRegex(CommandError, "required.*--realm"):
-            call_command("backfill_subscription_audit_logs", "--apply", stdout=StringIO())
-        call_command(
-            "backfill_subscription_audit_logs", "--realm=zulip", "--apply", stdout=StringIO()
-        )
-        self.assertEqual(list(RealmAuditLog.objects.order_by("id").values()), existing_logs)
-        call_command(
-            "backfill_subscription_audit_logs",
-            f"--realm={user.realm_id}",
-            "--apply",
-            stdout=StringIO(),
-        )
-        self.assertTrue(
-            RealmAuditLog.objects.filter(
-                realm_id=user.realm_id,
-                modified_user=user,
-                modified_stream=stream,
-                backfilled=True,
-            ).exists()
-        )
