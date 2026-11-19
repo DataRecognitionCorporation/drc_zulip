@@ -4,7 +4,8 @@ class zulip::common {
     'Debian': {
       $nagios_plugins = 'monitoring-plugins-basic'
       $nagios_plugins_dir = '/usr/lib/nagios/plugins'
-      $nginx = 'nginx-full'
+      # Set to 'nginx' to use the nginx.org package instead of Ubuntu's.
+      $nginx = zulipconf('application_server', 'nginx_package', 'nginx-full')
       $supervisor_system_conf_dir = '/etc/supervisor/conf.d'
       $supervisor_conf_file = '/etc/supervisor/supervisord.conf'
       $supervisor_service = 'supervisor'
