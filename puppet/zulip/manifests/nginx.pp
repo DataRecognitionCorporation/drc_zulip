@@ -3,17 +3,12 @@ class zulip::nginx {
   package { $zulip::common::nginx: ensure => installed }
   package { 'ca-certificates': ensure => latest }
 
-  if $facts['os']['family'] == 'RedHat' {
-    file { '/etc/nginx/sites-available':
-      ensure => directory,
-      owner  => 'root',
-      group  => 'root',
-    }
-    file { '/etc/nginx/sites-enabled':
-      ensure => directory,
-      owner  => 'root',
-      group  => 'root',
-    }
+  # RedHat and nginx.org packages do not ship these Debian-style directories.
+  file { ['/etc/nginx/sites-available', '/etc/nginx/sites-enabled']:
+    ensure  => directory,
+    require => Package[$zulip::common::nginx],
+    owner   => 'root',
+    group   => 'root',
   }
 
   file { '/etc/nginx/zulip-include/':
@@ -90,6 +85,12 @@ class zulip::nginx {
   file { '/etc/nginx/sites-enabled/default':
     ensure => absent,
     notify => Service['nginx'],
+  }
+  # The nginx.org package ships a default port-80 site here.
+  file { '/etc/nginx/conf.d/default.conf':
+    ensure  => absent,
+    require => Package[$zulip::common::nginx],
+    notify  => Service['nginx'],
   }
 
   file { '/var/log/nginx':
