@@ -5,12 +5,13 @@ from django.db import transaction
 from django.utils.translation import gettext as _
 
 from zerver.actions.message_send import send_user_profile_update_notification
+from zerver.actions.user_settings import do_change_full_name
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.streams import render_stream_description
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData, UserProfileChangeDict
-from zerver.lib.users import get_user_ids_who_can_access_user
+from zerver.lib.users import check_full_name, get_user_ids_who_can_access_user
 from zerver.models import CustomProfileField, CustomProfileFieldValue, Realm, UserProfile
 from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
 from zerver.models.users import active_user_ids
@@ -178,6 +179,46 @@ def notify_user_update_custom_profile_data(
     send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
 
 
+# DRC: A user's name is built from the first_name and last_name custom
+# profile fields as "<last_name>, <first_name>", so it reads the same
+# everywhere the name is shown.
+NAME_PROFILE_FIELD_NAMES = ("first_name", "last_name")
+
+
+def full_name_from_name_fields(first_name: str, last_name: str) -> str:
+    return f"{last_name}, {first_name}"
+
+
+def sync_full_name_from_name_fields(
+    user_profile: UserProfile, acting_user: UserProfile | None
+) -> UserProfileChangeDict | None:
+    """Sets the user's name from the first_name and last_name fields when
+    both are set. Returns the name change, or None if nothing changed."""
+    values = dict(
+        CustomProfileFieldValue.objects.filter(
+            user_profile=user_profile, field__name__in=NAME_PROFILE_FIELD_NAMES
+        ).values_list("field__name", "value")
+    )
+    first_name = values.get("first_name", "").strip()
+    last_name = values.get("last_name", "").strip()
+    if not first_name or not last_name:
+        return None
+
+    new_full_name = check_full_name(
+        full_name_from_name_fields(first_name, last_name),
+        user_profile=user_profile,
+        realm=user_profile.realm,
+    )
+    old_full_name = user_profile.full_name
+    if new_full_name == old_full_name:
+        return None
+    # The caller sends one notification covering the field and name changes.
+    do_change_full_name(user_profile, new_full_name, acting_user, notify=False)
+    return UserProfileChangeDict(
+        field_name="full name", old_value=old_full_name, new_value=new_full_name
+    )
+
+
 @transaction.atomic(savepoint=False)
 def do_update_user_custom_profile_data_if_changed(
     user_profile: UserProfile,
@@ -233,6 +274,12 @@ def do_update_user_custom_profile_data_if_changed(
                 new_value=new_value,
             )
         )
+
+    # DRC: Keep the name in sync when either name field changes.
+    if any(change["field_name"] in NAME_PROFILE_FIELD_NAMES for change in changes):
+        name_change = sync_full_name_from_name_fields(user_profile, acting_user)
+        if name_change is not None:
+            changes.append(name_change)
 
     if changes and notify:
         send_user_profile_update_notification(

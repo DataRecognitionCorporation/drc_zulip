@@ -26,7 +26,11 @@ from confirmation.models import (
     create_confirmation_object,
 )
 from zerver.actions.create_user import add_new_user_history, do_create_user, do_reactivate_user
-from zerver.actions.custom_profile_fields import do_update_user_custom_profile_data_if_changed
+from zerver.actions.custom_profile_fields import (
+    NAME_PROFILE_FIELD_NAMES,
+    do_update_user_custom_profile_data_if_changed,
+    full_name_from_name_fields,
+)
 from zerver.actions.streams import bulk_add_subscriptions
 from zerver.actions.user_groups import bulk_add_members_to_user_groups
 from zerver.actions.users import do_change_user_role, remove_user_from_all_channels
@@ -381,7 +385,7 @@ def do_bulk_import_users(
     # DRC: The buddy list builds names from these fields, so every
     # imported user must have them.
     missing_name_fields = [
-        field_name for field_name in ("first_name", "last_name") if field_name not in custom_fields
+        field_name for field_name in NAME_PROFILE_FIELD_NAMES if field_name not in custom_fields
     ]
     if users_to_create and missing_name_fields:
         raise JsonableError(
@@ -397,7 +401,7 @@ def do_bulk_import_users(
             # local password login unusable in practice.
             secrets.token_urlsafe(30),
             realm,
-            f"{user.first_name} {user.last_name}".strip(),
+            full_name_from_name_fields(user.first_name, user.last_name),
             role=invite_as,
             tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
             acting_user=user_profile,
