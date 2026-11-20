@@ -1897,49 +1897,15 @@
     --color-vdots-hover: light-dark(hsl(240deg 100% 15%), hsl(240deg 100% 90%));
     --color-tab-picker-icon: light-dark(hsl(200deg 100% 40%), hsl(0deg 0% 80%));
     --color-user-circle-active: light-dark(#43a35e, #4cdc75);
-    --color-user-circle-idle: light-dark(#f5b266, #ae640a);
+    /* DRC: The stronger 9.2 orange, which is easier to see than the
+       12.x light-theme color. */
+    --color-user-circle-idle: hsl(29deg 84% 51%);
     --color-user-circle-offline: light-dark(#bcc0cf, #545764);
     --color-user-circle-offline-typeahead-highlight: light-dark(
         #adb2c5,
         #646671
     );
     --color-user-circle-deactivated: hsl(0deg 0% 50%);
-    /* The gradient is also recreated inside the `user-circle-idle` SVG
-       file. That is needed for the new help center since it does not
-       do the SVG to font conversion that the web app does. We
-       re-apply it here since the linearGradient there is stripped off
-       when that SVG is converted to font for the web app. Any changes
-       to this gradient should be reflected in the SVG file as well. */
-    --gradient-user-circle-idle: linear-gradient(
-        to right,
-        var(--color-user-circle-idle) 5%,
-        light-dark(
-                color-mix(
-                    in srgb,
-                    var(--color-user-circle-idle) 78.9%,
-                    transparent
-                ),
-                var(--color-user-circle-idle)
-            )
-            25%,
-        transparent 100%
-    );
-    /* To avoid the avatar bleeding through, we rewrite
-       the gradient with an explicit background color. */
-    --gradient-user-circle-idle-avatar: linear-gradient(
-        to right,
-        var(--color-user-circle-idle) 5%,
-        light-dark(
-                color-mix(
-                    in srgb,
-                    var(--color-user-circle-idle) 78.9%,
-                    var(--color-background)
-                ),
-                var(--color-user-circle-idle)
-            )
-            25%,
-        var(--color-background) 100%
-    );
     --color-copy-button: light-dark(
         /* hsl(229deg 9% 36%) corresponds to --grey-600.
            We use the hsl() equivalent directly since postcss-color-mix-function
