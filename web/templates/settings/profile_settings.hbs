@@ -67,6 +67,8 @@
                     <span class="user-details-desc">{{date_joined_text}}</span>
                 </div>
             </div>
+            {{!-- DRC: Guests cannot open the full user profile. --}}
+            {{#unless current_user.is_guest}}
             {{> ../components/action_button
               label=(t "Preview profile")
               variant="subtle"
@@ -75,6 +77,7 @@
               icon="external-link"
               aria-hidden="true"
               }}
+            {{/unless}}
         </div>
     </div>
 </div>

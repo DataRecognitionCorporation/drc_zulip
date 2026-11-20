@@ -693,6 +693,10 @@ function add_user_to_groups(group_ids: number[], user_id: number, $alert_box: JQ
 }
 
 export function show_user_profile(user_id: number, default_tab_key = "profile-tab"): void {
+    // DRC: Guests cannot open the full user profile modal.
+    if (!settings_data.user_can_view_drc_user_profile()) {
+        return;
+    }
     const user = people.get_by_user_id(user_id);
     // Reset these widgets so that they are created again for the opened modal.
     user_streams_list_widget = undefined;
@@ -755,23 +759,19 @@ export function show_user_profile(user_id: number, default_tab_key = "profile-ta
     $(".tabcontent").hide();
     $("#user-profile-modal .dialog_submit_button").prop("disabled", true);
 
-    let default_tab = 0;
-
-    if (default_tab_key === "user-profile-streams-tab") {
-        default_tab = 1;
-    } else if (default_tab_key === "manage-profile-tab") {
-        default_tab = 3;
-    }
-
     let has_initialized_user_type_fields = false;
-    const opts = {
-        selected: default_tab,
-        child_wants_focus: true,
-        values: [
-            {label: $t({defaultMessage: "Profile"}), key: "profile-tab"},
+    const values = [{label: $t({defaultMessage: "Profile"}), key: "profile-tab"}];
+    // DRC: Members and guests do not see the Channels and User groups tabs.
+    if (!settings_data.user_has_drc_profile_tab_restrictions()) {
+        values.push(
             {label: $t({defaultMessage: "Channels"}), key: "user-profile-streams-tab"},
             {label: $t({defaultMessage: "User groups"}), key: "user-profile-groups-tab"},
-        ],
+        );
+    }
+    const opts = {
+        selected: 0,
+        child_wants_focus: true,
+        values,
         callback(_name: string | undefined, key: string) {
             $(".tabcontent").hide();
             $(`#${CSS.escape(key)}`).show();
@@ -819,6 +819,13 @@ export function show_user_profile(user_id: number, default_tab_key = "profile-ta
         };
         opts.values.push(manage_profile_tab);
     }
+
+    // Select the requested tab, falling back to Profile when that tab
+    // is not shown to this user.
+    opts.selected = Math.max(
+        opts.values.findIndex((tab) => tab.key === default_tab_key),
+        0,
+    );
 
     toggler = components.toggle(opts);
     const $elem = toggler.get();

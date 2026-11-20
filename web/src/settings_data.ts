@@ -441,6 +441,17 @@ export function user_has_drc_settings_restrictions(): boolean {
     return !page_params.is_spectator && !current_user.is_admin && !current_user.is_moderator;
 }
 
+// DRC: Members and guests do not see the Channels and User groups tabs
+// in the user profile modal.
+export function user_has_drc_profile_tab_restrictions(): boolean {
+    return !current_user.is_admin && !current_user.is_moderator;
+}
+
+// DRC: Guests cannot open the full user profile modal.
+export function user_can_view_drc_user_profile(): boolean {
+    return !current_user.is_guest;
+}
+
 export function two_tier_billing_enabled(): boolean {
     if (typeof realm.realm_workplace_users_group !== "number") {
         return true;
