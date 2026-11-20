@@ -47,7 +47,7 @@ def write_updated_configs() -> None:
 
         nginx_sharding_conf_f.write("map $host $tornado_server {\n")
         for key, shards in config_file["tornado_sharding"].items():
-            ports = [int(port) for port in key.split("_")]
+            ports = [int(port) for port in key.removesuffix("_regex").split("_")]
             nginx_sharding_conf_f.write(f"    default http://tornado{'_'.join(map(str, ports))};\n")
             break
 
