@@ -426,7 +426,7 @@ test("guests only see users in the current narrow", ({override}) => {
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, selma.user_id]);
 });
 
-test("guests see nobody in PAS Announcements", ({override}) => {
+test("members and guests see nobody in PAS Announcements", ({override}) => {
     add_canned_users();
     const sub = make_stream({name: "PAS Announcements", stream_id: 1001});
     stream_data.add_sub_for_tests(sub);
@@ -435,11 +435,21 @@ test("guests see nobody in PAS Announcements", ({override}) => {
         make_message_list([{operator: "channel", operand: String(sub.stream_id)}]),
     );
 
-    assert.ok(!buddy_data.is_guest_viewing_pas_announcements());
+    override(current_user, "is_admin", true);
+    assert.ok(!buddy_data.is_member_or_guest_viewing_pas_announcements());
     assert.ok(buddy_data.get_filtered_and_sorted_user_ids("").includes(alice.user_id));
 
+    override(current_user, "is_admin", false);
+    override(current_user, "is_moderator", true);
+    assert.ok(!buddy_data.is_member_or_guest_viewing_pas_announcements());
+    assert.ok(buddy_data.get_filtered_and_sorted_user_ids("").includes(alice.user_id));
+
+    override(current_user, "is_moderator", false);
+    assert.ok(buddy_data.is_member_or_guest_viewing_pas_announcements());
+    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), []);
+
     override(current_user, "is_guest", true);
-    assert.ok(buddy_data.is_guest_viewing_pas_announcements());
+    assert.ok(buddy_data.is_member_or_guest_viewing_pas_announcements());
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), []);
 });
 

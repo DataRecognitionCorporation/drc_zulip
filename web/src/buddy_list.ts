@@ -751,8 +751,9 @@ export class BuddyList extends BuddyListConf {
         // for Inbox view. We hide all headers and show only users from the "others"
         // section and should hide the other two sections.
         const {hide_headers, other_users_count, get_all_participant_ids} = this.render_data;
-        // DRC: Guests see no users at all in PAS Announcements, not even counts.
-        const hide_all_sections = buddy_data.is_guest_viewing_pas_announcements();
+        // DRC: Members and guests see no users at all in PAS Announcements,
+        // not even counts.
+        const hide_all_sections = buddy_data.is_member_or_guest_viewing_pas_announcements();
 
         const hide_participants =
             hide_all_sections || hide_headers || get_all_participant_ids().size === 0;
