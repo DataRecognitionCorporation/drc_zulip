@@ -19,6 +19,30 @@ export function should_show_channel_folders(): boolean {
     return user_settings.web_left_sidebar_show_channel_folders && !current_user.is_guest;
 }
 
+// DRC: A channel named exactly "A - B - C - D" (four non-empty segments
+// separated by " - ") is placed by the server into the A > B > C folder
+// tree, whatever folder was picked. This mirrors
+// parse_auto_channel_folder_path in zerver/actions/channel_folders.py.
+const AUTO_CHANNEL_FOLDER_NAME_SEPARATOR = " - ";
+const AUTO_CHANNEL_FOLDER_NAME_SEGMENT_COUNT = 4;
+
+export type AutoChannelFolderName = {
+    folder_path: string[];
+    channel_label: string;
+};
+
+export function parse_auto_channel_folder_name(
+    channel_name: string,
+): AutoChannelFolderName | undefined {
+    const segments = channel_name
+        .split(AUTO_CHANNEL_FOLDER_NAME_SEPARATOR)
+        .map((segment) => segment.trim());
+    if (segments.length !== AUTO_CHANNEL_FOLDER_NAME_SEGMENT_COUNT || segments.includes("")) {
+        return undefined;
+    }
+    return {folder_path: segments.slice(0, -1), channel_label: segments.at(-1)!};
+}
+
 let channel_folder_name_dict: FoldDict<ChannelFolder>;
 let channel_folder_by_id_dict: Map<number, ChannelFolder>;
 let active_channel_folder_ids: Set<number>;

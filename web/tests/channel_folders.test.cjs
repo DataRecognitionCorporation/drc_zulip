@@ -318,3 +318,22 @@ run_test("folders with accessible channels include nested parents", () => {
         [project.id, subproject.id],
     );
 });
+
+run_test("parse_auto_channel_folder_name", () => {
+    assert.deepEqual(
+        channel_folders.parse_auto_channel_folder_name(
+            "EAL280FT - Grades 4/6/8 - Reading - All Users",
+        ),
+        {folder_path: ["EAL280FT", "Grades 4/6/8", "Reading"], channel_label: "All Users"},
+    );
+    // Segments are trimmed, as on the server.
+    assert.deepEqual(channel_folders.parse_auto_channel_folder_name(" A -  B - C - D "), {
+        folder_path: ["A", "B", "C"],
+        channel_label: "D",
+    });
+    // Anything but exactly four non-empty segments does not set a folder.
+    assert.equal(channel_folders.parse_auto_channel_folder_name("general"), undefined);
+    assert.equal(channel_folders.parse_auto_channel_folder_name("A - B - C"), undefined);
+    assert.equal(channel_folders.parse_auto_channel_folder_name("A - B - C - D - E"), undefined);
+    assert.equal(channel_folders.parse_auto_channel_folder_name("A -  - C - D"), undefined);
+});
