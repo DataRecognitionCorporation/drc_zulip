@@ -15,9 +15,7 @@ import * as keydown_util from "./keydown_util.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import {ListCursor} from "./list_cursor.ts";
 import {localstorage} from "./localstorage.ts";
-import * as message_lists from "./message_lists.ts";
 import * as message_reminder from "./message_reminder.ts";
-import * as message_viewport from "./message_viewport.ts";
 import {page_params} from "./page_params.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -39,23 +37,18 @@ const LEFT_SIDEBAR_NAVIGATION_AREA_TITLE = $t({defaultMessage: "VIEWS"});
 
 export let left_sidebar_cursor: ListCursor<JQuery>;
 
+// DRC: The left sidebar cannot be collapsed, so only the right
+// sidebar's state is saved and restored.
 function save_sidebar_toggle_status(): void {
-    const ls = localstorage();
-    ls.set("left-sidebar", $("body").hasClass("hide-left-sidebar"));
-
     if (!page_params.is_spectator) {
         // The right sidebar is never shown in the spectator mode;
         // avoid interacting with local storage state for it.
-        ls.set("right-sidebar", $("body").hasClass("hide-right-sidebar"));
+        localstorage().set("right-sidebar", $("body").hasClass("hide-right-sidebar"));
     }
 }
 
 export function restore_sidebar_toggle_status(): void {
     const ls = localstorage();
-    if (ls.get("left-sidebar")) {
-        $("body").addClass("hide-left-sidebar");
-    }
-
     if (!page_params.is_spectator && ls.get("right-sidebar")) {
         // The right sidebar is never shown in the spectator mode;
         // avoid processing local storage state for hiding the right
@@ -205,29 +198,12 @@ export function initialize(): void {
         show_userlist_sidebar();
     });
 
+    // DRC: This button only shows on narrow screens, where the left
+    // sidebar is an overlay. On wide screens the sidebar cannot be
+    // collapsed.
     $(".left-sidebar-toggle-button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-
-        if (ui_util.matches_viewport_state("gte_md_min")) {
-            $("body").toggleClass("hide-left-sidebar");
-            if (
-                message_lists.current !== undefined &&
-                !ui_util.matches_viewport_state("gte_xl_min")
-            ) {
-                // We expand the middle column width between md and xl breakpoints when the
-                // left sidebar is hidden. This can cause the pointer to move out of view.
-                message_viewport.scroll_to_selected();
-            }
-            // We recheck the scrolling-button status of the compose
-            // box, which may change for users who've chosen to
-            // use full width on wide screens.
-            compose_ui.maybe_show_scrolling_formatting_buttons(
-                "#message-formatting-controls-container",
-            );
-            save_sidebar_toggle_status();
-            return;
-        }
 
         if (left_sidebar_expanded_as_overlay) {
             hide_streamlist_sidebar();

@@ -1176,6 +1176,11 @@ nav {
         .brand {
             display: flex;
             align-items: center;
+            /* DRC: With no left sidebar collapse button beside it, the
+               logo sets the header height and needs its own left inset
+               (10px at 16px/1em). */
+            height: var(--header-height);
+            padding-left: 0.625em;
         }
 
         .nav-logo {

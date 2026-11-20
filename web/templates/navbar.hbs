@@ -1,11 +1,9 @@
 <div class="header">
     <nav class="header-main" id="top_navbar">
         <div class="column-left">
-            <a class="header-button left-sidebar-toggle-button {{#if embedded}}hide-streamlist-toggle-visibility{{/if}}" tabindex="0" role="button">
-                <i class="zulip-icon zulip-icon-panel-left-dashed"></i>
-                <i class="zulip-icon zulip-icon-panel-left"></i>
-                <span class="left-sidebar-toggle-unreadcount"></span>
-            </a>
+            {{!-- DRC: No left sidebar collapse button; the sidebar stays open
+            on wide screens. Narrow screens still use #streamlist-toggle,
+            since the sidebar can only be shown as an overlay there. --}}
             <a href="" class="brand no-style">
                 <img id="realm-navbar-wide-logo" src="" alt="" class="nav-logo no-drag"/>
             </a>
