@@ -230,19 +230,6 @@
             display: none;
         }
     }
-
-    /* Move the background styles onto the :before element so that the 1px padding
-       outline still works. */
-    .user-circle-idle {
-        background: var(--color-background-dropdown-widget);
-    }
-
-    .user-circle-idle::before {
-        background: var(--gradient-user-circle-idle);
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        border-radius: 50%;
-    }
 }
 
 .typeahead-text-container {

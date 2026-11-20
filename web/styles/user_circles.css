@@ -2,14 +2,10 @@
     color: var(--color-user-circle-active);
 }
 
+/* DRC: The away icon is the solid-colored 9.2 half-filled ring,
+   not a faded gradient. */
 .user-circle-idle {
-    background: var(--gradient-user-circle-idle);
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.with_avatar .user-circle-idle {
-    background: var(--gradient-user-circle-idle-avatar);
+    color: var(--color-user-circle-idle);
 }
 
 .user-circle-offline {
