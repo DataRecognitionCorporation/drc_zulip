@@ -314,7 +314,7 @@ class InviteUserTest(InviteUserBase):
         self.assert_json_success(result)
 
         new_user = get_user_by_delivery_email(new_email, inviter.realm)
-        self.assertEqual(new_user.full_name, "Alex Smith")
+        self.assertEqual(new_user.full_name, "Smith, Alex")
         self.assertEqual(
             CustomProfileFieldValue.objects.get(
                 user_profile=new_user, field=name_fields["first_name"]

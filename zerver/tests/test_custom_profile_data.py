@@ -15,8 +15,9 @@ from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue
-from zerver.models import CustomProfileField, CustomProfileFieldValue, UserProfile
+from zerver.models import CustomProfileField, CustomProfileFieldValue, RealmAuditLog, UserProfile
 from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 
 
@@ -1379,3 +1380,78 @@ class ReorderCustomProfileFieldTest(CustomProfileFieldTestCase):
             "/json/realm/profile_fields", info={"order": orjson.dumps(order).decode()}
         )
         self.assert_json_error(result, "Invalid order mapping.")
+
+
+class NameProfileFieldsTest(CustomProfileFieldTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.first_name_field = try_add_realm_custom_profile_field(
+            self.realm, "first_name", CustomProfileField.SHORT_TEXT
+        )
+        self.last_name_field = try_add_realm_custom_profile_field(
+            self.realm, "last_name", CustomProfileField.SHORT_TEXT
+        )
+
+    def update_name_fields(self, user: UserProfile, **values: str) -> Any:
+        fields = {"first_name": self.first_name_field, "last_name": self.last_name_field}
+        profile_data = [
+            {"id": fields[field_name].id, "value": value} for field_name, value in values.items()
+        ]
+        self.login("iago")
+        return self.client_patch(
+            f"/json/users/{user.id}",
+            # The fields win over a name passed in the same request.
+            {"full_name": "Ignored Name", "profile_data": orjson.dumps(profile_data).decode()},
+        )
+
+    def name_change_count(self, user: UserProfile) -> int:
+        return RealmAuditLog.objects.filter(
+            modified_user=user, event_type=AuditLogEventType.USER_FULL_NAME_CHANGED
+        ).count()
+
+    def test_name_fields_set_full_name(self) -> None:
+        hamlet = self.example_user("hamlet")
+        result = self.update_name_fields(hamlet, first_name="King", last_name="Hamlet")
+        self.assert_json_success(result)
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.full_name, "Hamlet, King")
+
+        # Changing one name field updates the name again.
+        result = self.update_name_fields(hamlet, first_name="Prince")
+        self.assert_json_success(result)
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.full_name, "Hamlet, Prince")
+
+    def test_one_name_field_keeps_full_name(self) -> None:
+        hamlet = self.example_user("hamlet")
+        result = self.update_name_fields(hamlet, first_name="King")
+        self.assert_json_success(result)
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.full_name, "Ignored Name")
+
+    def test_matching_full_name_is_not_changed(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet.full_name = "Hamlet, King"
+        hamlet.save(update_fields=["full_name"])
+        change_count = self.name_change_count(hamlet)
+
+        self.login("iago")
+        profile_data = [
+            {"id": self.first_name_field.id, "value": "King"},
+            {"id": self.last_name_field.id, "value": "Hamlet"},
+        ]
+        result = self.client_patch(
+            f"/json/users/{hamlet.id}", {"profile_data": orjson.dumps(profile_data).decode()}
+        )
+        self.assert_json_success(result)
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.full_name, "Hamlet, King")
+        self.assertEqual(self.name_change_count(hamlet), change_count)
+
+    def test_invalid_name_from_name_fields(self) -> None:
+        hamlet = self.example_user("hamlet")
+        result = self.update_name_fields(hamlet, first_name="King@", last_name="Hamlet")
+        self.assert_json_error(result, "Invalid characters in name!")
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.full_name, "King Hamlet")
