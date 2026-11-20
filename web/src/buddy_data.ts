@@ -25,7 +25,7 @@ import * as util from "./util.ts";
 
 */
 
-// DRC: Guests may not see any other users in this channel.
+// DRC: Members and guests may not see any other users in this channel.
 export const PAS_ANNOUNCEMENTS_CHANNEL_NAME = "PAS Announcements";
 
 const FIRST_NAME_FIELD = "first_name";
@@ -364,20 +364,23 @@ export function get_items_for_users(user_ids: number[]): BuddyUserInfo[] {
     return user_info;
 }
 
-export function is_guest_viewing_pas_announcements(): boolean {
+export function is_member_or_guest_viewing_pas_announcements(): boolean {
     return (
-        current_user.is_guest && narrow_state.stream_sub()?.name === PAS_ANNOUNCEMENTS_CHANNEL_NAME
+        !current_user.is_admin &&
+        !current_user.is_moderator &&
+        narrow_state.stream_sub()?.name === PAS_ANNOUNCEMENTS_CHANNEL_NAME
     );
 }
 
-// DRC: Guests may only see users in the channel or direct message
+// DRC: Members and guests see no users in PAS Announcements. Elsewhere,
+// guests may only see users in the channel or direct message
 // conversation they are currently viewing.
-function filter_user_ids_visible_to_guest(user_ids: number[]): number[] {
+function filter_user_ids_visible_to_current_user(user_ids: number[]): number[] {
+    if (is_member_or_guest_viewing_pas_announcements()) {
+        return [];
+    }
     if (!current_user.is_guest) {
         return user_ids;
-    }
-    if (is_guest_viewing_pas_announcements()) {
-        return [];
     }
 
     const pm_ids_set = narrow_state.pm_ids_set();
@@ -394,7 +397,7 @@ function filter_user_ids(user_filter_text: string, user_ids: number[]): number[]
     // This first filter is for whether the user is eligible to be
     // displayed in the right sidebar at all.
     const direct_message_recipients = narrow_state.pm_ids_set();
-    user_ids = filter_user_ids_visible_to_guest(user_ids);
+    user_ids = filter_user_ids_visible_to_current_user(user_ids);
     user_ids = user_ids.filter((user_id) => {
         const person = people.maybe_get_user_by_id(user_id, true);
 
