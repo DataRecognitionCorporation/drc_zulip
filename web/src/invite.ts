@@ -29,7 +29,6 @@ import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
-import * as stream_data from "./stream_data.ts";
 import * as stream_pill from "./stream_pill.ts";
 import * as timerender from "./timerender.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
@@ -42,7 +41,6 @@ let custom_expiration_time_input = 10;
 let custom_expiration_time_unit = "days";
 let stream_pill_widget: stream_pill.StreamPillWidget;
 let user_group_pill_widget: user_group_pill.UserGroupPillWidget;
-let guest_invite_stream_ids: number[] = [];
 
 type CommonInvitationData = {
     csrfmiddlewaretoken: string;
@@ -92,13 +90,10 @@ function get_common_invitation_data(): CommonInvitationData {
         expires_in = Number.parseFloat(raw_expires_in);
     }
 
-    let stream_ids: number[] = [];
-    let include_realm_default_subscriptions = false;
-    if ($("#invite_select_default_streams").prop("checked")) {
-        include_realm_default_subscriptions = true;
-    } else {
-        stream_ids = stream_pill.get_stream_ids(stream_pill_widget);
-    }
+    // DRC: The channel picker always lists every channel to join; it
+    // starts with the organization's default channels.
+    const stream_ids = stream_pill.get_stream_ids(stream_pill_widget);
+    const include_realm_default_subscriptions = false;
     let group_ids: number[] = [];
     if (user_group_pill_widget !== undefined) {
         group_ids = user_group_pill.get_group_ids(user_group_pill_widget);
@@ -389,18 +384,6 @@ function valid_to(): string {
     return $t({defaultMessage: "Expires on {date} at {time}"}, {date, time});
 }
 
-function set_streams_to_join_list_visibility(): void {
-    const realm_has_default_streams = stream_data.get_default_stream_ids().length > 0;
-    const hide_streams_list =
-        realm_has_default_streams &&
-        util.the($<HTMLInputElement>("input#invite_select_default_streams")).checked;
-    if (hide_streams_list) {
-        $(".add_streams_container").hide();
-    } else {
-        $(".add_streams_container").show();
-    }
-}
-
 function set_welcome_message_custom_text_visibility(): void {
     if (!current_user.is_admin) {
         return;
@@ -432,16 +415,11 @@ async function update_guest_visible_users_count_and_stream_ids(): Promise<void> 
     assert(!Number.isNaN(invite_as));
 
     const guest_role_selected = invite_as === settings_config.user_role_values.guest.code;
-    if (guest_role_selected) {
-        guest_invite_stream_ids = stream_pill.get_stream_ids(stream_pill_widget);
-    }
     if (!guest_role_selected || settings_data.guests_can_access_all_other_users()) {
         $("#guest_visible_users_container").hide();
         return;
     }
-    const stream_ids = $("#invite_select_default_streams").is(":checked")
-        ? stream_data.get_default_stream_ids()
-        : stream_pill.get_stream_ids(stream_pill_widget);
+    const stream_ids = stream_pill.get_stream_ids(stream_pill_widget);
 
     $(".guest-visible-users-count").empty();
     loading.make_indicator($(".guest_visible_users_loading"));
@@ -479,33 +457,6 @@ const invite_tips_banner = (): Banner => {
     };
 };
 
-function update_stream_list(): void {
-    const invite_as = Number.parseInt(
-        $<HTMLSelectOneElement>("select:not([multiple])#invite_as").val()!,
-        10,
-    );
-
-    assert(!Number.isNaN(invite_as));
-
-    const guest_role_selected = invite_as === settings_config.user_role_values.guest.code;
-    stream_pill_widget.clear();
-
-    if (guest_role_selected) {
-        $("#invite_select_default_streams").prop("checked", false);
-        $(".add_streams_container").show();
-        for (const stream_id of guest_invite_stream_ids) {
-            const sub = stream_data.get_sub_by_id(stream_id);
-            if (sub) {
-                stream_pill.append_stream(sub, stream_pill_widget, false);
-            }
-        }
-    } else {
-        $("#invite_select_default_streams").prop("checked", true);
-        invite_stream_picker_pill.add_default_stream_pills(stream_pill_widget);
-        set_streams_to_join_list_visibility();
-    }
-}
-
 function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void {
     e.stopPropagation();
     e.preventDefault();
@@ -521,7 +472,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         invite_as_options: settings_config.user_role_values,
         expires_in_options: settings_config.expires_in_values,
         time_choices: settings_config.custom_time_unit_values,
-        show_select_default_streams_option: stream_data.get_default_stream_ids().length > 0,
         user_has_email_set: !settings_data.user_email_not_configured(),
         default_welcome_message_custom_text: realm.realm_welcome_message_custom_text,
     });
@@ -542,7 +492,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
         const valid_to_text = valid_to();
         settings_components.set_time_input_formatted_text($expires_in, valid_to_text);
 
-        set_streams_to_join_list_visibility();
         const $stream_pill_container = $("#invite_streams_container .pill-container");
         stream_pill_widget = invite_stream_picker_pill.create($stream_pill_container);
 
@@ -553,13 +502,14 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
         set_welcome_message_custom_text_visibility();
 
-        $("#invite_streams_container .input, #invite_select_default_streams").on(
+        $("#invite_streams_container .input").on(
             "change",
             () => void update_guest_visible_users_count_and_stream_ids(),
         );
 
+        // DRC: Changing the role keeps the selected channels, so guests
+        // also start with the default channels.
         $("#invite_as").on("change", () => {
-            update_stream_list();
             void update_guest_visible_users_count_and_stream_ids();
         });
 
@@ -641,10 +591,6 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
 
         $("#invite_uncheck_all_button").on("click", () => {
             $("#invite-stream-checkboxes input[type=checkbox]").prop("checked", false);
-        });
-
-        $("#invite_select_default_streams").on("change", () => {
-            set_streams_to_join_list_visibility();
         });
 
         $(
