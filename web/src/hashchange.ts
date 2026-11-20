@@ -295,6 +295,12 @@ function do_hashchange_overlay(old_hash: string | undefined): void {
         return;
     }
 
+    // DRC: Guests cannot open the full user profile modal.
+    if (base === "user" && !settings_data.user_can_view_drc_user_profile()) {
+        show_home_view();
+        return;
+    }
+
     const coming_from_overlay = hash_parser.is_overlay_hash(old_hash);
     if (base === "settings" || base === "organization") {
         let settings_panel_object = settings_panel_menu.normal_settings;

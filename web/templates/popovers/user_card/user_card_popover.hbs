@@ -154,6 +154,8 @@
             {{/if}}
         {{/if}}
         {{> ./user_card_popover_custom_fields profile_fields=display_profile_fields}}
+        {{!-- DRC: Guests cannot open the full user profile. --}}
+        {{#if can_view_user_profile}}
         <li role="none" class="popover-menu-list-item link-item hidden-for-spectators">
             <a role="menuitem" class="popover-menu-link view_full_user_profile" tabindex="0">
                 <i class="popover-menu-icon zulip-icon zulip-icon-account" aria-hidden="true"></i>
@@ -164,6 +166,7 @@
                 {{/if}}
             </a>
         </li>
+        {{/if}}
         {{#if can_send_private_message}}
             <li role="none" class="popover-menu-list-item link-item hidden-for-spectators">
                 <a role="menuitem" class="popover-menu-link {{ private_message_class }}" tabindex="0">

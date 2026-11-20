@@ -167,6 +167,27 @@ run_test("user_has_drc_settings_restrictions", ({override}) => {
     assert.equal(settings_data.user_has_drc_settings_restrictions(), false);
 });
 
+run_test("user_has_drc_profile_tab_restrictions", ({override}) => {
+    override(current_user, "is_admin", false);
+    override(current_user, "is_moderator", false);
+    assert.equal(settings_data.user_has_drc_profile_tab_restrictions(), true);
+
+    override(current_user, "is_moderator", true);
+    assert.equal(settings_data.user_has_drc_profile_tab_restrictions(), false);
+
+    override(current_user, "is_moderator", false);
+    override(current_user, "is_admin", true);
+    assert.equal(settings_data.user_has_drc_profile_tab_restrictions(), false);
+});
+
+run_test("user_can_view_drc_user_profile", ({override}) => {
+    override(current_user, "is_guest", true);
+    assert.equal(settings_data.user_can_view_drc_user_profile(), false);
+
+    override(current_user, "is_guest", false);
+    assert.equal(settings_data.user_can_view_drc_user_profile(), true);
+});
+
 run_test("user_can_change_name", ({override}) => {
     const can_change_name = settings_data.user_can_change_name;
 
