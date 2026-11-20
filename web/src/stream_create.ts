@@ -6,6 +6,7 @@ import render_subscription_invites_warning_modal from "../templates/confirm_dial
 import render_channel_name_conflict_error from "../templates/stream_settings/channel_name_conflict_error.hbs";
 
 import * as channel from "./channel.ts";
+import * as channel_folders from "./channel_folders.ts";
 import * as channel_folders_ui from "./channel_folders_ui.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import type {DropdownWidget} from "./dropdown_widget.ts";
@@ -457,7 +458,29 @@ export function new_stream_clicked(stream_name: string, folder_id: number | unde
     } else {
         folder_widget.render(-1);
     }
+    update_folder_widget_for_channel_name();
     $("#create_stream_name").trigger("focus");
+}
+
+// DRC: When the channel name sets the folder (see
+// channel_folders.parse_auto_channel_folder_name), the server ignores the
+// folder dropdown. So the dropdown is grayed out and shows the top-level
+// folder from the name instead. Other names keep the dropdown and the
+// folder picked in it.
+function update_folder_widget_for_channel_name(): void {
+    assert(folder_widget !== undefined);
+    const channel_name = $<HTMLInputElement>("input#create_stream_name").val()!;
+    const auto_folder_name = channel_folders.parse_auto_channel_folder_name(channel_name);
+    const name_sets_folder = auto_folder_name !== undefined;
+    $("#new_channel_folder_id_widget").prop("disabled", name_sets_folder);
+    $("#stream_creation_form .create-channel-folder-button").prop("disabled", name_sets_folder);
+    if (name_sets_folder) {
+        $("#new_channel_folder_id_widget .dropdown_widget_value").text(
+            auto_folder_name.folder_path[0]!,
+        );
+    } else {
+        folder_widget.render();
+    }
 }
 
 function clear_error_display(): void {
@@ -642,6 +665,7 @@ export function set_up_handlers(): void {
 
         // This is an inexpensive check.
         stream_name_error.pre_validate(stream_name);
+        update_folder_widget_for_channel_name();
     });
 
     // Do not allow the user to enter newline characters while typing out the

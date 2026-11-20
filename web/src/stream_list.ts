@@ -884,28 +884,22 @@ export function set_in_home_view(stream_id: number, in_home: boolean): void {
     }
 }
 
-// A channel whose name matches the DRC "A - B - C - D" convention (exactly four
-// non-empty " - " segments) is auto-organized into the A > B > C folder tree,
-// so its sidebar row shows only the final segment (e.g. "Supervisors") — the
-// folder path is already shown by the headers above it. Any other channel,
-// including one manually placed in a folder, shows its full name. The
-// underlying sub.name is never changed, so search, tooltips, and narrowing
-// still use the full name; the full name is also shown in the modal/zoomed row.
-const CHANNEL_FOLDER_NAME_SEPARATOR = " - ";
-const CHANNEL_FOLDER_NAME_SEGMENT_COUNT = 4;
-
+// A channel whose name matches the DRC "A - B - C - D" convention is
+// auto-organized into the A > B > C folder tree, so its sidebar row shows
+// only the final segment (e.g. "Supervisors") — the folder path is already
+// shown by the headers above it. Any other channel, including one manually
+// placed in a folder, shows its full name. The underlying sub.name is never
+// changed, so search, tooltips, and narrowing still use the full name; the
+// full name is also shown in the modal/zoomed row.
 export function get_sidebar_display_name(sub: StreamSubscription, for_modal: boolean): string {
     if (for_modal || !channel_folders.should_show_channel_folders() || sub.folder_id === null) {
         return sub.name;
     }
-    const segments = sub.name.split(CHANNEL_FOLDER_NAME_SEPARATOR);
-    const matches_folder_convention =
-        segments.length === CHANNEL_FOLDER_NAME_SEGMENT_COUNT &&
-        segments.every((segment) => segment.trim() !== "");
-    if (!matches_folder_convention) {
+    const auto_folder_name = channel_folders.parse_auto_channel_folder_name(sub.name);
+    if (auto_folder_name === undefined) {
         return sub.name;
     }
-    return segments.at(-1)!;
+    return auto_folder_name.channel_label;
 }
 
 function build_stream_sidebar_li(sub: StreamSubscription, for_modal = false): JQuery {
