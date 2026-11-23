@@ -926,7 +926,8 @@
 #modal-direct-messages-list .bottom_left_row:has(a.dm-box:focus-visible),
 #show-more-direct-messages:has(a.dm-name:focus-visible),
 #subscribe-to-more-streams:has(.subscribe-more-link:focus-visible),
-#login-to-more-streams:has(.subscribe-more-link:focus-visible) {
+#login-to-more-streams:has(.subscribe-more-link:focus-visible),
+#drc-create-channel-top:has(.subscribe-more-link:focus-visible) {
     outline: 2px solid var(--color-outline-focus);
     outline-offset: -2px;
     background-color: var(--color-background-hover-narrow-filter);
@@ -951,7 +952,8 @@
 }
 
 #subscribe-to-more-streams,
-#login-to-more-streams {
+#login-to-more-streams,
+#drc-create-channel-top {
     /* --left-sidebar-bottom-scrolling-buffer is to prevent the row from
        being cut off, and --sidebar-bottom-spacing is extra padding. */
     margin: 5px var(--left-sidebar-right-margin)
@@ -1017,6 +1019,14 @@
            for better vertical centering. */
         font-size: var(--font-size-sidebar-action-heading);
     }
+}
+
+/* DRC (PAS-495): The "Create a channel" button under the left sidebar
+   filter reuses the styles above, on its own row of #left-sidebar-search,
+   without the bottom-of-list scrolling buffer. */
+#drc-create-channel-top {
+    grid-column: 1 / -1;
+    margin: 5px 0 0;
 }
 
 ul.filters {
