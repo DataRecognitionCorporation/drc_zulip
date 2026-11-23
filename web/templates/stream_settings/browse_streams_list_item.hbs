@@ -1,17 +1,16 @@
 {{! Client-side Handlebars template for rendering subscriptions. }}
 <div class="stream-row" data-stream-id="{{stream_id}}" data-stream-name="{{name}}">
 
-    {{!-- DRC: The checkmark/plus icon only shows whether you are subscribed.
-    It is always disabled so that a stray click cannot subscribe or
-    unsubscribe you; use the Subscribe/Unsubscribe button in the channel
-    header instead. --}}
-    <div class="check sub_unsub_button disabled {{#if subscribed}}checked{{/if}}">
+    {{!-- DRC (PAS-492): The checkmark/plus icon only shows whether you are
+    subscribed. It is not a button, so a stray click cannot subscribe or
+    unsubscribe you; a click opens the channel like the rest of the row.
+    Use the Subscribe/Unsubscribe button in the channel header instead. --}}
+    <div class="check subscription-status-only {{#if subscribed}}checked{{/if}}">
         {{#if subscribed}}
             <i class="zulip-icon zulip-icon-subscriber-check sub-unsub-icon"></i>
         {{else}}
             <i class="zulip-icon zulip-icon-subscriber-plus sub-unsub-icon"></i>
         {{/if}}
-        <div class='sub_unsub_status'></div>
     </div>
     {{> subscription_setting_icon . }}
     <div class="sub-info-box">

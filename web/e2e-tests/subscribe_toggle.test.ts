@@ -7,9 +7,10 @@ async function test_subscription_button(page: Page): Promise<void> {
     await page.waitForSelector(all_stream_selector, {visible: true});
     await page.click(all_stream_selector);
     const stream_selector = "[data-stream-name='Venice']";
-    // DRC: The checkmark in the channel list is always disabled, so
-    // subscribing is done with the button in the channel header.
-    const row_check_selector = `${stream_selector} .check.disabled`;
+    // DRC (PAS-492): The checkmark in the channel list only shows the
+    // subscription status, so subscribing is done with the button in
+    // the channel header.
+    const row_check_selector = `${stream_selector} .check.subscription-status-only`;
     const subscribed_selector = `${row_check_selector}.checked`;
     const unsubscribed_selector = `${row_check_selector}:not(.checked)`;
 
@@ -35,7 +36,7 @@ async function test_subscription_button(page: Page): Promise<void> {
 
     await page.click(stream_selector);
 
-    // Clicking the disabled checkmark must not unsubscribe.
+    // Clicking the checkmark must not unsubscribe.
     // We assume Venice is already subscribed.
     await subscribed();
     await page.click(row_check_selector);
