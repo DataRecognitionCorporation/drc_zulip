@@ -44,7 +44,8 @@ const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 
 const realm = make_realm();
-set_current_user({});
+// DRC: Administrators see the full buddy list; members and guests do not.
+set_current_user({is_admin: true});
 set_realm(realm);
 
 const me = make_user({

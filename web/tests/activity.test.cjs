@@ -50,7 +50,8 @@ const util = zrequire("util");
 const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const current_user = {};
+// DRC: Administrators see the full buddy list; members and guests do not.
+const current_user = {is_admin: true};
 set_current_user(current_user);
 const realm = make_realm();
 set_realm(realm);

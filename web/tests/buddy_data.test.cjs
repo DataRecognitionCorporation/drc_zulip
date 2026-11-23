@@ -38,7 +38,8 @@ const {user_list_style_values} = zrequire("settings_config");
 
 const realm = make_realm();
 set_realm(realm);
-const current_user = {};
+// DRC: Administrators see the full buddy list; members and guests do not.
+const current_user = {is_admin: true};
 set_current_user(current_user);
 const user_settings = {};
 initialize_user_settings({user_settings});
@@ -402,28 +403,48 @@ test("always show pm users", () => {
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, selma.user_id]);
 });
 
-test("guests only see users in the current narrow", ({override}) => {
-    override(current_user, "is_guest", true);
+test("members and guests only see users in the current narrow", ({override}) => {
     add_canned_users();
-
-    // Outside a channel or DM view, guests see nobody.
-    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), []);
-    assert.ok(!buddy_data.matches_filter("", alice.user_id));
-
     const sub = make_stream({name: "Rome", stream_id: 1001});
     stream_data.add_sub_for_tests(sub);
     peer_data.set_subscribers(sub.stream_id, [alice.user_id, me.user_id]);
-    message_lists.set_current(
-        make_message_list([
-            {operator: "channel", operand: String(sub.stream_id)},
-            {operator: "topic", operand: "Foo"},
-        ]),
-    );
-    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, alice.user_id]);
-    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids("fred"), []);
 
-    message_lists.set_current(make_message_list([{operator: "dm", operand: [selma.user_id]}]));
-    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, selma.user_id]);
+    // Administrators and moderators see everyone outside a conversation.
+    assert.ok(!buddy_data.buddy_list_is_restricted_to_conversation());
+    assert.ok(buddy_data.get_filtered_and_sorted_user_ids("").includes(fred.user_id));
+    override(current_user, "is_admin", false);
+    override(current_user, "is_moderator", true);
+    assert.ok(!buddy_data.buddy_list_is_restricted_to_conversation());
+    assert.ok(buddy_data.get_filtered_and_sorted_user_ids("").includes(fred.user_id));
+    override(current_user, "is_moderator", false);
+
+    for (const is_guest of [false, true]) {
+        override(current_user, "is_guest", is_guest);
+        assert.ok(buddy_data.buddy_list_is_restricted_to_conversation());
+
+        // Outside a channel or DM view (e.g. Inbox), they see nobody.
+        message_lists.set_current(undefined);
+        assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), []);
+        assert.ok(!buddy_data.matches_filter("", alice.user_id));
+
+        message_lists.set_current(
+            make_message_list([
+                {operator: "channel", operand: String(sub.stream_id)},
+                {operator: "topic", operand: "Foo"},
+            ]),
+        );
+        assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [
+            me.user_id,
+            alice.user_id,
+        ]);
+        assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids("fred"), []);
+
+        message_lists.set_current(make_message_list([{operator: "dm", operand: [selma.user_id]}]));
+        assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [
+            me.user_id,
+            selma.user_id,
+        ]);
+    }
 });
 
 test("members and guests see nobody in PAS Announcements", ({override}) => {

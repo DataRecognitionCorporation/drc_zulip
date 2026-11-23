@@ -761,9 +761,11 @@ export class BuddyList extends BuddyListConf {
         // since it can be confusing to see "others" out of context of the main population
         // of that narrow.
         const hide_users_matching_view = hide_all_sections || hide_headers;
-        // DRC: Guests never see the "Others" section.
+        // DRC: Members and guests never see the "Others" section.
         const hide_other_users =
-            hide_all_sections || current_user.is_guest || other_users_count === 0;
+            hide_all_sections ||
+            buddy_data.buddy_list_is_restricted_to_conversation() ||
+            other_users_count === 0;
 
         $("#buddy-list-users-matching-view-container").toggleClass(
             "no-display",

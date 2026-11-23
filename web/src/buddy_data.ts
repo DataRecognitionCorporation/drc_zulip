@@ -364,22 +364,28 @@ export function get_items_for_users(user_ids: number[]): BuddyUserInfo[] {
     return user_info;
 }
 
+// DRC: Members and guests (anyone but administrators, owners, and
+// moderators) may never see the full list of users in the buddy list.
+export function buddy_list_is_restricted_to_conversation(): boolean {
+    return !current_user.is_admin && !current_user.is_moderator;
+}
+
 export function is_member_or_guest_viewing_pas_announcements(): boolean {
     return (
-        !current_user.is_admin &&
-        !current_user.is_moderator &&
+        buddy_list_is_restricted_to_conversation() &&
         narrow_state.stream_sub()?.name === PAS_ANNOUNCEMENTS_CHANNEL_NAME
     );
 }
 
 // DRC: Members and guests see no users in PAS Announcements. Elsewhere,
-// guests may only see users in the channel or direct message
-// conversation they are currently viewing.
+// they may only see users in the channel or direct message conversation
+// they are currently viewing, so views like Inbox or Combined feed show
+// nobody.
 function filter_user_ids_visible_to_current_user(user_ids: number[]): number[] {
     if (is_member_or_guest_viewing_pas_announcements()) {
         return [];
     }
-    if (!current_user.is_guest) {
+    if (!buddy_list_is_restricted_to_conversation()) {
         return user_ids;
     }
 
