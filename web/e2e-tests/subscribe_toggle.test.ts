@@ -7,40 +7,43 @@ async function test_subscription_button(page: Page): Promise<void> {
     await page.waitForSelector(all_stream_selector, {visible: true});
     await page.click(all_stream_selector);
     const stream_selector = "[data-stream-name='Venice']";
-    const button_selector = `${stream_selector} .sub_unsub_button`;
-    const subscribed_selector = `${button_selector}.checked`;
-    const unsubscribed_selector = `${button_selector}:not(.checked)`;
+    // DRC (PAS-492): The checkmark in the channel list only shows the
+    // subscription status, so subscribing is done with the button in
+    // the channel header.
+    const row_check_selector = `${stream_selector} .check.subscription-status-only`;
+    const subscribed_selector = `${row_check_selector}.checked`;
+    const unsubscribed_selector = `${row_check_selector}:not(.checked)`;
+
+    function header_button_xpath(label: string): string {
+        return `xpath///*[${common.has_class_x("stream-info-title")}]//*[${common.has_class_x(
+            "sub_unsub_button",
+        )} and normalize-space()="${label}"]`;
+    }
 
     async function subscribed(): Promise<ElementHandle | null> {
-        await page.waitForSelector(
-            `xpath///*[${common.has_class_x("stream-info-title")}]//*[${common.has_class_x(
-                "sub_unsub_button",
-            )} and normalize-space()="Unsubscribe"]`,
-            {visible: true},
-        );
-        return await page.waitForSelector(subscribed_selector, {visible: true});
+        await page.waitForSelector(subscribed_selector, {visible: true});
+        return await page.waitForSelector(header_button_xpath("Unsubscribe"), {visible: true});
     }
 
     async function unsubscribed(): Promise<ElementHandle | null> {
-        await page.waitForSelector(
-            `xpath///*[${common.has_class_x("stream-info-title")}]//*[${common.has_class_x(
-                "sub_unsub_button",
-            )} and normalize-space()="Subscribe"]`,
-            {visible: true},
-        );
-        return await page.waitForSelector(unsubscribed_selector, {visible: true});
+        await page.waitForSelector(unsubscribed_selector, {visible: true});
+        return await page.waitForSelector(header_button_xpath("Subscribe"), {visible: true});
     }
 
     // Make sure that Venice is even in our list of streams.
     await page.waitForSelector(stream_selector, {visible: true});
-    await page.waitForSelector(button_selector, {visible: true});
+    await page.waitForSelector(row_check_selector, {visible: true});
 
     await page.click(stream_selector);
 
+    // Clicking the checkmark must not unsubscribe.
+    // We assume Venice is already subscribed.
+    await subscribed();
+    await page.click(row_check_selector);
+    await subscribed();
+
     // Note that we intentionally re-find the button after each click, since
     // the live-update code may replace the whole row.
-    // We assume Venice is already subscribed, so the first line here
-    // should happen immediately.
     await (await subscribed())!.click();
     await (await unsubscribed())!.click();
     await (await subscribed())!.click();
