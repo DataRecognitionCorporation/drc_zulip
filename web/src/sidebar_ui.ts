@@ -321,6 +321,13 @@ export function initialize_left_sidebar(): void {
         is_guest: current_user.is_guest,
         is_spectator: page_params.is_spectator,
         has_drc_channel_restrictions: settings_data.user_has_drc_channel_restrictions(),
+        // DRC (PAS-495): Only administrators and owners (is_admin is also
+        // true for owners) who can create some kind of channel.
+        show_drc_create_channel_button:
+            current_user.is_admin &&
+            (settings_data.user_can_create_private_streams() ||
+                settings_data.user_can_create_public_streams() ||
+                settings_data.user_can_create_web_public_streams()),
         primary_condensed_views,
         expanded_views,
         LEFT_SIDEBAR_NAVIGATION_AREA_TITLE,
