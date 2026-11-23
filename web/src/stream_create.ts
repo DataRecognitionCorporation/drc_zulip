@@ -447,6 +447,8 @@ export function new_stream_clicked(stream_name: string, folder_id: number | unde
     // to a add new stream title.
     stream_settings_components.show_subs_pane.create_stream();
     $(".stream-row.active").removeClass("active");
+    // DRC (PAS-494): Clear the banner for a previously created channel.
+    $("#stream_creation_form .stream-creation-confirmation-banner").empty();
 
     if (stream_name !== "") {
         $("#create_stream_name").val(stream_name);
@@ -684,6 +686,18 @@ export function set_up_handlers(): void {
         e.preventDefault();
         channel_folders_ui.add_channel_folder(set_channel_folder_dropdown_value);
     });
+
+    // DRC (PAS-494): Close the "Channel #X created!" banner. The handler
+    // in stream_edit.ts only exists once a channel's settings were opened.
+    $container.on(
+        "click",
+        ".stream-creation-confirmation-banner .main-view-banner-close-button",
+        (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            $(e.currentTarget).closest(".stream-creation-confirmation-banner").empty();
+        },
+    );
 
     set_up_group_setting_widgets();
     settings_components.enable_opening_typeahead_on_clicking_label($container);

@@ -380,25 +380,27 @@ export function add_sub_to_table(sub: StreamSubscription): void {
         // good way to associate with this request because the stream
         // ID isn't known to the client yet. These are appended to the
         // top of the list, so they are more visible.
-        stream_ui_updates.row_for_stream_id(sub.stream_id).trigger("click");
+        //
+        // DRC (PAS-494): Admins often create several channels in a
+        // row. So instead of opening the new channel, stay on a blank
+        // channel creation form and confirm the creation with a banner
+        // above it, whether or not the creator subscribed.
+        stream_create.new_stream_clicked("", undefined);
+        const context = {
+            banner_type: compose_banner.SUCCESS,
+            classname: "stream_creation_confirmation",
+            stream_name: sub.name,
+            stream_url: hash_util.channel_url_by_user_setting(sub.stream_id),
+        };
+        $("#stream_creation_form .stream-creation-confirmation-banner").html(
+            render_stream_creation_confirmation_banner(context),
+        );
 
         if (!stream_create.get_current_user_subscribed_to_created_stream()) {
-            // This banner is for administrators creating a channel that
-            // they are themselves not initial subscribers to; other users
-            // will be immediately navigated to the channel view.
-            //
             // stream_create.get_current_user_subscribed_to_created_stream
             // is just a work around because we do not have the subscribers
             // info yet.
-            const context = {
-                banner_type: compose_banner.SUCCESS,
-                classname: "stream_creation_confirmation",
-                stream_name: sub.name,
-                stream_url: hash_util.channel_url_by_user_setting(sub.stream_id),
-            };
-            $("#stream_settings .stream-creation-confirmation-banner").html(
-                render_stream_creation_confirmation_banner(context),
-            );
+            //
             // We don't want to reset the created stream in case the
             // the current user is subscribed to the created stream
             // We use the name in stream_create to do some actions on

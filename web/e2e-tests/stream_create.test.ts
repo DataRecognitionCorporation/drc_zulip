@@ -93,14 +93,31 @@ async function create_stream(page: Page): Promise<void> {
     await page.type("#create_stream_name", "Test Stream 2");
     await page.click("form#stream_creation_form .finalize_create_stream");
 
-    // We redirect to the channel message view.
-    await page.waitForSelector("#subscription_overlay", {hidden: true});
+    // DRC (PAS-494): We stay on a blank creation form with a
+    // "Channel #Puppeteer created!" banner, instead of redirecting to
+    // the channel message view.
     await page.waitForSelector(
-        `xpath///*[${common.has_class_x("message-header-navbar-title")} and text()="Puppeteer"]`,
+        "#stream_creation_form .stream-creation-confirmation-banner .stream_narrow_link",
+        {visible: true},
     );
+    assert.strictEqual(
+        (
+            await common.get_text_from_selector(
+                page,
+                "#stream_creation_form .stream-creation-confirmation-banner .banner_message",
+            )
+        ).replaceAll(/\s+/g, " "),
+        "Channel #Puppeteer created!",
+    );
+    await page.waitForSelector('xpath///*[text()="Configure new channel settings"]', {
+        visible: true,
+    });
+    assert.strictEqual(await page.$eval("input#create_stream_name", (el) => el.value), "");
 
-    await page.waitForSelector(".message-header-stream-settings-button");
-    await page.click(".message-header-stream-settings-button");
+    // Before PAS-494 the overlay closed here and was reopened on the
+    // "Subscribed" tab from the channel header; switch to it directly.
+    await page.click("[data-tab-key='subscribed']");
+    await page.click(".stream-row[data-stream-name='Puppeteer']");
     await page.waitForSelector(".stream_section");
     await page.waitForSelector(
         `xpath///*[${common.has_class_x("stream-name-title")} and text()="Puppeteer"]`,
