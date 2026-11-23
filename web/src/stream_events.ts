@@ -300,15 +300,21 @@ export function mark_subscribed(
 
     if (stream_create.get_name() === sub.name) {
         // In this case, we just created this channel using this very
-        // browser window. We redirect the user to that channel so
-        // they can use the channel that they just created.
+        // browser window.
+        //
+        // DRC (PAS-494): The Channels overlay stays open on a blank
+        // creation form (see add_sub_to_table), so we only redirect
+        // the user to the new channel if they closed the overlay
+        // before this event arrived.
         //
         // It's important that we do this here, not in
         // add_sub_to_table, to avoid showing or flashing a subscriber
         // bookend during the window that the client doesn't yet know
         // that we're a subscriber to the new channel.
         stream_create.reset_created_stream();
-        browser_history.go_to_location(hash_util.channel_url_by_user_setting(sub.stream_id));
+        if (!overlays.streams_open()) {
+            browser_history.go_to_location(hash_util.channel_url_by_user_setting(sub.stream_id));
+        }
 
         if (stream_create.should_show_first_stream_created_modal()) {
             stream_create.set_first_stream_created_modal_shown();

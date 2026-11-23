@@ -43,7 +43,7 @@ mock_esm("../src/settings_notifications", {
     update_page() {},
     user_settings_panel: "stub", // Not used, but can't be undefined
 });
-mock_esm("../src/overlays", {
+const overlays = mock_esm("../src/overlays", {
     streams_open: () => true,
 });
 const settings_config = zrequire("settings_config");
@@ -716,8 +716,20 @@ test("marked_subscribed (new channel creation)", ({override, override_rewire}) =
 
     stream_events.mark_subscribed(sub, [], "yellow");
 
-    // Verify that the creator is redirected to channel view
-    // and the first_stream_created modal is displayed.
+    // DRC (PAS-494): With the Channels overlay open, the creator stays
+    // on the creation form instead of being redirected to the channel.
+    // The first_stream_created modal is still displayed.
+    assert.equal(go_to_location_stub.num_calls, 0);
+    assert.equal(dialog_widget_stub.num_calls, 1);
+    assert.equal(stream_create.get_name(), undefined);
+
+    // If the overlay was closed before the event arrived, the creator
+    // is redirected to the channel view.
+    override(overlays, "streams_open", () => false);
+    override(onboarding_steps, "ONE_TIME_NOTICES_TO_DISPLAY", new Set());
+    sub.subscribed = false;
+    stream_create.set_name(frontend.name);
+    stream_events.mark_subscribed(sub, [], "yellow");
     assert.equal(go_to_location_stub.num_calls, 1);
     assert.equal(dialog_widget_stub.num_calls, 1);
     assert.equal(stream_create.get_name(), undefined);
