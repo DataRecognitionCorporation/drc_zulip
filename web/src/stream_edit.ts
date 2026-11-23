@@ -858,7 +858,9 @@ export function initialize(): void {
         ".sub_unsub_button",
         function (this: HTMLElement, e) {
             if ($(this).hasClass("disabled")) {
-                // We do not allow users to subscribe themselves to private streams.
+                // DRC: The checkmark in the channel list is always
+                // disabled (see browse_streams_list_item.hbs), so only
+                // the button in the channel header gets this far.
                 return;
             }
 
